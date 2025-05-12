@@ -78,12 +78,17 @@ const Dashboard = () => {
   // Show welcome notification on first load
   useEffect(() => {
     if (!isLoading && currentProject) {
-      addNotification({
-        type: 'info',
-        title: 'Welcome to AutoML Platform',
-        message: 'Get started by uploading a dataset or exploring the platform features.',
-        duration: 5000
-      });
+      // Check if this is the first visit
+      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
+      if (!hasVisitedBefore) {
+        addNotification({
+          type: 'info',
+          title: 'Welcome to DataFlowHub AI',
+          message: 'Get started by uploading a dataset or exploring the platform features.',
+          duration: 6000
+        });
+        localStorage.setItem('hasVisitedDashboard', 'true');
+      }
     }
   }, [isLoading, currentProject, addNotification]);
   
@@ -161,10 +166,10 @@ const Dashboard = () => {
   // Test notification
   const sendTestNotification = () => {
     addNotification({
-      type: 'success',
-      title: 'Test Notification',
-      message: 'This is a test notification to verify the notification system is working properly.',
-      duration: 5000
+      type: 'info',
+      title: 'Notification System',
+      message: 'Notifications will appear here and automatically dismiss after a few seconds.',
+      duration: 4000
     });
   };
 
@@ -178,6 +183,7 @@ const Dashboard = () => {
             <TourButton 
               tourName="dashboard" 
               label="Take a tour"
+              variant="outline"
             />
             <Button
               variant="outline"
@@ -186,18 +192,14 @@ const Dashboard = () => {
             >
               {showPitchDeck ? 'Hide Presentation' : 'View Presentation'}
             </Button>
-            <Button
-              onClick={() => setShowNewProjectModal(true)}
-              icon={<Plus className="w-4 h-4" />}
-            >
-              New Project
-            </Button>
-            <Button
-              variant="outline"
-              onClick={sendTestNotification}
-            >
-              Test Notification
-            </Button>
+            <div>
+              <Button
+                onClick={() => setShowNewProjectModal(true)}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                New Project
+              </Button>
+            </div>
           </div>
         }
       />

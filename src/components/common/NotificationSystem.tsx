@@ -40,7 +40,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ 
   children,
-  maxNotifications = 10
+  maxNotifications = 5
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
@@ -69,7 +69,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       ...notification,
       id,
       createdAt: new Date(),
-      read: false
+      read: false,
+      duration: notification.duration || (notification.type === 'error' ? 8000 : 4000)
     };
 
     setNotifications(prev => {
@@ -81,17 +82,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     // Auto-dismiss if duration is provided
     if (notification.duration) {
       setTimeout(() => {
-        removeNotification(id);
+        // Mark as read instead of removing completely
+        markAsRead(id);
       }, notification.duration);
     }
     
     // Show browser notification if supported
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        new Notification(notification.title, {
-          body: notification.message,
-          icon: '/icon-192.png'
-        });
+        // Only show browser notifications for important alerts
+        if (notification.type === 'error' || notification.type === 'warning') {
+          new Notification(notification.title, {
+            body: notification.message,
+            icon: '/icon-192.png'
+          });
+        }
       } catch (error) {
         console.error('Error showing browser notification:', error);
       }
@@ -176,6 +181,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         <NotificationToasts 
           notifications={notifications.filter(n => !n.read).slice(0, 3)} 
           removeNotification={removeNotification}
+          markAsRead={markAsRead}
         />,
         portalContainer
       )}
@@ -187,21 +193,26 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 interface NotificationToastsProps {
   notifications: Notification[];
   removeNotification: (id: string) => void;
+  markAsRead: (id: string) => void;
 }
 
 const NotificationToasts: React.FC<NotificationToastsProps> = ({ 
   notifications, 
-  removeNotification 
+  removeNotification,
+  markAsRead
 }) => {
-  if (notifications.length === 0) return null;
+  // Limit visible toast notifications to 3 at a time
+  const visibleNotifications = notifications.slice(0, 3);
+  
+  if (visibleNotifications.length === 0) return null;
 
   return (
     <>
-      {notifications.map(notification => (
+      {visibleNotifications.map(notification => (
         <NotificationToast
           key={notification.id}
           notification={notification}
-          onClose={() => removeNotification(notification.id)}
+          onClose={() => markAsRead(notification.id)}
         />
       ))}
     </>
@@ -295,10 +306,11 @@ export const NotificationCenter: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="relative">
+    <div className="relative" aria-live="polite">
       <button
         className="relative p-1 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={`View notifications (${unreadCount} unread)`}
       >
         <span className="sr-only">View notifications</span>
         <Bell className="w-6 h-6" />
@@ -314,20 +326,12 @@ export const NotificationCenter: React.FC = () => {
           <div className="p-3 border-b border-gray-200 flex justify-between items-center">
             <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
             <div className="flex space-x-2">
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className="text-xs text-indigo-600 hover:text-indigo-500"
-                >
-                  Mark all as read
-                </button>
-              )}
               {notifications.length > 0 && (
                 <button
-                  onClick={clearAll}
-                  className="text-xs text-gray-500 hover:text-gray-700"
+                  onClick={unreadCount > 0 ? markAllAsRead : clearAll}
+                  className="text-xs text-indigo-600 hover:text-indigo-500 px-2 py-1 rounded hover:bg-indigo-50"
                 >
-                  Clear all
+                  {unreadCount > 0 ? 'Mark all as read' : 'Clear all'}
                 </button>
               )}
             </div>

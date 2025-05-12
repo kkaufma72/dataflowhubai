@@ -14,7 +14,7 @@ interface TourButtonProps {
 const TourButton: React.FC<TourButtonProps> = ({
   tourName,
   className = '',
-  variant = 'outline',
+  variant = 'primary',
   size = 'sm',
   label = 'Take a tour'
 }) => {
@@ -29,10 +29,7 @@ const TourButton: React.FC<TourButtonProps> = ({
       onClick={() => startTour(tourName)}
       icon={<HelpCircle className="w-4 h-4" />}
     >
-      {label}
-      {hasCompletedTour && (
-        <span className="ml-1 text-xs text-gray-500">(Completed)</span>
-      )}
+      {hasCompletedTour ? 'Tour (Completed)' : label}
     </Button>
   );
 };

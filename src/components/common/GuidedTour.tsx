@@ -8,6 +8,11 @@ interface GuidedTourProps {
   onFinish?: () => void;
   onSkip?: () => void;
   location?: Location;
+  continuous?: boolean;
+  showSkipButton?: boolean;
+  showProgress?: boolean;
+  disableOverlayClose?: boolean;
+  spotlightClicks?: boolean;
 }
 
 const GuidedTour: React.FC<GuidedTourProps> = ({ 
@@ -15,7 +20,12 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
   run, 
   onFinish, 
   onSkip,
-  location: propLocation 
+  location: propLocation,
+  continuous = true,
+  showSkipButton = true,
+  showProgress = true,
+  disableOverlayClose = false,
+  spotlightClicks = false
 }) => {
   const [tourSteps, setTourSteps] = useState<Step[]>([]);
   const routerLocation = useLocation();
@@ -57,10 +67,12 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
     <Joyride
       steps={tourSteps}
       run={run && tourSteps.length > 0}
-      continuous
-      showProgress
-      showSkipButton
-      disableScrolling={false}
+      continuous={continuous}
+      showProgress={showProgress}
+      showSkipButton={showSkipButton}
+      disableScrolling={true}
+      disableOverlayClose={disableOverlayClose}
+      spotlightClicks={spotlightClicks}
       styles={{
         options: {
           primaryColor: '#4F46E5', // Indigo-600
@@ -73,15 +85,18 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
           backgroundColor: '#4F46E5',
           color: '#FFFFFF',
           fontSize: '14px',
+          padding: '8px 16px',
         },
         buttonBack: {
           color: '#4F46E5',
           fontSize: '14px',
           marginRight: 10,
+          padding: '8px 16px',
         },
         buttonSkip: {
           color: '#6B7280', // Gray-500
           fontSize: '14px',
+          padding: '8px 16px',
         },
         beacon: {
           offsetX: 0,
@@ -90,6 +105,8 @@ const GuidedTour: React.FC<GuidedTourProps> = ({
         tooltip: {
           borderRadius: '8px',
           fontSize: '14px',
+          padding: '16px',
+          maxWidth: '350px',
         },
       }}
       callback={handleJoyrideCallback}

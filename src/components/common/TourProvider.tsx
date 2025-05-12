@@ -6,8 +6,8 @@ import GuidedTour from './GuidedTour';
 // Define tour steps for different sections of the app
 const dashboardTourSteps: Step[] = [
   {
-    target: '.dashboard-welcome',
-    content: 'Welcome to the AutoML Platform! This is your dashboard where you can see an overview of your projects, datasets, and models.',
+    target: 'body',
+    content: 'Welcome to the DataFlowHub AI! This is your dashboard where you can see an overview of your projects, datasets, and models.',
     disableBeacon: true,
     placement: 'center',
   },
@@ -25,6 +25,11 @@ const dashboardTourSteps: Step[] = [
     target: '.workflow-steps',
     content: 'This shows your current progress in the ML workflow. Follow these steps to build and deploy your models.',
     placement: 'bottom',
+  },
+  {
+    target: '.quick-actions',
+    content: 'You can create a new project anytime using the New Project button in the top right.',
+    placement: 'left',
   },
 ];
 
@@ -188,6 +193,11 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
           onFinish={handleTourFinish}
           onSkip={handleTourSkip}
           location={location}
+          continuous={true}
+          showSkipButton={true}
+          showProgress={true}
+          disableOverlayClose={false}
+          spotlightClicks={false}
         />
       )}
     </TourContext.Provider>
