@@ -20,18 +20,24 @@ import WorkflowSteps from '../components/workflow/WorkflowSteps';
 
 // Helper functions moved to module scope
 const isNumeric = (value: any) => {
+  // First check if value is already a number
   if (typeof value === 'number') return true;
-  if (typeof value !== 'string') return false;
-  return !isNaN(Number(value)) && value.trim() !== '';
+  // Then check if it's a string that can be converted to a valid number
+  return typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '';
 };
+
 const isDate = (value: any) => {
   if (!value) return false;
-  return !isNaN(Date.parse(String(value)));
+  // Convert to string if not already
+  const strValue = String(value);
+  return !isNaN(Date.parse(strValue));
 };
-const isCategorical = (values: string[]) => {
-  const nonNullValues = values.filter(v => v !== null && v !== undefined);
-  const uniqueValues = new Set(nonNullValues.map(v => String(v)));
-  return uniqueValues.size <= Math.min(10, values.length * 0.2); // 20% threshold
+
+const isCategorical = (values: any[]) => {
+  // Filter out null/undefined values and convert remaining to strings
+  const validValues = values.filter(v => v != null).map(String);
+  const uniqueValues = new Set(validValues);
+  return uniqueValues.size <= Math.min(10, validValues.length * 0.2); // 20% threshold
 };
 
 const DataManagement: React.FC = () => {
