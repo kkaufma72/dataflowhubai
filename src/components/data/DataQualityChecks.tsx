@@ -94,6 +94,19 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
   });
   const [showOnlyFailed, setShowOnlyFailed] = useState(false);
   const [qualityScore, setQualityScore] = useState<number | null>(null);
+  const [validationResults, setValidationResults] = useState<{
+    passed: number;
+    failed: number;
+    details: Array<{
+      rule: string;
+      status: 'passed' | 'failed';
+      message: string;
+    }>;
+  }>({
+    passed: 0,
+    failed: 0,
+    details: []
+  });
 
   // Initialize with some default rules based on dataset
   useEffect(() => {
