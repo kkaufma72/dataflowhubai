@@ -23,7 +23,7 @@ const isNumeric = (value: any) => {
   // First check if value is already a number
   if (typeof value === 'number') return true;
   // Then check if it's a string that can be converted to a valid number
-  return typeof value === 'string' && !isNaN(Number(value)) && typeof value.trim === 'function' && value.trim() !== '';
+  return typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '';
 };
 
 const isDate = (value: any) => {
