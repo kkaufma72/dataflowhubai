@@ -44,11 +44,11 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="p-6 bg-red-50 rounded-lg flex flex-col items-center justify-center text-center">
           <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-          <h2 className="text-lg font-medium text-red-800 mb-2">Something went wrong</h2>
+          <h2 className="text-lg font-medium text-red-800 mb-2" role="alert">Something went wrong</h2>
           <p className="text-sm text-red-600 mb-4">
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
-          <Button onClick={this.handleReset}>Try Again</Button>
+          <Button onClick={this.handleReset} aria-label="Try again">Try Again</Button>
         </div>
       );
     }

@@ -6,6 +6,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import ModelAlgorithms, { algorithms } from './ModelAlgorithms';
 import CrossValidation from './CrossValidation';
+import toast from 'react-hot-toast';
 
 interface ModelTrainingFormProps {
   dataset: Dataset;

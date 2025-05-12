@@ -19,7 +19,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <div className="mb-6">
       {breadcrumbs && (
-        <div className="mb-2">
+        <div className="mb-2" aria-label="Breadcrumb navigation">
           <Breadcrumbs customPaths={breadcrumbs} />
         </div>
       )}
@@ -27,7 +27,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col justify-between md:flex-row md:items-center">
         <div className="flex items-center">
           {Icon && (
-            <div className="flex items-center justify-center w-10 h-10 mr-4 bg-indigo-100 rounded-lg">
+            <div className="flex items-center justify-center w-10 h-10 mr-4 bg-indigo-100 rounded-lg" aria-hidden="true">
               <Icon className="w-6 h-6 text-indigo-600" />
             </div>
           )}

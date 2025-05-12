@@ -47,12 +47,12 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
     <button
       onClick={toggleTheme}
       disabled={isLoadingProfile}
+      aria-label={currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       className={`p-2 rounded-full transition-colors ${
         currentTheme === 'dark' 
           ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' 
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
       } ${className}`}
-      aria-label={currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {currentTheme === 'dark' ? (
         <Sun className="w-5 h-5" />

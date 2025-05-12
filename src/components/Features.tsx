@@ -6,45 +6,45 @@ import Button from './common/Button';
 
 const Features = () => {
   const [showPitchDeck, setShowPitchDeck] = useState(false);
-
+  
   const features = [
     {
-      icon: <Database />,
+      icon: <Database className="h-6 w-6" />,
       title: 'Automated Data Preparation',
       description: 'Automatically clean, transform, and prepare your data for machine learning with just a few clicks.'
     },
     {
-      icon: <BarChart2 />,
+      icon: <BarChart2 className="h-6 w-6" />,
       title: 'Model Selection & Training',
       description: 'Our platform tests multiple algorithms to find the best model for your specific data and use case.'
     },
     {
-      icon: <Cpu />,
+      icon: <Cpu className="h-6 w-6" />,
       title: 'Hyperparameter Optimization',
       description: 'Automatically tune model parameters to achieve the highest possible performance without manual intervention.'
     },
     {
-      icon: <Layers />,
+      icon: <Layers className="h-6 w-6" />,
       title: 'Feature Engineering',
       description: 'Intelligent feature selection and engineering to improve model accuracy and performance.'
     },
     {
-      icon: <Zap />,
+      icon: <Zap className="h-6 w-6" />,
       title: 'One-Click Deployment',
       description: 'Deploy your trained models to production with a single click and start making predictions immediately.'
     },
     {
-      icon: <Globe />,
+      icon: <Globe className="h-6 w-6" />,
       title: 'API Integration',
       description: 'Easily integrate your models with existing applications through our RESTful API and SDKs.'
     },
     {
-      icon: <Shield />,
+      icon: <Shield className="h-6 w-6" />,
       title: 'Model Monitoring',
       description: 'Continuously monitor model performance and receive alerts when retraining is needed.'
     },
     {
-      icon: <Users />,
+      icon: <Users className="h-6 w-6" />,
       title: 'Collaboration Tools',
       description: 'Team-based workflow with version control, sharing, and collaboration features built-in.'
     }
@@ -63,6 +63,8 @@ const Features = () => {
         <div className="flex justify-center mb-8">
           <Button
             variant="outline"
+            aria-expanded={showPitchDeck}
+            aria-controls="pitch-deck-section"
             onClick={() => setShowPitchDeck(!showPitchDeck)}
             icon={showPitchDeck ? <ChevronDown className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
           >
@@ -71,15 +73,15 @@ const Features = () => {
         </div>
         
         {showPitchDeck && (
-          <div className="mb-12">
+          <div className="mb-12" id="pitch-deck-section">
             <PitchDeck />
           </div>
         )}
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card group">
-              <div className="feature-icon-wrapper">
+            <div key={index} className="feature-card group" role="region" aria-label={feature.title}>
+              <div className="feature-icon-wrapper" aria-hidden="true">
                 {feature.icon}
               </div>
               <h3 className="text-xl font-semibold mb-2 group-hover:text-indigo-600 transition-colors duration-300">
@@ -97,7 +99,7 @@ const Features = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold mb-6">See the Platform in Action</h3>
-                <p className="text-gray-600 mb-8">
+                <p className="text-gray-700 mb-8">
                   Watch how easy it is to upload your data, train a model, and deploy it to production in just minutes.
                 </p>
                 <Link to="/signin" className="btn btn-primary">

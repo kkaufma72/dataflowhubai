@@ -52,9 +52,9 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} />
+        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} aria-hidden="true" />
         
         <div className="inline-block w-full max-w-md overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle">
           <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
@@ -63,11 +63,12 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
                 <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
                   <Folder className="w-6 h-6 text-indigo-600" />
                 </div>
-                <h3 className="ml-3 text-lg font-medium leading-6 text-gray-900">Create New Project</h3>
+                <h3 id="modal-title" className="ml-3 text-lg font-medium leading-6 text-gray-900">Create New Project</h3>
               </div>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-500"
+                aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -85,7 +86,9 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
                   onChange={(e) => setProjectName(e.target.value)}
                   className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="My New Project"
+                  maxLength={MAX_NAME_LENGTH}
                   required
+                  aria-required="true"
                 />
               </div>
               
@@ -100,7 +103,11 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
                   rows={3}
                   className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   placeholder="Describe your project..."
+                  aria-describedby="description-hint"
                 />
+                <p id="description-hint" className="mt-1 text-xs text-gray-500">
+                  Provide a brief description of your project's purpose and goals.
+                </p>
               </div>
               
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">

@@ -52,13 +52,19 @@ const LandingNav: React.FC = () => {
                 <button 
                   className={`flex items-center ${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}
                   onClick={() => toggleDropdown('products')}
+                  aria-expanded={activeDropdown === 'products'}
+                  aria-haspopup="true"
                 >
                   Products
                   <ChevronDown className="ml-1 h-4 w-4" />
                 </button>
                 {activeDropdown === 'products' && (
-                  <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 dark:bg-gray-800 dark:ring-gray-700">
-                    <div className="py-1" role="menu" aria-orientation="vertical">
+                  <div 
+                    className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 dark:bg-gray-800 dark:ring-gray-700"
+                    role="menu"
+                    aria-orientation="vertical"
+                  >
+                    <div className="py-1">
                       <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">AutoML Platform</Link>
                       <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Data Processing</Link>
                       <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Model Deployment</Link>

@@ -10,6 +10,7 @@ interface SkeletonLoaderProps {
   className?: string;
   containerClassName?: string;
   inline?: boolean;
+  aria-label?: string;
 }
 
 const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
@@ -19,7 +20,8 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   circle = false,
   className = '',
   containerClassName = '',
-  inline = false
+  inline = false,
+  'aria-label': ariaLabel = 'Loading...'
 }) => {
   return (
     <Skeleton
@@ -30,6 +32,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       className={className}
       containerClassName={containerClassName}
       inline={inline}
+      aria-label={ariaLabel}
       baseColor="#f3f4f6" // Tailwind gray-100
       highlightColor="#e5e7eb" // Tailwind gray-200
     />

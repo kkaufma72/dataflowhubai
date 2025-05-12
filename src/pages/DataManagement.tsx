@@ -23,7 +23,7 @@ const isNumeric = (value: any) => {
   // First check if value is already a number
   if (typeof value === 'number') return true;
   // Then check if it's a string that can be converted to a valid number
-  return typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '';
+  return typeof value === 'string' && !isNaN(Number(value)) && typeof value.trim === 'function' && value.trim() !== '';
 };
 
 const isDate = (value: any) => {
@@ -35,7 +35,7 @@ const isDate = (value: any) => {
 
 const isCategorical = (values: any[]) => {
   // Filter out null/undefined values and convert remaining to strings
-  const validValues = values.filter(v => v != null).map(String);
+  const validValues = values.filter(v => v != null).map(v => String(v));
   const uniqueValues = new Set(validValues);
   return uniqueValues.size <= Math.min(10, validValues.length * 0.2); // 20% threshold
 };

@@ -3,6 +3,7 @@ import { FileUp, AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import toast from 'react-hot-toast';
 
 const DataUploader: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);

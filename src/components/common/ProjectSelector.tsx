@@ -56,6 +56,9 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="Select project"
       >
         <div className="flex items-center">
           <FolderOpen className="w-5 h-5 mr-2 text-indigo-500" />
@@ -65,8 +68,12 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg">
-          <div className="py-1 max-h-60 overflow-auto">
+        <div 
+          className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg"
+          role="listbox"
+          aria-labelledby="project-selector"
+        >
+          <div className="py-1 max-h-60 overflow-auto" role="presentation">
             {projects.map((project) => (
               <button
                 key={project.id}
@@ -74,6 +81,8 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
                   currentProject?.id === project.id ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
                 }`}
                 onClick={() => handleSelectProject(project)}
+                role="option"
+                aria-selected={currentProject?.id === project.id}
               >
                 <div className="flex items-center">
                   <FolderOpen className={`w-4 h-4 mr-2 ${
@@ -92,6 +101,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
           <div className="border-t border-gray-100">
             <button
               className="flex items-center w-full px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50"
+              aria-label="Create new project"
               onClick={() => {
                 setIsOpen(false);
                 onNewProject();

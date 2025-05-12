@@ -272,7 +272,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
       role="alert"
     >
       <div className="flex">
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0" aria-hidden="true">
           {getIcon()}
         </div>
         <div className="ml-3 flex-1">
@@ -286,6 +286,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
         <div className="ml-4 flex-shrink-0 flex">
           <button
             className={`inline-flex text-gray-400 focus:outline-none focus:text-gray-500 rounded-md p-1.5 hover:bg-gray-100`}
+            aria-label="Close notification"
             onClick={onClose}
           >
             <span className="sr-only">Close</span>
@@ -308,7 +309,9 @@ export const NotificationCenter: React.FC = () => {
       <button
         className="relative p-1 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={`View notifications (${unreadCount} unread)`}
+        aria-label={unreadCount > 0 ? `View notifications (${unreadCount} unread)` : "View notifications"}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         <span className="sr-only">View notifications</span>
         <Bell className="w-6 h-6" />
@@ -320,14 +323,20 @@ export const NotificationCenter: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-10">
-          <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+        <div 
+          className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-10"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="notification-menu"
+        >
+          <div className="p-3 border-b border-gray-200 flex justify-between items-center" role="menuitem">
             <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
             <div className="flex space-x-2">
               {notifications.length > 0 && (
                 <button
                   onClick={unreadCount > 0 ? markAllAsRead : clearAll}
                   className="text-xs text-indigo-600 hover:text-indigo-500 px-2 py-1 rounded hover:bg-indigo-50"
+                  aria-label={unreadCount > 0 ? "Mark all notifications as read" : "Clear all notifications"}
                 >
                   {unreadCount > 0 ? 'Mark all as read' : 'Clear all'}
                 </button>

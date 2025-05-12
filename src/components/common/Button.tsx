@@ -1,7 +1,7 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-disabled'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
@@ -47,6 +47,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={classes}
+      aria-disabled={disabled || isLoading}
       disabled={disabled || isLoading}
       {...props}
     >
