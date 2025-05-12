@@ -119,13 +119,13 @@ const DataUploader: React.FC = () => {
       // Simulate upload progress
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
-          const newProgress = prev + Math.random() * 15;
+          const newProgress = prev + Math.random() * 10;
           return newProgress > 95 ? 95 : newProgress;
         });
-      }, 300);
+      }, 200);
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       clearInterval(interval);
       setUploadProgress(100);
@@ -149,6 +149,7 @@ const DataUploader: React.FC = () => {
       setUploading(false);
       setFile(null);
       setUploadProgress(0);
+      toast.success(`Dataset "${file.name}" uploaded successfully`);
     } catch (error) {
       clearInterval(interval);
       setError(error instanceof Error ? error.message : 'Failed to upload file. Please try again.');

@@ -71,6 +71,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
     if (!targetVariable || algorithms.length === 0) return;
     
     setIsValidating(true);
+    toast.loading('Running cross-validation...', { id: 'cross-validation' });
     setValidationResults(null);
     
     // Simulate cross-validation
@@ -93,6 +94,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
       
       setValidationResults(results);
       setIsValidating(false);
+      toast.success('Cross-validation completed successfully', { id: 'cross-validation' });
     }, 2000);
   };
 

@@ -86,7 +86,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for changes on auth state (signed in, signed out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change event:', event);
+      // Reduce console logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Auth state change event:', event);
+      }
       
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         await clearLocalData();
@@ -112,13 +115,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           handleAuthError(error);
         } else if (!session) {
           await clearLocalData();
-          window.location.href = '/signin';
+          // Use navigate instead of direct location change for better UX
+          navigate('/signin');
         }
       } catch (error) {
         console.error('Error refreshing session:', error);
         handleAuthError(error);
       }
-    }, 60000); // Check every minute
+    }, 300000); // Check every 5 minutes instead of every minute to reduce background operations
 
     return () => {
       subscription.unsubscribe();
