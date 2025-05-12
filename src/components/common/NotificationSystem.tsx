@@ -9,7 +9,7 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  duration?: number; // in milliseconds, undefined means it won't auto-dismiss
+  duration?: number;
   createdAt: Date;
   read: boolean;
 }
@@ -47,15 +47,19 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   // Create portal container on mount
   useEffect(() => {
-    let container = document.getElementById('notification-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'notification-toast-container';
-      container.className = 'fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-md';
-      document.body.appendChild(container);
+    const existingContainer = document.getElementById('notification-toast-container');
+    if (existingContainer) {
+      setPortalContainer(existingContainer);
+      return;
     }
+
+    const container = document.createElement('div');
+    container.id = 'notification-toast-container';
+    container.className = 'fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-md';
+    document.body.appendChild(container);
     setPortalContainer(container);
 
+    // Cleanup function
     return () => {
       if (container && document.body.contains(container)) {
         document.body.removeChild(container);
@@ -75,22 +79,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
     setNotifications(prev => {
       const updated = [newNotification, ...prev];
-      // Keep only the most recent notifications up to maxNotifications
       return updated.slice(0, maxNotifications);
     });
 
-    // Auto-dismiss if duration is provided
     if (notification.duration) {
       setTimeout(() => {
-        // Mark as read instead of removing completely
         markAsRead(id);
       }, notification.duration);
     }
     
-    // Show browser notification if supported
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        // Only show browser notifications for important alerts
         if (notification.type === 'error' || notification.type === 'warning') {
           new Notification(notification.title, {
             body: notification.message,
@@ -138,7 +137,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     setNotifications([]);
   };
 
-  // Store notifications in localStorage
   useEffect(() => {
     try {
       localStorage.setItem('notifications', JSON.stringify(notifications));
@@ -147,13 +145,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     }
   }, [notifications]);
 
-  // Load notifications from localStorage on mount
   useEffect(() => {
     try {
       const savedNotifications = localStorage.getItem('notifications');
       if (savedNotifications) {
         const parsed = JSON.parse(savedNotifications);
-        // Convert string dates back to Date objects
         const withDates = parsed.map((n: any) => ({
           ...n,
           createdAt: new Date(n.createdAt)
@@ -189,7 +185,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   );
 };
 
-// Toast notifications that appear at the top of the screen
 interface NotificationToastsProps {
   notifications: Notification[];
   removeNotification: (id: string) => void;
@@ -201,14 +196,11 @@ const NotificationToasts: React.FC<NotificationToastsProps> = ({
   removeNotification,
   markAsRead
 }) => {
-  // Limit visible toast notifications to 3 at a time
-  const visibleNotifications = notifications.slice(0, 3);
-  
-  if (visibleNotifications.length === 0) return null;
+  if (notifications.length === 0) return null;
 
   return (
     <>
-      {visibleNotifications.map(notification => (
+      {notifications.map(notification => (
         <NotificationToast
           key={notification.id}
           notification={notification}
@@ -298,7 +290,6 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onC
   );
 };
 
-// Notification Center component that can be used in the UI
 export const NotificationCenter: React.FC = () => {
   const { notifications, markAsRead, markAllAsRead, clearAll } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
