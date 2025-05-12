@@ -19,10 +19,18 @@ import PageHeader from '../components/common/PageHeader';
 import WorkflowSteps from '../components/workflow/WorkflowSteps';
 
 // Helper functions moved to module scope
-const isNumeric = (value: string) => !isNaN(Number(value)) && value.trim() !== '';
-const isDate = (value: string) => !isNaN(Date.parse(value));
+const isNumeric = (value: any) => {
+  if (typeof value === 'number') return true;
+  if (typeof value !== 'string') return false;
+  return !isNaN(Number(value)) && value.trim() !== '';
+};
+const isDate = (value: any) => {
+  if (!value) return false;
+  return !isNaN(Date.parse(String(value)));
+};
 const isCategorical = (values: string[]) => {
-  const uniqueValues = new Set(values);
+  const nonNullValues = values.filter(v => v !== null && v !== undefined);
+  const uniqueValues = new Set(nonNullValues.map(v => String(v)));
   return uniqueValues.size <= Math.min(10, values.length * 0.2); // 20% threshold
 };
 
