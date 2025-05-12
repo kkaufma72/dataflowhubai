@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
-import { Layers, BarChart2, Database, Clock, ArrowRight, Sparkles, Check, MessageSquare, ChevronDown, Activity, Wand2, Rocket, FolderOpen } from 'lucide-react';
+import { Layers, BarChart2, Database, Clock, ArrowRight, Sparkles, Check, MessageSquare, Activity, Wand2, Rocket, FolderOpen } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import ChatInterface from '../components/chat/ChatInterface';
-import PitchDeck from '../components/marketing/PitchDeck';
 import DatasetCard from '../components/data/DatasetCard';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/common/PageHeader';
@@ -24,7 +23,6 @@ import RealTimeDashboard from '../components/dashboard/RealTimeDashboard';
 const Dashboard = () => {
   const { datasets, models, currentProject, isLoading } = useMLContext();
   const navigate = useNavigate();
-  const [showPitchDeck, setShowPitchDeck] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState(null);
   const { startTour } = useTour();
   const { addNotification } = useNotifications();
@@ -183,28 +181,11 @@ const Dashboard = () => {
           <>
             <div className="flex items-center space-x-2">
               <ProjectSelector onNewProject={() => setShowNewProjectModal(true)} />
-              <TourButton 
-                tourName="dashboard" 
-                label="Take a tour"
-                variant="outline"
-              />
-              <Button
-                variant="outline"
-                onClick={() => setShowPitchDeck(!showPitchDeck)}
-                icon={showPitchDeck ? <ChevronDown className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-              >
-                {showPitchDeck ? 'Hide Presentation' : 'View Presentation'}
-              </Button>
+              <TourButton tourName="dashboard" label="Take a tour" variant="outline" />
             </div>
           </>
         )}
       />
-
-      {showPitchDeck && (
-        <div className="mb-8">
-          <PitchDeck />
-        </div>
-      )}
 
       {/* Workflow Progress */}
       <Card className="mb-6 workflow-steps">

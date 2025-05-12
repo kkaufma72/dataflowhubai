@@ -1,8 +1,12 @@
 import React from 'react';
-import { Database, BarChart2, Cpu, Layers, Zap, Globe, Shield, Users } from 'lucide-react';
+import { Database, BarChart2, Cpu, Layers, Zap, Globe, Shield, Users, Sparkles, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PitchDeck from './marketing/PitchDeck';
+import Button from './common/Button';
 
 const Features = () => {
+  const [showPitchDeck, setShowPitchDeck] = useState(false);
+
   const features = [
     {
       icon: <Database />,
@@ -55,6 +59,22 @@ const Features = () => {
             Our comprehensive platform provides everything you need to build, deploy, and manage machine learning models at scale.
           </p>
         </div>
+        
+        <div className="flex justify-center mb-8">
+          <Button
+            variant="outline"
+            onClick={() => setShowPitchDeck(!showPitchDeck)}
+            icon={showPitchDeck ? <ChevronDown className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+          >
+            {showPitchDeck ? 'Hide Presentation' : 'View Presentation'}
+          </Button>
+        </div>
+        
+        {showPitchDeck && (
+          <div className="mb-12">
+            <PitchDeck />
+          </div>
+        )}
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (

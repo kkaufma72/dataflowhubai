@@ -128,6 +128,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                       {/* Landing page routes */}
                       <Route path="/" element={<LandingLayout />}>
                         <Route index element={<LandingPage />} />
+                        <Route path="features" element={<Features />} />
                         <Route path="documentation" element={<Documentation />} />
                         <Route path="api-reference" element={<APIReference />} />
                       </Route>

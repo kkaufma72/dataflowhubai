@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
-import Features from '../components/Features';
 import Benefits from '../components/Benefits';
 import Process from '../components/Process';
 import Testimonials from '../components/Testimonials';
@@ -40,7 +39,7 @@ const LandingPage: React.FC = () => {
       <Hero />
       
       {/* Features Section */}
-      <Features />
+      {/* Features section moved to its own page */}
       
       {/* Benefits Section */}
       <Benefits />

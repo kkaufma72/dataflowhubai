@@ -59,9 +59,9 @@ const LandingNav: React.FC = () => {
                 {activeDropdown === 'products' && (
                   <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 dark:bg-gray-800 dark:ring-gray-700">
                     <div className="py-1" role="menu" aria-orientation="vertical">
-                      <Link to="/#features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">AutoML Platform</Link>
-                      <Link to="/#features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Data Processing</Link>
-                      <Link to="/#features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Model Deployment</Link>
+                      <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">AutoML Platform</Link>
+                      <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Data Processing</Link>
+                      <Link to="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 dark:text-gray-200 dark:hover:bg-gray-700" role="menuitem">Model Deployment</Link>
                     </div>
                   </div>
                 )}
@@ -91,8 +91,7 @@ const LandingNav: React.FC = () => {
                   </div>
                 )}
               </div>
-              
-              <Link to="/#features" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Features</Link>
+              <Link to="/features" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Features</Link>
               <Link to="/#pricing" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Pricing</Link>
               <Link to="/documentation" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Documentation</Link>
               <Link to="/api-reference" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>API Reference</Link>
