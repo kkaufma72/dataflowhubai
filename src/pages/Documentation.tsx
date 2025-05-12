@@ -2,8 +2,12 @@ import React from 'react';
 import { Book, Code, FileText, PieChart, Rocket, Zap } from 'lucide-react';
 import Card from '../components/common/Card';
 import PitchDeck from '../components/marketing/PitchDeck';
+import { useState } from 'react';
+import Button from '../components/common/Button';
 
 const Documentation: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'guides' | 'api' | 'help'>('guides');
+
   return (
     <div className="space-y-6">
       <div>
@@ -13,6 +17,44 @@ const Documentation: React.FC = () => {
         </p>
       </div>
 
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('guides')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'guides'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              User Guides
+            </button>
+            <button
+              onClick={() => setActiveTab('api')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'api'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              API Documentation
+            </button>
+            <button
+              onClick={() => setActiveTab('help')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'help'
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Help Center
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {activeTab === 'guides' && (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="transition-all hover:shadow-md">
           <div className="flex items-center mb-4">
@@ -116,6 +158,327 @@ const Documentation: React.FC = () => {
           </ul>
         </Card>
       </div>
+      )}
+
+      {activeTab === 'api' && (
+        <div className="space-y-6">
+          <Card>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">API Reference</h2>
+            <p className="text-gray-600 mb-6">
+              Our RESTful API allows you to programmatically access and control all aspects of the DataFlowHub AI platform.
+            </p>
+            
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Authentication</h3>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="text-sm text-gray-700 mb-2">All API requests require authentication using an API key in the Authorization header:</p>
+                  <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
+                    Authorization: Bearer YOUR_API_KEY
+                  </pre>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Endpoints</h3>
+                <div className="space-y-4">
+                  <div className="border border-gray-200 rounded-md">
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                      <div className="flex items-center">
+                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-md mr-2">GET</span>
+                        <span className="font-mono text-sm">/v1/models</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-700 mb-2">List all models</p>
+                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Parameters</h4>
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          <tr>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">status</td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">string</td>
+                            <td className="px-3 py-2 text-sm text-gray-500">Filter models by status (trained, deployed, all)</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md">
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                      <div className="flex items-center">
+                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-md mr-2">POST</span>
+                        <span className="font-mono text-sm">/v1/models/predict</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-700 mb-2">Make predictions using a deployed model</p>
+                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Request Body</h4>
+                      <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
+{`{
+  "model_id": "model_123456",
+  "data": {
+    "feature1": 0.5,
+    "feature2": "category",
+    "feature3": 42
+  }
+}`}
+                      </pre>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md">
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                      <div className="flex items-center">
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-md mr-2">POST</span>
+                        <span className="font-mono text-sm">/v1/datasets</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-gray-700 mb-2">Upload a new dataset</p>
+                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Request Body</h4>
+                      <p className="text-sm text-gray-600 mb-2">Multipart form data with:</p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        <li>file: The dataset file (CSV, JSON, etc.)</li>
+                        <li>name: Dataset name</li>
+                        <li>description: (Optional) Dataset description</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Code Examples</h3>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Python</h4>
+                    <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
+{`import requests
+
+API_KEY = "your_api_key_here"
+API_URL = "https://api.dataflowhub.ai/v1"
+
+# Make a prediction
+def predict(model_id, data):
+    url = f"{API_URL}/models/predict"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model_id": model_id,
+        "data": data
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+# Example usage
+result = predict("model_123456", {
+    "feature1": 0.5,
+    "feature2": "category",
+    "feature3": 42
+})
+print(result)`}
+                    </pre>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">JavaScript</h4>
+                    <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
+{`const API_KEY = "your_api_key_here";
+const API_URL = "https://api.dataflowhub.ai/v1";
+
+// Make a prediction
+async function predict(modelId, data) {
+  const response = await fetch(\`\${API_URL}/models/predict\`, {
+    method: "POST",
+    headers: {
+      "Authorization": \`Bearer \${API_KEY}\`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model_id: modelId,
+      data: data
+    })
+  });
+  return response.json();
+}
+
+// Example usage
+predict("model_123456", {
+  feature1: 0.5,
+  feature2: "category",
+  feature3: 42
+}).then(result => console.log(result))
+  .catch(error => console.error(error));`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open('/api-reference', '_blank')}
+                >
+                  View Full API Documentation
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === 'help' && (
+        <div className="space-y-6">
+          <Card>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Help Center</h2>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Frequently Asked Questions</h3>
+                <div className="space-y-4 mt-4">
+                  <div className="border border-gray-200 rounded-md">
+                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">How do I upload a dataset?</span>
+                        <span className="text-indigo-600">+</span>
+                      </div>
+                    </button>
+                    <div className="px-4 py-3 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        To upload a dataset, navigate to the Data Management page and click the "Upload Dataset" button. 
+                        You can drag and drop your file or click to browse your files. Supported formats include CSV, 
+                        Excel, JSON, and more. After uploading, your dataset will be automatically processed and analyzed.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md">
+                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">How do I train a model?</span>
+                        <span className="text-indigo-600">+</span>
+                      </div>
+                    </button>
+                    <div className="px-4 py-3 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        To train a model, go to the Model Training page, select a dataset, and choose your target variable. 
+                        Configure your model settings including the type of model (classification or regression) and select 
+                        the algorithms you want to use. Click "Start Training" and the platform will automatically find the 
+                        best model for your data.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md">
+                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">How do I deploy a model?</span>
+                        <span className="text-indigo-600">+</span>
+                      </div>
+                    </button>
+                    <div className="px-4 py-3 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        After training a model, navigate to the Deployment page, select your trained model, and configure 
+                        deployment settings like scaling options and authentication method. Click "Deploy Model" to make 
+                        your model available as an API endpoint. Once deployed, you'll receive an API endpoint URL and 
+                        example code to integrate with your applications.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md">
+                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">How do I monitor my deployed models?</span>
+                        <span className="text-indigo-600">+</span>
+                      </div>
+                    </button>
+                    <div className="px-4 py-3 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        The Model Monitoring page provides real-time insights into your deployed models. You can track 
+                        performance metrics, detect data drift, and set up alerts for critical issues. The dashboard 
+                        shows accuracy, latency, and request volume over time. If performance degrades, you can retrain 
+                        your model directly from the monitoring interface.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Video Tutorials</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                      <div className="text-gray-400">Video: Getting Started with DataFlowHub AI</div>
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-gray-900">Getting Started</h4>
+                      <p className="text-sm text-gray-600 mt-1">Learn the basics of the platform in 5 minutes</p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                      <div className="text-gray-400">Video: Data Preprocessing Tutorial</div>
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-gray-900">Data Preprocessing</h4>
+                      <p className="text-sm text-gray-600 mt-1">Learn how to clean and prepare your data</p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                      <div className="text-gray-400">Video: Model Training Deep Dive</div>
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-gray-900">Model Training</h4>
+                      <p className="text-sm text-gray-600 mt-1">Advanced techniques for model optimization</p>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-200 rounded-md overflow-hidden">
+                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                      <div className="text-gray-400">Video: Deployment Best Practices</div>
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-gray-900">Deployment</h4>
+                      <p className="text-sm text-gray-600 mt-1">Securely deploy and scale your models</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-2">Contact Support</h3>
+                <div className="bg-indigo-50 p-4 rounded-md mt-4">
+                  <p className="text-sm text-indigo-700 mb-4">
+                    Need additional help? Our support team is available 24/7 to assist you with any questions or issues.
+                  </p>
+                  <div className="flex space-x-4">
+                    <Button>
+                      Contact Support
+                    </Button>
+                    <Button variant="outline">
+                      Schedule a Demo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <Card>
         <h2 className="text-lg font-medium text-gray-900">Investment Overview</h2>

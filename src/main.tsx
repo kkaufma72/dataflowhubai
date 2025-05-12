@@ -20,9 +20,8 @@ import SignIn from './pages/SignIn.tsx';
 import { MLProvider } from './context/MLContext.tsx';
 import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
-import PrivateRoute from './components/auth/PrivateRoute.tsx';
-import Sidebar from './components/layout/Sidebar.tsx';
-import Navbar from './components/layout/Navbar.tsx';
+import PrivateRoute from './components/auth/PrivateRoute.tsx'; 
+import AppLayout from './components/layout/AppLayout.tsx';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Toaster } from 'react-hot-toast';
@@ -38,6 +37,8 @@ import { NotificationProvider } from './components/common/NotificationSystem.tsx
 import { TourProvider } from './components/common/TourProvider.tsx';
 import AsyncWorkloadDashboard from './pages/AsyncWorkloadDashboard.tsx';
 import Features from './components/Features.tsx';
+import UserGuideDetail from './pages/UserGuideDetail.tsx';
+import APIDocumentation from './pages/APIDocumentation.tsx';
 
 // Global error handler for uncaught errors
 const GlobalErrorFallback = ({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) => {
@@ -71,21 +72,6 @@ const GlobalErrorFallback = ({ error, resetErrorBoundary }: { error: Error, rese
 const logError = (error: Error, info: { componentStack: string }) => {
   console.error('Uncaught error:', error);
   console.error('Component stack:', info.componentStack);
-};
-
-// Layout component for authenticated routes
-const AppLayout = () => {
-  return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-6 dark:bg-gray-800 dark:text-gray-100">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
 };
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -153,6 +139,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Route path="settings" element={<AccountSettings />} />
                         <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
                         <Route path="api-management" element={<APIManagement />} />
+                        <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
+                        <Route path="documentation/api" element={<APIDocumentation />} />
                       </Route>
                       
                       <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
