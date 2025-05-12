@@ -47,22 +47,25 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   // Create portal container on mount
   useEffect(() => {
+    // Check if container already exists
     const existingContainer = document.getElementById('notification-toast-container');
+    
     if (existingContainer) {
       setPortalContainer(existingContainer);
       return;
     }
+    
+    // Create new container if it doesn't exist
+    const newContainer = document.createElement('div');
+    newContainer.id = 'notification-toast-container';
+    newContainer.className = 'fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-md';
+    document.body.appendChild(newContainer);
+    setPortalContainer(newContainer);
 
-    const container = document.createElement('div');
-    container.id = 'notification-toast-container';
-    container.className = 'fixed top-4 right-4 z-50 flex flex-col space-y-2 max-w-md';
-    document.body.appendChild(container);
-    setPortalContainer(container);
-
-    // Cleanup function
     return () => {
-      if (container && document.body.contains(container)) {
-        document.body.removeChild(container);
+      // Only remove the container if it's a child of document.body
+      if (newContainer && document.body.contains(newContainer)) {
+        document.body.removeChild(newContainer);
       }
     };
   }, []);
@@ -89,26 +92,30 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     }
     
     if ('Notification' in window && Notification.permission === 'granted') {
-      try {
-        if (notification.type === 'error' || notification.type === 'warning') {
+      // Only show browser notifications for important alerts
+      if (notification.type === 'error' || notification.type === 'warning') {
+        try {
           new Notification(notification.title, {
             body: notification.message,
             icon: '/icon-192.png'
           });
+        } catch (error) {
+          console.error('Error showing browser notification:', error);
         }
-      } catch (error) {
-        console.error('Error showing browser notification:', error);
       }
     } else if ('Notification' in window && Notification.permission !== 'denied') {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
-          try {
-            new Notification(notification.title, {
-              body: notification.message,
-              icon: '/icon-192.png'
-            });
-          } catch (error) {
-            console.error('Error showing browser notification:', error);
+          // Only show browser notifications for important alerts
+          if (notification.type === 'error' || notification.type === 'warning') {
+            try {
+              new Notification(notification.title, {
+                body: notification.message,
+                icon: '/icon-192.png'
+              });
+            } catch (error) {
+              console.error('Error showing browser notification:', error);
+            }
           }
         }
       });
@@ -175,7 +182,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       {children}
       {portalContainer && createPortal(
         <NotificationToasts 
-          notifications={notifications.filter(n => !n.read).slice(0, 3)} 
+          notifications={notifications.filter(n => !n.read).slice(0, 2)} 
           removeNotification={removeNotification}
           markAsRead={markAsRead}
         />,
