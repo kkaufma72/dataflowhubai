@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Database, BarChart2, Cpu, Layers, Zap, Globe, Shield, Users, Sparkles, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PitchDeck from './marketing/PitchDeck';
