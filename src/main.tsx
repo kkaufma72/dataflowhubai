@@ -37,6 +37,7 @@ import APIReference from './pages/APIReference.tsx';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
 import AsyncWorkloadDashboard from './pages/AsyncWorkloadDashboard.tsx';
+import Features from './components/Features.tsx';
 
 // Global error handler for uncaught errors
 const GlobalErrorFallback = ({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) => {
