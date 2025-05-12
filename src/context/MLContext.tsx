@@ -43,17 +43,15 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
   const createDefaultProject = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        throw new Error('Authentication required');
-      }
+      // Create a default project even if not logged in
+      const userId = (await supabase.auth.getSession()).data.session?.user?.id || 'anonymous';
 
       const { data: newProject, error: createError } = await supabase
         .from('projects')
         .insert([{
           name: 'Default Project',
           description: 'Default project created automatically',
-          user_id: session.user.id
+          user_id: userId
         }])
         .select()
         .single();

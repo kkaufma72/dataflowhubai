@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
-import { Layers, BarChart2, Database, Clock, ArrowRight, Sparkles, Check, MessageSquare, ChevronDown, Activity, Wand2, Rocket } from 'lucide-react';
+import { Layers, BarChart2, Database, Clock, ArrowRight, Sparkles, Check, MessageSquare, ChevronDown, Activity, Wand2, Rocket, FolderOpen } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
@@ -17,6 +17,7 @@ import SkeletonLoader, { DashboardStatsSkeleton, CardSkeleton } from '../compone
 import { useTour } from '../components/common/TourProvider';
 import TourButton from '../components/common/TourButton';
 import { useNotifications } from '../components/common/NotificationSystem';
+import ProjectSelector from '../components/common/ProjectSelector';
 import NewProjectModal from '../components/common/NewProjectModal';
 import RealTimeDashboard from '../components/dashboard/RealTimeDashboard';
 
@@ -178,30 +179,25 @@ const Dashboard = () => {
       <PageHeader
         title="Welcome to AutoML Platform"
         description="Build, train, and deploy machine learning models with ease"
-        actions={
-          <div className="flex space-x-2">
-            <TourButton 
-              tourName="dashboard" 
-              label="Take a tour"
-              variant="outline"
-            />
-            <Button
-              variant="outline"
-              onClick={() => setShowPitchDeck(!showPitchDeck)}
-              icon={showPitchDeck ? <ChevronDown className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-            >
-              {showPitchDeck ? 'Hide Presentation' : 'View Presentation'}
-            </Button>
-            <div>
+        actions={(
+          <>
+            <div className="flex items-center space-x-2">
+              <ProjectSelector onNewProject={() => setShowNewProjectModal(true)} />
+              <TourButton 
+                tourName="dashboard" 
+                label="Take a tour"
+                variant="outline"
+              />
               <Button
-                onClick={() => setShowNewProjectModal(true)}
-                icon={<Plus className="w-4 h-4" />}
+                variant="outline"
+                onClick={() => setShowPitchDeck(!showPitchDeck)}
+                icon={showPitchDeck ? <ChevronDown className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
               >
-                New Project
+                {showPitchDeck ? 'Hide Presentation' : 'View Presentation'}
               </Button>
             </div>
-          </div>
-        }
+          </>
+        )}
       />
 
       {showPitchDeck && (
@@ -214,9 +210,16 @@ const Dashboard = () => {
       <Card className="mb-6 workflow-steps">
         <h2 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Your ML Workflow</h2>
         {isLoading ? (
-          <SkeletonLoader height={60} />
+          <SkeletonLoader height={60} className="mb-2" />
         ) : (
-          <WorkflowSteps steps={workflowSteps} />
+          <>
+            <div className="mb-2">
+              <p className="text-sm text-gray-500">
+                Project: <span className="font-medium text-gray-700">{currentProject?.name || 'Default Project'}</span>
+              </p>
+            </div>
+            <WorkflowSteps steps={workflowSteps} />
+          </>
         )}
       </Card>
 
