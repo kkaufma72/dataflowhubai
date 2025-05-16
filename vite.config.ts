@@ -5,8 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3002,
-    strictPort: true, // Force the specified port
-    host: true, // Listen on all addresses
+    strictPort: true,
+    host: true,
     watch: {
       usePolling: true,
       interval: 1000,
@@ -14,12 +14,17 @@ export default defineConfig({
     },
     hmr: {
       timeout: 120000,
-      clientPort: 3002 // Ensure client and server ports match
+      protocol: 'ws',
+      host: 'localhost',
+      port: 3002,
+      clientPort: 3002,
+      overlay: true
     },
     fs: {
-      strict: false, // Temporarily disable strict mode for troubleshooting
-      allow: ['.']
-    }
+      strict: true,
+      allow: ['..']
+    },
+    middlewareMode: false
   },
   build: {
     target: 'esnext',
@@ -38,6 +43,12 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['@tensorflow/tfjs']
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: []
+  },
+  preview: {
+    port: 3002,
+    strictPort: true,
+    host: true
   }
 });
