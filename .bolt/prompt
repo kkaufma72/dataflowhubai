@@ -1,1 +1,40 @@
-Create an end-to-end test suite for the AutoML platform using React that simulates a user journey from uploading a dataset through to model training, evaluation, and deployment, ensuring each step validates functionality, UI responsiveness, and error handling. Integrate mock data to test multiple dataset types and edge cases. Additionally, enhance the user experience by implementing interactive tooltips that explain each step, a visual progress tracker that updates in real time during model training, and a recommendation engine that suggests preprocessing steps or model types based on the dataset's characteristics. Include a comparative insights feature that benchmarks the user’s model against anonymized aggregated performance metrics from previous runs to offer a unique competitive edge.
+Requested Information: The U.S. Army is seeking information from industry, academia, and research institutions regarding artificial intelligence (AI) and machine learning (ML) solutions to assist in the process of making initial determinations for declassification of historically valuable records.
+Direct Response Related to Modernization against the below items (Companies Familiar with Army Requirements and Environments.)
+Describe your ability to develop an AI capability to train against classification and declassification guides for use in providing initial declassification determinations.
+Automate the identification and classification of sensitive and non-sensitive content.
+Accurately apply declassification criteria based on regulatory requirements.
+Support bulk document processing for large-scale declassification.
+Integrate with existing Army and National Archives declassification workflows.
+Identify Restricted Data (RD) and Formerly Restricted Data (FRD) to prevent inadvertent disclosure.
+Enhance efficiency while maintaining high accuracy and compliance.
+Additional Information Required for Companies Not Familiar with the Army Requirements and Environments.
+What software licensing models do you currently support (i.e. term, perpetual, subscription, etc.)? 
+If perpetual licensing, is your company amenable to continue providing perpetual offerings to the Army? Is there a timeline for retiring perpetual, maintenance and support?  Please provide details and a timeline that allows for the Army to obtain training for maintenance and support without perpetual maintenance, support, and licensing.
+Address security updates, patches and support for beyond end of life or sale of software within Army Regulations/Requirements.  
+Describe and provide specifics related to hardware requirements for your product.
+Confirm software warranty is aligned to standard contractual periods of performance.
+Describe your software distribution approach for customers with and without persistent and reliable internet connection. 
+Describe your software distribution approach for version upgrades and security patches for customers with and without persistent and reliable internet connectivity.   
+Describe how your company’s solutions can support the Army’s unique and enduring use cases to support global military operations, to include in contested environments. 
+Describe how your software supports and integrates virtualization across multiple geographically dispersed data centers and how it supports hybrid cloud and on-premises deployments. Include integration considerations with native cloud capabilities and with multiple Cloud Service Providers. Is there a requirement for on-premises equipment other than workstations.
+Can your company provide a Supply Risk Management Framework Plan? ATO (Authority to Operate)?
+DoD Cloud Security Reference Guide, Federal Risk Authorization Management Program and National Institute of Standards and Technology authorizations. Identify the cybersecurity compliance and authorizations currently in place for your software, solutions, and services.
+Can your company provide a Cyber Security Risk Mitigation Plan?    
+Include security considerations, ensuring to address the extent to which the hypervisor provides isolation and segregation of processes and data.
+Describe how your hypervisor software provides and manages virtual machines; address how it shares and exposes physical components (include CPU, memory, storage, networking, and other resources) to the guest operating systems.
+In addition, describe how your software manages container runtime environments. Provide an estimate of cloud computing costs while executing your solution.  
+Describe how the hypervisor integrates multiple physical machines to provide shared resources; address the efficiency of provisioning resourcing, the management of resource pools, and the ability to migrate virtual machines across physical hosts.
+Describe the ability of your software to provide the following: high availability, data center fail-over and recovery, live migration, checkpointing.
+Identify the guest operating systems which are supported. Describe other emulation software and virtualization supported (e.g. network virtualization).
+Describe the user interface, training requirements, and administration necessary to manage the virtualization software; describe other supporting and complimentary software components. Describe the permission levels the organization will have full control over for your solution.
+Identify contract vehicles, including Government Wide Acquisition Contracts (GWAC) and Federal Supply Schedules that would support this possible requirement.
+Identify any GWAC contract(s) your company is a prime contractor for that has the scope aligned with description in Section A. 
+Subcontracting possibilities, specifically for small businesses. How many resellers do you partner with; provide the number and listing of all subcontractors/reseller.
+Does your company have a single distributor (ex: letter of supply to one company)?
+Identify Government Furnished Information needed on the current Army computing environments, networks and software licensing inventory. 
+ 
+Information Required by All Respondents.
+Respondent’s Unique Entity Identifier (UEI) number, CAGE code, organization name, address, points of contact by role, type of business (large or small) and socio-economic status (e.g., 8(a), HUBZone, etc.) pursuant to the applicable NAICS code.
+Respondent’s technical and administrative points of contact, including names, titles, addresses, telephone and fax numbers, and e-mail addresses.
+Leadership POCs, emails and phone numbers.
+Indicate your company ability to quickly follow-up with the Army regarding migration and environment landscape.
