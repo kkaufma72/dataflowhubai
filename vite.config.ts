@@ -22,7 +22,7 @@ export default defineConfig({
     },
     fs: {
       strict: true,
-      allow: ['..']
+      allow: ['.', '..']
     },
     middlewareMode: false
   },
@@ -44,7 +44,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: []
+    exclude: [],
+    force: true,
+    esbuildOptions: {
+      target: 'esnext'
+    }
   },
   preview: {
     port: 3002,
