@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { X, Folder, Plus } from 'lucide-react';
 import Button from './Button';
-import Card from './Card';
 import { useMLContext } from '../../context/MLContext';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+
+const MAX_NAME_LENGTH = 100;
 
 interface NewProjectModalProps {
   isOpen: boolean;
@@ -29,19 +31,39 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
     try {
       setIsSubmitting(true);
       
-      // Create a new project
-      const newProject = {
-        id: `project-${Date.now()}`,
-        name: projectName,
-        description: projectDescription,
-        createdAt: new Date().toISOString()
-      };
+      // Get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast.error('You must be logged in to create a project');
+        return;
+      }
       
-      // In a real implementation, this would call an API to create the project
-      // For now, we'll just set it as the current project
-      setCurrentProject(newProject);
+      // Create project in Supabase
+      const { data: newProject, error } = await supabase
+        .from('projects')
+        .insert([{
+          name: projectName,
+          description: projectDescription,
+          user_id: session.user.id
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Set as current project (this will trigger MLContext to reload and clear datasets/models)
+      setCurrentProject({
+        id: newProject.id,
+        name: newProject.name,
+        description: newProject.description || '',
+        createdAt: newProject.created_at
+      });
       
       toast.success('Project created successfully');
+      
+      // Reset form
+      setProjectName('');
+      setProjectDescription('');
       onClose();
     } catch (error) {
       console.error('Error creating project:', error);

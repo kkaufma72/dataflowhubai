@@ -247,7 +247,7 @@ const DataManagement: React.FC = () => {
         <div className="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-4">
           <div className="p-4 bg-white rounded-lg shadow">
             <p className="text-sm font-medium text-gray-500">Total Rows</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.rows.toLocaleString()}</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.rows?.toLocaleString() || selectedDataset.row_count?.toLocaleString() || "N/A"}</p>
           </div>
           <div className="p-4 bg-white rounded-lg shadow">
             <p className="text-sm font-medium text-gray-500">Total Columns</p>
@@ -259,7 +259,7 @@ const DataManagement: React.FC = () => {
           </div>
           <div className="p-4 bg-white rounded-lg shadow">
             <p className="text-sm font-medium text-gray-500">File Type</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.fileType.toUpperCase()}</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.fileType?.toUpperCase() || selectedDataset.file_type?.toUpperCase() || "N/A"}</p>
           </div>
         </div>
 
@@ -465,7 +465,7 @@ const DataManagement: React.FC = () => {
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">{selectedDataset.name}</h2>
                   <p className="text-sm text-gray-500">
-                    {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns • {selectedDataset.fileType.toUpperCase()}
+                    {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns • {selectedDataset.fileType?.toUpperCase() || selectedDataset.file_type?.toUpperCase() || "N/A"}
                   </p>
                 </div>
               </div>

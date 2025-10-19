@@ -835,6 +835,19 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                             <p className="text-sm text-gray-500">No recommendations for this column</p>
                           )}
                         </div>
+
+                        {/* Apply Selected Button */}
+                        {profile.recommendations.filter(rec => rec.column === selectedColumn).length > 0 && (
+                          <div className="mt-4 flex justify-end">
+                            <Button
+                              onClick={handleApplyRecommendations}
+                              disabled={selectedRecommendations.length === 0}
+                              icon={<Check className="w-4 h-4" />}
+                            >
+                              Apply Selected ({selectedRecommendations.length})
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Correlations */}
