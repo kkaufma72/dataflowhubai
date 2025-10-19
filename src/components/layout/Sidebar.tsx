@@ -1,247 +1,405 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  HomeIcon, 
-  Database, 
-  Layers, 
-  BarChart3, 
-  Rocket,
+  Home,
+  Database,
+  Layers,
   Settings,
-  LifeBuoy,
-  Activity,
-  Wand2,
-  PieChart,
+  BarChart3,
+  FileText,
+  Users,
   GitBranch,
+  Activity,
+  Zap,
+  BookOpen,
+  ChevronLeft,
   ChevronRight,
+  Sparkles,
+  FolderKanban,
+  Upload,
+  Brain,
+  LineChart,
   ChevronDown,
-  FileSpreadsheet,
-  Server
+  Plus,
+  Check
 } from 'lucide-react';
-import ThemeToggle from '../common/ThemeToggle';
-import { useUser } from '../../context/UserContext';
-import SkeletonLoader from '../common/SkeletonLoader';
+import { useMLContext } from '../../context/MLContext';
+import { supabase } from '../../lib/supabase';
+import { Project } from '../../types';
+import toast from 'react-hot-toast';
 
-// Define the navigation items with nested structure
-const navigation = [
-  { 
-    name: 'Dashboard', 
-    href: '/app', 
-    icon: HomeIcon, 
-    exact: true 
-  },
-  {
-    name: 'Data Preparation',
-    icon: Database,
-    children: [
-      { name: 'Data Management', href: '/app/data', icon: FileSpreadsheet },
-      { name: 'Feature Engineering', href: '/app/feature-engineering', icon: Wand2 },
-    ]
-  },
-  {
-    name: 'Model Development',
-    icon: Layers,
-    children: [
-      { name: 'Model Training', href: '/app/train', icon: Layers },
-      { name: 'Model Evaluation', href: '/app/evaluate', icon: BarChart3 },
-    ]
-  },
-  {
-    name: 'Production',
-    icon: Rocket,
-    children: [
-      { name: 'Deployment', href: '/app/deploy', icon: Rocket },
-      { name: 'Monitoring', href: '/app/monitoring', icon: Activity },
-    ]
-  },
-  {
-    name: 'Advanced',
-    icon: GitBranch,
-    children: [
-      { name: 'Visualizations', href: '/app/visualizations', icon: PieChart },
-      { name: 'Pipeline Builder', href: '/app/pipeline', icon: GitBranch },
-      { name: 'Data Center Report', href: '/app/data-center-report', icon: Server },
-    ]
-  }
-];
-
-const secondaryNavigation = [
-  { name: 'Settings', href: '/app/settings', icon: Settings },
-  { name: 'Help', href: '/app/documentation', icon: LifeBuoy },
-];
-
-const Sidebar = () => {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['Data Preparation']);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { userProfile, isLoadingProfile } = useUser();
+const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { currentProject, datasets, models, setCurrentProject } = useMLContext();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile menu when location changes
+  // Load projects from Supabase
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
+    loadProjects();
+  }, []);
 
-  const toggleSection = (sectionName: string) => {
-    if (expandedSections.includes(sectionName)) {
-      setExpandedSections(expandedSections.filter(name => name !== sectionName));
-    } else {
-      setExpandedSections([...expandedSections, sectionName]);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProjectDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const loadProjects = async () => {
+    setIsLoadingProjects(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setProjects(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description || '',
+          createdAt: p.created_at
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      toast.error('Failed to load projects');
+    } finally {
+      setIsLoadingProjects(false);
     }
   };
 
+  const handleProjectSwitch = (project: Project) => {
+    setCurrentProject(project);
+    setIsProjectDropdownOpen(false);
+    toast.success(`Switched to ${project.name}`);
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const navigation = [
+    {
+      name: 'Dashboard',
+      href: '/dashboard',
+      icon: Home,
+      badge: null,
+      description: 'Overview and quick actions'
+    },
+    {
+      name: 'Data',
+      href: '/app/data',
+      icon: Database,
+      badge: datasets.length || null,
+      description: 'Manage datasets'
+    },
+    {
+      name: 'Feature Engineering',
+      href: '/app/feature-engineering',
+      icon: Sparkles,
+      badge: null,
+      description: 'Create features'
+    },
+    {
+      name: 'Models',
+      href: '/app/train',
+      icon: Brain,
+      badge: models?.length || null,
+      description: 'Train and deploy models'
+    },
+    {
+      name: 'Pipelines',
+      href: '/app/pipeline',
+      icon: GitBranch,
+      badge: null,
+      description: 'Build ML pipelines'
+    },
+    {
+      name: 'Evaluation',
+      href: '/app/evaluate',
+      icon: BarChart3,
+      badge: null,
+      description: 'Evaluate models'
+    },
+    {
+      name: 'Monitoring',
+      href: '/app/monitoring',
+      icon: Activity,
+      badge: null,
+      description: 'Monitor performance'
+    },
+    {
+      name: 'Deployments',
+      href: '/app/deploy',
+      icon: Zap,
+      badge: null,
+      description: 'Deploy models'
+    },
+    {
+      name: 'Visualizations',
+      href: '/app/visualizations',
+      icon: LineChart,
+      badge: null,
+      description: 'Data insights'
+    }
+  ];
+
+  const secondaryNavigation = [
+    {
+      name: 'Documentation',
+      href: '/app/documentation',
+      icon: BookOpen
+    },
+    {
+      name: 'Settings',
+      href: '/app/settings',
+      icon: Settings
+    }
+  ];
+
   return (
-    <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64">
-        <div className="flex flex-col flex-1 min-h-0 bg-indigo-700 dark:bg-gray-900">
-          <div className="flex items-center flex-shrink-0 h-16 px-4 bg-indigo-800 dark:bg-gray-950">
-            <span className="text-xl font-bold text-white">DataFlowHub AI</span>
-          </div>
-          <div className="flex flex-col flex-1 overflow-y-auto">
-            <nav className="flex-1 px-2 py-4 space-y-1">
-              {navigation.map((item) => {
-                if (item.children) {
-                  const isExpanded = expandedSections.includes(item.name);
-                  const isActive = item.children.some(child => 
-                    location.pathname === child.href || 
-                    (!child.exact && location.pathname.startsWith(child.href))
-                  );
-                  
-                  return (
-                    <div key={item.name} className="space-y-1">
+    <div 
+      className={`flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-r border-gray-700 transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      {/* Header with Logo */}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
+        {!isCollapsed && (
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">DF</span>
+            </div>
+            <span className="text-lg font-bold text-white">
+              DataFlowHub
+            </span>
+          </Link>
+        )}
+        
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-5 h-5" />
+          ) : (
+            <ChevronLeft className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
+      {/* Current Project Indicator with Dropdown */}
+      {currentProject && !isCollapsed && (
+        <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/50 relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+            className="w-full flex items-center space-x-2 hover:bg-gray-700/30 rounded-lg p-2 transition-colors group"
+          >
+            <FolderKanban className="w-4 h-4 text-indigo-400" />
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs text-gray-400">Current Project</p>
+              <p className="text-sm font-medium text-white truncate">
+                {currentProject.name}
+              </p>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-white transition-transform ${
+              isProjectDropdownOpen ? 'rotate-180' : ''
+            }`} />
+          </button>
+
+          {/* Project Dropdown */}
+          {isProjectDropdownOpen && (
+            <div className="absolute left-0 right-0 mt-2 mx-4 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50 max-h-80 overflow-y-auto">
+              <div className="p-2">
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 py-2">
+                  Switch Project
+                </div>
+                
+                {isLoadingProjects ? (
+                  <div className="px-3 py-4 text-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500 mx-auto"></div>
+                  </div>
+                ) : projects.length > 0 ? (
+                  <div className="space-y-1">
+                    {projects.map((project) => (
                       <button
-                        onClick={() => toggleSection(item.name)}
-                        className={`flex items-center justify-between w-full px-2 py-2 text-sm font-medium rounded-md group hover:bg-indigo-600 dark:hover:bg-gray-800 ${
-                          isActive
-                            ? 'text-white'
-                            : 'text-indigo-100 hover:text-white'
+                        key={project.id}
+                        onClick={() => handleProjectSwitch(project)}
+                        className={`w-full flex items-start space-x-3 px-3 py-2 rounded-md hover:bg-gray-700 transition-colors ${
+                          currentProject.id === project.id ? 'bg-gray-700/50' : ''
                         }`}
                       >
-                        <div className="flex items-center">
-                          <item.icon className="w-6 h-6 mr-3 text-indigo-300 dark:text-gray-400" />
-                          {item.name}
+                        <FolderKanban className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                          currentProject.id === project.id ? 'text-indigo-400' : 'text-gray-500'
+                        }`} />
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-white truncate">
+                              {project.name}
+                            </p>
+                            {currentProject.id === project.id && (
+                              <Check className="w-4 h-4 text-indigo-400 flex-shrink-0 ml-2" />
+                            )}
+                          </div>
+                          {project.description && (
+                            <p className="text-xs text-gray-400 truncate mt-0.5">
+                              {project.description}
+                            </p>
+                          )}
                         </div>
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-indigo-300 dark:text-gray-400" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-indigo-300 dark:text-gray-400" />
-                        )}
                       </button>
-                      
-                      {isExpanded && (
-                        <div className="pl-10 space-y-1">
-                          {item.children.map(child => (
-                            <NavLink
-                              key={child.name}
-                              to={child.href}
-                              end={child.exact}
-                              className={({ isActive }) =>
-                                `${
-                                  isActive
-                                    ? 'bg-indigo-800 text-white dark:bg-gray-800'
-                                    : 'text-indigo-100 hover:bg-indigo-600 hover:text-white dark:hover:bg-gray-800'
-                                } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`
-                              }
-                            >
-                              {({ isActive }) => (
-                                <>
-                                  <child.icon
-                                    className={`${
-                                      isActive ? 'text-white' : 'text-indigo-300 group-hover:text-white dark:text-gray-400'
-                                    } mr-3 flex-shrink-0 h-6 w-6 transition-colors duration-150`}
-                                    aria-hidden="true"
-                                  />
-                                  {child.name}
-                                </>
-                              )}
-                            </NavLink>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                
-                return (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    end={item.exact}
-                    className={({ isActive }) =>
-                      `${
-                        isActive
-                          ? 'bg-indigo-800 text-white dark:bg-gray-800'
-                          : 'text-indigo-100 hover:bg-indigo-600 hover:text-white dark:hover:bg-gray-800'
-                      } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <item.icon
-                          className={`${
-                            isActive ? 'text-white' : 'text-indigo-300 group-hover:text-white dark:text-gray-400'
-                          } mr-3 flex-shrink-0 h-6 w-6 transition-colors duration-150`}
-                          aria-hidden="true"
-                        />
-                        {item.name}
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })}
-            </nav>
-            <div className="pt-2 mt-6 space-y-1 border-t border-indigo-800 dark:border-gray-700">
-              {secondaryNavigation.map((item) => (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    `${
-                      isActive
-                        ? 'bg-indigo-800 text-white dark:bg-gray-800'
-                        : 'text-indigo-100 hover:bg-indigo-600 hover:text-white dark:hover:bg-gray-800'
-                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon
-                        className={`${
-                          isActive ? 'text-white' : 'text-indigo-300 group-hover:text-white dark:text-gray-400'
-                        } mr-3 flex-shrink-0 h-6 w-6 transition-colors duration-150`}
-                        aria-hidden="true"
-                      />
-                      {item.name}
-                    </>
-                  )}
-                </NavLink>
-              ))}
-              
-              <div className="px-2 py-2 mt-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {isLoadingProfile ? (
-                      <SkeletonLoader circle width={32} height={32} />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-                        {userProfile?.fullName?.charAt(0) || 'U'}
-                      </div>
-                    )}
-                    <div className="ml-2">
-                      {isLoadingProfile ? (
-                        <SkeletonLoader width={100} height={16} />
-                      ) : (
-                        <p className="text-xs font-medium text-indigo-100 dark:text-gray-300">
-                          {userProfile?.fullName || 'User'}
-                        </p>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                  <ThemeToggle className="bg-indigo-600 dark:bg-gray-800" />
+                ) : (
+                  <div className="px-3 py-4 text-center">
+                    <p className="text-sm text-gray-400">No projects yet</p>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-700 mt-2 pt-2">
+                  <Link
+                    to="/app/projects"
+                    onClick={() => setIsProjectDropdownOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-indigo-400 hover:bg-indigo-500/10 rounded-md transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="text-sm font-medium">Create New Project</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <div className="space-y-1">
+          {navigation.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                  active
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                }`}
+                title={isCollapsed ? item.name : ''}
+              >
+                <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'} ${
+                  active ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                }`} />
+                
+                {!isCollapsed && (
+                  <>
+                    <span className="flex-1">{item.name}</span>
+                    {item.badge !== null && (
+                      <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        active 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-gray-700 text-gray-300'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div className="py-2">
+          <div className="border-t border-gray-700"></div>
+        </div>
+
+        {/* Secondary Navigation */}
+        <div className="space-y-1">
+          {secondaryNavigation.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  active
+                    ? 'bg-gray-700 text-white'
+                    : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
+                }`}
+                title={isCollapsed ? item.name : ''}
+              >
+                <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'}`} />
+                {!isCollapsed && <span>{item.name}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Bottom Section - Quick Stats */}
+      {!isCollapsed && currentProject && (
+        <div className="px-4 py-3 border-t border-gray-700 bg-gray-800/50">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              Quick Stats
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-700/50 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <Database className="w-3.5 h-3.5 text-blue-400" />
+                  <div>
+                    <p className="text-xs text-gray-400">Datasets</p>
+                    <p className="text-sm font-semibold text-white">{datasets.length}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg px-3 py-2">
+                <div className="flex items-center space-x-2">
+                  <Brain className="w-3.5 h-3.5 text-purple-400" />
+                  <div>
+                    <p className="text-xs text-gray-400">Models</p>
+                    <p className="text-sm font-semibold text-white">{models?.length || 0}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Collapsed state - Mini stats */}
+      {isCollapsed && currentProject && (
+        <div className="px-3 py-3 border-t border-gray-700 space-y-2">
+          <div className="flex items-center justify-center p-2 bg-gray-700/50 rounded-lg" title="Datasets">
+            <Database className="w-4 h-4 text-blue-400" />
+            <span className="ml-1 text-xs font-semibold text-white">{datasets.length}</span>
+          </div>
+          <div className="flex items-center justify-center p-2 bg-gray-700/50 rounded-lg" title="Models">
+            <Brain className="w-4 h-4 text-purple-400" />
+            <span className="ml-1 text-xs font-semibold text-white">{models?.length || 0}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
