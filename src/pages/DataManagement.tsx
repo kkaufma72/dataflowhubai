@@ -1,652 +1,526 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import DataUploader from '../components/data/DataUploader';
 import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
-import DataVersioning from '../components/data/DataVersioning';
-import DataQualityChecks from '../components/data/DataQualityChecks';
 import DataProfiler from '../components/data/DataProfiler';
-import DataLineage from '../components/data/DataLineage';
-import DataPreprocessing from '../components/data/DataPreprocessing';
 import { Dataset } from '../types';
-import { Database, Upload, X, Table, Plus, GitBranch, Check, GitMerge, Wand2, BarChart2 } from 'lucide-react';
+import { Database, Upload, X, Sparkles } from 'lucide-react';
 import Button from '../components/common/Button';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
-import WorkflowSteps from '../components/workflow/WorkflowSteps';
-
-// Helper functions moved to module scope
-const isNumeric = (value: any) => {
-  // First check if value is already a number
-  if (typeof value === 'number') return true;
-  // Then check if it's a string that can be converted to a valid number
-  return typeof value === 'string' && !isNaN(Number(value)) && value.trim() !== '';
-};
-
-const isDate = (value: any) => {
-  if (!value) return false;
-  // Convert to string if not already
-  const strValue = String(value);
-  return !isNaN(Date.parse(strValue));
-};
-
-const isCategorical = (values: any[]) => {
-  // Filter out null/undefined values and convert remaining to strings
-  const validValues = values.filter(v => v != null).map(v => String(v));
-  const uniqueValues = new Set(validValues);
-  return uniqueValues.size <= Math.min(10, validValues.length * 0.2); // 20% threshold
-};
+import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
+import { supabase } from '../lib/supabase';
+import OpenAI from 'openai';
 
 const DataManagement: React.FC = () => {
-  const { datasets, addDataset } = useMLContext();
+  const { datasets, currentProject } = useMLContext();
   const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
+  const [showGeneratorModal, setShowGeneratorModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [showAnalysis, setShowAnalysis] = useState<'basic' | 'profile' | false>(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'versioning' | 'quality' | 'lineage' | 'preprocessing' | 'profile'>('overview');
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
+  const [currentQuestion, setCurrentQuestion] = useState('');
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
+  const [rowCount, setRowCount] = useState(1000);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  // Define workflow steps for data management
-  const dataWorkflowSteps = [
-    {
-      id: 'upload',
-      name: 'Upload',
-      status: datasets.length > 0 ? 'completed' : 'current',
-      href: '/app/data'
-    },
-    {
-      id: 'quality',
-      name: 'Quality',
-      status: datasets.length > 0 ? 'current' : 'upcoming',
-      href: '/app/data'
-    },
-    {
-      id: 'preprocessing',
-      name: 'Preprocessing',
-      status: datasets.length > 0 ? 'upcoming' : 'upcoming',
-      href: '/app/data'
-    },
-    {
-      id: 'features',
-      name: 'Features',
-      status: 'upcoming',
-      href: '/app/feature-engineering'
-    }
-  ];
-
-  // Check for analyze parameter in URL
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const analyzeDatasetId = searchParams.get('analyze');
-    
-    if (analyzeDatasetId) {
-      const dataset = datasets.find(d => d.id === analyzeDatasetId);
-      if (dataset) {
-        setSelectedDataset(dataset);
-        setShowAnalysis('basic');
+  const handleChatbotQuery = async (question: string, dataset: Dataset) => {
+    try {
+      setIsLoadingResponse(true);
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      
+      if (!apiKey) {
+        toast.error('OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file.');
+        return;
       }
+
+      // Add user message to chat
+      const userMessage = { role: 'user' as const, content: question };
+      setChatMessages(prev => [...prev, userMessage]);
+
+      // Use OpenAI SDK directly
+      const openai = new OpenAI({
+        apiKey: apiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      const datasetInfo = JSON.stringify(dataset, null, 2);
+      
+      // Build conversation history
+      const messages = [
+        {
+          role: "system" as const,
+          content: `You are a helpful chatbot that understands datasets. Here is the dataset information:\n${datasetInfo}`
+        },
+        ...chatMessages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        {
+          role: "user" as const,
+          content: question
+        }
+      ];
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: messages,
+        temperature: 0.7,
+      });
+
+      const response = completion.choices[0]?.message?.content || 'No response received';
+      
+      // Add assistant response to chat
+      const assistantMessage = { role: 'assistant' as const, content: response };
+      setChatMessages(prev => [...prev, assistantMessage]);
+      
+    } catch (error: any) {
+      console.error('Chatbot error:', error);
+      toast.error(`Failed: ${error.message}`);
+    } finally {
+      setIsLoadingResponse(false);
     }
-  }, [location.search, datasets]);
+  };
+
+  const openChatbot = (dataset: Dataset) => {
+    setSelectedDataset(dataset);
+    setChatMessages([]); // Clear previous conversation
+    setShowChatbot(true);
+  };
+
+  const sendChatMessage = () => {
+    if (!currentQuestion.trim() || !selectedDataset) return;
+    
+    handleChatbotQuery(currentQuestion, selectedDataset);
+    setCurrentQuestion('');
+  };
 
   const handlePreview = (dataset: Dataset) => {
     setSelectedDataset(dataset);
     setShowPreview(true);
-    setShowAnalysis(false);
-    setShowUploader(false);
-    setShowConnector(false);
-    setActiveTab('overview');
   };
 
   const handleAnalyze = (dataset: Dataset) => {
     setSelectedDataset(dataset);
-    setShowPreview(false);
-    setShowAnalysis('basic');
-    setShowUploader(false);
-    setShowConnector(false);
-    setActiveTab('overview');
+    setShowAnalysis(true);
   };
 
-  const handleConnect = (connection: { type: string; name: string; config: Record<string, string> }) => {
-    console.log('New connection:', connection);
-    // Here you would typically handle the connection in your backend
-    setShowConnector(false);
-    toast.success(`Connected to ${connection.name}`);
-  };
-
-  const handleDatasetSelect = (datasetId: string) => {
-    if (!datasetId) {
-      setSelectedDataset(null);
+  const handleGenerateSyntheticData = async () => {
+    if (!currentProject) {
+      toast.error('Please select a project first');
       return;
     }
-    
-    // Only proceed if user is authenticated
+
     if (!user) {
-      navigate('/signin', { state: { from: location } });
+      toast.error('You must be logged in');
       return;
     }
-    
-    const dataset = datasets.find(d => d.id === datasetId);
-    if (dataset) {
-      setSelectedDataset(dataset);
+
+    setIsGenerating(true);
+    try {
+      const { columns, data } = generateSyntheticDataset({ 
+        name: `${generatorType}-sample`, 
+        type: generatorType, 
+        rowCount 
+      });
+      
+      // Insert into database
+      const { data: newDataset, error } = await supabase
+        .from('datasets')
+        .insert([{
+          name: `${generatorType.charAt(0).toUpperCase() + generatorType.slice(1)} Sample Dataset`,
+          description: `Synthetic ${generatorType} dataset with ${rowCount} rows`,
+          file_type: 'csv',
+          file_size: `${(data.length * columns.length * 10 / 1024).toFixed(2)} KB`,
+          row_count: data.length,
+          column_count: columns.length,
+          preview_data: {
+            columns: columns,
+            rows: data.slice(0, 100)
+          },
+          project_id: currentProject.id,
+          user_id: user.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success(`Generated ${rowCount} rows of ${generatorType} data!`);
+      setShowGeneratorModal(false);
+      
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error generating data:', error);
+      toast.error('Failed to generate sample data');
+    } finally {
+      setIsGenerating(false);
     }
-  };
-
-  const handleCreateVersion = async (description: string) => {
-    // Simulate API call to create a new version
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast.success('New version created successfully');
-  };
-
-  const handleRestoreVersion = async (versionId: string) => {
-    // Simulate API call to restore a version
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast.success('Version restored successfully');
-  };
-
-  const handleCompareVersions = (versionId1: string, versionId2: string) => {
-    console.log(`Comparing versions ${versionId1} and ${versionId2}`);
-    // In a real app, this would show a detailed comparison view
-  };
-
-  const handlePreprocessingComplete = (updatedDataset: Dataset) => {
-    // Add the preprocessed dataset
-    addDataset(updatedDataset);
-    toast.success('Preprocessed dataset added to your datasets');
-    
-    // Update workflow steps
-    const updatedSteps = [...dataWorkflowSteps];
-    updatedSteps[2].status = 'completed';
-    updatedSteps[3].status = 'current';
-    
-    // Navigate to feature engineering
-    setTimeout(() => {
-      navigate('/app/feature-engineering');
-    }, 1500);
-  };
-
-  const renderPreviewModal = () => {
-    if (!showPreview || !selectedDataset?.previewData) return null;
-
-    return (
-      <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-          <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => setShowPreview(false)} />
-          <div className="inline-block w-full max-w-4xl overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle">
-            <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  {selectedDataset.name}
-                </h3>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {selectedDataset.previewData.columns.map((column, i) => (
-                        <th
-                          key={i}
-                          className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
-                        >
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {selectedDataset.previewData.rows.slice(0, 10).map((row, i) => (
-                      <tr key={i}>
-                        {row.map((cell, j) => (
-                          <td
-                            key={j}
-                            className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap"
-                          >
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderAnalysis = () => {
-    if (!showAnalysis || !selectedDataset?.previewData) return null;
-
-    return (
-      <Card className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            Dataset Analysis: {selectedDataset.name}
-          </h3>
-          <button
-            onClick={() => setShowAnalysis(false)}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="grid gap-6 mb-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="p-4 bg-white rounded-lg shadow">
-            <p className="text-sm font-medium text-gray-500">Total Rows</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.rows?.toLocaleString() || selectedDataset.row_count?.toLocaleString() || "N/A"}</p>
-          </div>
-          <div className="p-4 bg-white rounded-lg shadow">
-            <p className="text-sm font-medium text-gray-500">Total Columns</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.columns}</p>
-          </div>
-          <div className="p-4 bg-white rounded-lg shadow">
-            <p className="text-sm font-medium text-gray-500">File Size</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.fileSize}</p>
-          </div>
-          <div className="p-4 bg-white rounded-lg shadow">
-            <p className="text-sm font-medium text-gray-500">File Type</p>
-            <p className="mt-1 text-2xl font-semibold text-gray-900">{selectedDataset.fileType?.toUpperCase() || selectedDataset.file_type?.toUpperCase() || "N/A"}</p>
-          </div>
-        </div>
-
-        <h4 className="text-sm font-medium text-gray-700">Column Types</h4>
-        <div className="mt-3">
-          {(() => {
-            // Analyze column types
-            const columnTypes = selectedDataset.previewData.columns.reduce((acc, col, idx) => {
-              const sampleValues = selectedDataset.previewData!.rows.slice(0, 100).map(row => row[idx]);
-              
-              // Determine column type
-              const numericCount = sampleValues.filter(isNumeric).length;
-              const dateCount = sampleValues.filter(isDate).length;
-              const nonEmpty = sampleValues.filter(v => v && v.trim() !== '').length;
-
-              if (numericCount / nonEmpty > 0.8) {
-                acc.numeric++;
-              } else if (dateCount / nonEmpty > 0.8) {
-                acc.datetime++;
-              } else if (isCategorical(sampleValues)) {
-                acc.categorical++;
-              } else {
-                acc.text++;
-              }
-              
-              return acc;
-            }, { numeric: 0, categorical: 0, datetime: 0, text: 0 });
-
-            const total = Object.values(columnTypes).reduce((a, b) => a + b, 0);
-            const percentages = {
-              numeric: (columnTypes.numeric / total) * 100,
-              categorical: (columnTypes.categorical / total) * 100,
-              datetime: (columnTypes.datetime / total) * 100,
-              text: (columnTypes.text / total) * 100
-            };
-
-            return (
-              <>
-                <div className="flex items-center h-4 overflow-hidden rounded-full">
-                  {percentages.numeric > 0 && (
-                    <div 
-                      className="h-full bg-indigo-500" 
-                      style={{ width: `${percentages.numeric}%` }}
-                    />
-                  )}
-                  {percentages.categorical > 0 && (
-                    <div 
-                      className="h-full bg-emerald-500" 
-                      style={{ width: `${percentages.categorical}%` }}
-                    />
-                  )}
-                  {percentages.datetime > 0 && (
-                    <div 
-                      className="h-full bg-amber-500" 
-                      style={{ width: `${percentages.datetime}%` }}
-                    />
-                  )}
-                  {percentages.text > 0 && (
-                    <div 
-                      className="h-full bg-rose-500" 
-                      style={{ width: `${percentages.text}%` }}
-                    />
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
-                  {percentages.numeric > 0 && (
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 mr-1 bg-indigo-500 rounded"></div>
-                      <span>Numeric ({percentages.numeric.toFixed(1)}%)</span>
-                    </div>
-                  )}
-                  {percentages.categorical > 0 && (
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 mr-1 bg-emerald-500 rounded"></div>
-                      <span>Categorical ({percentages.categorical.toFixed(1)}%)</span>
-                    </div>
-                  )}
-                  {percentages.datetime > 0 && (
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 mr-1 bg-amber-500 rounded"></div>
-                      <span>Date/Time ({percentages.datetime.toFixed(1)}%)</span>
-                    </div>
-                  )}
-                  {percentages.text > 0 && (
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 mr-1 bg-rose-500 rounded"></div>
-                      <span>Text ({percentages.text.toFixed(1)}%)</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-6">
-                  <h4 className="mb-4 text-sm font-medium text-gray-700">Column Details</h4>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Column Name</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Type</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Sample Values</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {selectedDataset.previewData.columns.map((column, idx) => {
-                          const sampleValues = selectedDataset.previewData!.rows
-                            .slice(0, 100)
-                            .map(row => row[idx]);
-                          
-                          const numericCount = sampleValues.filter(isNumeric).length;
-                          const dateCount = sampleValues.filter(isDate).length;
-                          const nonEmpty = sampleValues.filter(v => v && v.trim() !== '').length;
-                          
-                          let type = 'Text';
-                          if (numericCount / nonEmpty > 0.8) type = 'Numeric';
-                          else if (dateCount / nonEmpty > 0.8) type = 'Date/Time';
-                          else if (isCategorical(sampleValues)) type = 'Categorical';
-
-                          return (
-                            <tr key={column}>
-                              <td className="px-6 py-4 text-sm font-medium text-gray-900">{column}</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">{type}</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">
-                                {Array.from(new Set(sampleValues.slice(0, 3))).join(', ')}...
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </Card>
-    );
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Data Management"
-        description="Upload, manage, and preprocess your datasets"
-        icon={Database}
-        actions={
-          <div className="flex space-x-3">
-            <Button
-              onClick={() => {
-                setShowUploader(!showUploader);
-                setShowConnector(false);
-                setShowPreview(false);
-                setShowAnalysis(false);
-              }}
-              icon={<Upload className="w-4 h-4" />}
-            >
-              Upload Dataset
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowConnector(!showConnector);
-                setShowUploader(false);
-                setShowPreview(false);
-                setShowAnalysis(false);
-              }}
-              icon={<Plus className="w-4 h-4" />}
-            >
-              Add Connection
-            </Button>
-          </div>
-        }
+        description="Upload, connect, and manage your datasets"
       />
 
-      {/* Workflow Steps */}
-      <div className="mb-6">
-        <WorkflowSteps steps={dataWorkflowSteps} />
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3">
+        <Button
+          onClick={() => setShowUploader(true)}
+          icon={<Upload className="w-4 h-4" />}
+        >
+          Upload Dataset
+        </Button>
+        <Button
+          onClick={() => setShowConnector(true)}
+          variant="outline"
+          icon={<Database className="w-4 h-4" />}
+        >
+          Connect Data Source
+        </Button>
+        <Button
+          onClick={() => setShowGeneratorModal(true)}
+          variant="outline"
+          icon={<Sparkles className="w-4 h-4" />}
+          className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100"
+        >
+          Generate Sample Data
+        </Button>
       </div>
 
-      {showUploader && (
-        <div className="mb-8">
-          <DataUploader />
-        </div>
-      )}
+      {/* Generator Modal */}
+      {showGeneratorModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
+                Generate Sample Dataset
+              </h3>
+              <button
+                onClick={() => setShowGeneratorModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {showConnector && (
-        <div className="mb-8">
-          <DataConnector onConnect={handleConnect} />
-        </div>
-      )}
-
-      {renderPreviewModal()}
-      {showAnalysis === 'basic' && renderAnalysis()}
-
-      {selectedDataset && (
-        <div className="mb-8">
-          <Card>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg mr-4">
-                  <Database className="w-6 h-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedDataset.name}</h2>
-                  <p className="text-sm text-gray-500">
-                    {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns • {selectedDataset.fileType?.toUpperCase() || selectedDataset.file_type?.toUpperCase() || "N/A"}
-                  </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dataset Type
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['marketing', 'sales', 'customer'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setGeneratorType(type)}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                        generatorType === type
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="flex space-x-2">
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Rows: {rowCount.toLocaleString()}
+                </label>
+                <input
+                  type="range"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={rowCount}
+                  onChange={(e) => setRowCount(parseInt(e.target.value))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>100</span>
+                  <span>10,000</span>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                <p className="text-sm text-purple-800">
+                  <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
+                </p>
+              </div>
+
+              <div className="flex space-x-3 pt-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedDataset(null)}
+                  onClick={handleGenerateSyntheticData}
+                  disabled={isGenerating}
+                  icon={<Sparkles className="w-4 h-4" />}
+                  className="flex-1"
                 >
-                  Close
+                  {isGenerating ? 'Generating...' : 'Generate Dataset'}
+                </Button>
+                <Button
+                  onClick={() => setShowGeneratorModal(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
                 </Button>
               </div>
             </div>
-            
-            <div className="border-b border-gray-200 mb-6">
-              <nav className="-mb-px flex space-x-8">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'overview'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('versioning')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'versioning'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <GitBranch className="w-4 h-4 mr-1" />
-                    Versioning
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('quality')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'quality'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Check className="w-4 h-4 mr-1" />
-                    Quality Checks
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('lineage')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'lineage'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <GitMerge className="w-4 h-4 mr-1" />
-                    Lineage
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'profile'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <BarChart2 className="w-4 h-4 mr-1" />
-                    Data Profile
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('preprocessing')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'preprocessing'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Wand2 className="w-4 h-4 mr-1" />
-                    Preprocessing
-                  </div>
-                </button>
-              </nav>
-            </div>
-            
-            {activeTab === 'overview' && renderAnalysis()}
-            
-            {activeTab === 'versioning' && (
-              <DataVersioning 
-                dataset={selectedDataset}
-                onCreateVersion={handleCreateVersion}
-                onRestoreVersion={handleRestoreVersion}
-                onCompareVersions={handleCompareVersions}
-              />
-            )}
-            
-            {activeTab === 'quality' && (
-              <DataQualityChecks 
-                dataset={selectedDataset}
-              />
-            )}
-            
-            {activeTab === 'lineage' && (
-              <DataLineage 
-                dataset={selectedDataset}
-                width={800}
-                height={500}
-              />
-            )}
-            
-            {activeTab === 'profile' && (
-              <DataProfiler 
-                dataset={selectedDataset}
-              />
-            )}
-            
-            {activeTab === 'preprocessing' && (
-              <DataPreprocessing 
-                dataset={selectedDataset}
-                onPreprocessingComplete={handlePreprocessingComplete}
-              />
-            )}
-          </Card>
+          </div>
         </div>
       )}
 
-      {datasets.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {datasets.map((dataset) => (
-            <DatasetCard
-              key={dataset.id}
-              dataset={dataset}
-              onPreview={handlePreview}
-              onAnalyze={handleAnalyze}
-            />
-          ))}
+      {/* Upload Modal */}
+      {showUploader && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowUploader(false)} />
+            <div className="relative bg-white rounded-lg max-w-2xl w-full">
+              <DataUploader onClose={() => setShowUploader(false)} />
+            </div>
+          </div>
         </div>
-      ) : (
-        <Card className="flex flex-col items-center justify-center p-12 text-center">
-          <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-            <Database className="w-6 h-6 text-indigo-600" />
+      )}
+
+      {/* Connector Modal */}
+      {showConnector && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowConnector(false)} />
+            <div className="relative bg-white rounded-lg max-w-4xl w-full">
+              <DataConnector onClose={() => setShowConnector(false)} />
+            </div>
           </div>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No datasets available</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Upload your first dataset or connect to an enterprise data source
-          </p>
-          <div className="flex mt-4 space-x-3">
-            <Button
-              onClick={() => {
-                setShowUploader(true);
-                setShowConnector(false);
-                setShowPreview(false);
-                setShowAnalysis(false);
-              }}
-              icon={<Upload className="w-4 h-4" />}
-            >
-              Upload Dataset
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowConnector(true);
-                setShowUploader(false);
-                setShowPreview(false);
-                setShowAnalysis(false);
-              }}
-              icon={<Plus className="w-4 h-4" />}
-            >
-              Add Connection
-            </Button>
+        </div>
+      )}
+
+      {/* Datasets Grid */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Datasets</h2>
+        {datasets.length === 0 ? (
+          <Card>
+            <div className="text-center py-12">
+              <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No datasets yet</h3>
+              <p className="text-gray-500 mb-4">
+                Get started by uploading a dataset or generating sample data
+              </p>
+              <div className="flex justify-center gap-3">
+                <Button onClick={() => setShowUploader(true)} icon={<Upload className="w-4 h-4" />}>
+                  Upload Dataset
+                </Button>
+                <Button 
+                  onClick={() => setShowGeneratorModal(true)} 
+                  variant="outline"
+                  icon={<Sparkles className="w-4 h-4" />}
+                >
+                  Generate Sample
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {datasets.map((dataset) => (
+              <DatasetCard
+                key={dataset.id}
+                dataset={dataset}
+                onPreview={() => handlePreview(dataset)}
+                onAnalyze={() => handleAnalyze(dataset)}
+              />
+            ))}
           </div>
-        </Card>
+        )}
+      </div>
+
+      {/* Preview Modal */}
+      {showPreview && selectedDataset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Preview: {selectedDataset.name}
+              </h3>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              {selectedDataset.preview_data ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {selectedDataset.preview_data.columns?.map((col, idx) => (
+                          <th
+                            key={idx}
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => (
+                        <tr key={rowIdx}>
+                          {row.map((cell, cellIdx) => (
+                            <td key={cellIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Showing first 20 rows of {selectedDataset.row_count?.toLocaleString() || 0} total rows
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No preview data available</p>
+              )}
+            </div>
+            <div className="p-6 border-t">
+              <Button
+                onClick={() => openChatbot(selectedDataset)}
+              >
+                Ask Chatbot About Dataset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chatbot Modal */}
+      {showChatbot && selectedDataset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-purple-50">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
+                  Chat About: {selectedDataset.name}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">Ask questions about your dataset</p>
+              </div>
+              <button
+                onClick={() => setShowChatbot(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+              {chatMessages.length === 0 ? (
+                <div className="text-center py-12">
+                  <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">Start a conversation about your dataset!</p>
+                  <p className="text-sm text-gray-400 mt-2">Try asking: "What insights can you provide?" or "Summarize the key metrics"</p>
+                </div>
+              ) : (
+                chatMessages.map((message, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                        message.role === 'user'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white text-gray-900 border border-gray-200'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+              {isLoadingResponse && (
+                <div className="flex justify-start">
+                  <div className="bg-white text-gray-900 border border-gray-200 rounded-lg px-4 py-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="p-4 border-t bg-white">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={currentQuestion}
+                  onChange={(e) => setCurrentQuestion(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                  placeholder="Ask a question about this dataset..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoadingResponse}
+                />
+                <Button
+                  onClick={sendChatMessage}
+                  disabled={isLoadingResponse || !currentQuestion.trim()}
+                  icon={<Sparkles className="w-4 h-4" />}
+                >
+                  Send
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Modal */}
+      {showAnalysis && selectedDataset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Analyze: {selectedDataset.name}
+              </h3>
+              <button
+                onClick={() => setShowAnalysis(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              <DataProfiler 
+                dataset={selectedDataset}
+                onApplyRecommendations={(recommendations) => {
+                  console.log('Applying recommendations:', recommendations);
+                  toast.success('Recommendations applied!');
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

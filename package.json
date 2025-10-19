@@ -16,6 +16,9 @@
     "test:a11y": "vitest run --config vitest.a11y.config.ts"
   },
   "dependencies": {
+    "@langchain/community": "^1.0.0",
+    "@langchain/core": "^1.0.1",
+    "@langchain/openai": "^1.0.0",
     "@netlify/blobs": "^9.1.1",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
@@ -26,7 +29,9 @@
     "file-saver": "^2.0.5",
     "idb": "^8.0.0",
     "jszip": "^3.10.1",
+    "langchain": "^1.0.1",
     "lucide-react": "^0.344.0",
+    "openai": "^6.5.0",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
@@ -39,7 +44,7 @@
     "react-loading-skeleton": "^3.4.0",
     "react-router-dom": "^6.22.2",
     "swagger-ui-react": "^5.12.0",
-    "zod": "^3.22.4"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
