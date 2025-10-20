@@ -1,74 +1,51 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { supabase } from '../lib/supabase';
-import Card from '../components/common/Card';
-import { Rocket, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../components/auth/AuthProvider';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, User, Github, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
-// Email validation function to prevent fake/test emails
-const isValidEmail = (email: string): boolean => {
-  // More strict email validation
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  
-  // Reject common test/fake domains
-  const fakeDomains = [
-    'test.com', 
-    'example.com', 
-    'fake.com', 
-    'temp.com',
-    'test.test',
-    'fake.fake',
-    'example.org',
-    'sample.com',
-    'dummy.com',
-    'placeholder.com'
-  ];
-  
-  const domain = email.split('@')[1]?.toLowerCase();
-  
-  return emailRegex.test(email) && !fakeDomains.includes(domain);
-};
-
-const SignIn = () => {
+const SignIn: React.FC = () => {
+  const { signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from || '/app';
-  const [redirectInProgress, setRedirectInProgress] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   
-  // Form state
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [redirectInProgress, setRedirectInProgress] = useState(false);
+  
+  const from = (location.state as any)?.from?.pathname || '/app/dashboard';
 
-  // Check for email verification success
+  // Email validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Check for success message from email confirmation
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('verified') === 'true') {
-      toast.success('Email verified successfully! Please sign in to continue.', {
+    if (params.get('confirmed') === 'true') {
+      toast.success('Email confirmed successfully! Please sign in to continue.', {
         duration: 5000,
         icon: '✅'
       });
-      // Clean up URL
       window.history.replaceState({}, '', '/signin');
     }
   }, [location.search]);
 
   // Handle auth state changes and redirection
   useEffect(() => {
-    console.log('SignIn component mounted, destination:', from);
-    
-    // Check if user is already signed in
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          console.log('User already has active session, redirecting to:', from);
+        if (session && !redirectInProgress) {
           setRedirectInProgress(true);
           navigate(from, { replace: true });
         }
@@ -79,22 +56,63 @@ const SignIn = () => {
     
     checkSession();
     
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      console.log('Auth state change in SignIn:', event);
-      
       if (event === 'SIGNED_IN' && !redirectInProgress) {
-        console.log('Signed in event detected, redirecting to:', from);
         setRedirectInProgress(true);
         navigate(from, { replace: true });
       }
     });
 
     return () => {
-      console.log('SignIn component unmounting, cleaning up subscription');
       subscription.unsubscribe();
     };
   }, [navigate, from, redirectInProgress]);
+
+  const handleGitHubSignIn = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      const { error } = await signInWithOAuth('github');
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success('Redirecting to GitHub...', {
+        icon: '🚀',
+        duration: 2000
+      });
+    } catch (error: any) {
+      console.error('Error signing in with GitHub:', error);
+      setError(error.message || 'Failed to sign in with GitHub');
+      toast.error(error.message || 'Failed to sign in with GitHub');
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      const { error } = await signInWithOAuth('google');
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success('Redirecting to Google...', {
+        icon: '🚀',
+        duration: 2000
+      });
+    } catch (error: any) {
+      console.error('Error signing in with Google:', error);
+      setError(error.message || 'Failed to sign in with Google');
+      toast.error(error.message || 'Failed to sign in with Google');
+      setIsLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +122,6 @@ const SignIn = () => {
       return;
     }
     
-    // Validate email format
     if (!isValidEmail(email)) {
       setError('Please enter a valid email address');
       toast.error('Please use a valid email address');
@@ -130,7 +147,7 @@ const SignIn = () => {
         throw error;
       }
       
-      // Redirect will happen automatically via the auth state change listener
+      toast.success('Signed in successfully!');
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);
@@ -148,18 +165,15 @@ const SignIn = () => {
       return;
     }
     
-    // Validate email format and block fake domains
     if (!isValidEmail(email)) {
-      setError('Please enter a valid email address. Test emails like test@test.com are not allowed.');
-      toast.error('Please use a real email address', {
-        duration: 4000,
-        icon: '⚠️'
-      });
+      setError('Please enter a valid email address');
+      toast.error('Please use a valid email address');
       return;
     }
     
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
+      toast.error('Password must be at least 8 characters long');
       return;
     }
     
@@ -172,32 +186,29 @@ const SignIn = () => {
         password,
         options: {
           data: {
-            full_name: fullName
+            full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/signin?verified=true`
+          emailRedirectTo: `${window.location.origin}/signin?confirmed=true`
         }
       });
       
       if (error) {
         if (error.message.includes('already registered')) {
-          throw new Error('This email is already registered. Please sign in instead.');
+          throw new Error('This email is already registered. Please sign in or use a different email.');
         }
         throw error;
       }
       
-      toast.success(
-        'Sign up successful! Please check your email to verify your account.', 
-        {
-          duration: 6000,
+      if (data.user && !data.session) {
+        toast.success('Account created! Please check your email to verify your account.', {
+          duration: 7000,
           icon: '📧'
-        }
-      );
-      setIsSignUp(false); // Switch back to sign in view
-      
-      // Clear form
-      setEmail('');
-      setPassword('');
-      setFullName('');
+        });
+        setIsSignUp(false);
+        setPassword('');
+      } else {
+        toast.success('Account created successfully!');
+      }
     } catch (error: any) {
       console.error('Error signing up:', error);
       setError(error.message);
@@ -207,201 +218,208 @@ const SignIn = () => {
     }
   };
 
-  const handlePasswordReset = () => {
-    navigate('/password-reset');
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-            <Rocket className="w-6 h-6 text-indigo-600" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
+        <div>
+          <div className="flex justify-center">
+            <div className="h-16 w-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <span className="text-white text-2xl font-bold">DF</span>
+            </div>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+            <button
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError('');
+              }}
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              {isSignUp ? 'Sign in' : 'Sign up'}
+            </button>
+          </p>
+        </div>
+
+        {/* OAuth Buttons */}
+        <div className="space-y-3">
+          {/* GitHub Button */}
+          <button
+            onClick={handleGitHubSignIn}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Github className="w-5 h-5 mr-3 text-white" />
+            <span className="text-sm font-medium text-white">
+              Continue with GitHub
+            </span>
+          </button>
+          
+          {/* Google Button */}
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span className="text-sm font-medium text-gray-700">
+              Continue with Google
+            </span>
+          </button>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {isSignUp ? 'Create your account' : 'Sign in to your account'}
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          {isSignUp 
-            ? 'Already have an account? ' 
-            : 'Don\'t have an account? '}
-          <button
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError('');
-            }}
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            {isSignUp ? 'Sign in' : 'Sign up'}
-          </button>
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card>
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
+        {error && (
+          <div className="rounded-md bg-red-50 border border-red-200 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
-          )}
-          
-          <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
+          </div>
+        )}
+
+        <form className="mt-8 space-y-6" onSubmit={isSignUp ? handleSignUp : handleSignIn}>
+          <div className="rounded-md shadow-sm space-y-4">
             {isSignUp && (
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="fullName" className="sr-only">
                   Full Name
                 </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                  placeholder="John Doe"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="Full Name"
+                  />
+                </div>
               </div>
             )}
-            
-            <div className={isSignUp ? 'mt-4' : ''}>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+
+            <div>
+              <label htmlFor="email-address" className="sr-only">
                 Email address
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
+                  id="email-address"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                  placeholder="you@example.com"
+                  className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Email address"
                 />
               </div>
-              {isSignUp && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Please use a real email address - you'll need it to verify your account
-                </p>
-              )}
             </div>
 
-            <div className="mt-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="password"
                   name="password"
-                  type="password"
-                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                  placeholder={isSignUp ? "At least 8 characters" : "••••••••"}
+                  className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Password"
                 />
-              </div>
-              {isSignUp && (
-                <p className="mt-1 text-xs text-gray-500">
-                  Must be at least 8 characters long
-                </p>
-              )}
-            </div>
-
-            {!isSignUp && (
-              <div className="flex items-center justify-end mt-2">
                 <button
                   type="button"
-                  onClick={handlePasswordReset}
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
-                  Forgot your password?
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  )}
                 </button>
-              </div>
-            )}
-
-            <div className="mt-6">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-                icon={isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
-              >
-                {isLoading 
-                  ? 'Processing...' 
-                  : isSignUp 
-                    ? 'Sign Up' 
-                    : 'Sign In'}
-              </Button>
-            </div>
-          </form>
-          
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <div>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    supabase.auth.signInWithOAuth({
-                      provider: 'google',
-                      options: {
-                        redirectTo: `${window.location.origin}/app`
-                      }
-                    });
-                  }}
-                >
-                  <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                      <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
-                      <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
-                      <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
-                      <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
-                    </g>
-                  </svg>
-                  Google
-                </Button>
               </div>
             </div>
           </div>
-        </Card>
-        
-        {/* Help text */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Need help? Contact us at{' '}
-            <a href="mailto:contact@dataflowhub.ai" className="text-indigo-600 hover:text-indigo-500">
-              contact@dataflowhub.ai
-            </a>
+
+          {!isSignUp && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <a
+                  href="/password-reset"
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Forgot your password?
+                </a>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center"
+            >
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <span>{isSignUp ? 'Sign up' : 'Sign in'}</span>
+              )}
+            </Button>
+          </div>
+        </form>
+
+        {isSignUp && (
+          <p className="mt-2 text-center text-xs text-gray-600">
+            By signing up, you agree to our Terms of Service and Privacy Policy
           </p>
-        </div>
+        )}
       </div>
     </div>
   );

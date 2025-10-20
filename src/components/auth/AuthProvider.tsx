@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { User, Session, Provider } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<{ error: Error | null, user: User | null }>;
+  signInWithOAuth: (provider: Provider) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
@@ -19,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null, user: null }),
+  signInWithOAuth: async () => ({ error: null }),
   signOut: async () => {},
   resetPassword: async () => ({ error: null }),
 });
@@ -35,13 +36,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
-  const clearLocalData = async () => {
-    // Clear all local storage data
+  // Memoized function to clear local data
+  const clearLocalData = useCallback(async () => {
     localStorage.clear();
-    
-    // Clear IndexedDB data
     try {
       const databases = await window.indexedDB.databases();
       databases.forEach(db => {
@@ -52,104 +50,165 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error clearing IndexedDB:', error);
     }
-  };
+  }, []);
 
-  const handleAuthError = async (error: any) => {
-    // Check for refresh token errors
+  // Memoized function to handle auth errors
+  const handleAuthError = useCallback(async (error: any) => {
+    console.log('🔴 Handling auth error:', error);
     if (error?.message?.includes('refresh_token_not_found') || 
         error?.message?.includes('Invalid Refresh Token')) {
       await clearLocalData();
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      
-      // Redirect to sign in page
       window.location.href = '/signin';
     }
-  };
+  }, [clearLocalData]);
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
-        if (error) {
-          handleAuthError(error);
+    console.log('🚀 AuthProvider mounting...');
+    let mounted = true;
+
+    // Check active sessions and set the user
+    const initializeAuth = async () => {
+      try {
+        console.log('📡 Getting session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) {
+          console.log('⚠️ Component unmounted, skipping session update');
           return;
         }
+        
+        if (error) {
+          console.error('❌ Session error:', error);
+          handleAuthError(error);
+          setLoading(false);
+          return;
+        }
+        
+        console.log('✅ Session retrieved:', !!session, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error getting session:', error);
-        handleAuthError(error);
-        setLoading(false);
-      });
-
-    // Listen for changes on auth state (signed in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Reduce console logging
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Auth state change event:', event);
+      } catch (error) {
+        console.error('❌ Error getting session:', error);
+        if (mounted) {
+          handleAuthError(error);
+          setLoading(false);
+        }
       }
+    };
+
+    initializeAuth();
+
+    // Listen for changes on auth state
+    console.log('👂 Setting up auth state listener...');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) {
+        console.log('⚠️ Component unmounted, skipping auth state change');
+        return;
+      }
+
+      console.log('🔄 Auth state change:', event, !!session);
       
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.log('👋 User signed out');
         await clearLocalData();
         setUser(null);
         setSession(null);
+        setLoading(false);
         window.location.href = '/signin';
       } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token refreshed');
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
+      } else if (event === 'SIGNED_IN') {
+        console.log('✅ User signed in:', session?.user?.email);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // For OAuth sign-ins, create user profile if it doesn't exist
+        if (session?.user) {
+          try {
+            console.log('👤 Checking user profile...');
+            const { data: profile, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle(); // Use maybeSingle instead of single to avoid errors if not found
+            
+            if (profileError) {
+              console.error('❌ Error checking profile:', profileError);
+            }
+            
+            if (!profile) {
+              console.log('📝 Creating user profile...');
+              const { error: insertError } = await supabase.from('user_profiles').insert([{
+                user_id: session.user.id,
+                full_name: session.user.user_metadata.full_name || 
+                          session.user.user_metadata.name || 
+                          session.user.email?.split('@')[0] || 'User',
+                avatar_url: session.user.user_metadata.avatar_url || null,
+                email: session.user.email
+              }]);
+              
+              if (insertError) {
+                console.error('❌ Error creating profile:', insertError);
+              } else {
+                console.log('✅ User profile created');
+              }
+            } else {
+              console.log('✅ User profile exists');
+            }
+          } catch (error) {
+            console.error('❌ Error in profile creation:', error);
+          }
+        }
+      } else if (event === 'INITIAL_SESSION') {
+        console.log('🎬 Initial session:', !!session);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       } else {
+        console.log('📝 Other auth event:', event);
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
-    // Error handling for refresh token failures
-    const refreshTokenTimer = setInterval(async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          handleAuthError(error);
-        } else if (!session) {
-          await clearLocalData();
-          // Use navigate instead of direct location change for better UX
-          navigate('/signin');
-        }
-      } catch (error) {
-        console.error('Error refreshing session:', error);
-        handleAuthError(error);
-      }
-    }, 300000); // Check every 5 minutes instead of every minute to reduce background operations
-
+    // Cleanup function
     return () => {
+      console.log('🧹 AuthProvider unmounting...');
+      mounted = false;
       subscription.unsubscribe();
-      clearInterval(refreshTokenTimer);
     };
-  }, []);
+  }, []); // Empty dependency array - only run once on mount
 
   // Sign in with email and password
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
+      console.log('🔐 Signing in with email:', email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        console.error('Sign in error:', error);
+        console.error('❌ Sign in error:', error);
         return { error };
       }
+      console.log('✅ Sign in successful');
       return { error: null };
     } catch (error) {
-      console.error('Error signing in:', error);
+      console.error('❌ Error signing in:', error);
       return { error: error as Error };
     }
-  };
+  }, []);
 
   // Sign up with email and password
-  const signUp = async (email: string, password: string, metadata?: { [key: string]: any }) => {
+  const signUp = useCallback(async (email: string, password: string, metadata?: { [key: string]: any }) => {
     try {
+      console.log('📝 Signing up with email:', email);
       const { data, error } = await supabase.auth.signUp({ 
         email, 
         password,
@@ -157,35 +216,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           data: metadata
         }
       });
+      if (error) {
+        console.error('❌ Sign up error:', error);
+      } else {
+        console.log('✅ Sign up successful');
+      }
       return { error, user: data?.user || null };
     } catch (error) {
-      console.error('Error signing up:', error);
+      console.error('❌ Error signing up:', error);
       return { error: error as Error, user: null };
     }
-  };
+  }, []);
+
+  // Sign in with OAuth provider
+  const signInWithOAuth = useCallback(async (provider: Provider) => {
+    try {
+      console.log('🔗 Signing in with OAuth provider:', provider);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/app/dashboard`,
+          scopes: provider === 'github' ? 'read:user user:email' : undefined,
+        }
+      });
+      
+      if (error) {
+        console.error('❌ OAuth sign in error:', error);
+        return { error };
+      }
+      console.log('✅ OAuth redirect initiated');
+      return { error: null };
+    } catch (error) {
+      console.error('❌ Error signing in with OAuth:', error);
+      return { error: error as Error };
+    }
+  }, []);
 
   // Sign out
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
+      console.log('👋 Signing out...');
       await supabase.auth.signOut();
       await clearLocalData();
+      console.log('✅ Signed out successfully');
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ Error signing out:', error);
     }
-  };
+  }, [clearLocalData]);
 
   // Reset password
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     try {
+      console.log('🔑 Resetting password for:', email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/password-reset#recovery`
       });
+      if (error) {
+        console.error('❌ Reset password error:', error);
+      } else {
+        console.log('✅ Password reset email sent');
+      }
       return { error };
     } catch (error) {
-      console.error('Error resetting password:', error);
+      console.error('❌ Error resetting password:', error);
       return { error: error as Error };
     }
-  };
+  }, []);
+
+  console.log('🎨 AuthProvider rendering - Loading:', loading, 'User:', !!user);
 
   return (
     <AuthContext.Provider value={{ 
@@ -193,7 +291,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session,
       loading, 
       signIn, 
-      signUp, 
+      signUp,
+      signInWithOAuth,
       signOut,
       resetPassword
     }}>
