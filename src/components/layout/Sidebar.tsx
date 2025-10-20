@@ -11,7 +11,6 @@ import {
   GitBranch,
   Activity,
   Zap,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -160,12 +159,8 @@ const Sidebar: React.FC = () => {
     }
   ];
 
+  // UPDATED: Removed Documentation from secondaryNavigation
   const secondaryNavigation = [
-    {
-      name: 'Documentation',
-      href: '/app/documentation',
-      icon: BookOpen
-    },
     {
       name: 'Settings',
       href: '/app/settings',
@@ -182,7 +177,7 @@ const Sidebar: React.FC = () => {
       {/* Header with Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
         {!isCollapsed && (
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link to="/app" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">DF</span>
             </div>
@@ -197,100 +192,83 @@ const Sidebar: React.FC = () => {
           className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <ChevronLeft className="w-5 h-5" />
-          )}
+          {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Current Project Indicator with Dropdown */}
-      {currentProject && !isCollapsed && (
-        <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/50 relative" ref={dropdownRef}>
+      {/* Project Selector */}
+      {currentProject && (
+        <div className="px-3 py-3 border-b border-gray-700" ref={dropdownRef}>
           <button
             onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-            className="w-full flex items-center space-x-2 hover:bg-gray-700/30 rounded-lg p-2 transition-colors group"
+            className={`w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-700/50 transition-colors ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
           >
-            <FolderKanban className="w-4 h-4 text-indigo-400" />
-            <div className="flex-1 min-w-0 text-left">
-              <p className="text-xs text-gray-400">Current Project</p>
-              <p className="text-sm font-medium text-white truncate">
-                {currentProject.name}
-              </p>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-white transition-transform ${
-              isProjectDropdownOpen ? 'rotate-180' : ''
-            }`} />
+            {!isCollapsed && (
+              <>
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <FolderKanban className="w-5 h-5 text-indigo-400 flex-shrink-0" />
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {currentProject.name}
+                    </p>
+                    <p className="text-xs text-gray-400">Current Project</p>
+                  </div>
+                </div>
+                <ChevronDown 
+                  className={`w-4 h-4 text-gray-400 transition-transform ${
+                    isProjectDropdownOpen ? 'transform rotate-180' : ''
+                  }`} 
+                />
+              </>
+            )}
+            {isCollapsed && <FolderKanban className="w-5 h-5 text-indigo-400" />}
           </button>
 
           {/* Project Dropdown */}
-          {isProjectDropdownOpen && (
-            <div className="absolute left-0 right-0 mt-2 mx-4 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-50 max-h-80 overflow-y-auto">
-              <div className="p-2">
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wider px-3 py-2">
-                  Switch Project
-                </div>
-                
-                {isLoadingProjects ? (
-                  <div className="px-3 py-4 text-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500 mx-auto"></div>
+          {isProjectDropdownOpen && !isCollapsed && (
+            <div className="mt-2 py-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 max-h-64 overflow-y-auto">
+              {isLoadingProjects ? (
+                <div className="px-4 py-2 text-sm text-gray-400">Loading...</div>
+              ) : (
+                <>
+                  {projects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => handleProjectSwitch(project)}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center justify-between ${
+                        currentProject.id === project.id ? 'bg-gray-700' : ''
+                      }`}
+                    >
+                      <span className="text-white truncate">{project.name}</span>
+                      {currentProject.id === project.id && (
+                        <Check className="w-4 h-4 text-indigo-400 flex-shrink-0 ml-2" />
+                      )}
+                    </button>
+                  ))}
+                  <div className="border-t border-gray-700 mt-2 pt-2">
+                    <button
+                      onClick={() => {
+                        // This would open a new project modal
+                        toast.info('New project creation coming soon!');
+                        setIsProjectDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center text-indigo-400"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      <span>New Project</span>
+                    </button>
                   </div>
-                ) : projects.length > 0 ? (
-                  <div className="space-y-1">
-                    {projects.map((project) => (
-                      <button
-                        key={project.id}
-                        onClick={() => handleProjectSwitch(project)}
-                        className={`w-full flex items-start space-x-3 px-3 py-2 rounded-md hover:bg-gray-700 transition-colors ${
-                          currentProject.id === project.id ? 'bg-gray-700/50' : ''
-                        }`}
-                      >
-                        <FolderKanban className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                          currentProject.id === project.id ? 'text-indigo-400' : 'text-gray-500'
-                        }`} />
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-white truncate">
-                              {project.name}
-                            </p>
-                            {currentProject.id === project.id && (
-                              <Check className="w-4 h-4 text-indigo-400 flex-shrink-0 ml-2" />
-                            )}
-                          </div>
-                          {project.description && (
-                            <p className="text-xs text-gray-400 truncate mt-0.5">
-                              {project.description}
-                            </p>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="px-3 py-4 text-center">
-                    <p className="text-sm text-gray-400">No projects yet</p>
-                  </div>
-                )}
-
-                <div className="border-t border-gray-700 mt-2 pt-2">
-                  <Link
-                    to="/app/projects"
-                    onClick={() => setIsProjectDropdownOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 text-indigo-400 hover:bg-indigo-500/10 rounded-md transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="text-sm font-medium">Create New Project</span>
-                  </Link>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           )}
         </div>
       )}
 
       {/* Main Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         <div className="space-y-1">
           {navigation.map((item) => {
             const active = isActive(item.href);

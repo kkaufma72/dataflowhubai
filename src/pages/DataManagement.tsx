@@ -32,12 +32,14 @@ const DataManagement: React.FC = () => {
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Auto-show quality dashboard for newly uploaded datasets
   useEffect(() => {
     const checkNewDatasets = () => {
       const lastViewedId = localStorage.getItem('lastViewedDatasetId');
-      const newestDataset = datasets[0];
+      const newestDataset = datasets[0]; // Assuming newest is first
       
       if (newestDataset && newestDataset.id !== lastViewedId) {
+        // Auto-open quality dashboard for new dataset
         setSelectedDataset(newestDataset);
         setShowQuality(true);
         localStorage.setItem('lastViewedDatasetId', newestDataset.id);
@@ -69,7 +71,6 @@ const DataManagement: React.FC = () => {
     setShowChat(true);
   };
 
-  // FIXED: Complete rewrite with proper error handling
   const handleGenerateSyntheticData = async () => {
     if (!currentProject) {
       toast.error('Please select a project first');
@@ -83,23 +84,11 @@ const DataManagement: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      // FIXED: Properly destructure and validate the result
-      const result = generateSyntheticDataset({ 
+      const { columns, data } = generateSyntheticDataset({ 
         name: `${generatorType}-sample`, 
         type: generatorType, 
         rowCount 
       });
-      
-      // FIXED: Validate result structure
-      if (!result || !result.columns || !result.data) {
-        throw new Error('Failed to generate synthetic data');
-      }
-
-      if (!Array.isArray(result.data)) {
-        throw new Error('Generated data is not in the correct format');
-      }
-
-      const { columns, data } = result;
       
       const { data: newDataset, error } = await supabase
         .from('datasets')
@@ -128,7 +117,7 @@ const DataManagement: React.FC = () => {
       
     } catch (error) {
       console.error('Error generating data:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to generate sample data');
+      toast.error('Failed to generate sample data');
     } finally {
       setIsGenerating(false);
     }
@@ -141,6 +130,7 @@ const DataManagement: React.FC = () => {
         description="Upload, connect, and manage your datasets"
       />
 
+      {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <Button
           onClick={() => setShowUploader(true)}
@@ -160,186 +150,75 @@ const DataManagement: React.FC = () => {
           variant="outline"
           icon={<Sparkles className="w-4 h-4" />}
         >
-          Generate Sample
+          Generate Sample Data
         </Button>
-      </div>
-
-      {/* Generator Modal */}
-      {showGeneratorModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowGeneratorModal(false)} />
-            <div className="relative bg-white rounded-lg max-w-md w-full p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Generate Sample Dataset</h3>
-                <button onClick={() => setShowGeneratorModal(false)} className="text-gray-400 hover:text-gray-500">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dataset Type
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['marketing', 'sales', 'customer'] as const).map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => setGeneratorType(type)}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                          generatorType === type
-                            ? 'bg-purple-600 text-white border-purple-600'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of Rows: {rowCount.toLocaleString()}
-                  </label>
-                  <input
-                    type="range"
-                    min="100"
-                    max="10000"
-                    step="100"
-                    value={rowCount}
-                    onChange={(e) => setRowCount(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>100</span>
-                    <span>10,000</span>
-                  </div>
-                </div>
-
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                  <p className="text-sm text-purple-800">
-                    <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
-                  </p>
-                </div>
-
-                <div className="flex space-x-3 pt-2">
-                  <Button
-                    onClick={handleGenerateSyntheticData}
-                    disabled={isGenerating}
-                    icon={<Sparkles className="w-4 h-4" />}
-                    className="flex-1"
-                  >
-                    {isGenerating ? 'Generating...' : 'Generate Dataset'}
-                  </Button>
-                  <Button
-                    onClick={() => setShowGeneratorModal(false)}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upload Modal */}
-      {showUploader && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowUploader(false)} />
-            <div className="relative bg-white rounded-lg max-w-2xl w-full">
-              <DataUploader onClose={() => setShowUploader(false)} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Connector Modal */}
-      {showConnector && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowConnector(false)} />
-            <div className="relative bg-white rounded-lg max-w-4xl w-full">
-              <DataConnector onClose={() => setShowConnector(false)} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Datasets Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Your Datasets</h2>
-          {chatDataset && (
+        <div className="ml-auto">
+          {showChat && (
             <button
               onClick={() => setShowChat(!showChat)}
-              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
             >
               <MessageSquare className="w-4 h-4" />
               <span>{showChat ? 'Hide' : 'Show'} Chat</span>
             </button>
           )}
         </div>
-        
-        {datasets.length === 0 ? (
-          <Card>
-            <div className="text-center py-12">
-              <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No datasets yet</h3>
-              <p className="text-gray-500 mb-4">
-                Get started by uploading a dataset or generating sample data
-              </p>
-              <div className="flex justify-center gap-3">
-                <Button onClick={() => setShowUploader(true)} icon={<Upload className="w-4 h-4" />}>
-                  Upload Dataset
-                </Button>
-                <Button 
-                  onClick={() => setShowGeneratorModal(true)} 
-                  variant="outline"
-                  icon={<Sparkles className="w-4 h-4" />}
-                >
-                  Generate Sample
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {datasets.map((dataset) => (
-              <div key={dataset.id} className="relative">
-                <DatasetCard
-                  dataset={dataset}
-                  onPreview={() => handlePreview(dataset)}
-                  onAnalyze={() => handleAnalyze(dataset)}
-                />
-                <div className="absolute top-3 right-3 flex space-x-2">
-                  <button
-                    onClick={() => handleQualityCheck(dataset)}
-                    className="p-2 bg-white rounded-lg shadow-md hover:bg-green-50 hover:shadow-lg transition-all group"
-                    title="Check data quality"
-                  >
-                    <Shield className="w-4 h-4 text-gray-600 group-hover:text-green-600" />
-                  </button>
-                  <button
-                    onClick={() => openChat(dataset)}
-                    className="p-2 bg-white rounded-lg shadow-md hover:bg-indigo-50 hover:shadow-lg transition-all group"
-                    title="Chat with this dataset"
-                  >
-                    <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-indigo-600" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Preview Modal */}
+      {/* Dataset Grid or Empty State */}
+      {datasets.length === 0 ? (
+        <Card>
+          <div className="text-center py-12">
+            <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No datasets yet</h3>
+            <p className="text-gray-500 mb-4">
+              Get started by uploading a dataset or generating sample data
+            </p>
+            <div className="flex justify-center gap-3">
+              <Button onClick={() => setShowUploader(true)} icon={<Upload className="w-4 h-4" />}>
+                Upload Dataset
+              </Button>
+              <Button 
+                onClick={() => setShowGeneratorModal(true)} 
+                variant="outline"
+                icon={<Sparkles className="w-4 h-4" />}
+              >
+                Generate Sample
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {datasets.map((dataset) => (
+            <div key={dataset.id} className="relative">
+              <DatasetCard
+                dataset={dataset}
+                onPreview={() => handlePreview(dataset)}
+                onAnalyze={() => handleAnalyze(dataset)}
+              />
+              <div className="absolute top-3 right-3 flex space-x-2">
+                <button
+                  onClick={() => handleQualityCheck(dataset)}
+                  className="p-2 bg-white rounded-lg shadow-md hover:bg-green-50 hover:shadow-lg transition-all group"
+                  title="Check data quality"
+                >
+                  <Shield className="w-4 h-4 text-gray-600 group-hover:text-green-600" />
+                </button>
+                <button
+                  onClick={() => openChat(dataset)}
+                  className="p-2 bg-white rounded-lg shadow-md hover:bg-indigo-50 hover:shadow-lg transition-all group"
+                  title="Chat with this dataset"
+                >
+                  <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-indigo-600" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Preview Modal - FIXED to support both preview_data and previewData */}
       {showPreview && selectedDataset && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -355,12 +234,12 @@ const DataManagement: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              {selectedDataset.preview_data ? (
+              {(selectedDataset.preview_data || (selectedDataset as any).previewData) ? (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        {selectedDataset.preview_data.columns?.map((col, idx) => (
+                        {(selectedDataset.preview_data?.columns || (selectedDataset as any).previewData?.columns)?.map((col: string, idx: number) => (
                           <th
                             key={idx}
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -371,9 +250,9 @@ const DataManagement: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => (
+                      {(selectedDataset.preview_data?.rows || (selectedDataset as any).previewData?.rows)?.slice(0, 20).map((row: any[], rowIdx: number) => (
                         <tr key={rowIdx}>
-                          {row.map((cell, cellIdx) => (
+                          {row.map((cell: any, cellIdx: number) => (
                             <td key={cellIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {cell}
                             </td>
@@ -383,64 +262,12 @@ const DataManagement: React.FC = () => {
                     </tbody>
                   </table>
                   <p className="text-sm text-gray-500 mt-4 text-center">
-                    Showing first 20 rows of {selectedDataset.row_count?.toLocaleString() || 0} total rows
+                    Showing first 20 rows of {selectedDataset.row_count?.toLocaleString() || selectedDataset.rows?.toLocaleString() || 0} total rows
                   </p>
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-8">No preview data available</p>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quality Dashboard Modal */}
-      {showQuality && selectedDataset && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-green-50 to-blue-50">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Shield className="w-5 h-5 mr-2 text-green-600" />
-                  Data Quality Report
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">{selectedDataset.name}</p>
-              </div>
-              <button
-                onClick={() => setShowQuality(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              <DataQualityDashboard 
-                dataset={selectedDataset}
-                onFixIssue={(issue) => {
-                  console.log('Fixing issue:', issue);
-                  toast.success('Issue noted for fixing');
-                }}
-              />
-            </div>
-            <div className="p-4 border-t bg-gray-50 flex justify-between">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowQuality(false);
-                  handlePreview(selectedDataset);
-                }}
-              >
-                View Data
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowQuality(false);
-                  openChat(selectedDataset);
-                }}
-                icon={<MessageSquare className="w-4 h-4" />}
-              >
-                Ask AI About Quality
-              </Button>
             </div>
           </div>
         </div>
@@ -462,24 +289,156 @@ const DataManagement: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              <DataProfiler 
-                dataset={selectedDataset}
-                onApplyRecommendations={(recommendations) => {
-                  console.log('Applying recommendations:', recommendations);
-                  toast.success('Recommendations applied!');
-                }}
-              />
+              <DataProfiler dataset={selectedDataset} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quality Check Modal */}
+      {showQuality && selectedDataset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Data Quality: {selectedDataset.name}
+              </h3>
+              <button
+                onClick={() => setShowQuality(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              <DataQualityDashboard dataset={selectedDataset} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sample Data Generator Modal */}
+      {showGeneratorModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Generate Sample Data
+              </h3>
+              <button
+                onClick={() => setShowGeneratorModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dataset Type
+                </label>
+                <select
+                  value={generatorType}
+                  onChange={(e) => setGeneratorType(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="marketing">Marketing Campaign Data</option>
+                  <option value="sales">Sales Transaction Data</option>
+                  <option value="customer">Customer Behavior Data</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Rows
+                </label>
+                <input
+                  type="number"
+                  value={rowCount}
+                  onChange={(e) => setRowCount(parseInt(e.target.value) || 1000)}
+                  min="100"
+                  max="100000"
+                  step="100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Recommended: 1,000 - 10,000 rows
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowGeneratorModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGenerateSyntheticData}
+                  disabled={isGenerating}
+                  icon={isGenerating ? <Sparkles className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Data Uploader Modal */}
+      {showUploader && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Upload Dataset
+              </h3>
+              <button
+                onClick={() => setShowUploader(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <DataUploader />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Data Connector Modal */}
+      {showConnector && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Connect Data Source
+              </h3>
+              <button
+                onClick={() => setShowConnector(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <DataConnector />
             </div>
           </div>
         </div>
       )}
 
       {/* Persistent Chat Sidebar */}
-      <PersistentChatSidebar
-        isOpen={showChat}
-        onClose={() => setShowChat(false)}
-        dataset={chatDataset}
-      />
+      {showChat && chatDataset && (
+        <PersistentChatSidebar
+          dataset={chatDataset}
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+        />
+      )}
     </div>
   );
 };

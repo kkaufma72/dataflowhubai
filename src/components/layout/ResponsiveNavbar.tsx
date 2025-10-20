@@ -71,11 +71,10 @@ const navigation = [
 ];
 
 // Define secondary navigation
+
 const secondaryNavigation = [
   { name: 'Settings', href: '/app/settings', icon: Settings },
-  { name: 'Help', href: '/app/documentation', icon: LifeBuoy },
 ];
-
 const ResponsiveNavbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);

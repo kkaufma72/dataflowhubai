@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import { 
   Bell, 
   Settings, 
-  HelpCircle, 
   User,
   LogOut,
   Plus,
-  Search, // ADD THIS
-  Command // ADD THIS
+  Search,
+  Command
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -19,12 +18,11 @@ import SkeletonLoader from '../common/SkeletonLoader';
 import ThemeToggle from '../common/ThemeToggle';
 import NewProjectModal from '../common/NewProjectModal';
 
-// ADD THIS PROP
 interface NavbarProps {
   onOpenCommandPalette?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE THIS
+const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { userProfile, isLoadingProfile } = useUser();
   const { signOut } = useAuth();
@@ -45,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE 
         <div className="flex justify-between h-16">
           {/* Left section - Logo only */}
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex items-center space-x-2">
+            <Link to="/app" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">DF</span>
               </div>
@@ -58,34 +56,37 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE 
           {/* Right section */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              {/* ADD THIS: Command Palette Search Button */}
+              {/* Command Palette Button */}
+              {onOpenCommandPalette && (
+                <button
+                  onClick={onOpenCommandPalette}
+                  className="hidden md:flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-500 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title="Open command palette (⌘K)"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Search...</span>
+                  <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded">
+                    <Command className="w-3 h-3 mr-0.5" />
+                    K
+                  </kbd>
+                </button>
+              )}
+
+              {/* New Project Button */}
               <button
-                onClick={onOpenCommandPalette}
-                className="hidden sm:flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors group"
-                title="Search (⌘K)"
+                onClick={() => setShowNewProjectModal(true)}
+                className="hidden md:flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                title="Create new project"
               >
-                <Search className="h-4 w-4" />
-                <span className="text-xs">Search</span>
-                <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  <Command className="h-3 w-3 mr-0.5" />
-                  K
-                </kbd>
+                <Plus className="w-4 h-4" />
+                <span>New Project</span>
               </button>
 
-              {/* Mobile search icon only */}
-              <button
-                onClick={onOpenCommandPalette}
-                className="sm:hidden p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-300 dark:hover:text-white transition-colors"
-                title="Search"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-
-              {/* Theme toggle */}
-              <ThemeToggle />
-              
               {/* Notifications */}
               <NotificationCenter />
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
 
               {/* Settings */}
               <Link
@@ -97,15 +98,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE 
                 <Settings className="h-5 w-5" />
               </Link>
 
-              {/* Help */}
-              <Link
-                to="/app/documentation"
-                className="p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-300 dark:hover:text-white transition-colors"
-                title="Help & Documentation"
-              >
-                <span className="sr-only">Help</span>
-                <HelpCircle className="h-5 w-5" />
-              </Link>
+              {/* REMOVED: Help/Documentation Link - Users can access documentation via landing page or help button */}
 
               {/* Profile dropdown */}
               <div className="relative">
@@ -181,14 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE 
                           <Settings className="mr-3 h-4 w-4 text-gray-400" />
                           Settings
                         </Link>
-                        <Link
-                          to="/app/documentation"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <HelpCircle className="mr-3 h-4 w-4 text-gray-400" />
-                          Help & Docs
-                        </Link>
+                        {/* REMOVED: Documentation Link - Users can access via public landing page */}
                       </div>
                       
                       {/* Sign Out */}
