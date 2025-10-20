@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import { User, Session, Provider } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const isInitialMount = useRef(true);
 
   // Memoized function to clear local data
   const clearLocalData = useCallback(async () => {
@@ -64,10 +63,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      // Use navigate instead of window.location for proper React Router handling
-      navigate('/signin', { replace: true });
     }
-  }, [clearLocalData, navigate]);
+  }, [clearLocalData]);
 
   useEffect(() => {
     console.log('🚀 AuthProvider mounting...');
@@ -86,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (error) {
           console.error('❌ Session error:', error);
-          handleAuthError(error);
+          await handleAuthError(error);
           setLoading(false);
           return;
         }
@@ -95,10 +92,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        isInitialMount.current = false;
       } catch (error) {
         console.error('❌ Error getting session:', error);
         if (mounted) {
-          handleAuthError(error);
+          await handleAuthError(error);
           setLoading(false);
         }
       }
@@ -114,6 +112,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // Skip INITIAL_SESSION and duplicate SIGNED_IN events after initial mount
+      if (!isInitialMount.current && event === 'INITIAL_SESSION') {
+        console.log('⏭️ Skipping INITIAL_SESSION - already initialized');
+        return;
+      }
+
+      // Skip duplicate SIGNED_IN events if user is already set
+      if (event === 'SIGNED_IN' && user?.id === session?.user?.id) {
+        console.log('⏭️ Skipping duplicate SIGNED_IN event for same user');
+        return;
+      }
+
       console.log('🔄 Auth state change:', event, !!session);
       
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
@@ -122,8 +132,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setSession(null);
         setLoading(false);
-        // Use navigate instead of window.location
-        navigate('/signin', { replace: true });
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('🔄 Token refreshed');
         setSession(session);
@@ -177,6 +185,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        isInitialMount.current = false;
       } else {
         console.log('📝 Other auth event:', event);
         setSession(session);
@@ -191,7 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [handleAuthError, clearLocalData, navigate]);
+  }, [handleAuthError, clearLocalData, user?.id]);
 
   // Sign in with email and password
   const signIn = useCallback(async (email: string, password: string) => {
@@ -257,26 +266,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Sign out - FIXED VERSION
+  // Sign out
   const signOut = useCallback(async () => {
     try {
       console.log('👋 Signing out...');
-      // Clear data first
       await clearLocalData();
-      // Then sign out from Supabase
       await supabase.auth.signOut();
-      // Update state
       setUser(null);
       setSession(null);
       console.log('✅ Signed out successfully');
-      // Use navigate instead of window.location for proper routing
-      navigate('/signin', { replace: true });
     } catch (error) {
       console.error('❌ Error signing out:', error);
-      // Even if there's an error, try to navigate to signin
-      navigate('/signin', { replace: true });
     }
-  }, [clearLocalData, navigate]);
+  }, [clearLocalData]);
 
   // Reset password
   const resetPassword = useCallback(async (email: string) => {

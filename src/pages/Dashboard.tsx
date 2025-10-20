@@ -17,6 +17,7 @@ import {
 import { useMLContext } from '../context/MLContext';
 import { useNotifications } from '../components/common/NotificationSystem';
 import { useTour } from '../components/common/TourProvider';
+import { useAIChat } from '../components/ai/GlobalAIAssistant';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -40,6 +41,7 @@ const Dashboard: React.FC = () => {
   const { addNotification } = useNotifications();
   const { startTour } = useTour();
   const navigate = useNavigate();
+  const { openChat } = useAIChat();
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
 
@@ -167,6 +169,26 @@ const Dashboard: React.FC = () => {
     navigate(`/app/data?analyze=${dataset.id}`);
   };
 
+  // Handle AI Chat opening with proper error catching
+  const handleOpenAIChat = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    try {
+      openChat();
+    } catch (error) {
+      console.error('Error opening AI chat:', error);
+      addNotification({
+        type: 'error',
+        title: 'Unable to open AI Chat',
+        message: 'Please refresh the page and try again.',
+        duration: 4000
+      });
+    }
+  };
+
   // Start the dashboard tour automatically for new users
   useEffect(() => {
     const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
@@ -215,7 +237,8 @@ const Dashboard: React.FC = () => {
           
           <div className="flex flex-col space-y-3 ml-8">
             <button
-              onClick={() => navigate('/app/ai-chat')}
+              type="button"
+              onClick={handleOpenAIChat}
               className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl flex items-center space-x-3 group"
             >
               <MessageSquare className="w-6 h-6" />
@@ -235,6 +258,7 @@ const Dashboard: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
+            type="button"
             onClick={() => navigate('/app/data')}
             className="flex items-center space-x-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all border-2 border-transparent hover:border-indigo-300"
           >
@@ -248,6 +272,7 @@ const Dashboard: React.FC = () => {
           </button>
           
           <button
+            type="button"
             onClick={() => navigate('/app/train')}
             className="flex items-center space-x-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-transparent hover:border-purple-300"
           >
@@ -261,7 +286,8 @@ const Dashboard: React.FC = () => {
           </button>
           
           <button
-            onClick={() => navigate('/app/ai-chat')}
+            type="button"
+            onClick={handleOpenAIChat}
             className="flex items-center space-x-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all border-2 border-transparent hover:border-indigo-300"
           >
             <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center">
@@ -441,7 +467,7 @@ const Dashboard: React.FC = () => {
             </Button>
             <AddSampleDataButton />
             <Button
-              onClick={() => navigate('/app/ai-chat')}
+              onClick={handleOpenAIChat}
               variant="outline"
             >
               <MessageSquare className="w-4 h-4 mr-2" />

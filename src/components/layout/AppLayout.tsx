@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import InAppHelp from '../common/InAppHelp';
-import GlobalAIAssistant from '../ai/GlobalAIAssistant';
 import CommandPalette from '../CommandPalette';
 import { HelpCircle } from 'lucide-react';
 
@@ -27,7 +26,6 @@ const AppLayout: React.FC = () => {
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* CHANGE THIS LINE 👇 */}
         <Navbar onOpenCommandPalette={() => setIsCommandPaletteOpen(true)} />
         
         <main className="flex-1 overflow-y-auto p-6 dark:bg-gray-800 dark:text-gray-100">
@@ -44,7 +42,8 @@ const AppLayout: React.FC = () => {
         </button>
         
         <InAppHelp isOpen={showHelp} onClose={() => setShowHelp(false)} />
-        <GlobalAIAssistant />
+        
+        {/* REMOVED: <GlobalAIAssistant /> - Already wrapped in main.tsx */}
         
         <CommandPalette 
           isOpen={isCommandPaletteOpen}
