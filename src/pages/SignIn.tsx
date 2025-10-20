@@ -22,6 +22,19 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
+  // Check for email verification success
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('verified') === 'true') {
+      toast.success('Email verified successfully! Please sign in to continue.', {
+        duration: 5000,
+        icon: '✅'
+      });
+      // Clean up URL
+      window.history.replaceState({}, '', '/signin');
+    }
+  }, [location.search]);
+
   // Handle auth state changes and redirection
   useEffect(() => {
     console.log('SignIn component mounted, destination:', from);
@@ -80,6 +93,9 @@ const SignIn = () => {
         if (error.message === 'Invalid login credentials') {
           throw new Error('Invalid email or password. Please try again or reset your password.');
         }
+        if (error.message === 'Email not confirmed') {
+          throw new Error('Please verify your email address before signing in. Check your inbox for the verification link.');
+        }
         throw error;
       }
       
@@ -101,6 +117,11 @@ const SignIn = () => {
       return;
     }
     
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError('');
@@ -111,7 +132,8 @@ const SignIn = () => {
         options: {
           data: {
             full_name: fullName
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/signin?verified=true`
         }
       });
       
@@ -122,8 +144,16 @@ const SignIn = () => {
         throw error;
       }
       
-      toast.success('Sign up successful! Please check your email for verification.');
+      toast.success('Sign up successful! Please check your email for verification.', {
+        duration: 6000,
+        icon: '📧'
+      });
       setIsSignUp(false); // Switch back to sign in view
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
+      setFullName('');
     } catch (error: any) {
       console.error('Error signing up:', error);
       setError(error.message);
@@ -192,7 +222,8 @@ const SignIn = () => {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  placeholder="John Doe"
                 />
               </div>
             )}
@@ -213,7 +244,8 @@ const SignIn = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
@@ -234,9 +266,15 @@ const SignIn = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  placeholder={isSignUp ? "At least 8 characters" : "••••••••"}
                 />
               </div>
+              {isSignUp && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Must be at least 8 characters long
+                </p>
+              )}
             </div>
 
             {!isSignUp && (
@@ -305,6 +343,16 @@ const SignIn = () => {
             </div>
           </div>
         </Card>
+        
+        {/* Help text */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500">
+            Need help? Contact us at{' '}
+            <a href="mailto:support@dataflowhub.ai" className="text-indigo-600 hover:text-indigo-500">
+              support@dataflowhub.ai
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
