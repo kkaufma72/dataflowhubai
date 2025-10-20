@@ -1,59 +1,74 @@
 import React, { useState, useRef } from 'react';
-import { FileUp, AlertCircle, Check, Loader2 } from 'lucide-react';
-import { useMLContext } from '../../context/MLContext';
-import Button from '../common/Button';
+import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react';
 import Card from '../common/Card';
+import Button from '../common/Button';
+import { useMLContext } from '../../context/MLContext';
+import { useAuth } from '../auth/AuthProvider';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import Papa from 'papaparse';
 
-const DataUploader: React.FC = () => {
-  const [isDragging, setIsDragging] = useState(false);
+interface DataUploaderProps {
+  onClose?: () => void;
+}
+
+const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
+  const { currentProject } = useMLContext();
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { addDataset, currentProject } = useMLContext();
 
-  const MAX_NAME_LENGTH = 100;
+  const MAX_NAME_LENGTH = 50;
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
+  const handleDragLeave = () => {
     setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-    setError(null);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      validateAndSetFile(file);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      validateAndSetFile(droppedFile);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null);
-    if (e.target.files && e.target.files.length > 0) {
-      validateAndSetFile(e.target.files[0]);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      validateAndSetFile(selectedFile);
     }
   };
 
   const validateAndSetFile = (file: File) => {
-    const validTypes = ['text/csv', 'application/vnd.ms-excel', 'application/json', 'text/css'];
-    const fileType = file.type || `text/${file.name.split('.').pop()?.toLowerCase()}`;
+    const validTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/json',
+      'text/plain'
+    ];
     
-    if (!validTypes.includes(fileType)) {
-      setError('Please upload a CSV, Excel, JSON, or CSS file');
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const fileType = file.type || `text/${fileExtension}`;
+    
+    if (!validTypes.includes(fileType) && !['csv', 'xlsx', 'xls', 'json', 'txt'].includes(fileExtension || '')) {
+      setError('Please upload a CSV, Excel, JSON, or TXT file');
       setFile(null);
       return;
     }
+    
     setFile(file);
+    setError(null);
   };
 
   const truncateFileName = (name: string): string => {
@@ -61,46 +76,81 @@ const DataUploader: React.FC = () => {
     
     const extension = name.split('.').pop() || '';
     const nameWithoutExt = name.slice(0, -(extension.length + 1));
-    const maxBaseLength = MAX_NAME_LENGTH - (extension.length + 4); // 4 accounts for '...' and '.'
+    const maxBaseLength = MAX_NAME_LENGTH - (extension.length + 4);
     
     return `${nameWithoutExt.slice(0, maxBaseLength)}...${extension}`;
   };
 
-  const parseFileContent = async (content: string, fileType: string) => {
-    if (fileType === 'text/csv') {
-      const lines = content.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
-      const rows = lines.slice(1).map(line => line.split(',').map(cell => cell.trim()));
-      return { columns: headers, rows };
-    } else if (fileType === 'application/json') {
-      const data = JSON.parse(content);
-      if (Array.isArray(data)) {
-        const headers = Object.keys(data[0] || {});
-        const rows = data.map(item => headers.map(header => String(item[header] || '')));
-        return { columns: headers, rows };
-      }
-    } else if (fileType === 'text/css') {
-      const rules = content.split('}')
-        .filter(block => block.trim())
-        .map(block => {
-          const [selector = '', properties = ''] = block.split('{');
-          return [
-            selector.trim(),
-            properties.trim(),
-            block.split('\n')[0].trim()
-          ];
-        });
-      return {
-        columns: ['Selector', 'Properties', 'Line'],
-        rows: rules
-      };
+  const parseCSV = (content: string): { columns: string[], rows: any[][] } => {
+    return new Promise((resolve, reject) => {
+      Papa.parse(content, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        complete: (results) => {
+          console.log('📊 CSV Parsed:', results);
+          
+          if (results.errors.length > 0) {
+            console.error('CSV parsing errors:', results.errors);
+          }
+          
+          const columns = results.meta.fields || [];
+          const rows = results.data.map((row: any) => 
+            columns.map(col => row[col] ?? '')
+          );
+          
+          console.log('✅ Columns:', columns);
+          console.log('✅ Sample rows:', rows.slice(0, 3));
+          
+          resolve({ columns, rows });
+        },
+        error: (error) => {
+          console.error('CSV parsing error:', error);
+          reject(error);
+        }
+      });
+    });
+  };
+
+  const parseJSON = (content: string): { columns: string[], rows: any[][] } => {
+    const data = JSON.parse(content);
+    
+    if (Array.isArray(data) && data.length > 0) {
+      const columns = Object.keys(data[0]);
+      const rows = data.map(item => 
+        columns.map(col => item[col] ?? '')
+      );
+      
+      console.log('✅ JSON Columns:', columns);
+      console.log('✅ JSON Sample rows:', rows.slice(0, 3));
+      
+      return { columns, rows };
     }
-    return { columns: [], rows: [] };
+    
+    throw new Error('JSON must be an array of objects');
+  };
+
+  const parseFile = async (content: string, fileName: string): Promise<{ columns: string[], rows: any[][] }> => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    
+    console.log('📄 Parsing file:', fileName, 'Extension:', extension);
+    
+    if (extension === 'csv' || extension === 'txt') {
+      return await parseCSV(content);
+    } else if (extension === 'json') {
+      return parseJSON(content);
+    }
+    
+    throw new Error('Unsupported file format');
   };
 
   const handleUpload = async () => {
-    if (!file || !currentProject) return;
+    if (!file || !currentProject || !user) {
+      setError('Missing file, project, or user authentication');
+      return;
+    }
 
+    console.log('🚀 Starting upload for:', file.name);
     setUploading(true);
     setUploadProgress(0);
     setError(null);
@@ -108,53 +158,107 @@ const DataUploader: React.FC = () => {
     try {
       // Read file content
       const fileContent = await file.text();
-      const fileType = file.type || `text/${file.name.split('.').pop()?.toLowerCase()}`;
+      console.log('📖 File content read, length:', fileContent.length);
       
-      // Parse content based on file type
-      const previewData = await parseFileContent(fileContent, fileType);
+      // Parse file
+      const { columns, rows } = await parseFile(fileContent, file.name);
       
-      if (!previewData.columns.length) {
-        throw new Error('Unable to parse file content');
+      if (!columns || columns.length === 0) {
+        throw new Error('No columns found in file');
       }
+      
+      if (!rows || rows.length === 0) {
+        throw new Error('No data rows found in file');
+      }
+
+      console.log('✅ Parsed successfully:', {
+        columns: columns.length,
+        rows: rows.length,
+        sampleColumns: columns.slice(0, 5),
+        sampleRow: rows[0]
+      });
 
       // Simulate upload progress
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
-          const newProgress = prev + Math.random() * 10;
-          return newProgress > 95 ? 95 : newProgress;
+          const newProgress = prev + Math.random() * 15;
+          return newProgress > 90 ? 90 : newProgress;
         });
       }, 200);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const fileSize = (file.size / 1024).toFixed(1);
+      const fileSizeUnit = file.size < 1024 * 1024 ? 'KB' : 'MB';
+      const fileSizeFormatted = file.size < 1024 * 1024 
+        ? `${fileSize} KB` 
+        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
 
-      clearInterval(interval);
-      setUploadProgress(100);
-
-      const fileSize = (file.size / 1024).toFixed(1) + ' KB';
-      
-      const newDataset = {
-        id: `dataset-${Date.now()}`,
-        name: truncateFileName(file.name),
-        description: `Uploaded ${fileType.split('/')[1]} file`,
-        rows: previewData.rows.length,
-        columns: previewData.columns.length,
-        dateUploaded: new Date().toISOString(),
-        fileType: file.name.split('.').pop() || '',
-        fileSize,
-        projectId: currentProject.id,
-        previewData
+      // Prepare preview data - take first 100 rows
+      const previewData = {
+        columns: columns,
+        rows: rows.slice(0, 100)
       };
 
-      await addDataset(newDataset);
-      setUploading(false);
-      setFile(null);
-      setUploadProgress(0);
-      toast.success(`Dataset "${file.name}" uploaded successfully`);
-    } catch (error) {
+      console.log('💾 Preparing to save to Supabase:', {
+        name: truncateFileName(file.name),
+        columns: columns.length,
+        rows: rows.length,
+        previewRows: previewData.rows.length
+      });
+
+      // Insert into Supabase
+      const { data: newDataset, error: supabaseError } = await supabase
+        .from('datasets')
+        .insert([{
+          name: truncateFileName(file.name),
+          description: `Uploaded ${file.name.split('.').pop()?.toUpperCase()} file`,
+          file_type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
+          file_size: fileSizeFormatted,
+          row_count: rows.length,
+          column_count: columns.length,
+          preview_data: previewData,
+          project_id: currentProject.id,
+          user_id: user.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
       clearInterval(interval);
-      setError(error instanceof Error ? error.message : 'Failed to upload file. Please try again.');
+
+      if (supabaseError) {
+        console.error('❌ Supabase error:', supabaseError);
+        throw supabaseError;
+      }
+
+      console.log('✅ Dataset saved to Supabase:', newDataset);
+
+      setUploadProgress(100);
+      
+      toast.success(`Dataset "${file.name}" uploaded successfully!`, {
+        duration: 4000,
+        icon: '✅'
+      });
+
+      // Reset form
+      setFile(null);
       setUploading(false);
+      setUploadProgress(0);
+
+      // Close modal after short delay
+      setTimeout(() => {
+        if (onClose) onClose();
+        // Reload to show new dataset
+        window.location.reload();
+      }, 1000);
+
+    } catch (err) {
+      console.error('❌ Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to upload file';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -168,101 +272,125 @@ const DataUploader: React.FC = () => {
     <Card className="h-full">
       <div
         className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg ${
-          isDragging ? 'border-indigo-300 bg-indigo-50' : 'border-gray-300'
-        } transition-colors duration-200`}
+          isDragging
+            ? 'border-indigo-500 bg-indigo-50'
+            : 'border-gray-300 hover:border-indigo-400'
+        } transition-colors cursor-pointer`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={triggerFileInput}
       >
-        {!file && !uploading && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,.json,.xlsx,.xls,.txt"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        
+        {!file ? (
           <>
-            <FileUp className="w-12 h-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              Drag and drop your file here
-            </h3>
-            <p className="mt-1 text-xs text-gray-500">
-              Supported formats: CSV, Excel, JSON, CSS (max 100MB)
+            <Upload className="w-12 h-12 text-gray-400 mb-4" />
+            <p className="text-sm text-gray-600 mb-2">
+              <span className="font-semibold text-indigo-600">Click to upload</span> or drag and drop
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={triggerFileInput}
-            >
-              Select file
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept=".csv,.xlsx,.xls,.json,.css"
-              onChange={handleFileChange}
-            />
+            <p className="text-xs text-gray-500">
+              CSV, JSON, Excel, or TXT (MAX. 50MB)
+            </p>
           </>
+        ) : (
+          <div className="flex items-center space-x-3">
+            <File className="w-8 h-8 text-indigo-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900">{file.name}</p>
+              <p className="text-xs text-gray-500">
+                {(file.size / 1024).toFixed(1)} KB
+              </p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setFile(null);
+                setError(null);
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         )}
+      </div>
 
-        {file && !uploading && (
-          <div className="w-full">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Check className="w-5 h-5 text-green-500" />
-                <span className="ml-2 text-sm font-medium text-gray-900">
-                  {file.name.length > MAX_NAME_LENGTH ? truncateFileName(file.name) : file.name}
-                </span>
-              </div>
+      {!currentProject && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start">
+            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 mr-2" />
+            <p className="text-sm text-yellow-800">
+              Please select a project before uploading datasets.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {uploading && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">
+              {uploadProgress < 100
+                ? `Uploading ${file?.name}...`
+                : 'Processing...'}
+            </span>
+          </div>
+          <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
+            <div
+              className="h-2 bg-indigo-500 rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-xs text-gray-500">
+              {uploadProgress.toFixed(0)}%
+            </span>
+            {uploadProgress < 100 && file && (
               <span className="text-xs text-gray-500">
-                {(file.size / (1024 * 1024)).toFixed(2)} MB
+                {((file.size * (uploadProgress / 100)) / (1024 * 1024)).toFixed(2)} MB / {(file.size / (1024 * 1024)).toFixed(2)} MB
               </span>
-            </div>
-            <div className="flex justify-center mt-4 space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFile(null)}
-              >
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleUpload}>
-                Upload
-              </Button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {uploading && (
-          <div className="w-full">
-            <div className="flex items-center">
-              <Loader2 className="w-5 h-5 mr-2 text-indigo-500 animate-spin" />
-              <span className="text-sm font-medium text-gray-900">
-                {uploadProgress < 100
-                  ? `Uploading ${file?.name}...`
-                  : 'Processing...'}
-              </span>
-            </div>
-            <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
-              <div
-                className="h-2 bg-indigo-500 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-gray-500">
-                {uploadProgress.toFixed(0)}%
-              </span>
-              {uploadProgress < 100 && file && (
-                <span className="text-xs text-gray-500">
-                  {((file.size * (uploadProgress / 100)) / (1024 * 1024)).toFixed(2)} MB / {(file.size / (1024 * 1024)).toFixed(2)} MB
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+      {error && (
+        <div className="flex items-center mt-4 p-3 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
+          <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        {error && (
-          <div className="flex items-center mt-4 text-sm text-red-500">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            {error}
-          </div>
+      {uploadProgress === 100 && (
+        <div className="flex items-center mt-4 p-3 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
+          <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+          <span>Upload complete!</span>
+        </div>
+      )}
+
+      <div className="mt-6 flex space-x-3">
+        <Button
+          onClick={handleUpload}
+          disabled={!file || uploading || !currentProject}
+          className="flex-1"
+        >
+          {uploading ? 'Uploading...' : 'Upload'}
+        </Button>
+        {onClose && (
+          <Button
+            onClick={onClose}
+            variant="outline"
+            disabled={uploading}
+          >
+            Cancel
+          </Button>
         )}
       </div>
     </Card>
