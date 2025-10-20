@@ -13,6 +13,19 @@ const UserProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
+  // DEBUG: Log what we have
+  useEffect(() => {
+    console.log('🔍 UserProfile Debug:', {
+      hasUserProfile: !!userProfile,
+      userProfile,
+      hasAuthUser: !!user,
+      authUser: user,
+      isLoadingProfile,
+      userEmail: user?.email,
+      profileEmail: userProfile?.email
+    });
+  }, [userProfile, user, isLoadingProfile]);
+  
   // Form state
   const [formData, setFormData] = useState({
     fullName: '',
@@ -67,8 +80,10 @@ const UserProfile: React.FC = () => {
       });
       
       setIsEditing(false);
+      toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
     }
   };
 
@@ -117,7 +132,40 @@ const UserProfile: React.FC = () => {
     );
   }
 
-  if (!userProfile) {
+  // FALLBACK: If no userProfile but we have auth user, show basic info
+  if (!userProfile && user) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">User Profile</h1>
+        
+        <Card>
+          <div className="text-center py-12">
+            <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Welcome, {user.email}
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Your profile is being set up. Please refresh the page.
+            </p>
+            <div className="space-y-2 text-sm text-gray-500">
+              <p>Debug Info:</p>
+              <p>Auth User ID: {user.id}</p>
+              <p>Email: {user.email}</p>
+              <p>Profile Loading: {isLoadingProfile ? 'Yes' : 'No'}</p>
+            </div>
+            <Button 
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Page
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userProfile && !user) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-gray-900">Profile Not Found</h2>
@@ -137,10 +185,10 @@ const UserProfile: React.FC = () => {
             <div className="flex flex-col items-center">
               <div className="relative">
                 <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100">
-                  {userProfile.avatarUrl ? (
+                  {userProfile?.avatarUrl ? (
                     <img 
                       src={userProfile.avatarUrl} 
-                      alt={userProfile.fullName || 'User'} 
+                      alt={userProfile.fullName || user?.email || 'User'} 
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -172,31 +220,31 @@ const UserProfile: React.FC = () => {
               </div>
               
               <h2 className="mt-4 text-xl font-semibold text-gray-900">
-                {userProfile.fullName || 'User'}
+                {userProfile?.fullName || user?.email?.split('@')[0] || 'User'}
               </h2>
               
-              {userProfile.jobTitle && (
+              {userProfile?.jobTitle && (
                 <p className="text-gray-600">{userProfile.jobTitle}</p>
               )}
               
-              {userProfile.company && (
+              {userProfile?.company && (
                 <p className="text-gray-500 text-sm">{userProfile.company}</p>
               )}
               
               <div className="mt-6 w-full">
                 <div className="flex items-center text-gray-600 mb-3">
                   <Mail className="w-5 h-5 mr-2" />
-                  <span>{userProfile.email}</span>
+                  <span>{userProfile?.email || user?.email}</span>
                 </div>
                 
-                {userProfile.location && (
+                {userProfile?.location && (
                   <div className="flex items-center text-gray-600 mb-3">
                     <MapPin className="w-5 h-5 mr-2" />
                     <span>{userProfile.location}</span>
                   </div>
                 )}
                 
-                {userProfile.website && (
+                {userProfile?.website && (
                   <div className="flex items-center text-gray-600 mb-3">
                     <Globe className="w-5 h-5 mr-2" />
                     <a 
@@ -212,7 +260,7 @@ const UserProfile: React.FC = () => {
               </div>
               
               <div className="mt-4 flex space-x-3">
-                {userProfile.socialLinks?.twitter && (
+                {userProfile?.socialLinks?.twitter && (
                   <a 
                     href={`https://twitter.com/${userProfile.socialLinks.twitter}`} 
                     target="_blank" 
@@ -223,7 +271,7 @@ const UserProfile: React.FC = () => {
                   </a>
                 )}
                 
-                {userProfile.socialLinks?.linkedin && (
+                {userProfile?.socialLinks?.linkedin && (
                   <a 
                     href={`https://linkedin.com/in/${userProfile.socialLinks.linkedin}`} 
                     target="_blank" 
@@ -234,7 +282,7 @@ const UserProfile: React.FC = () => {
                   </a>
                 )}
                 
-                {userProfile.socialLinks?.github && (
+                {userProfile?.socialLinks?.github && (
                   <a 
                     href={`https://github.com/${userProfile.socialLinks.github}`} 
                     target="_blank" 
@@ -278,7 +326,7 @@ const UserProfile: React.FC = () => {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                     />
                   </div>
                   
@@ -293,7 +341,7 @@ const UserProfile: React.FC = () => {
                         name="jobTitle"
                         value={formData.jobTitle}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                       />
                     </div>
                     
@@ -307,7 +355,7 @@ const UserProfile: React.FC = () => {
                         name="company"
                         value={formData.company}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                       />
                     </div>
                   </div>
@@ -322,7 +370,7 @@ const UserProfile: React.FC = () => {
                       rows={3}
                       value={formData.bio}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                     />
                   </div>
                   
@@ -337,7 +385,7 @@ const UserProfile: React.FC = () => {
                         name="location"
                         value={formData.location}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                       />
                     </div>
                     
@@ -351,7 +399,7 @@ const UserProfile: React.FC = () => {
                         name="website"
                         value={formData.website}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
                       />
                     </div>
                   </div>
@@ -436,7 +484,7 @@ const UserProfile: React.FC = () => {
               </form>
             ) : (
               <div className="space-y-6">
-                {userProfile.bio && (
+                {userProfile?.bio && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-700">About</h4>
                     <p className="mt-2 text-gray-600">{userProfile.bio}</p>
@@ -448,22 +496,26 @@ const UserProfile: React.FC = () => {
                   <dl className="mt-2 divide-y divide-gray-200">
                     <div className="py-3 flex justify-between">
                       <dt className="text-sm font-medium text-gray-500">Email</dt>
-                      <dd className="text-sm text-gray-900">{userProfile.email}</dd>
+                      <dd className="text-sm text-gray-900">{userProfile?.email || user?.email}</dd>
                     </div>
                     
-                    <div className="py-3 flex justify-between">
-                      <dt className="text-sm font-medium text-gray-500">Member Since</dt>
-                      <dd className="text-sm text-gray-900">
-                        {new Date(userProfile.createdAt).toLocaleDateString()}
-                      </dd>
-                    </div>
+                    {userProfile?.createdAt && (
+                      <div className="py-3 flex justify-between">
+                        <dt className="text-sm font-medium text-gray-500">Member Since</dt>
+                        <dd className="text-sm text-gray-900">
+                          {new Date(userProfile.createdAt).toLocaleDateString()}
+                        </dd>
+                      </div>
+                    )}
                     
-                    <div className="py-3 flex justify-between">
-                      <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
-                      <dd className="text-sm text-gray-900">
-                        {new Date(userProfile.updatedAt).toLocaleDateString()}
-                      </dd>
-                    </div>
+                    {userProfile?.updatedAt && (
+                      <div className="py-3 flex justify-between">
+                        <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
+                        <dd className="text-sm text-gray-900">
+                          {new Date(userProfile.updatedAt).toLocaleDateString()}
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                 </div>
                 
@@ -473,21 +525,21 @@ const UserProfile: React.FC = () => {
                     <div className="py-3 flex justify-between">
                       <dt className="text-sm font-medium text-gray-500">Theme</dt>
                       <dd className="text-sm text-gray-900 capitalize">
-                        {userProfile.preferences?.theme || 'Light'}
+                        {userProfile?.preferences?.theme || 'Light'}
                       </dd>
                     </div>
                     
                     <div className="py-3 flex justify-between">
                       <dt className="text-sm font-medium text-gray-500">Email Notifications</dt>
                       <dd className="text-sm text-gray-900">
-                        {userProfile.preferences?.emailNotifications ? 'Enabled' : 'Disabled'}
+                        {userProfile?.preferences?.emailNotifications ? 'Enabled' : 'Disabled'}
                       </dd>
                     </div>
                     
                     <div className="py-3 flex justify-between">
                       <dt className="text-sm font-medium text-gray-500">Two-Factor Authentication</dt>
                       <dd className="text-sm text-gray-900">
-                        {userProfile.preferences?.twoFactorAuth ? 'Enabled' : 'Disabled'}
+                        {userProfile?.preferences?.twoFactorAuth ? 'Enabled' : 'Disabled'}
                       </dd>
                     </div>
                   </dl>
