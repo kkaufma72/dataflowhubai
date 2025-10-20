@@ -265,7 +265,7 @@ const LandingPage = () => {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
               <button 
-                onClick={() => navigate('/app/documentation')}
+                onClick={() => navigate('/signin')}
                 className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition"
               >
                 View Documentation

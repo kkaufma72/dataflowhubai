@@ -16,7 +16,7 @@ const CTA = () => {
               Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
-            <Link to="/documentation" className="btn border border-white text-white hover:bg-indigo-700">
+            <Link to="/signin" className="btn border border-white text-white hover:bg-indigo-700">
               Schedule Demo
             </Link>
           </div>
