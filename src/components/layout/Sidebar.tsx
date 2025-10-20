@@ -97,7 +97,7 @@ const Sidebar: React.FC = () => {
   const navigation = [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/app',
       icon: Home,
       badge: null,
       description: 'Overview and quick actions'

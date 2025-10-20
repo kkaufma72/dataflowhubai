@@ -124,7 +124,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                       <Route path="/password-reset" element={<PasswordReset />} />
                       
                       {/* Authenticated routes with layout */}
-                      <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                      <Route path="/app" element={<AppLayout />}> 
                         <Route index element={<Dashboard />} />
                         <Route path="documentation" element={<Documentation />} />
                         <Route path="data" element={<DataManagement />} />
