@@ -152,4 +152,4 @@ const DatasetCard: React.FC<DatasetCardProps> = ({ dataset, onPreview, onAnalyze
   );
 };
 
-export default DatasetCard;
+export default React.memo(DatasetCard);
