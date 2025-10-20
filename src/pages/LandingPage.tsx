@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Logo from '../components/common/Logo';
 import { 
   Rocket, 
   Database, 
@@ -19,7 +20,9 @@ import {
   Activity,
   Layers,
   Eye,
-  Send
+  Send,
+  Menu,
+  X
 } from 'lucide-react';
 
 const LandingPage = () => {
@@ -31,6 +34,7 @@ const LandingPage = () => {
     { type: 'bot', text: 'Hi! I can help you understand your data. What would you like to know?' }
   ]);
   const [currentDemoStep, setCurrentDemoStep] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const demoConversation = [
     { type: 'user', text: 'What are the key patterns in my sales data?' },
@@ -106,7 +110,97 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Logo variant="horizontal" size="md" />
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-700 hover:text-indigo-600 font-medium transition-colors">
+                Features
+              </a>
+              <a href="#pricing" className="text-gray-700 hover:text-indigo-600 font-medium transition-colors">
+                Pricing
+              </a>
+              <button 
+                onClick={() => navigate('/documentation')} 
+                className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+              >
+                Docs
+              </button>
+              <button 
+                onClick={() => navigate('/signin')}
+                className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+              >
+                Sign In
+              </button>
+              <button 
+                onClick={() => navigate('/signin')}
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md"
+              >
+                Get Started
+              </button>
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700 hover:text-indigo-600 p-2"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-200">
+              <div className="flex flex-col space-y-4">
+                <a 
+                  href="#features" 
+                  className="text-gray-700 hover:text-indigo-600 font-medium px-4 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Features
+                </a>
+                <a 
+                  href="#pricing" 
+                  className="text-gray-700 hover:text-indigo-600 font-medium px-4 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Pricing
+                </a>
+                <button 
+                  onClick={() => { navigate('/documentation'); setMobileMenuOpen(false); }}
+                  className="text-left text-gray-700 hover:text-indigo-600 font-medium px-4 py-2"
+                >
+                  Docs
+                </button>
+                <button 
+                  onClick={() => { navigate('/signin'); setMobileMenuOpen(false); }}
+                  className="text-left text-gray-700 hover:text-indigo-600 font-medium px-4 py-2"
+                >
+                  Sign In
+                </button>
+                <button 
+                  onClick={() => { navigate('/signin'); setMobileMenuOpen(false); }}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 mx-4"
+                >
+                  Get Started
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -127,14 +221,14 @@ const LandingPage = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button 
                 onClick={() => navigate('/signin')}
-                className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center"
+                className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
               <button 
                 onClick={() => navigate('/documentation')}
-                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition"
+                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition-all"
               >
                 View Documentation
               </button>
@@ -219,9 +313,9 @@ const LandingPage = () => {
             {features.map((feature, idx) => (
               <div 
                 key={idx}
-                className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow border border-gray-100"
+                className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-indigo-200"
               >
-                <div className={`w-16 h-16 bg-${feature.color}-100 rounded-lg flex items-center justify-center mb-4 text-${feature.color}-600`}>
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4 text-white">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
@@ -233,7 +327,7 @@ const LandingPage = () => {
       </section>
 
       {/* Metrics Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-indigo-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-indigo-700">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             {metrics.map((metric, idx) => (
@@ -259,8 +353,12 @@ const LandingPage = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            {[
+              { name: 'Sarah Johnson', role: 'Data Scientist', company: 'TechCorp' },
+              { name: 'Michael Chen', role: 'ML Engineer', company: 'StartupXYZ' },
+              { name: 'Emily Rodriguez', role: 'CTO', company: 'DataCo' }
+            ].map((person, i) => (
+              <div key={i} className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, idx) => (
                     <Star key={idx} className="w-5 h-5 text-yellow-400 fill-current" />
@@ -270,10 +368,12 @@ const LandingPage = () => {
                   "DataFlowHub AI has completely transformed how we approach machine learning. What used to take weeks now takes hours."
                 </p>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    {person.name[0]}
+                  </div>
                   <div className="ml-4">
-                    <p className="font-semibold text-gray-900">Data Scientist</p>
-                    <p className="text-sm text-gray-500">Fortune 500 Company</p>
+                    <p className="font-semibold text-gray-900">{person.name}</p>
+                    <p className="text-sm text-gray-500">{person.role} at {person.company}</p>
                   </div>
                 </div>
               </div>
@@ -296,7 +396,7 @@ const LandingPage = () => {
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
               <div className="mb-6">
                 <span className="text-4xl font-bold text-gray-900">$0</span>
@@ -304,15 +404,15 @@ const LandingPage = () => {
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Up to 3 datasets
                 </li>
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Basic visualizations
                 </li>
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Community support
                 </li>
               </ul>
@@ -325,7 +425,7 @@ const LandingPage = () => {
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-indigo-600 p-8 rounded-xl shadow-2xl border-4 border-indigo-700 transform scale-105">
+            <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-8 rounded-xl shadow-2xl border-4 border-indigo-800 transform scale-105">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-2xl font-bold text-white">Pro</h3>
                 <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-semibold">
@@ -338,51 +438,51 @@ const LandingPage = () => {
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-white">
-                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
                   Unlimited datasets
                 </li>
                 <li className="flex items-center text-white">
-                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
                   Advanced AutoML
                 </li>
                 <li className="flex items-center text-white">
-                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
                   Priority support
                 </li>
                 <li className="flex items-center text-white">
-                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
                   API access
                 </li>
               </ul>
               <button 
                 onClick={() => navigate('/signin')}
-                className="w-full bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+                className="w-full bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg"
               >
                 Start Free Trial
               </button>
             </div>
 
             {/* Enterprise Plan */}
-            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
               <div className="mb-6">
                 <span className="text-4xl font-bold text-gray-900">Custom</span>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Everything in Pro
                 </li>
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Dedicated support
                 </li>
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Custom integrations
                 </li>
                 <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   SLA guarantees
                 </li>
               </ul>
@@ -408,7 +508,7 @@ const LandingPage = () => {
           </p>
           <button
             onClick={() => navigate('/signin')}
-            className="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition inline-flex items-center"
+            className="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition inline-flex items-center shadow-lg hover:shadow-xl"
           >
             Start Your Free Trial
             <ArrowRight className="w-5 h-5 ml-2" />
@@ -424,38 +524,37 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center mb-4">
-                <Rocket className="w-6 h-6 text-indigo-400" />
-                <span className="ml-2 text-lg font-bold text-white">DataFlowHub AI</span>
+              <div className="mb-4">
+                <Logo variant="horizontal" size="sm" />
               </div>
-              <p className="text-sm">
+              <p className="text-sm text-gray-400">
                 The no-code ML platform for everyone. Build, train, and deploy models in minutes.
               </p>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#features" className="hover:text-white">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-                <li><button onClick={() => navigate('/documentation')} className="hover:text-white">Documentation</button></li>
-                <li><button onClick={() => navigate('/api-reference')} className="hover:text-white">API</button></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><button onClick={() => navigate('/documentation')} className="hover:text-white transition-colors">Documentation</button></li>
+                <li><button onClick={() => navigate('/api-reference')} className="hover:text-white transition-colors">API</button></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white">About</a></li>
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Careers</a></li>
-                <li><a href="#" className="hover:text-white">Contact</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white">Privacy</a></li>
-                <li><a href="#" className="hover:text-white">Terms</a></li>
-                <li><a href="#" className="hover:text-white">Security</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
               </ul>
             </div>
           </div>

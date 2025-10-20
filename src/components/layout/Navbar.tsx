@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   Bell, 
   Settings, 
+  HelpCircle, 
   User,
   LogOut,
   Plus,
@@ -17,6 +18,7 @@ import { useNotifications, NotificationCenter } from '../common/NotificationSyst
 import SkeletonLoader from '../common/SkeletonLoader';
 import ThemeToggle from '../common/ThemeToggle';
 import NewProjectModal from '../common/NewProjectModal';
+import Logo from '../common/Logo';
 
 interface NavbarProps {
   onOpenCommandPalette?: () => void;
@@ -38,129 +40,115 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
   };
 
   return (
-    <nav className="sticky top-0 z-10 flex-shrink-0 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+    <nav className="sticky top-0 z-10 flex-shrink-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 dark:bg-gray-900/95 dark:border-gray-700 shadow-sm">
       <div className="px-4 mx-auto max-w-full">
         <div className="flex justify-between h-16">
-          {/* Left section - Logo only */}
+          {/* Left section - Professional Logo */}
           <div className="flex items-center">
-            <Link to="/app" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">DF</span>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-purple-400">
-                DataFlowHub AI
-              </span>
+            <Link to="/dashboard" className="flex items-center">
+              <Logo variant="horizontal" size="md" />
             </Link>
           </div>
 
           {/* Right section */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              {/* Command Palette Button */}
-              {onOpenCommandPalette && (
-                <button
-                  onClick={onOpenCommandPalette}
-                  className="hidden md:flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-500 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  title="Open command palette (⌘K)"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Search...</span>
-                  <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded">
-                    <Command className="w-3 h-3 mr-0.5" />
-                    K
-                  </kbd>
-                </button>
-              )}
-
-              {/* New Project Button */}
+              {/* Search Button */}
               <button
-                onClick={() => setShowNewProjectModal(true)}
-                className="hidden md:flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-                title="Create new project"
+                onClick={onOpenCommandPalette}
+                className="hidden sm:flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all border border-gray-200 dark:border-gray-700 group"
+                title="Search (⌘K)"
               >
-                <Plus className="w-4 h-4" />
-                <span>New Project</span>
+                <Search className="h-4 w-4" />
+                <span className="text-xs font-medium">Search</span>
+                <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded shadow-sm">
+                  <Command className="h-3 w-3 mr-0.5" />
+                  K
+                </kbd>
               </button>
 
+              {/* Mobile search icon only */}
+              <button
+                onClick={onOpenCommandPalette}
+                className="sm:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                title="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+
+              {/* Theme toggle */}
+              <ThemeToggle />
+              
               {/* Notifications */}
               <NotificationCenter />
-
-              {/* Theme Toggle */}
-              <ThemeToggle />
 
               {/* Settings */}
               <Link
                 to="/app/settings"
-                className="p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-300 dark:hover:text-white transition-colors"
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
                 title="Settings"
               >
-                <span className="sr-only">Settings</span>
                 <Settings className="h-5 w-5" />
               </Link>
 
-              {/* REMOVED: Help/Documentation Link - Users can access documentation via landing page or help button */}
+              {/* Help */}
+              <Link
+                to="/app/documentation"
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                title="Help & Documentation"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Link>
 
-              {/* Profile dropdown */}
+              {/* Divider */}
+              <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
+
+              {/* User menu */}
               <div className="relative">
-                <div>
-                  <button
-                    type="button"
-                    className="bg-white dark:bg-gray-700 rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:ring-2 hover:ring-indigo-400 transition-all"
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    aria-expanded={showUserMenu}
-                    aria-haspopup="true"
-                  >
-                    <span className="sr-only">Open user menu</span>
-                    {isLoadingProfile ? (
-                      <SkeletonLoader circle width={32} height={32} />
-                    ) : userProfile?.avatarUrl ? (
-                      <img 
-                        src={userProfile.avatarUrl} 
-                        alt={userProfile.fullName || 'User'} 
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-3 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                >
+                  {isLoadingProfile ? (
+                    <SkeletonLoader className="w-8 h-8 rounded-full" />
+                  ) : (
+                    <>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm ring-2 ring-white dark:ring-gray-900">
+                        {userProfile?.full_name?.[0]?.toUpperCase() || 'U'}
                       </div>
-                    )}
-                  </button>
-                </div>
-                
+                      <div className="hidden md:block text-left">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                          {userProfile?.full_name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {userProfile?.email}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </button>
+
+                {/* Dropdown menu */}
                 {showUserMenu && (
                   <>
-                    {/* Backdrop */}
-                    <div 
-                      className="fixed inset-0 z-10" 
+                    <div
+                      className="fixed inset-0 z-10"
                       onClick={() => setShowUserMenu(false)}
                     />
-                    
-                    {/* Dropdown Menu */}
-                    <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20 divide-y divide-gray-100 dark:divide-gray-700">
-                      {/* User Info Section */}
-                      <div className="px-4 py-3">
-                        {isLoadingProfile ? (
-                          <>
-                            <SkeletonLoader height={16} className="mb-2" />
-                            <SkeletonLoader height={14} width="80%" />
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                              {userProfile?.fullName || 'User'}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
-                              {userProfile?.email}
-                            </p>
-                          </>
-                        )}
+                    <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl bg-white dark:bg-gray-800 shadow-strong ring-1 ring-black ring-opacity-5 animate-fade-in">
+                      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {userProfile?.full_name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          {userProfile?.email}
+                        </p>
                       </div>
                       
-                      {/* Menu Items */}
                       <div className="py-1">
                         <Link
                           to="/app/profile"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <User className="mr-3 h-4 w-4 text-gray-400" />
@@ -168,19 +156,25 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
                         </Link>
                         <Link
                           to="/app/settings"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <Settings className="mr-3 h-4 w-4 text-gray-400" />
                           Settings
                         </Link>
-                        {/* REMOVED: Documentation Link - Users can access via public landing page */}
+                        <Link
+                          to="/app/documentation"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <HelpCircle className="mr-3 h-4 w-4 text-gray-400" />
+                          Help & Docs
+                        </Link>
                       </div>
                       
-                      {/* Sign Out */}
-                      <div className="py-1">
+                      <div className="py-1 border-t border-gray-100 dark:border-gray-700">
                         <button
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                           onClick={() => {
                             setShowUserMenu(false);
                             handleSignOut();
@@ -199,7 +193,6 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
         </div>
       </div>
       
-      {/* New Project Modal */}
       <NewProjectModal 
         isOpen={showNewProjectModal}
         onClose={() => setShowNewProjectModal(false)}
