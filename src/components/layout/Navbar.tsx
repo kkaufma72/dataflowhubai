@@ -6,7 +6,9 @@ import {
   HelpCircle, 
   User,
   LogOut,
-  Plus
+  Plus,
+  Search, // ADD THIS
+  Command // ADD THIS
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -17,7 +19,12 @@ import SkeletonLoader from '../common/SkeletonLoader';
 import ThemeToggle from '../common/ThemeToggle';
 import NewProjectModal from '../common/NewProjectModal';
 
-const Navbar: React.FC = () => {
+// ADD THIS PROP
+interface NavbarProps {
+  onOpenCommandPalette?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => { // UPDATE THIS
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { userProfile, isLoadingProfile } = useUser();
   const { signOut } = useAuth();
@@ -51,6 +58,29 @@ const Navbar: React.FC = () => {
           {/* Right section */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
+              {/* ADD THIS: Command Palette Search Button */}
+              <button
+                onClick={onOpenCommandPalette}
+                className="hidden sm:flex items-center space-x-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors group"
+                title="Search (⌘K)"
+              >
+                <Search className="h-4 w-4" />
+                <span className="text-xs">Search</span>
+                <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-xs bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  <Command className="h-3 w-3 mr-0.5" />
+                  K
+                </kbd>
+              </button>
+
+              {/* Mobile search icon only */}
+              <button
+                onClick={onOpenCommandPalette}
+                className="sm:hidden p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-300 dark:hover:text-white transition-colors"
+                title="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+
               {/* Theme toggle */}
               <ThemeToggle />
               
