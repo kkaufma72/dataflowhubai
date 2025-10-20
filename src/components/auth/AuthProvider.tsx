@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { User, Session, Provider } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -36,9 +37,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Memoized function to clear local data
   const clearLocalData = useCallback(async () => {
+    console.log('🧹 Clearing local data...');
     localStorage.clear();
     try {
       const databases = await window.indexedDB.databases();
@@ -61,9 +64,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      window.location.href = '/signin';
+      // Use navigate instead of window.location for proper React Router handling
+      navigate('/signin', { replace: true });
     }
-  }, [clearLocalData]);
+  }, [clearLocalData, navigate]);
 
   useEffect(() => {
     console.log('🚀 AuthProvider mounting...');
@@ -118,7 +122,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setSession(null);
         setLoading(false);
-        window.location.href = '/signin';
+        // Use navigate instead of window.location
+        navigate('/signin', { replace: true });
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('🔄 Token refreshed');
         setSession(session);
@@ -138,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .from('user_profiles')
               .select('*')
               .eq('user_id', session.user.id)
-              .maybeSingle(); // Use maybeSingle instead of single to avoid errors if not found
+              .maybeSingle();
             
             if (profileError) {
               console.error('❌ Error checking profile:', profileError);
@@ -186,7 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Empty dependency array - only run once on mount
+  }, [handleAuthError, clearLocalData, navigate]);
 
   // Sign in with email and password
   const signIn = useCallback(async (email: string, password: string) => {
@@ -252,17 +257,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Sign out
+  // Sign out - FIXED VERSION
   const signOut = useCallback(async () => {
     try {
       console.log('👋 Signing out...');
-      await supabase.auth.signOut();
+      // Clear data first
       await clearLocalData();
+      // Then sign out from Supabase
+      await supabase.auth.signOut();
+      // Update state
+      setUser(null);
+      setSession(null);
       console.log('✅ Signed out successfully');
+      // Use navigate instead of window.location for proper routing
+      navigate('/signin', { replace: true });
     } catch (error) {
       console.error('❌ Error signing out:', error);
+      // Even if there's an error, try to navigate to signin
+      navigate('/signin', { replace: true });
     }
-  }, [clearLocalData]);
+  }, [clearLocalData, navigate]);
 
   // Reset password
   const resetPassword = useCallback(async (email: string) => {
