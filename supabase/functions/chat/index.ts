@@ -1,129 +1,123 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.8';
 import OpenAI from 'npm:openai@4.28.0';
-import { ConversationChain } from 'langchain/chains';
-import { PromptTemplate } from 'langchain/prompts';
-import { OpenAI } from 'langchain/llms/openai';
-import { OpenAI } from 'openai';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
+interface ChatRequest {
+  messages: Array<{role: string; content: string}>;
+  datasetIds?: string[];
+  includeModels?: boolean;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests FIRST
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      headers: corsHeaders
-    });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Get environment variables
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
 
-    console.log('Chat function called - checking environment variables');
-
-    // Enhanced error handling for environment variables
-    const missingVars = [];
-    if (!openaiKey) missingVars.push('OPENAI_API_KEY');
-    if (!supabaseUrl) missingVars.push('SUPABASE_URL');
-    if (!supabaseKey) missingVars.push('SUPABASE_ANON_KEY');
-
-    if (missingVars.length > 0) {
-      console.error(`Missing environment variables: ${missingVars.join(', ')}`);
-      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    if (!openaiKey || !supabaseUrl || !supabaseKey) {
+      throw new Error('Missing required environment variables');
     }
 
-    console.log('All required environment variables are set');
-
-    // Initialize clients
     const supabase = createClient(supabaseUrl, supabaseKey);
     const openai = new OpenAI({ apiKey: openaiKey });
 
-    // Parse request body
-    const { messages } = await req.json();
+    const { messages, datasetIds, includeModels }: ChatRequest = await req.json();
 
-    if (!messages || !Array.isArray(messages)) {
-      console.error('Invalid messages format received');
-      throw new Error('Invalid messages format');
+    // Fetch selected datasets or all if none specified
+    let query = supabase.from('datasets').select('*');
+    if (datasetIds && datasetIds.length > 0) {
+      query = query.in('id', datasetIds);
+    }
+    
+    const { data: datasets, error: datasetsError } = await query;
+
+    if (datasetsError) throw new Error('Failed to fetch datasets');
+
+    // Optionally fetch models
+    let modelsContext = '';
+    if (includeModels) {
+      const { data: models } = await supabase.from('models').select('*');
+      if (models && models.length > 0) {
+        modelsContext = `\n\nAvailable Models:\n${models.map(m => 
+          `- ${m.name} (${m.algorithm}, Status: ${m.status})`
+        ).join('\n')}`;
+      }
     }
 
-    console.log(`Processing chat request with ${messages.length} messages`);
-
-    // Fetch datasets for context
-    const { data: datasets, error: datasetsError } = await supabase
-      .from('datasets')
-      .select('*');
-
-    if (datasetsError) {
-      console.error('Error fetching datasets:', datasetsError);
-      throw new Error('Failed to fetch datasets');
-    }
-
-    console.log(`Retrieved ${datasets?.length || 0} datasets for context`);
-
-    // Create context from datasets
+    // Build rich context
     const datasetContext = datasets?.map(dataset => {
       return `Dataset: ${dataset.name}
 Description: ${dataset.description || 'No description'}
+Rows: ${dataset.row_count || 'Unknown'}
 Columns: ${dataset.preview_data?.columns?.join(', ') || 'No columns'}
 Sample Data: ${JSON.stringify(dataset.preview_data?.rows?.slice(0, 3) || [])}
+Statistics: ${JSON.stringify(dataset.column_statistics || {})}
 ---`;
     }).join('\n') || 'No datasets available';
 
-    const systemPrompt = `You are an AI assistant with knowledge of the following datasets:
-
+    const systemPrompt = `You are an AI assistant for DataFlowHub, an enterprise AutoML platform. 
+    
+You have access to the following datasets:
 ${datasetContext}
+${modelsContext}
 
-Use this information to answer questions about the data. Be specific and reference actual values from the datasets when possible.
-If you're not sure about something, say so rather than making assumptions.`;
+You can help users:
+1. Analyze data across multiple datasets
+2. Identify patterns and correlations
+3. Suggest machine learning models
+4. Create visualizations
+5. Answer questions about data quality
+6. Provide insights and recommendations
+7. Explain ML concepts
 
-    console.log('Making OpenAI API call');
+When answering:
+- Be specific and actionable
+- Reference actual data from the datasets
+- Suggest concrete next steps
+- Use bullet points for clarity
+- Highlight important insights`;
 
-    // Make OpenAI API call
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4-turbo-preview',
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages,
+        ...messages
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1000
     });
 
-    console.log('Successfully received OpenAI response');
+    const response = completion.choices[0]?.message?.content || 'No response';
 
     return new Response(
-      JSON.stringify(completion.choices[0].message),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      JSON.stringify({ response }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
     );
-  } catch (error) {
-    console.error('Chat function error:', error);
 
+  } catch (error: any) {
+    console.error('Chat error:', error);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-        details: error instanceof Error ? error.stack : undefined
-      }),
-      {
+      JSON.stringify({ error: error.message }),
+      { 
         status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
     );
   }

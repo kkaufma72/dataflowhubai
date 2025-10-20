@@ -16,7 +16,9 @@ import {
   X,
   FileSpreadsheet,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 
 // Define navigation structure
@@ -26,6 +28,13 @@ const navigation = [
     href: '/dashboard', 
     icon: HomeIcon, 
     exact: true 
+  },
+  {
+    name: 'AI Assistant',
+    href: '/app/ai-chat',
+    icon: MessageSquare,
+    exact: false,
+    highlight: true // Makes it stand out with special styling
   },
   {
     name: 'Data Preparation',
@@ -102,116 +111,79 @@ const ResponsiveNavbar: React.FC = () => {
     return {
       ...item,
       isActive: item.exact 
-        ? location.pathname === item.href 
+        ? location.pathname === item.href
         : location.pathname.startsWith(item.href)
     };
   });
 
+  const isItemActive = (href: string, exact?: boolean) => {
+    if (exact) {
+      return location.pathname === href;
+    }
+    return location.pathname === href || location.pathname.startsWith(href);
+  };
+
   return (
-    <div className="bg-white shadow-sm">
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex md:justify-center border-b border-gray-200">
-        <nav className="flex space-x-6 px-4 max-w-7xl mx-auto">
-          {topLevelNavItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.children ? item.children[0].href : item.href}
-              className={`flex items-center px-1 pt-1 pb-2 border-b-2 text-sm font-medium transition-colors duration-150 ${
-                item.isActive
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <item.icon
-                className={`mr-1 h-4 w-4 ${
-                  item.isActive ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
-                }`}
-                aria-hidden="true"
-              />
-              {item.name}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden">
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center">
-            <span className="text-lg font-bold text-indigo-600">AutoML</span>
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200">
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Logo */}
+          <div className="flex items-center h-16 px-6 border-b border-gray-200">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">DataFlowHub</span>
+            </div>
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-            onClick={toggleMobileMenu}
-            aria-expanded={isMobileMenuOpen}
-          >
-            <span className="sr-only">Open main menu</span>
-            {isMobileMenuOpen ? (
-              <X className="block h-6 w-6" aria-hidden="true" />
-            ) : (
-              <Menu className="block h-6 w-6" aria-hidden="true" />
-            )}
-          </button>
-        </div>
 
-        {/* Mobile menu panel */}
-        {isMobileMenuOpen && (
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               if (item.children) {
                 const isExpanded = expandedSections.includes(item.name);
-                const isActive = item.children.some(child => 
-                  location.pathname === child.href || 
-                  (!child.exact && location.pathname.startsWith(child.href))
+                const hasActiveChild = item.children.some(child => 
+                  isItemActive(child.href, child.exact)
                 );
-                
+
                 return (
-                  <div key={item.name} className="space-y-1">
+                  <div key={item.name}>
                     <button
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-base font-medium ${
-                        isActive
-                          ? 'bg-indigo-50 text-indigo-700'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      }`}
                       onClick={() => toggleSection(item.name)}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        hasActiveChild
+                          ? 'bg-indigo-50 text-indigo-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
                     >
-                      <div className="flex items-center">
-                        <item.icon
-                          className={`mr-3 flex-shrink-0 h-5 w-5 ${
-                            isActive ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
-                          }`}
-                          aria-hidden="true"
-                        />
-                        {item.name}
+                      <div className="flex items-center space-x-3">
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.name}</span>
                       </div>
-                      {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                      )}
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform ${
+                          isExpanded ? 'rotate-90' : ''
+                        }`}
+                      />
                     </button>
                     
                     {isExpanded && (
-                      <div className="pl-10 space-y-1">
-                        {item.children.map(child => (
+                      <div className="mt-1 ml-4 space-y-1">
+                        {item.children.map((child) => (
                           <NavLink
-                            key={child.name}
+                            key={child.href}
                             to={child.href}
                             className={({ isActive }) =>
-                              `flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                              `flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isActive
-                                  ? 'bg-indigo-50 text-indigo-700'
+                                  ? 'bg-indigo-50 text-indigo-600 font-medium'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                               }`
                             }
-                            onClick={() => setIsMobileMenuOpen(false)}
                           >
-                            <child.icon
-                              className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400"
-                              aria-hidden="true"
-                            />
-                            {child.name}
+                            <child.icon className="w-4 h-4" />
+                            <span>{child.name}</span>
                           </NavLink>
                         ))}
                       </div>
@@ -219,57 +191,233 @@ const ResponsiveNavbar: React.FC = () => {
                   </div>
                 );
               }
-              
+
+              // Handle highlight for AI Assistant
+              if (item.highlight) {
+                return (
+                  <NavLink
+                    key={item.href}
+                    to={item.href}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                        isActive
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 border-2 border-indigo-200'
+                      }`
+                    }
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                    {!isItemActive(item.href, item.exact) && (
+                      <span className="ml-auto">
+                        <Sparkles className="w-4 h-4" />
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              }
+
               return (
                 <NavLink
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
-                  end={item.exact}
                   className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-md text-base font-medium ${
+                    `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-700 hover:bg-gray-50'
                     }`
                   }
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <item.icon
-                    className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400"
-                    aria-hidden="true"
-                  />
-                  {item.name}
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
                 </NavLink>
               );
             })}
+          </nav>
 
-            {/* Settings and Help */}
-            <div className="pt-2 mt-2 border-t border-gray-200">
-              {secondaryNavigation.map((item) => (
+          {/* Secondary Navigation */}
+          <div className="px-3 py-4 border-t border-gray-200 space-y-1">
+            {secondaryNavigation.map((item) => (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.name}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-gray-900">DataFlowHub</span>
+          </div>
+          
+          <button
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-30 bg-black bg-opacity-50"
+          onClick={toggleMobileMenu}
+        />
+      )}
+
+      {/* Mobile Menu */}
+      <div
+        className={`lg:hidden fixed top-16 left-0 right-0 bottom-0 z-30 bg-white transform transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <nav className="h-full px-4 py-4 space-y-1 overflow-y-auto">
+          {navigation.map((item) => {
+            if (item.children) {
+              const isExpanded = expandedSections.includes(item.name);
+              const hasActiveChild = item.children.some(child => 
+                isItemActive(child.href, child.exact)
+              );
+
+              return (
+                <div key={item.name}>
+                  <button
+                    onClick={() => toggleSection(item.name)}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                      hasActiveChild
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform ${
+                        isExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="mt-1 ml-4 space-y-1">
+                      {item.children.map((child) => (
+                        <NavLink
+                          key={child.href}
+                          to={child.href}
+                          onClick={toggleMobileMenu}
+                          className={({ isActive }) =>
+                            `flex items-center space-x-3 px-4 py-2 text-sm rounded-lg transition-colors ${
+                              isActive
+                                ? 'bg-indigo-50 text-indigo-600 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`
+                          }
+                        >
+                          <child.icon className="w-4 h-4" />
+                          <span>{child.name}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Handle highlight for AI Assistant in mobile
+            if (item.highlight) {
+              return (
                 <NavLink
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
+                  onClick={toggleMobileMenu}
                   className={({ isActive }) =>
-                    `flex items-center px-3 py-2 rounded-md text-base font-medium ${
+                    `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-all ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 border-2 border-indigo-200'
                     }`
                   }
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <item.icon
-                    className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400"
-                    aria-hidden="true"
-                  />
-                  {item.name}
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                  {!isItemActive(item.href, item.exact) && (
+                    <span className="ml-auto">
+                      <Sparkles className="w-4 h-4" />
+                    </span>
+                  )}
                 </NavLink>
-              ))}
-            </div>
+              );
+            }
+
+            return (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                onClick={toggleMobileMenu}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.name}</span>
+              </NavLink>
+            );
+          })}
+
+          {/* Secondary Navigation in Mobile */}
+          <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
+            {secondaryNavigation.map((item) => (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                onClick={toggleMobileMenu}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.name}</span>
+              </NavLink>
+            ))}
           </div>
-        )}
+        </nav>
       </div>
-    </div>
+    </>
   );
 };
 

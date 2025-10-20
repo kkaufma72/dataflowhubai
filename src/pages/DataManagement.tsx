@@ -32,14 +32,12 @@ const DataManagement: React.FC = () => {
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Auto-show quality dashboard for newly uploaded datasets
   useEffect(() => {
     const checkNewDatasets = () => {
       const lastViewedId = localStorage.getItem('lastViewedDatasetId');
-      const newestDataset = datasets[0]; // Assuming newest is first
+      const newestDataset = datasets[0];
       
       if (newestDataset && newestDataset.id !== lastViewedId) {
-        // Auto-open quality dashboard for new dataset
         setSelectedDataset(newestDataset);
         setShowQuality(true);
         localStorage.setItem('lastViewedDatasetId', newestDataset.id);
@@ -71,6 +69,7 @@ const DataManagement: React.FC = () => {
     setShowChat(true);
   };
 
+  // FIXED: Complete rewrite with proper error handling
   const handleGenerateSyntheticData = async () => {
     if (!currentProject) {
       toast.error('Please select a project first');
@@ -84,11 +83,23 @@ const DataManagement: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const { columns, data } = generateSyntheticDataset({ 
+      // FIXED: Properly destructure and validate the result
+      const result = generateSyntheticDataset({ 
         name: `${generatorType}-sample`, 
         type: generatorType, 
         rowCount 
       });
+      
+      // FIXED: Validate result structure
+      if (!result || !result.columns || !result.data) {
+        throw new Error('Failed to generate synthetic data');
+      }
+
+      if (!Array.isArray(result.data)) {
+        throw new Error('Generated data is not in the correct format');
+      }
+
+      const { columns, data } = result;
       
       const { data: newDataset, error } = await supabase
         .from('datasets')
@@ -117,7 +128,7 @@ const DataManagement: React.FC = () => {
       
     } catch (error) {
       console.error('Error generating data:', error);
-      toast.error('Failed to generate sample data');
+      toast.error(error instanceof Error ? error.message : 'Failed to generate sample data');
     } finally {
       setIsGenerating(false);
     }
@@ -130,7 +141,6 @@ const DataManagement: React.FC = () => {
         description="Upload, connect, and manage your datasets"
       />
 
-      {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
         <Button
           onClick={() => setShowUploader(true)}
@@ -149,92 +159,88 @@ const DataManagement: React.FC = () => {
           onClick={() => setShowGeneratorModal(true)}
           variant="outline"
           icon={<Sparkles className="w-4 h-4" />}
-          className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100"
         >
-          Generate Sample Data
+          Generate Sample
         </Button>
       </div>
 
       {/* Generator Modal */}
       {showGeneratorModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
-                Generate Sample Dataset
-              </h3>
-              <button
-                onClick={() => setShowGeneratorModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={() => setShowGeneratorModal(false)} />
+            <div className="relative bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Generate Sample Dataset</h3>
+                <button onClick={() => setShowGeneratorModal(false)} className="text-gray-400 hover:text-gray-500">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dataset Type
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['marketing', 'sales', 'customer'] as const).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setGeneratorType(type)}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        generatorType === type
-                          ? 'bg-purple-600 text-white border-purple-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </button>
-                  ))}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Dataset Type
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['marketing', 'sales', 'customer'] as const).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setGeneratorType(type)}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                          generatorType === type
+                            ? 'bg-purple-600 text-white border-purple-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Rows: {rowCount.toLocaleString()}
-                </label>
-                <input
-                  type="range"
-                  min="100"
-                  max="10000"
-                  step="100"
-                  value={rowCount}
-                  onChange={(e) => setRowCount(parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>100</span>
-                  <span>10,000</span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Rows: {rowCount.toLocaleString()}
+                  </label>
+                  <input
+                    type="range"
+                    min="100"
+                    max="10000"
+                    step="100"
+                    value={rowCount}
+                    onChange={(e) => setRowCount(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>100</span>
+                    <span>10,000</span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                <p className="text-sm text-purple-800">
-                  <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
-                </p>
-              </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <p className="text-sm text-purple-800">
+                    <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
+                  </p>
+                </div>
 
-              <div className="flex space-x-3 pt-2">
-                <Button
-                  onClick={handleGenerateSyntheticData}
-                  disabled={isGenerating}
-                  icon={<Sparkles className="w-4 h-4" />}
-                  className="flex-1"
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Dataset'}
-                </Button>
-                <Button
-                  onClick={() => setShowGeneratorModal(false)}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
+                <div className="flex space-x-3 pt-2">
+                  <Button
+                    onClick={handleGenerateSyntheticData}
+                    disabled={isGenerating}
+                    icon={<Sparkles className="w-4 h-4" />}
+                    className="flex-1"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Dataset'}
+                  </Button>
+                  <Button
+                    onClick={() => setShowGeneratorModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

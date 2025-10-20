@@ -1,73 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../components/auth/AuthProvider';
-import { Layers, BarChart2, Database, Clock, ArrowRight, Sparkles, Check, MessageSquare, Activity, Wand2, Rocket, FolderOpen } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { 
+  Database, 
+  Layers, 
+  BarChart2, 
+  Clock, 
+  TrendingUp, 
+  ArrowRight,
+  Upload,
+  Sparkles,
+  Brain,
+  Zap,
+  Activity,
+  CheckCircle,
+  MessageSquare
+} from 'lucide-react';
 import { useMLContext } from '../context/MLContext';
+import { useNotifications } from '../components/common/NotificationSystem';
+import { useTour } from '../components/common/TourProvider';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import ChatInterface from '../components/chat/ChatInterface';
-import DatasetCard from '../components/data/DatasetCard';
-import { Link } from 'react-router-dom';
-import PageHeader from '../components/common/PageHeader';
-import WorkflowSteps, { WorkflowStep } from '../components/workflow/WorkflowSteps';
-import NextStepSuggestion from '../components/workflow/NextStepSuggestion';
-import SkeletonLoader, { DashboardStatsSkeleton, CardSkeleton } from '../components/common/SkeletonLoader';
-import { useTour } from '../components/common/TourProvider';
-import TourButton from '../components/common/TourButton';
-import { useNotifications } from '../components/common/NotificationSystem';
-import ProjectSelector from '../components/common/ProjectSelector';
-import NewProjectModal from '../components/common/NewProjectModal';
+import { Link, useNavigate } from 'react-router-dom';
 import RealTimeDashboard from '../components/dashboard/RealTimeDashboard';
+import DashboardStatsSkeleton from '../components/common/DashboardStatsSkeleton';
+import CardSkeleton from '../components/common/CardSkeleton';
+import DatasetCard from '../components/datasets/DatasetCard';
+import AddSampleDataButton from '../components/data/AddSampleDataButton';
 
-const Dashboard = () => {
-  const { datasets, models, currentProject, isLoading } = useMLContext();
-  const navigate = useNavigate();
-  const [selectedDataset, setSelectedDataset] = useState(null);
-  const { startTour } = useTour();
+interface WorkflowStep {
+  id: string;
+  name: string;
+  description: string;
+  status: 'completed' | 'current' | 'upcoming';
+  href: string;
+  icon: React.ComponentType<any>;
+}
+
+const Dashboard: React.FC = () => {
+  const { datasets, models, isLoading, currentProject } = useMLContext();
   const { addNotification } = useNotifications();
-  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  
-  // Determine the current workflow step based on data state
+  const { startTour } = useTour();
+  const navigate = useNavigate();
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
-  
+  const [selectedDataset, setSelectedDataset] = useState<any>(null);
+
+  // Calculate workflow progress
   useEffect(() => {
-    // Define workflow steps based on the current state
     const steps: WorkflowStep[] = [
       {
-        id: 'data',
-        name: 'Data',
-        description: 'Prepare your data',
+        id: 'upload',
+        name: 'Upload Data',
+        description: 'Upload datasets',
         status: datasets.length > 0 ? 'completed' : 'current',
-        href: '/app/data'
+        href: '/app/data',
+        icon: Database
       },
       {
         id: 'features',
-        name: 'Features',
-        description: 'Engineer features',
+        name: 'Feature Engineering',
+        description: 'Prepare features',
         status: datasets.length > 0 ? (models.length > 0 ? 'completed' : 'current') : 'upcoming',
-        href: '/app/feature-engineering'
+        href: '/app/feature-engineering',
+        icon: Sparkles
       },
       {
         id: 'train',
         name: 'Train',
         description: 'Train models',
         status: models.length > 0 ? (models.some(m => m.status === 'trained' || m.status === 'deployed') ? 'completed' : 'current') : 'upcoming',
-        href: '/app/train'
+        href: '/app/train',
+        icon: Brain
       },
       {
         id: 'deploy',
         name: 'Deploy',
         description: 'Deploy to production',
         status: models.some(m => m.status === 'deployed') ? 'completed' : (models.some(m => m.status === 'trained') ? 'current' : 'upcoming'),
-        href: '/app/deploy'
+        href: '/app/deploy',
+        icon: Zap
       },
       {
         id: 'monitor',
         name: 'Monitor',
         description: 'Monitor performance',
         status: models.some(m => m.status === 'deployed') ? 'current' : 'upcoming',
-        href: '/app/monitoring'
+        href: '/app/monitoring',
+        icon: Activity
       }
     ];
     
@@ -77,7 +94,6 @@ const Dashboard = () => {
   // Show welcome notification on first load
   useEffect(() => {
     if (!isLoading && currentProject) {
-      // Check if this is the first visit
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
       if (!hasVisitedBefore) {
         addNotification({
@@ -94,12 +110,7 @@ const Dashboard = () => {
   // Determine the next recommended step
   const getNextStep = () => {
     const currentStep = workflowSteps.find(step => step.status === 'current');
-    
-    if (!currentStep) {
-      return workflowSteps[0];
-    }
-    
-    return currentStep;
+    return currentStep || workflowSteps[0];
   };
   
   const nextStep = getNextStep();
@@ -111,7 +122,13 @@ const Dashboard = () => {
       icon: <Database className="w-8 h-8 text-blue-500" />,
       description: 'Available datasets',
       color: 'blue',
-      path: '/app/data'
+      path: '/app/data',
+      change: datasets.length > 0 ? '+' + datasets.filter(d => {
+        const uploadDate = new Date(d.dateUploaded);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return uploadDate > weekAgo;
+      }).length + ' this week' : 'Get started'
     },
     {
       title: 'Models',
@@ -119,7 +136,8 @@ const Dashboard = () => {
       icon: <Layers className="w-8 h-8 text-indigo-500" />,
       description: 'Trained models',
       color: 'indigo',
-      path: '/app/train'
+      path: '/app/train',
+      change: models.length > 0 ? models.filter(m => m.status === 'trained').length + ' ready' : 'Train your first'
     },
     {
       title: 'Deployed',
@@ -127,7 +145,8 @@ const Dashboard = () => {
       icon: <BarChart2 className="w-8 h-8 text-emerald-500" />,
       description: 'Models in production',
       color: 'emerald',
-      path: '/app/deploy'
+      path: '/app/deploy',
+      change: models.filter(m => m.status === 'deployed').length > 0 ? 'Active now' : 'Deploy first model'
     },
     {
       title: 'In Progress',
@@ -135,138 +154,233 @@ const Dashboard = () => {
       icon: <Clock className="w-8 h-8 text-amber-500" />,
       description: 'Training jobs',
       color: 'amber',
-      path: '/app/train'
+      path: '/app/train',
+      change: models.filter(m => m.status === 'training').length > 0 ? 'Running' : 'No active jobs'
     },
   ];
 
-  const handlePreview = (dataset) => {
+  const handlePreview = (dataset: any) => {
     setSelectedDataset(dataset);
   };
 
-  const handleAnalyze = (dataset) => {
+  const handleAnalyze = (dataset: any) => {
     navigate(`/app/data?analyze=${dataset.id}`);
   };
 
   // Start the dashboard tour automatically for new users
   useEffect(() => {
-    // Check if this is the first visit
     const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
     if (!hasVisitedBefore && !isLoading) {
-      // Set a small delay to ensure the UI is fully rendered
       const timer = setTimeout(() => {
         startTour('dashboard');
-        localStorage.setItem('hasVisitedDashboard', 'true');
       }, 1000);
       
       return () => clearTimeout(timer);
     }
   }, [isLoading, startTour]);
 
-  // Test notification
-  const sendTestNotification = () => {
-    addNotification({
-      type: 'info',
-      title: 'Notification System',
-      message: 'Notifications will appear here and automatically dismiss after a few seconds.',
-      duration: 4000
-    });
-  };
-
   return (
-    <div>
-      <PageHeader
-        title="Welcome to AutoML Platform"
-        description="Build, train, and deploy machine learning models with ease"
-        actions={(
-          <>
-            <div className="flex items-center space-x-2">
-              <ProjectSelector onNewProject={() => setShowNewProjectModal(true)} />
-              <TourButton tourName="dashboard" label="Take a tour" variant="outline" />
+    <div className="space-y-6">
+      {/* AI Assistant Spotlight Banner */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold mb-1">Ask Your AI Assistant</h2>
+                <p className="text-indigo-100 text-lg">
+                  Get instant insights from all your datasets using natural language
+                </p>
+              </div>
             </div>
-          </>
-        )}
-      />
+            
+            <div className="flex flex-wrap gap-3 mt-4">
+              <div className="flex items-center space-x-2 bg-white bg-opacity-10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-sm">Query across all datasets</span>
+              </div>
+              <div className="flex items-center space-x-2 bg-white bg-opacity-10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-sm">Create visualizations</span>
+              </div>
+              <div className="flex items-center space-x-2 bg-white bg-opacity-10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-sm">Train models instantly</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col space-y-3 ml-8">
+            <button
+              onClick={() => navigate('/app/ai-chat')}
+              className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl flex items-center space-x-3 group"
+            >
+              <MessageSquare className="w-6 h-6" />
+              <span>Open AI Chat</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            
+            <div className="text-center text-indigo-100 text-sm">
+              <kbd className="px-2 py-1 bg-white bg-opacity-20 rounded">⌘</kbd> + <kbd className="px-2 py-1 bg-white bg-opacity-20 rounded">K</kbd> to quick access
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-actions bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onClick={() => navigate('/app/data')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all border-2 border-transparent hover:border-indigo-300"
+          >
+            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Upload className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Upload Dataset</p>
+              <p className="text-sm text-gray-600">Add new data source</p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => navigate('/app/train')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-transparent hover:border-purple-300"
+          >
+            <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+              <Brain className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Train Model</p>
+              <p className="text-sm text-gray-600">Start AutoML training</p>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => navigate('/app/ai-chat')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all border-2 border-transparent hover:border-indigo-300"
+          >
+            <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center">
+              <MessageSquare className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Ask AI Assistant</p>
+              <p className="text-sm text-gray-600">Chat with your data</p>
+            </div>
+          </button>
+        </div>
+      </div>
 
       {/* Workflow Progress */}
-      <Card className="mb-6 workflow-steps">
-        <h2 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Your ML Workflow</h2>
-        {isLoading ? (
-          <SkeletonLoader height={60} className="mb-2" />
-        ) : (
-          <>
-            <div className="mb-2">
-              <p className="text-sm text-gray-500">
-                Project: <span className="font-medium text-gray-700">{currentProject?.name || 'Default Project'}</span>
-              </p>
+      {workflowSteps.length > 0 && (
+        <div className="workflow-steps bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">ML Workflow Progress</h3>
+            <span className="text-sm text-gray-600">
+              {workflowSteps.filter(s => s.status === 'completed').length} of {workflowSteps.length} completed
+            </span>
+          </div>
+          
+          <div className="relative">
+            <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full">
+              <div 
+                className="h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full transition-all duration-500"
+                style={{ 
+                  width: `${(workflowSteps.filter(s => s.status === 'completed').length / workflowSteps.length) * 100}%` 
+                }}
+              />
             </div>
-            <WorkflowSteps steps={workflowSteps} />
-          </>
-        )}
-      </Card>
+            
+            <div className="relative flex justify-between">
+              {workflowSteps.map((step) => {
+                const StepIcon = step.icon;
+                return (
+                  <Link
+                    key={step.id}
+                    to={step.href}
+                    className="flex flex-col items-center group"
+                  >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all ${
+                      step.status === 'completed' 
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                        : step.status === 'current'
+                        ? 'bg-white text-indigo-600 ring-4 ring-indigo-100 ring-offset-2'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {step.status === 'completed' ? (
+                        <CheckCircle className="w-6 h-6" />
+                      ) : (
+                        <StepIcon className="w-6 h-6" />
+                      )}
+                    </div>
+                    <div className="mt-3 text-center">
+                      <p className={`text-sm font-medium ${
+                        step.status === 'completed' || step.status === 'current'
+                          ? 'text-gray-900'
+                          : 'text-gray-500'
+                      }`}>
+                        {step.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{step.description}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
 
-      {/* Next Step Suggestion */}
-      {nextStep && (
-        <div className="mb-6">
-          {isLoading ? (
-            <CardSkeleton />
-          ) : (
-            <NextStepSuggestion
-              title={`Next Step: ${nextStep.name}`}
-              description={
-                nextStep.id === 'data' 
-                  ? "Upload your first dataset to get started" 
-                  : nextStep.id === 'features'
-                  ? "Engineer features to improve model performance"
-                  : nextStep.id === 'train'
-                  ? "Train your first model using your prepared data"
-                  : nextStep.id === 'deploy'
-                  ? "Deploy your trained model to production"
-                  : "Monitor your deployed model's performance"
-              }
-              href={nextStep.href}
-              icon={
-                nextStep.id === 'data' 
-                  ? Database 
-                  : nextStep.id === 'features'
-                  ? Wand2
-                  : nextStep.id === 'train'
-                  ? Layers
-                  : nextStep.id === 'deploy'
-                  ? Rocket
-                  : Activity
-              }
-            />
+          {nextStep && nextStep.status === 'current' && (
+            <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <TrendingUp className="w-5 h-5 text-indigo-600" />
+                  <div>
+                    <p className="text-sm font-medium text-indigo-900">Next Step: {nextStep.name}</p>
+                    <p className="text-xs text-indigo-700">{nextStep.description}</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => navigate(nextStep.href)}
+                  variant="primary"
+                  size="sm"
+                >
+                  Continue <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       )}
       
-      {/* Real-time Dashboard */}
       <div className="mt-8">
         <RealTimeDashboard />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-4 stats-cards">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 stats-cards">
         {isLoading ? (
           <DashboardStatsSkeleton />
         ) : (
           statsCards.map((card) => (
-            <Link key={card.title} to={card.path} className="block">
-              <Card className="overflow-hidden transition-all hover:shadow-lg dark:bg-gray-800">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{card.title}</p>
-                    <p className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">{card.value}</p>
+            <Link key={card.title} to={card.path} className="block group">
+              <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-indigo-200">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-500">{card.title}</p>
+                    <p className="mt-2 text-4xl font-bold text-gray-900">{card.value}</p>
+                    <p className="mt-2 text-sm text-gray-600">{card.description}</p>
                   </div>
-                  <div
-                    className={`flex items-center justify-center w-12 h-12 rounded-lg bg-${card.color}-100 dark:bg-${card.color}-900 dark:bg-opacity-20`}
-                  >
+                  <div className={`flex items-center justify-center w-14 h-14 rounded-xl bg-${card.color}-100 group-hover:scale-110 transition-transform`}>
                     {card.icon}
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{card.description}</p>
-                  <div className={`flex items-center text-sm font-medium text-${card.color}-600 dark:text-${card.color}-400 hover:text-${card.color}-700 dark:hover:text-${card.color}-300`}>
-                    View <ArrowRight className="w-4 h-4 ml-1" />
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">{card.change}</p>
+                  <div className={`flex items-center text-sm font-medium text-${card.color}-600 group-hover:text-${card.color}-700`}>
+                    View <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </Card>
@@ -277,7 +391,7 @@ const Dashboard = () => {
 
       {isLoading ? (
         <div className="mt-8 space-y-6">
-          <h2 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Recent Datasets</h2>
+          <h2 className="mb-4 text-lg font-medium text-gray-900">Recent Datasets</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <CardSkeleton />
             <CardSkeleton />
@@ -285,8 +399,18 @@ const Dashboard = () => {
           </div>
         </div>
       ) : datasets.length > 0 ? (
-        <div className="mt-8 dataset-cards">
-          <h2 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Recent Datasets</h2>
+        <div className="mt-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Datasets</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/app/data')}
+            >
+              View All <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+          
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {datasets.slice(0, 3).map((dataset) => (
               <DatasetCard
@@ -297,144 +421,113 @@ const Dashboard = () => {
               />
             ))}
           </div>
-          {datasets.length > 3 && (
-            <div className="mt-4 text-center">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/app/data')}
-              >
-                View All Datasets
-              </Button>
-            </div>
-          )}
         </div>
-      ) : null}
-
-      <div className="grid gap-6 mt-8 lg:grid-cols-3">
-        <Card
-          title="Quick Actions"
-          className="lg:col-span-1 transition-all hover:shadow-lg dark:bg-gray-800 quick-actions"
-        >
-          <div className="flex flex-col space-y-3">
+      ) : (
+        <div className="mt-8 bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
+          <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Database className="w-8 h-8 text-indigo-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Datasets Yet</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            Upload your first dataset to start building machine learning models or try our sample datasets with working previews.
+          </p>
+          <div className="flex justify-center space-x-4">
             <Button
-              variant="outline"
-              className="justify-start transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-700"
-              icon={<Database className="w-4 h-4" />}
               onClick={() => navigate('/app/data')}
+              variant="primary"
             >
-              Upload new dataset
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Dataset
             </Button>
+            <AddSampleDataButton />
+            <Button
+              onClick={() => navigate('/app/ai-chat')}
+              variant="outline"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Ask AI Assistant
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {models.length > 0 && (
+        <div className="mt-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Models</h2>
             <Button
               variant="outline"
-              className="justify-start transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-700"
-              icon={<Layers className="w-4 h-4" />}
+              size="sm"
               onClick={() => navigate('/app/train')}
-              disabled={datasets.length === 0}
             >
-              Train new model
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-700"
-              icon={<BarChart2 className="w-4 h-4" />}
-              onClick={() => navigate('/app/evaluate')}
-              disabled={models.filter(m => m.status === 'trained').length === 0}
-            >
-              Evaluate models
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-700"
-              icon={<Sparkles className="w-4 h-4" />}
-              onClick={() => navigate('/app/deploy')}
-              disabled={models.filter(m => m.status === 'trained').length === 0}
-            >
-              Deploy model
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200 dark:border-gray-700"
-              icon={<Activity className="w-4 h-4" />}
-              onClick={() => navigate('/async-workloads')}
-            >
-              View Async Workloads
+              View All <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
-        </Card>
-
-        <Card
-          title="Recent Activity"
-          className="lg:col-span-1 transition-all hover:shadow-lg dark:bg-gray-800"
-        >
-          {isLoading ? (
-            <div className="space-y-4">
-              <SkeletonLoader count={3} height={60} />
-            </div>
-          ) : models.length > 0 ? (
-            <div className="space-y-4">
-              {models.slice(0, 3).map((model) => (
-                <div key={model.id} className="flex items-start">
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    model.status === 'trained' ? 'bg-green-100 dark:bg-green-900 dark:bg-opacity-20' : 
-                    model.status === 'training' ? 'bg-yellow-100 dark:bg-yellow-900 dark:bg-opacity-20' : 
-                    model.status === 'deployed' ? 'bg-blue-100 dark:bg-blue-900 dark:bg-opacity-20' : 'bg-red-100 dark:bg-red-900 dark:bg-opacity-20'
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {models.slice(0, 3).map((model) => (
+              <Card key={model.id} className="hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Brain className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{model.name}</h3>
+                      <p className="text-sm text-gray-500">{model.algorithm}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    model.status === 'deployed' 
+                      ? 'bg-green-100 text-green-800'
+                      : model.status === 'trained'
+                      ? 'bg-blue-100 text-blue-800'
+                      : model.status === 'training'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
                   }`}>
-                    {model.status === 'trained' && <Check className="w-4 h-4 text-green-600 dark:text-green-400" />}
-                    {model.status === 'training' && <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />}
-                    {model.status === 'deployed' && <BarChart2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                    {model.status === 'failed' && <Clock className="w-4 h-4 text-red-600 dark:text-red-400" />}
-                  </div>
-                  <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {model.name}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {model.status === 'trained' && 'Model training completed'}
-                      {model.status === 'training' && 'Model is currently training'}
-                      {model.status === 'deployed' && 'Model deployed to production'}
-                      {model.status === 'failed' && 'Model training failed'}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0 ml-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(model.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
+                    {model.status}
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="mt-2 dark:border-gray-700 dark:text-gray-300"
-                onClick={() => navigate('/app/data')}
-              >
-                Upload dataset to get started
-              </Button>
-            </div>
-          )}
-        </Card>
-
-        <Card
-          title="AI Assistant"
-          className="lg:col-span-1 transition-all hover:shadow-lg dark:bg-gray-800"
-        >
-          <div className="flex items-center mb-4">
-            <MessageSquare className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-            <span className="text-sm text-gray-500 dark:text-gray-400">Ask questions about your data and models</span>
+                
+                {model.metrics && (
+                  <div className="mt-4 grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Accuracy</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {(model.metrics.accuracy * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Precision</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {(model.metrics.precision * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Recall</p>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {(model.metrics.recall * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/app/evaluate?model=${model.id}`)}
+                    className="w-full"
+                  >
+                    View Details
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
-          <ChatInterface />
-        </Card>
-      </div>
-      
-      {/* New Project Modal */}
-      <NewProjectModal 
-        isOpen={showNewProjectModal}
-        onClose={() => setShowNewProjectModal(false)}
-      />
+        </div>
+      )}
     </div>
   );
 };

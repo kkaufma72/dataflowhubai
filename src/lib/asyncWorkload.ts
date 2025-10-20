@@ -1,198 +1,465 @@
-/**
- * Async Workload API client
- * 
- * This module provides functions to interact with the Async Workload API
- * for processing large-scale data operations and model training tasks.
- */
+// src/lib/asyncWorkload.ts
 
-// Get API key from environment variables
-const API_KEY = import.meta.env.VITE_ASYNC_WORKLOAD_API_KEY;
-const API_BASE_URL = 'https://api.asyncworkload.com/v1';
+import { supabase } from './supabase';
 
-/**
- * Submit a new workload to the async processing queue
- * 
- * @param workloadType - Type of workload (e.g., 'data-processing', 'model-training')
- * @param payload - Workload configuration and data
- * @returns Promise with the workload ID and status
- */
-export const submitWorkload = async (
-  workloadType: 'data-processing' | 'model-training' | 'batch-prediction',
-  payload: Record<string, any>
-): Promise<{
+export interface AsyncWorkload {
   id: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'canceled';
-  createdAt: string;
-}> => {
-  // For demo purposes, simulate API call
-  console.log(`Submitting ${workloadType} workload:`, payload);
-  
-  // Simulate API response
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    id: `wl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-    status: 'pending',
-    createdAt: new Date().toISOString()
-  };
-};
-
-/**
- * Get the status of a workload
- * 
- * @param workloadId - ID of the workload to check
- * @returns Promise with the workload status and results (if completed)
- */
-export const getWorkloadStatus = async (workloadId: string): Promise<{
-  id: string;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'canceled';
+  user_id: string;
+  project_id: string;
+  type: 'model_training' | 'data_processing' | 'batch_prediction' | 'feature_engineering';
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
   progress: number;
+  total_steps: number;
+  current_step: number;
+  step_description?: string;
+  config: any;
   result?: any;
   error?: string;
-  metrics?: {
-    startTime: string;
-    endTime?: string;
-    duration?: number;
-    currentMemoryMb?: number;
-    peakMemoryMb?: number;
-  };
-  data?: any;
-}> => {
-  // For demo purposes, simulate API call
-  console.log(`Checking status for workload: ${workloadId}`);
-  
-  // Simulate API response
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Extract timestamp from workload ID to calculate progress
-  const timestamp = parseInt(workloadId.split('-')[1]);
-  const elapsedMs = Date.now() - timestamp;
-  const progress = Math.min(elapsedMs / 20000, 1); // Complete in ~20 seconds
-  
-  // Simulate different statuses based on progress
-  let status: 'pending' | 'running' | 'completed' | 'failed' | 'canceled' = 'running';
-  let result = undefined;
-  let error = undefined;
-  
-  if (progress < 0.1) {
-    status = 'pending';
-  } else if (progress >= 1) {
-    status = 'completed';
-    result = {
-      transformations: [
-        { type: 'missing_values', affectedColumns: 5, affectedRows: 120 },
-        { type: 'outliers', affectedColumns: 3, affectedRows: 45 },
-        { type: 'scaling', affectedColumns: 8, affectedRows: 1000 }
-      ],
-      data: Array(10).fill(0).map(() => Array(5).fill(0).map(() => Math.random())),
-      columns: ['col1', 'col2', 'col3', 'col4', 'col5']
-    };
-  } else if (Math.random() < 0.05) {
-    // 5% chance of failure for demo purposes
-    status = 'failed';
-    error = 'Simulated processing error';
-  }
-  
-  // For streaming data processor, include batch data
-  const data = workloadId.includes('streaming') ? {
-    batch: {
-      data: Array(10).fill(0).map(() => Array(5).fill(0).map(() => Math.random())),
-      columns: ['col1', 'col2', 'col3', 'col4', 'col5']
-    }
-  } : undefined;
-  
-  return {
-    id: workloadId,
-    status,
-    progress,
-    result,
-    error,
-    metrics: {
-      startTime: new Date(timestamp).toISOString(),
-      endTime: status === 'completed' ? new Date().toISOString() : undefined,
-      duration: elapsedMs,
-      currentMemoryMb: 120 + Math.random() * 50,
-      peakMemoryMb: 200 + Math.random() * 100
-    },
-    data
-  };
-};
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+  estimated_completion?: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
+export interface WorkloadStats {
+  total: number;
+  pending: number;
+  running: number;
+  completed: number;
+  failed: number;
+  cancelled: number;
+}
 
 /**
- * Cancel a running workload
- * 
- * @param workloadId - ID of the workload to cancel
- * @returns Promise with the cancellation result
+ * Create a new async workload
  */
-export const cancelWorkload = async (workloadId: string): Promise<{
-  id: string;
-  status: 'canceled';
-  message: string;
-}> => {
-  // For demo purposes, simulate API call
-  console.log(`Canceling workload: ${workloadId}`);
-  
-  // Simulate API response
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return {
-    id: workloadId,
-    status: 'canceled',
-    message: 'Workload canceled successfully'
-  };
+export const createWorkload = async (
+  workload: Omit<AsyncWorkload, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_step'>
+): Promise<AsyncWorkload | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('async_workloads')
+      .insert({
+        ...workload,
+        status: 'pending',
+        progress: 0,
+        current_step: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating workload:', error);
+      return null;
+    }
+
+    return data as AsyncWorkload;
+  } catch (error) {
+    console.error('Failed to create workload:', error);
+    return null;
+  }
 };
 
 /**
- * List all workloads for the current account
- * 
- * @param status - Optional filter by status
- * @param limit - Maximum number of workloads to return
- * @returns Promise with the list of workloads
+ * List workloads for a project
  */
 export const listWorkloads = async (
-  status?: 'pending' | 'running' | 'completed' | 'failed' | 'canceled',
-  limit: number = 10
-): Promise<{
-  workloads: Array<{
-    id: string;
-    type: string;
-    status: 'pending' | 'running' | 'completed' | 'failed' | 'canceled';
-    progress: number;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-  total: number;
-}> => {
-  // For demo purposes, simulate API call
-  console.log(`Listing workloads with status: ${status}, limit: ${limit}`);
-  
-  // Simulate API response
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Generate random workloads
-  const workloads = Array(Math.min(limit, 5)).fill(0).map((_, i) => {
-    const createdAt = new Date(Date.now() - Math.random() * 86400000 * 7); // Within last week
-    return {
-      id: `wl-${createdAt.getTime()}-${Math.random().toString(36).substring(2, 7)}`,
-      type: ['data-processing', 'model-training', 'batch-prediction'][Math.floor(Math.random() * 3)],
-      status: ['pending', 'running', 'completed', 'failed', 'canceled'][
-        status ? ['pending', 'running', 'completed', 'failed', 'canceled'].indexOf(status) : Math.floor(Math.random() * 5)
-      ] as 'pending' | 'running' | 'completed' | 'failed' | 'canceled',
-      progress: Math.random(),
-      createdAt: createdAt.toISOString(),
-      updatedAt: new Date(createdAt.getTime() + Math.random() * 3600000).toISOString()
+  projectId: string,
+  filters?: {
+    status?: AsyncWorkload['status'];
+    type?: AsyncWorkload['type'];
+    limit?: number;
+    offset?: number;
+  }
+): Promise<AsyncWorkload[]> => {
+  try {
+    let query = supabase
+      .from('async_workloads')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    if (filters?.type) {
+      query = query.eq('type', filters.type);
+    }
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if (filters?.offset) {
+      query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error listing workloads:', error);
+      return [];
+    }
+
+    return data as AsyncWorkload[];
+  } catch (error) {
+    console.error('Failed to list workloads:', error);
+    return [];
+  }
+};
+
+/**
+ * Get a specific workload by ID
+ */
+export const getWorkloadStatus = async (workloadId: string): Promise<AsyncWorkload | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('async_workloads')
+      .select('*')
+      .eq('id', workloadId)
+      .single();
+
+    if (error) {
+      console.error('Error getting workload status:', error);
+      return null;
+    }
+
+    return data as AsyncWorkload;
+  } catch (error) {
+    console.error('Failed to get workload status:', error);
+    return null;
+  }
+};
+
+/**
+ * Update workload progress
+ */
+export const updateWorkloadProgress = async (
+  workloadId: string,
+  update: {
+    current_step?: number;
+    progress?: number;
+    step_description?: string;
+    status?: AsyncWorkload['status'];
+  }
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .update({
+        ...update,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error updating workload progress:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to update workload progress:', error);
+    return false;
+  }
+};
+
+/**
+ * Cancel a workload
+ */
+export const cancelWorkload = async (workloadId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .update({
+        status: 'cancelled',
+        updated_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error cancelling workload:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to cancel workload:', error);
+    return false;
+  }
+};
+
+/**
+ * Mark workload as completed
+ */
+export const completeWorkload = async (
+  workloadId: string,
+  result?: any
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .update({
+        status: 'completed',
+        progress: 100,
+        result,
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error completing workload:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to complete workload:', error);
+    return false;
+  }
+};
+
+/**
+ * Mark workload as failed
+ */
+export const failWorkload = async (
+  workloadId: string,
+  errorMessage: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .update({
+        status: 'failed',
+        error: errorMessage,
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error failing workload:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to fail workload:', error);
+    return false;
+  }
+};
+
+/**
+ * Get workload statistics
+ */
+export const getWorkloadStats = async (projectId: string): Promise<WorkloadStats> => {
+  try {
+    const { data, error } = await supabase
+      .from('async_workloads')
+      .select('status')
+      .eq('project_id', projectId);
+
+    if (error) {
+      console.error('Error getting workload stats:', error);
+      return {
+        total: 0,
+        pending: 0,
+        running: 0,
+        completed: 0,
+        failed: 0,
+        cancelled: 0
+      };
+    }
+
+    const stats: WorkloadStats = {
+      total: data.length,
+      pending: data.filter(w => w.status === 'pending').length,
+      running: data.filter(w => w.status === 'running').length,
+      completed: data.filter(w => w.status === 'completed').length,
+      failed: data.filter(w => w.status === 'failed').length,
+      cancelled: data.filter(w => w.status === 'cancelled').length
     };
-  });
-  
-  return {
-    workloads,
-    total: 25 // Simulate more workloads available
+
+    return stats;
+  } catch (error) {
+    console.error('Failed to get workload stats:', error);
+    return {
+      total: 0,
+      pending: 0,
+      running: 0,
+      completed: 0,
+      failed: 0,
+      cancelled: 0
+    };
+  }
+};
+
+/**
+ * Delete a workload
+ */
+export const deleteWorkload = async (workloadId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .delete()
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error deleting workload:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to delete workload:', error);
+    return false;
+  }
+};
+
+/**
+ * Retry a failed workload
+ */
+export const retryWorkload = async (workloadId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('async_workloads')
+      .update({
+        status: 'pending',
+        progress: 0,
+        current_step: 0,
+        error: null,
+        result: null,
+        started_at: null,
+        completed_at: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', workloadId);
+
+    if (error) {
+      console.error('Error retrying workload:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to retry workload:', error);
+    return false;
+  }
+};
+
+/**
+ * Subscribe to workload updates
+ */
+export const subscribeToWorkload = (
+  workloadId: string,
+  callback: (workload: AsyncWorkload) => void
+) => {
+  const subscription = supabase
+    .channel(`workload:${workloadId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'async_workloads',
+        filter: `id=eq.${workloadId}`
+      },
+      (payload) => {
+        callback(payload.new as AsyncWorkload);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    subscription.unsubscribe();
   };
 };
 
-export default {
-  submitWorkload,
-  getWorkloadStatus,
-  cancelWorkload,
-  listWorkloads
+/**
+ * Get recent workloads
+ */
+export const getRecentWorkloads = async (
+  projectId: string,
+  limit: number = 10
+): Promise<AsyncWorkload[]> => {
+  return listWorkloads(projectId, { limit });
+};
+
+/**
+ * Get active workloads
+ */
+export const getActiveWorkloads = async (projectId: string): Promise<AsyncWorkload[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('async_workloads')
+      .select('*')
+      .eq('project_id', projectId)
+      .in('status', ['pending', 'running'])
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error getting active workloads:', error);
+      return [];
+    }
+
+    return data as AsyncWorkload[];
+  } catch (error) {
+    console.error('Failed to get active workloads:', error);
+    return [];
+  }
+};
+
+/**
+ * Estimate completion time
+ */
+export const estimateCompletion = (workload: AsyncWorkload): string | null => {
+  if (workload.status !== 'running' || !workload.started_at) {
+    return null;
+  }
+
+  const startTime = new Date(workload.started_at).getTime();
+  const now = Date.now();
+  const elapsed = now - startTime;
+
+  if (workload.progress === 0) {
+    return null;
+  }
+
+  const totalEstimated = (elapsed / workload.progress) * 100;
+  const remaining = totalEstimated - elapsed;
+  const completionTime = new Date(now + remaining);
+
+  return completionTime.toISOString();
+};
+
+/**
+ * Format workload duration
+ */
+export const formatDuration = (workload: AsyncWorkload): string => {
+  const start = workload.started_at ? new Date(workload.started_at).getTime() : null;
+  const end = workload.completed_at ? new Date(workload.completed_at).getTime() : Date.now();
+
+  if (!start) {
+    return 'Not started';
+  }
+
+  const duration = end - start;
+  const seconds = Math.floor(duration / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`;
+  } else {
+    return `${seconds}s`;
+  }
 };

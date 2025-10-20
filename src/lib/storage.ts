@@ -9,7 +9,7 @@ interface AutoMLDB extends DBSchema {
   };
 }
 
-class StorageManager {
+export class StorageManager {
   private db: Promise<IDBPDatabase<AutoMLDB>>;
   private static instance: StorageManager;
 
@@ -35,6 +35,7 @@ class StorageManager {
     try {
       const db = await this.db;
       await db.put('datasets', dataset);
+      console.log('Dataset saved to IndexedDB:', dataset.id);
     } catch (error) {
       console.error('Error saving dataset:', error);
       throw new Error('Failed to save dataset to local storage');
@@ -82,4 +83,5 @@ class StorageManager {
   }
 }
 
+// Export both the class and a default instance
 export const storage = StorageManager.getInstance();

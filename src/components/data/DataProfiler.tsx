@@ -13,7 +13,9 @@ import {
   EyeOff,
   ArrowRight,
   Info,
-  Zap
+  Zap,
+  Clock,
+  FileText
 } from 'lucide-react';
 import Button from '../common/Button';
 import { Dataset } from '../../types';
@@ -49,15 +51,28 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     }
   }, [dataset]);
 
+  // FIXED: Complete rewrite with proper validation
   const generateProfile = async () => {
-    if (!dataset.previewData) return;
+    // FIXED: Validate previewData structure
+    if (!dataset.previewData || !dataset.previewData.columns || !dataset.previewData.rows) {
+      toast.error('No preview data available');
+      return;
+    }
     
     setIsLoading(true);
     
     try {
-      // Use setTimeout to avoid blocking the UI
       setTimeout(() => {
         const { columns, rows } = dataset.previewData!;
+        
+        // FIXED: Validate rows is an array with data
+        if (!Array.isArray(rows) || rows.length === 0) {
+          toast.error('Dataset contains no data rows');
+          setIsLoading(false);
+          return;
+        }
+        
+        // FIXED: Use generateDataProfile (correct function name)
         const dataProfile = generateDataProfile(rows, columns);
         setProfile(dataProfile);
         setIsLoading(false);
@@ -128,22 +143,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   };
 
   const getIssueTypeIcon = (type: string) => {
-    switch (type) {
-      case 'missing_values':
-        return <EyeOff className="w-4 h-4 text-amber-500" />;
-      case 'outliers':
-        return <Activity className="w-4 h-4 text-red-500" />;
-      case 'imbalance':
-        return <BarChart2 className="w-4 h-4 text-purple-500" />;
-      case 'high_cardinality':
-        return <Hash className="w-4 h-4 text-blue-500" />;
-      case 'skewed_distribution':
-        return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'duplicate_rows':
-        return <Copy className="w-4 h-4 text-indigo-500" />;
-      default:
-        return <AlertTriangle className="w-4 h-4 text-gray-500" />;
-    }
+    return <AlertTriangle className="w-4 h-4 text-amber-500" />;
   };
 
   const getIssueTypeColor = (severity: string) => {
@@ -156,25 +156,6 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getRecommendationTypeIcon = (type: string) => {
-    switch (type) {
-      case 'missing_values':
-        return <EyeOff className="w-4 h-4 text-amber-500" />;
-      case 'outliers':
-        return <Activity className="w-4 h-4 text-red-500" />;
-      case 'encoding':
-        return <Code className="w-4 h-4 text-blue-500" />;
-      case 'scaling':
-        return <ArrowsExpand className="w-4 h-4 text-green-500" />;
-      case 'feature_selection':
-        return <Filter className="w-4 h-4 text-purple-500" />;
-      case 'dimensionality_reduction':
-        return <Minimize2 className="w-4 h-4 text-indigo-500" />;
-      default:
-        return <Zap className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -241,7 +222,6 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const renderCategoricalDistribution = (column: ColumnProfile) => {
     if ((column.type !== 'categorical' && column.type !== 'boolean') || !column.distribution) return null;
     
-    // Limit to top 10 categories for readability
     const entries = Object.entries(column.distribution);
     const topEntries = entries.sort((a, b) => b[1] - a[1]).slice(0, 10);
     
@@ -459,102 +439,131 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                       <div key={type} className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
                         <div className="flex items-center">
                           {getColumnTypeIcon(type)}
-                          <p className="ml-2 text-sm font-medium text-gray-700">{type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                          <span className="ml-2 text-sm font-medium text-gray-700 capitalize">{type}</span>
                         </div>
-                        <p className="mt-2 text-xl font-semibold text-gray-900">{count}</p>
-                        <p className="text-xs text-gray-500">
-                          {((count / Object.keys(profile.columnProfiles).length) * 100).toFixed(1)}% of columns
-                        </p>
+                        <p className="mt-1 text-2xl font-semibold text-gray-900">{count}</p>
                       </div>
                     );
                   })}
                 </div>
               </div>
+            </div>
+          )}
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Data Quality Summary</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Missing Values</h5>
-                    {Object.values(profile.columnProfiles).some(col => col.missing > 0) ? (
-                      <div className="space-y-2">
-                        {Object.values(profile.columnProfiles)
-                          .filter(col => col.missing > 0)
-                          .sort((a, b) => b.missingPercent - a.missingPercent)
-                          .slice(0, 5)
-                          .map(col => (
-                            <div key={col.name} className="flex items-center justify-between">
-                              <span className="text-sm text-gray-600">{col.name}</span>
-                              <div className="flex items-center">
-                                <div className="w-24 h-2 bg-gray-200 rounded-full mr-2">
-                                  <div 
-                                    className="h-2 bg-amber-500 rounded-full" 
-                                    style={{ width: `${col.missingPercent}%` }}
-                                  ></div>
-                                </div>
-                                <span className="text-xs text-gray-500">{col.missingPercent.toFixed(1)}%</span>
-                              </div>
-                            </div>
-                          ))}
+          {activeTab === 'columns' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <h4 className="text-sm font-medium text-gray-700 mb-4">Select Column</h4>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {Object.keys(profile.columnProfiles).map((column) => (
+                    <button
+                      key={column}
+                      onClick={() => setSelectedColumn(column)}
+                      className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                        selectedColumn === column
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900">{column}</span>
+                        <span className={`px-2 py-1 text-xs font-medium rounded ${
+                          getColumnTypeColor(profile.columnProfiles[column].type)
+                        }`}>
+                          {profile.columnProfiles[column].type}
+                        </span>
                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">No missing values detected</p>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Outliers</h5>
-                    {Object.values(profile.columnProfiles).some(col => col.outliers && col.outliers > 0) ? (
-                      <div className="space-y-2">
-                        {Object.values(profile.columnProfiles)
-                          .filter(col => col.outliers && col.outliers > 0)
-                          .sort((a, b) => (b.outliers || 0) - (a.outliers || 0))
-                          .slice(0, 5)
-                          .map(col => (
-                            <div key={col.name} className="flex items-center justify-between">
-                              <span className="text-sm text-gray-600">{col.name}</span>
-                              <div className="flex items-center">
-                                <span className="text-xs text-gray-500">
-                                  {col.outliers} outliers ({((col.outliers || 0) / col.count * 100).toFixed(1)}%)
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500">No outliers detected</p>
-                    )}
-                  </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {profile.correlations && Object.keys(profile.correlations).length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Correlation Highlights</h4>
-                  <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                    <div className="space-y-2">
-                      {Object.entries(profile.correlations)
-                        .flatMap(([col1, correlations]) => 
-                          Object.entries(correlations)
-                            .filter(([col2, value]) => col1 !== col2 && Math.abs(value) > 0.7)
-                            .map(([col2, value]) => ({ col1, col2, value }))
-                        )
-                        .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-                        .slice(0, 5)
-                        .map(({ col1, col2, value }) => (
-                          <div key={`${col1}-${col2}`} className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">{col1} ↔ {col2}</span>
-                            <span className={`text-sm ${value > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {value.toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                      {Object.entries(profile.correlations)
-                        .flatMap(([col1, correlations]) => 
-                          Object.entries(correlations)
-                            .filter(([col2, value]) => col1 !== col2 && Math.abs(value) > 0.7)
-                        ).length === 0 && (
-                        <p className="text-sm text-gray-500">No strong correlations detected</p>
+              {selectedColumn && profile.columnProfiles[selectedColumn] && (
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Statistics</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Type</span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${
+                            getColumnTypeColor(profile.columnProfiles[selectedColumn].type)
+                          }`}>
+                            {profile.columnProfiles[selectedColumn].type}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Count</span>
+                          <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].count}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Missing</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {profile.columnProfiles[selectedColumn].missing} ({profile.columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Unique</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {profile.columnProfiles[selectedColumn].unique} ({profile.columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
+                          </span>
+                        </div>
+
+                        {profile.columnProfiles[selectedColumn].type === 'numeric' && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Mean</span>
+                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.mean?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Median</span>
+                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.median?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Std Dev</span>
+                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.std?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Min</span>
+                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.min}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Max</span>
+                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.max}</span>
+                            </div>
+                          </>
+                        )}
+                            
+                        {profile.columnProfiles[selectedColumn].type === 'datetime' && (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Min Date</span>
+                              <span className="text-sm font-medium text-gray-900">
+                                {new Date(profile.columnProfiles[selectedColumn].stats.min as string).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-500">Max Date</span>
+                              <span className="text-sm font-medium text-gray-900">
+                                {new Date(profile.columnProfiles[selectedColumn].stats.max as string).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Distribution</h4>
+                      {profile.columnProfiles[selectedColumn].type === 'numeric' ? (
+                        renderColumnHistogram(profile.columnProfiles[selectedColumn])
+                      ) : (profile.columnProfiles[selectedColumn].type === 'categorical' || 
+                           profile.columnProfiles[selectedColumn].type === 'boolean') ? (
+                        renderCategoricalDistribution(profile.columnProfiles[selectedColumn])
+                      ) : (
+                        <div className="flex items-center justify-center h-64">
+                          <p className="text-sm text-gray-500">No distribution visualization available for this column type</p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -563,465 +572,68 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
             </div>
           )}
 
-          {activeTab === 'columns' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-1 space-y-2">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      placeholder="Search columns"
-                      onChange={(e) => {
-                        const searchTerm = e.target.value.toLowerCase();
-                        const matchingColumn = Object.keys(profile.columnProfiles).find(col => 
-                          col.toLowerCase().includes(searchTerm)
-                        );
-                        if (matchingColumn) {
-                          setSelectedColumn(matchingColumn);
-                        }
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="overflow-y-auto max-h-96 border border-gray-200 rounded-md">
-                    {Object.values(profile.columnProfiles).map(column => (
-                      <button
-                        key={column.name}
-                        className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left hover:bg-gray-50 ${
-                          selectedColumn === column.name ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
-                        }`}
-                        onClick={() => setSelectedColumn(column.name)}
-                      >
-                        <div className="flex items-center">
-                          {getColumnTypeIcon(column.type)}
-                          <span className="ml-2 truncate">{column.name}</span>
-                        </div>
-                        {column.missing > 0 && (
-                          <span className="text-xs text-amber-600">{column.missingPercent.toFixed(0)}% missing</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="md:col-span-3">
-                  {selectedColumn && profile.columnProfiles[selectedColumn] && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          {getColumnTypeIcon(profile.columnProfiles[selectedColumn].type)}
-                          <h3 className="ml-2 text-lg font-medium text-gray-900">{selectedColumn}</h3>
-                          <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
-                            getColumnTypeColor(profile.columnProfiles[selectedColumn].type)
-                          }`}>
-                            {profile.columnProfiles[selectedColumn].type}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          {profile.columnProfiles[selectedColumn].missing > 0 && (
-                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
-                              {profile.columnProfiles[selectedColumn].missingPercent.toFixed(1)}% missing
-                            </span>
-                          )}
-                          {profile.columnProfiles[selectedColumn].outliers && profile.columnProfiles[selectedColumn].outliers > 0 && (
-                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                              {profile.columnProfiles[selectedColumn].outliers} outliers
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Statistics</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Count</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].count.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Missing</span>
-                              <span className="text-sm font-medium text-gray-900">
-                                {profile.columnProfiles[selectedColumn].missing.toLocaleString()} 
-                                ({profile.columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Unique</span>
-                              <span className="text-sm font-medium text-gray-900">
-                                {profile.columnProfiles[selectedColumn].unique.toLocaleString()} 
-                                ({profile.columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
-                              </span>
-                            </div>
-                            
-                            {profile.columnProfiles[selectedColumn].type === 'numeric' && (
-                              <>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Min</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {typeof profile.columnProfiles[selectedColumn].stats.min === 'number' 
-                                      ? profile.columnProfiles[selectedColumn].stats.min.toLocaleString(undefined, {maximumFractionDigits: 4}) 
-                                      : profile.columnProfiles[selectedColumn].stats.min}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Max</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {typeof profile.columnProfiles[selectedColumn].stats.max === 'number' 
-                                      ? profile.columnProfiles[selectedColumn].stats.max.toLocaleString(undefined, {maximumFractionDigits: 4}) 
-                                      : profile.columnProfiles[selectedColumn].stats.max}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Mean</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {profile.columnProfiles[selectedColumn].stats.mean?.toLocaleString(undefined, {maximumFractionDigits: 4})}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Median</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {profile.columnProfiles[selectedColumn].stats.median?.toLocaleString(undefined, {maximumFractionDigits: 4})}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Std Dev</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {profile.columnProfiles[selectedColumn].stats.std?.toLocaleString(undefined, {maximumFractionDigits: 4})}
-                                  </span>
-                                </div>
-                                {profile.columnProfiles[selectedColumn].stats.skewness !== undefined && (
-                                  <div className="flex justify-between">
-                                    <span className="text-sm text-gray-500">Skewness</span>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      {profile.columnProfiles[selectedColumn].stats.skewness.toFixed(4)}
-                                    </span>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                            
-                            {(profile.columnProfiles[selectedColumn].type === 'categorical' || 
-                              profile.columnProfiles[selectedColumn].type === 'boolean') && 
-                              profile.columnProfiles[selectedColumn].stats.mode !== undefined && (
-                              <div className="flex justify-between">
-                                <span className="text-sm text-gray-500">Mode</span>
-                                <span className="text-sm font-medium text-gray-900">
-                                  {profile.columnProfiles[selectedColumn].stats.mode.toString()}
-                                </span>
-                              </div>
-                            )}
-                            
-                            {profile.columnProfiles[selectedColumn].type === 'datetime' && (
-                              <>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Min Date</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {new Date(profile.columnProfiles[selectedColumn].stats.min as string).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-sm text-gray-500">Max Date</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {new Date(profile.columnProfiles[selectedColumn].stats.max as string).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Distribution</h4>
-                          {profile.columnProfiles[selectedColumn].type === 'numeric' ? (
-                            renderColumnHistogram(profile.columnProfiles[selectedColumn])
-                          ) : (profile.columnProfiles[selectedColumn].type === 'categorical' || 
-                               profile.columnProfiles[selectedColumn].type === 'boolean') ? (
-                            renderCategoricalDistribution(profile.columnProfiles[selectedColumn])
-                          ) : (
-                            <div className="flex items-center justify-center h-64">
-                              <p className="text-sm text-gray-500">No distribution visualization available for this column type</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Issues and recommendations for this column */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Issues</h4>
-                          {profile.dataQualityIssues.filter(issue => issue.column === selectedColumn).length > 0 ? (
-                            <div className="space-y-2">
-                              {profile.dataQualityIssues
-                                .filter(issue => issue.column === selectedColumn)
-                                .map((issue, index) => (
-                                  <div key={index} className="p-2 bg-gray-50 rounded-md">
-                                    <div className="flex items-start">
-                                      <div className="flex-shrink-0 mt-0.5">
-                                        {getIssueTypeIcon(issue.type)}
-                                      </div>
-                                      <div className="ml-2">
-                                        <div className="flex items-center">
-                                          <p className="text-sm font-medium text-gray-900">{issue.type.replace(/_/g, ' ')}</p>
-                                          <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
-                                            getIssueTypeColor(issue.severity)
-                                          }`}>
-                                            {issue.severity}
-                                          </span>
-                                        </div>
-                                        <p className="text-sm text-gray-600">{issue.description}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-500">No issues detected for this column</p>
-                          )}
-                        </div>
-                        
-                        <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Recommendations</h4>
-                          {profile.recommendations.filter(rec => rec.column === selectedColumn).length > 0 ? (
-                            <div className="space-y-2">
-                              {profile.recommendations
-                                .filter(rec => rec.column === selectedColumn)
-                                .map((rec, index) => {
-                                  const recId = `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`;
-                                  const isSelected = selectedRecommendations.includes(recId);
-                                  
-                                  return (
-                                    <div 
-                                      key={index} 
-                                      className={`p-2 rounded-md cursor-pointer ${
-                                        isSelected ? 'bg-indigo-50 border border-indigo-200' : 'bg-gray-50'
-                                      }`}
-                                      onClick={() => toggleRecommendation(rec)}
-                                    >
-                                      <div className="flex items-start">
-                                        <div className="flex-shrink-0 mt-0.5">
-                                          {getRecommendationTypeIcon(rec.type)}
-                                        </div>
-                                        <div className="ml-2 flex-1">
-                                          <div className="flex items-center justify-between">
-                                            <p className="text-sm font-medium text-gray-900">{rec.suggestedMethod.replace(/_/g, ' ')}</p>
-                                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                              getRecommendationImpactColor(rec.impact)
-                                            }`}>
-                                              {rec.impact} impact
-                                            </span>
-                                          </div>
-                                          <p className="text-sm text-gray-600">{rec.description}</p>
-                                        </div>
-                                        <div className="ml-2 flex-shrink-0">
-                                          <input
-                                            type="checkbox"
-                                            checked={isSelected}
-                                            onChange={() => toggleRecommendation(rec)}
-                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-500">No recommendations for this column</p>
-                          )}
-                        </div>
-
-                        {/* Apply Selected Button */}
-                        {profile.recommendations.filter(rec => rec.column === selectedColumn).length > 0 && (
-                          <div className="mt-4 flex justify-end">
-                            <Button
-                              onClick={handleApplyRecommendations}
-                              disabled={selectedRecommendations.length === 0}
-                              icon={<Check className="w-4 h-4" />}
-                            >
-                              Apply Selected ({selectedRecommendations.length})
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Correlations */}
-                      {profile.correlations && profile.correlations[selectedColumn] && (
-                        <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Correlations</h4>
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                              <thead className="bg-gray-50">
-                                <tr>
-                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Column
-                                  </th>
-                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Correlation
-                                  </th>
-                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Strength
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="bg-white divide-y divide-gray-200">
-                                {Object.entries(profile.correlations[selectedColumn])
-                                  .filter(([col]) => col !== selectedColumn)
-                                  .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
-                                  .map(([col, value]) => (
-                                    <tr 
-                                      key={col} 
-                                      className="hover:bg-gray-50 cursor-pointer"
-                                      onClick={() => setSelectedColumn(col)}
-                                    >
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {col}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {value.toFixed(4)}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                          <div 
-                                            className={`w-16 h-2 rounded-full ${
-                                              value > 0 
-                                                ? 'bg-green-100' 
-                                                : 'bg-red-100'
-                                            }`}
-                                          >
-                                            <div 
-                                              className={`h-2 rounded-full ${
-                                                value > 0 
-                                                  ? 'bg-green-500' 
-                                                  : 'bg-red-500'
-                                              }`}
-                                              style={{ width: `${Math.abs(value) * 100}%` }}
-                                            ></div>
-                                          </div>
-                                          <span className="ml-2 text-xs text-gray-500">
-                                            {Math.abs(value) > 0.7 
-                                              ? 'Strong' 
-                                              : Math.abs(value) > 0.3 
-                                              ? 'Moderate' 
-                                              : 'Weak'}
-                                          </span>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'issues' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-medium text-gray-700">Data Quality Issues</h4>
-                <div className="flex items-center">
-                  <button
-                    onClick={() => setShowAllIssues(!showAllIssues)}
-                    className="flex items-center text-sm text-indigo-600 hover:text-indigo-500"
-                  >
-                    {showAllIssues ? (
-                      <>
-                        <EyeOff className="w-4 h-4 mr-1" />
-                        Show High Severity Only
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-4 h-4 mr-1" />
-                        Show All Issues
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-              
+            <div className="space-y-4">
               {profile.dataQualityIssues.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-green-50 rounded-lg">
-                  <Check className="w-8 h-8 text-green-500 mb-2" />
-                  <p className="text-lg font-medium text-green-800">No data quality issues detected</p>
-                  <p className="text-sm text-green-600">Your dataset looks clean and ready for analysis</p>
+                <div className="flex flex-col items-center justify-center p-8">
+                  <Check className="w-12 h-12 text-green-500 mb-4" />
+                  <p className="text-lg font-medium text-gray-900">No data quality issues detected</p>
+                  <p className="text-sm text-gray-500 mt-1">Your dataset looks good!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {profile.dataQualityIssues
-                    .filter(issue => showAllIssues || issue.severity === 'high')
-                    .map((issue, index) => (
-                      <div 
-                        key={index} 
-                        className={`p-4 rounded-lg ${
-                          issue.severity === 'high' 
-                            ? 'bg-red-50 border border-red-200' 
-                            : issue.severity === 'medium'
-                            ? 'bg-amber-50 border border-amber-200'
-                            : 'bg-blue-50 border border-blue-200'
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 mt-0.5">
-                            {getIssueTypeIcon(issue.type)}
+                  {profile.dataQualityIssues.map((issue, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      issue.severity === 'high' 
+                        ? 'border-red-200 bg-red-50' 
+                        : issue.severity === 'medium'
+                        ? 'border-amber-200 bg-amber-50'
+                        : 'border-blue-200 bg-blue-50'
+                    }`}>
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          {getIssueTypeIcon(issue.type)}
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium text-gray-900">{issue.type.replace(/_/g, ' ')}</h4>
+                            <span className={`px-2 py-1 text-xs font-medium rounded ${getIssueTypeColor(issue.severity)}`}>
+                              {issue.severity}
+                            </span>
                           </div>
-                          <div className="ml-3">
-                            <div className="flex items-center">
-                              <h3 className={`text-sm font-medium ${
-                                issue.severity === 'high' 
-                                  ? 'text-red-800' 
-                                  : issue.severity === 'medium'
-                                  ? 'text-amber-800'
-                                  : 'text-blue-800'
-                              }`}>
-                                {issue.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </h3>
-                              <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
-                                getIssueTypeColor(issue.severity)
-                              }`}>
-                                {issue.severity}
-                              </span>
-                            </div>
-                            <div className={`mt-1 text-sm ${
-                              issue.severity === 'high' 
-                                ? 'text-red-700' 
-                                : issue.severity === 'medium'
-                                ? 'text-amber-700'
-                                : 'text-blue-700'
-                            }`}>
-                              <p>{issue.description}</p>
-                              {issue.affectedRows && (
-                                <p className="mt-1">
-                                  Affects {issue.affectedRows.toLocaleString()} rows 
-                                  ({((issue.affectedRows / profile.rowCount) * 100).toFixed(1)}% of data)
-                                </p>
-                              )}
-                            </div>
-                            {issue.recommendation && (
-                              <div className={`mt-2 text-sm font-medium ${
-                                issue.severity === 'high' 
-                                  ? 'text-red-800' 
-                                  : issue.severity === 'medium'
-                                  ? 'text-amber-800'
-                                  : 'text-blue-800'
-                              }`}>
-                                Recommendation: {issue.recommendation}
-                              </div>
+                          {issue.column && (
+                            <p className="text-sm font-medium text-gray-700 mt-1">Column: {issue.column}</p>
+                          )}
+                          <div className={`mt-2 text-sm ${
+                            issue.severity === 'high' 
+                              ? 'text-red-700' 
+                              : issue.severity === 'medium'
+                              ? 'text-amber-700'
+                              : 'text-blue-700'
+                          }`}>
+                            <p>{issue.description}</p>
+                            {issue.affectedRows && (
+                              <p className="mt-1">
+                                Affects {issue.affectedRows.toLocaleString()} rows 
+                                ({((issue.affectedRows / profile.rowCount) * 100).toFixed(1)}% of data)
+                              </p>
                             )}
                           </div>
+                          {issue.recommendation && (
+                            <div className={`mt-2 text-sm font-medium ${
+                              issue.severity === 'high' 
+                                ? 'text-red-800' 
+                                : issue.severity === 'medium'
+                                ? 'text-amber-800'
+                                : 'text-blue-800'
+                            }`}>
+                              Recommendation: {issue.recommendation}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -1053,78 +665,54 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
               </div>
               
               {profile.recommendations.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
-                  <Check className="w-8 h-8 text-green-500 mb-2" />
-                  <p className="text-lg font-medium text-gray-800">No recommendations needed</p>
-                  <p className="text-sm text-gray-600">Your dataset is already well-prepared for analysis</p>
+                <div className="flex flex-col items-center justify-center p-8">
+                  <Check className="w-12 h-12 text-green-500 mb-4" />
+                  <p className="text-lg font-medium text-gray-900">No preprocessing recommendations</p>
+                  <p className="text-sm text-gray-500 mt-1">Your dataset is ready for modeling!</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {/* Group recommendations by type */}
-                  {['missing_values', 'outliers', 'encoding', 'scaling', 'feature_selection', 'dimensionality_reduction'].map(type => {
-                    const typeRecs = profile.recommendations.filter(rec => rec.type === type);
-                    if (typeRecs.length === 0) return null;
+                <div className="space-y-3">
+                  {profile.recommendations.map((rec, index) => {
+                    const recId = `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`;
+                    const isSelected = selectedRecommendations.includes(recId);
                     
                     return (
-                      <div key={type} className="space-y-2">
-                        <h5 className="text-sm font-medium text-gray-700 flex items-center">
-                          {getRecommendationTypeIcon(type)}
-                          <span className="ml-2">{type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </h5>
-                        
-                        {typeRecs.map((rec, index) => {
-                          const recId = `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`;
-                          const isSelected = selectedRecommendations.includes(recId);
-                          
-                          return (
-                            <div 
-                              key={index} 
-                              className={`p-3 rounded-lg cursor-pointer ${
-                                isSelected ? 'bg-indigo-50 border border-indigo-200' : 'bg-white border border-gray-200'
-                              }`}
-                              onClick={() => toggleRecommendation(rec)}
-                            >
-                              <div className="flex items-start">
-                                <div className="flex-shrink-0">
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    onChange={() => toggleRecommendation(rec)}
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                  />
-                                </div>
-                                <div className="ml-3 flex-1">
-                                  <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {rec.suggestedMethod.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                      {rec.column && <span className="ml-1 text-gray-500">({rec.column})</span>}
-                                    </p>
-                                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                      getRecommendationImpactColor(rec.impact)
-                                    }`}>
-                                      {rec.impact} impact
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-sm text-gray-600">{rec.description}</p>
-                                </div>
-                              </div>
+                      <div
+                        key={index}
+                        onClick={() => toggleRecommendation(rec)}
+                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                              isSelected
+                                ? 'border-indigo-500 bg-indigo-500'
+                                : 'border-gray-300'
+                            }`}>
+                              {isSelected && <Check className="w-3 h-3 text-white" />}
                             </div>
-                          );
-                        })}
+                          </div>
+                          <div className="ml-3 flex-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-medium text-gray-900">{rec.type.replace(/_/g, ' ')}</h4>
+                              <span className={`px-2 py-1 text-xs font-medium rounded ${getRecommendationImpactColor(rec.impact)}`}>
+                                {rec.impact} impact
+                              </span>
+                            </div>
+                            {rec.column && (
+                              <p className="text-sm font-medium text-gray-700 mt-1">Column: {rec.column}</p>
+                            )}
+                            <p className="text-sm text-gray-600 mt-2">{rec.description}</p>
+                            <p className="text-sm font-medium text-indigo-600 mt-2">Method: {rec.suggestedMethod}</p>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
-                </div>
-              )}
-              
-              {selectedRecommendations.length > 0 && onApplyRecommendations && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={handleApplyRecommendations}
-                    icon={<ArrowRight className="w-4 h-4" />}
-                  >
-                    Apply {selectedRecommendations.length} Recommendations
-                  </Button>
                 </div>
               )}
             </div>
@@ -1136,76 +724,3 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
 };
 
 export default DataProfiler;
-
-// Additional icons needed
-const Search = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="11" cy="11" r="8"></circle>
-    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-  </svg>
-);
-
-const Clock = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="10"></circle>
-    <polyline points="12 6 12 12 16 14"></polyline>
-  </svg>
-);
-
-const FileText = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="16" y1="13" x2="8" y2="13"></line>
-    <line x1="16" y1="17" x2="8" y2="17"></line>
-    <polyline points="10 9 9 9 8 9"></polyline>
-  </svg>
-);
-
-const Hash = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <line x1="4" y1="9" x2="20" y2="9"></line>
-    <line x1="4" y1="15" x2="20" y2="15"></line>
-    <line x1="10" y1="3" x2="8" y2="21"></line>
-    <line x1="16" y1="3" x2="14" y2="21"></line>
-  </svg>
-);
-
-const TrendingUp = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-    <polyline points="17 6 23 6 23 12"></polyline>
-  </svg>
-);
-
-const Copy = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-  </svg>
-);
-
-const Code = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polyline points="16 18 22 12 16 6"></polyline>
-    <polyline points="8 6 2 12 8 18"></polyline>
-  </svg>
-);
-
-const ArrowsExpand = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polyline points="15 3 21 3 21 9"></polyline>
-    <polyline points="9 21 3 21 3 15"></polyline>
-    <line x1="21" y1="3" x2="14" y2="10"></line>
-    <line x1="3" y1="21" x2="10" y2="14"></line>
-  </svg>
-);
-
-const Minimize2 = (props: any) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polyline points="4 14 10 14 10 20"></polyline>
-    <polyline points="20 10 14 10 14 4"></polyline>
-    <line x1="14" y1="10" x2="21" y2="3"></line>
-    <line x1="3" y1="21" x2="10" y2="14"></line>
-  </svg>
-);

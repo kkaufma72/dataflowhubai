@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User } from '@supabase/supabase-js';
 import { supabase, initializeSupabase, checkSupabaseHealth, handleSupabaseError } from '../lib/supabase';
 import { Dataset, MLModel, Project } from '../types';
-import { storage } from '../lib/storage';
+import { StorageManager } from '../lib/storage';
 import { generateSampleDatasets } from '../lib/sampleData';
 
 interface MLContextType {
@@ -37,259 +37,357 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const [models, setModels] = useState<MLModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
-  const retryDelay = 2000; // 2 seconds
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  const createDefaultProject = async () => {
+  const storage = StorageManager.getInstance();
+
+  // Helper function to timeout promises
+  const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => 
+        setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+      )
+    ]);
+  };
+
+  const createDefaultProject = async (userId: string) => {
     try {
-      // Create a default project even if not logged in
-      const userId = (await supabase.auth.getSession()).data.session?.user?.id || 'anonymous';
+      console.log('Creating default project for user:', userId);
 
-      const { data: newProject, error: createError } = await supabase
-        .from('projects')
-        .insert([{
-          name: 'Default Project',
-          description: 'Default project created automatically',
-          user_id: userId
-        }])
-        .select()
-        .single();
+      const { data: newProject, error: createError } = await withTimeout(
+        supabase
+          .from('projects')
+          .insert([{
+            name: 'Default Project',
+            description: 'Default project created automatically',
+            user_id: userId
+          }])
+          .select()
+          .single(),
+        10000,
+        'Project creation timeout'
+      );
 
-      if (createError) throw createError;
+      if (createError) {
+        console.error('Error creating project:', createError);
+        throw createError;
+      }
+      
+      console.log('✅ Created default project:', newProject);
       return newProject;
     } catch (err) {
-      console.error('Error creating default project:', err);
+      console.error('❌ Error creating default project:', err);
       throw err;
     }
   };
 
   const initializeSampleData = async () => {
     try {
-      // Get existing datasets from storage
       let localDatasets = await storage.getAllDatasets();
       
-      // If no datasets exist, generate and save sample datasets
       if (localDatasets.length === 0) {
-        console.log('Initializing sample datasets...');
+        console.log('📊 Initializing sample datasets...');
         const sampleDatasets = generateSampleDatasets();
         
-        // Save each dataset to IndexedDB
         await Promise.all(sampleDatasets.map(dataset => storage.saveDataset(dataset)));
-        
-        // Update local datasets
         localDatasets = sampleDatasets;
-        console.log('Sample datasets initialized:', localDatasets.length);
+        console.log('✅ Sample datasets initialized:', localDatasets.length);
+      } else {
+        console.log('📊 Found existing local datasets:', localDatasets.length);
       }
 
       return localDatasets;
     } catch (error) {
-      console.error('Error initializing sample data:', error);
-      throw error;
+      console.error('❌ Error initializing sample data:', error);
+      return []; // Return empty array instead of throwing
     }
   };
 
-  const loadInitialData = async (retryAttempt = 0) => {
+  const loadInitialData = async () => {
+    // Prevent multiple simultaneous initializations
+    if (hasInitialized) {
+      console.log('⏭️ Already initialized, skipping');
+      return;
+    }
+
+    console.log('🔄 loadInitialData called');
+    
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check network connectivity
-      if (!navigator.onLine) {
-        throw new Error('No internet connection available');
+      // Step 1: Load sample data first (always works)
+      console.log('📊 Loading sample data...');
+      const localDatasets = await initializeSampleData();
+      setDatasets(localDatasets);
+      console.log('✅ Sample data loaded:', localDatasets.length);
+
+      // Step 2: Try to get session with timeout
+      console.log('🔍 Checking for session (with 5s timeout)...');
+      let session;
+      try {
+        const sessionResponse = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          'Session check timeout after 5s'
+        );
+        session = sessionResponse.data?.session;
+        console.log('✅ Session check complete:', session ? `User: ${session.user.email}` : 'No session');
+      } catch (timeoutError) {
+        console.error('⏱️ Session check timed out:', timeoutError);
+        // Continue without session
+        session = null;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log('⚠️ No session - creating local project');
+        
+        // Create a temporary local project
+        const tempProject = {
+          id: 'temp-local-project',
+          name: 'Local Project',
+          description: 'Sign in to sync your data',
+          createdAt: new Date().toISOString()
+        };
+        setCurrentProject(tempProject);
+        console.log('✅ Set temporary local project');
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
-      let isConnected;
+      // Step 3: Initialize Supabase connection
+      console.log('🔌 Initializing Supabase...');
       try {
-        isConnected = await initializeSupabase();
+        const isConnected = await withTimeout(
+          initializeSupabase(),
+          5000,
+          'Supabase init timeout'
+        );
+        console.log('✅ Supabase connected:', isConnected);
       } catch (connError) {
-        throw new Error(`Database connection error: ${handleSupabaseError(connError)}`);
+        console.error('❌ Supabase connection failed:', connError);
+        throw connError;
       }
 
-      if (!isConnected) {
-        throw new Error('Failed to connect to database');
-      }
+      // Step 4: Load or create project
+      console.log('🔍 Looking for user projects...');
+      let project;
+      try {
+        const { data, error: projectError } = await withTimeout(
+          supabase
+            .from('projects')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle(),
+          10000,
+          'Project fetch timeout'
+        );
 
-      let { data: project, error: projectError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-      if (!project && !projectError) {
-        try {
-          project = await createDefaultProject();
-        } catch (createError) {
-          throw new Error(`Failed to create default project: ${handleSupabaseError(createError)}`);
-        }
-      } else if (projectError) {
+        if (projectError) throw projectError;
+        project = data;
+      } catch (projectError) {
+        console.error('❌ Error fetching project:', projectError);
         throw projectError;
       }
 
-      if (project) {
-        setCurrentProject({
-          id: project.id,
-          name: project.name,
-          description: project.description || '',
-          createdAt: project.created_at
-        });
+      if (!project) {
+        console.log('⚠️ No project found, creating default...');
+        project = await createDefaultProject(session.user.id);
+      } else {
+        console.log('✅ Found existing project:', project.name);
+      }
 
-        const [datasetsResponse, modelsResponse] = await Promise.all([
-          supabase
-            .from('datasets')
-            .select('*')
-            .eq('project_id', project.id)
-            .eq('user_id', session.user.id),
-          supabase
-            .from('models')
-            .select('*')
-            .eq('project_id', project.id)
-            .eq('user_id', session.user.id)
-        ]);
+      // Step 5: Set the project
+      const projectObj = {
+        id: project.id,
+        name: project.name,
+        description: project.description || '',
+        createdAt: project.created_at
+      };
+      
+      console.log('🎯 Setting current project:', projectObj.name);
+      setCurrentProject(projectObj);
+
+      // Step 6: Load datasets and models
+      console.log('📦 Loading datasets and models from DB...');
+      try {
+        const [datasetsResponse, modelsResponse] = await withTimeout(
+          Promise.all([
+            supabase
+              .from('datasets')
+              .select('*')
+              .eq('project_id', project.id)
+              .eq('user_id', session.user.id),
+            supabase
+              .from('models')
+              .select('*')
+              .eq('project_id', project.id)
+              .eq('user_id', session.user.id)
+          ]),
+          10000,
+          'Data fetch timeout'
+        );
 
         if (datasetsResponse.error) throw datasetsResponse.error;
         if (modelsResponse.error) throw modelsResponse.error;
 
-        // Initialize sample data and merge with remote data
-        const localDatasets = await initializeSampleData();
-        const remoteDatasets = datasetsResponse.data || [];
-        const mergedDatasets = [...localDatasets];
-        
-        for (const remoteDataset of remoteDatasets) {
-          const localIndex = mergedDatasets.findIndex(d => d.id === remoteDataset.id);
-          if (localIndex === -1) {
-            mergedDatasets.push(remoteDataset);
-          }
-        }
+        const fetchedDatasets = (datasetsResponse.data || []).map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          description: d.description || '',
+          rows: d.row_count || 0,
+          columns: d.column_count || 0,
+          dateUploaded: d.created_at,
+          fileType: d.file_type || '',
+          fileSize: d.file_size || '',
+          projectId: d.project_id,
+          previewData: d.preview_data || { columns: [], rows: [] }
+        }));
 
-        setDatasets(mergedDatasets);
-        setModels(modelsResponse.data || []);
-      } else {
-        throw new Error('Failed to load or create project');
+        console.log('📊 Fetched datasets from DB:', fetchedDatasets.length);
+
+        // Merge with local datasets
+        const allDatasets = [...fetchedDatasets, ...localDatasets];
+        const uniqueDatasets = Array.from(
+          new Map(allDatasets.map(d => [d.id, d])).values()
+        );
+
+        console.log('✅ Total unique datasets:', uniqueDatasets.length);
+        setDatasets(uniqueDatasets);
+
+        const fetchedModels = (modelsResponse.data || []).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          description: m.description || '',
+          modelType: m.model_type || 'classification',
+          datasetId: m.metadata?.local_dataset_id || m.dataset_id,
+          status: m.status || 'idle',
+          accuracy: m.metadata?.metrics?.accuracy,
+          metrics: m.metadata?.metrics || {},
+          createdAt: m.created_at,
+          projectId: m.project_id,
+          hyperparameters: m.hyperparameters || {}
+        }));
+
+        console.log('✅ Loaded models:', fetchedModels.length);
+        setModels(fetchedModels);
+      } catch (dataError) {
+        console.error('❌ Error loading data:', dataError);
+        // Continue with just local datasets
+        console.log('ℹ️ Continuing with local datasets only');
       }
 
+      console.log('✅ Loading complete!');
       setIsLoading(false);
-      setRetryCount(0); // Reset retry count on success
+      setHasInitialized(true);
+
     } catch (err) {
-      console.error('Error loading initial data:', err);
-      const errorMessage = handleSupabaseError(err);
+      console.error('❌ Error in loadInitialData:', err);
       
-      if (retryAttempt < maxRetries) {
-        console.log(`Retrying in ${retryDelay/1000} seconds... (Attempt ${retryAttempt + 1}/${maxRetries})`);
-        setTimeout(() => {
-          loadInitialData(retryAttempt + 1);
-        }, retryDelay);
-      } else {
-        setError(errorMessage);
-        setIsLoading(false);
-      }
+      // Fallback: Create local project
+      console.log('🆘 Setting up fallback local project...');
+      const localDatasets = await initializeSampleData();
+      setDatasets(localDatasets);
+      
+      const tempProject = {
+        id: 'temp-local-project',
+        name: 'Local Project',
+        description: 'Connection failed - data saved locally',
+        createdAt: new Date().toISOString()
+      };
+      setCurrentProject(tempProject);
+      
+      setError('Could not connect to database. Using local storage.');
+      setIsLoading(false);
+      setHasInitialized(true);
     }
   };
 
   useEffect(() => {
+    console.log('🚀 MLProvider mounted');
     loadInitialData();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        loadInitialData();
-      } else if (event === 'SIGNED_OUT') {
-        setDatasets([]);
-        setModels([]);
-        setCurrentProject(null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔐 Auth state changed:', event);
+        if (event === 'SIGNED_IN' && session) {
+          console.log('👤 User signed in, reloading...');
+          setHasInitialized(false);
+          await loadInitialData();
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
+          setDatasets([]);
+          setModels([]);
+          setCurrentProject(null);
+          setHasInitialized(false);
+        }
       }
-    });
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      setError(null);
-      loadInitialData();
-    };
-
-    const handleOffline = () => {
-      setError('No internet connection available');
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    const healthCheckInterval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setDatasets([]);
-        setModels([]);
-        setCurrentProject(null);
-        return;
-      }
-
-      const isHealthy = await checkSupabaseHealth();
-      if (!isHealthy && !error) {
-        setError('Database connection lost');
-      } else if (isHealthy && error) {
-        setError(null);
-      }
-    }, 30000);
+    );
 
     return () => {
+      console.log('🧹 MLProvider unmounting');
       subscription.unsubscribe();
-      clearInterval(healthCheckInterval);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
   const addDataset = async (dataset: Dataset) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      throw new Error('Authentication required');
+    console.log('➕ Adding dataset:', dataset.name);
+    
+    if (!currentProject?.id) {
+      console.error('❌ No current project!', currentProject);
+      throw new Error('No active project. Please wait for initialization to complete.');
     }
 
-    if (!currentProject?.id) {
-      setError('No active project found');
-      throw new Error('No active project found');
-    }
+    console.log('📁 Current project:', currentProject.name, currentProject.id);
 
     try {
-      // Save to IndexedDB first
+      // Always save locally first
+      console.log('💾 Saving to IndexedDB...');
       await storage.saveDataset(dataset);
+      console.log('✅ Saved to IndexedDB');
       
-      // Update local state
+      // Update local state immediately
       setDatasets(prevDatasets => [...prevDatasets, dataset]);
 
-      // Try to save to Supabase
-      const { data, error } = await supabase
-        .from('datasets')
-        .insert([{
-          name: dataset.name,
-          description: dataset.description,
-          file_type: dataset.fileType,
-          file_size: dataset.fileSize,
-          row_count: dataset.rows,
-          column_count: dataset.columns,
-          preview_data: dataset.previewData,
-          project_id: currentProject.id,
-          user_id: session.user.id // Add user_id from session
-        }])
-        .select()
-        .single();
+      // Try to save to Supabase if we have a real project
+      if (!currentProject.id.startsWith('temp-')) {
+        console.log('☁️ Saving to Supabase...');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const { data, error } = await supabase
+            .from('datasets')
+            .insert([{
+              name: dataset.name,
+              description: dataset.description,
+              file_type: dataset.fileType,
+              file_size: dataset.fileSize,
+              row_count: dataset.rows,
+              column_count: dataset.columns,
+              preview_data: dataset.previewData,
+              project_id: currentProject.id,
+              user_id: session.user.id
+            }])
+            .select()
+            .single();
 
-      if (error) {
-        console.warn('Failed to save dataset to remote database:', error);
-        // Continue with local data only
+          if (error) {
+            console.warn('⚠️ Failed to save to Supabase:', error);
+          } else {
+            console.log('✅ Saved to Supabase:', data?.id);
+          }
+        }
+      } else {
+        console.log('ℹ️ Local project - skipping Supabase save');
       }
 
       return dataset;
     } catch (err) {
-      console.error('Error adding dataset:', err);
-      setError('Failed to add dataset');
+      console.error('❌ Error adding dataset:', err);
       throw err;
     }
   };
@@ -297,17 +395,14 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const addModel = async (model: MLModel) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      throw new Error('Authentication required');
+      throw new Error('Authentication required to create models');
     }
 
-    if (!currentProject?.id) {
-      setError('No active project found');
-      return;
+    if (!currentProject?.id || currentProject.id.startsWith('temp-')) {
+      throw new Error('Cannot create models in local project. Please sign in.');
     }
 
     try {
-      // For non-UUID dataset IDs, set dataset_id to null in the database
-      // but keep the reference in the local model object
       const localDatasetId = model.datasetId;
       
       const { data, error } = await supabase
@@ -317,26 +412,20 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           description: model.description,
           model_type: model.modelType || 'classification',
           status: model.status,
-          dataset_id: null, // Set to null since we're using local dataset references
+          dataset_id: null,
           project_id: currentProject.id,
-          user_id: session.user.id, // Add user_id from session
+          user_id: session.user.id,
           hyperparameters: model.hyperparameters || {},
           training_config: {},
           metadata: {
-            local_dataset_id: localDatasetId // Store the local dataset ID in metadata
+            local_dataset_id: localDatasetId
           }
         }])
         .select()
         .single();
 
-      if (error) {
-        console.error('Database error:', error);
-        throw new Error('Failed to create model in database');
-      }
-
-      if (!data) {
-        throw new Error('No data returned from database');
-      }
+      if (error) throw error;
+      if (!data) throw new Error('No data returned');
 
       const newModel: MLModel = {
         ...model,
@@ -344,14 +433,13 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         projectId: currentProject.id,
         createdAt: data.created_at,
         modelType: data.model_type,
-        datasetId: localDatasetId // Keep the local dataset ID in the frontend model
+        datasetId: localDatasetId
       };
 
       setModels(prevModels => [...prevModels, newModel]);
       return newModel;
     } catch (err) {
       console.error('Error adding model:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add model');
       throw err;
     }
   };
@@ -392,10 +480,13 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       );
     } catch (err) {
       console.error('Error updating model status:', err);
-      setError('Failed to update model status');
       throw err;
     }
   };
+
+  useEffect(() => {
+    console.log('📌 Current project:', currentProject?.name || 'null');
+  }, [currentProject]);
 
   return (
     <MLContext.Provider
