@@ -15,7 +15,7 @@ export interface Dataset {
   fileType: string;
   fileSize: string;
   projectId: string;
-  previewData?: {
+  preview_data?: {  // Changed from previewData
     columns: string[];
     rows: string[][];
   };
