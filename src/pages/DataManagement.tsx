@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import DataUploader from '../components/data/DataUploader';
@@ -6,8 +6,9 @@ import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import DataProfiler from '../components/data/DataProfiler';
 import PersistentChatSidebar from '../components/chat/PersistentChatSidebar';
+import DataQualityDashboard from '../components/data/DataQualityDashboard';
 import { Dataset } from '../types';
-import { Database, Upload, X, Sparkles, MessageSquare } from 'lucide-react';
+import { Database, Upload, X, Sparkles, MessageSquare, Shield } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
@@ -24,11 +25,31 @@ const DataManagement: React.FC = () => {
   const [showGeneratorModal, setShowGeneratorModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showQuality, setShowQuality] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatDataset, setChatDataset] = useState<Dataset | null>(null);
   const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Auto-show quality dashboard for newly uploaded datasets
+  useEffect(() => {
+    const checkNewDatasets = () => {
+      const lastViewedId = localStorage.getItem('lastViewedDatasetId');
+      const newestDataset = datasets[0]; // Assuming newest is first
+      
+      if (newestDataset && newestDataset.id !== lastViewedId) {
+        // Auto-open quality dashboard for new dataset
+        setSelectedDataset(newestDataset);
+        setShowQuality(true);
+        localStorage.setItem('lastViewedDatasetId', newestDataset.id);
+      }
+    };
+    
+    if (datasets.length > 0) {
+      checkNewDatasets();
+    }
+  }, [datasets]);
 
   const handlePreview = (dataset: Dataset) => {
     setSelectedDataset(dataset);
@@ -38,6 +59,11 @@ const DataManagement: React.FC = () => {
   const handleAnalyze = (dataset: Dataset) => {
     setSelectedDataset(dataset);
     setShowAnalysis(true);
+  };
+
+  const handleQualityCheck = (dataset: Dataset) => {
+    setSelectedDataset(dataset);
+    setShowQuality(true);
   };
 
   const openChat = (dataset: Dataset) => {
@@ -285,13 +311,22 @@ const DataManagement: React.FC = () => {
                   onPreview={() => handlePreview(dataset)}
                   onAnalyze={() => handleAnalyze(dataset)}
                 />
-                <button
-                  onClick={() => openChat(dataset)}
-                  className="absolute top-3 right-3 p-2 bg-white rounded-lg shadow-md hover:bg-indigo-50 hover:shadow-lg transition-all group"
-                  title="Chat with this dataset"
-                >
-                  <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-indigo-600" />
-                </button>
+                <div className="absolute top-3 right-3 flex space-x-2">
+                  <button
+                    onClick={() => handleQualityCheck(dataset)}
+                    className="p-2 bg-white rounded-lg shadow-md hover:bg-green-50 hover:shadow-lg transition-all group"
+                    title="Check data quality"
+                  >
+                    <Shield className="w-4 h-4 text-gray-600 group-hover:text-green-600" />
+                  </button>
+                  <button
+                    onClick={() => openChat(dataset)}
+                    className="p-2 bg-white rounded-lg shadow-md hover:bg-indigo-50 hover:shadow-lg transition-all group"
+                    title="Chat with this dataset"
+                  >
+                    <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-indigo-600" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -348,6 +383,58 @@ const DataManagement: React.FC = () => {
               ) : (
                 <p className="text-gray-500 text-center py-8">No preview data available</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quality Dashboard Modal */}
+      {showQuality && selectedDataset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-green-50 to-blue-50">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-green-600" />
+                  Data Quality Report
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">{selectedDataset.name}</p>
+              </div>
+              <button
+                onClick={() => setShowQuality(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              <DataQualityDashboard 
+                dataset={selectedDataset}
+                onFixIssue={(issue) => {
+                  console.log('Fixing issue:', issue);
+                  toast.success('Issue noted for fixing');
+                }}
+              />
+            </div>
+            <div className="p-4 border-t bg-gray-50 flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowQuality(false);
+                  handlePreview(selectedDataset);
+                }}
+              >
+                View Data
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowQuality(false);
+                  openChat(selectedDataset);
+                }}
+                icon={<MessageSquare className="w-4 h-4" />}
+              >
+                Ask AI About Quality
+              </Button>
             </div>
           </div>
         </div>
