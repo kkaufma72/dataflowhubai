@@ -8,6 +8,30 @@ import { Rocket, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 
+// Email validation function to prevent fake/test emails
+const isValidEmail = (email: string): boolean => {
+  // More strict email validation
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  // Reject common test/fake domains
+  const fakeDomains = [
+    'test.com', 
+    'example.com', 
+    'fake.com', 
+    'temp.com',
+    'test.test',
+    'fake.fake',
+    'example.org',
+    'sample.com',
+    'dummy.com',
+    'placeholder.com'
+  ];
+  
+  const domain = email.split('@')[1]?.toLowerCase();
+  
+  return emailRegex.test(email) && !fakeDomains.includes(domain);
+};
+
 const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,6 +104,13 @@ const SignIn = () => {
       return;
     }
     
+    // Validate email format
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address');
+      toast.error('Please use a valid email address');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError('');
@@ -117,6 +148,16 @@ const SignIn = () => {
       return;
     }
     
+    // Validate email format and block fake domains
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address. Test emails like test@test.com are not allowed.');
+      toast.error('Please use a real email address', {
+        duration: 4000,
+        icon: '⚠️'
+      });
+      return;
+    }
+    
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
@@ -144,10 +185,13 @@ const SignIn = () => {
         throw error;
       }
       
-      toast.success('Sign up successful! Please check your email for verification.', {
-        duration: 6000,
-        icon: '📧'
-      });
+      toast.success(
+        'Sign up successful! Please check your email to verify your account.', 
+        {
+          duration: 6000,
+          icon: '📧'
+        }
+      );
       setIsSignUp(false); // Switch back to sign in view
       
       // Clear form
@@ -248,6 +292,11 @@ const SignIn = () => {
                   placeholder="you@example.com"
                 />
               </div>
+              {isSignUp && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Please use a real email address - you'll need it to verify your account
+                </p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -348,8 +397,8 @@ const SignIn = () => {
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500">
             Need help? Contact us at{' '}
-            <a href="mailto:support@dataflowhub.ai" className="text-indigo-600 hover:text-indigo-500">
-              support@dataflowhub.ai
+            <a href="mailto:contact@dataflowhub.ai" className="text-indigo-600 hover:text-indigo-500">
+              contact@dataflowhub.ai
             </a>
           </p>
         </div>
