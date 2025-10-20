@@ -5,15 +5,15 @@ import DataUploader from '../components/data/DataUploader';
 import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import DataProfiler from '../components/data/DataProfiler';
+import PersistentChatSidebar from '../components/chat/PersistentChatSidebar';
 import { Dataset } from '../types';
-import { Database, Upload, X, Sparkles } from 'lucide-react';
+import { Database, Upload, X, Sparkles, MessageSquare } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import { supabase } from '../lib/supabase';
-import OpenAI from 'openai';
 
 const DataManagement: React.FC = () => {
   const { datasets, currentProject } = useMLContext();
@@ -24,84 +24,11 @@ const DataManagement: React.FC = () => {
   const [showGeneratorModal, setShowGeneratorModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
-  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
-  const [currentQuestion, setCurrentQuestion] = useState('');
-  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [chatDataset, setChatDataset] = useState<Dataset | null>(null);
   const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleChatbotQuery = async (question: string, dataset: Dataset) => {
-    try {
-      setIsLoadingResponse(true);
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey) {
-        toast.error('OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file.');
-        return;
-      }
-
-      // Add user message to chat
-      const userMessage = { role: 'user' as const, content: question };
-      setChatMessages(prev => [...prev, userMessage]);
-
-      // Use OpenAI SDK directly
-      const openai = new OpenAI({
-        apiKey: apiKey,
-        dangerouslyAllowBrowser: true
-      });
-
-      const datasetInfo = JSON.stringify(dataset, null, 2);
-      
-      // Build conversation history
-      const messages = [
-        {
-          role: "system" as const,
-          content: `You are a helpful chatbot that understands datasets. Here is the dataset information:\n${datasetInfo}`
-        },
-        ...chatMessages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        {
-          role: "user" as const,
-          content: question
-        }
-      ];
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: messages,
-        temperature: 0.7,
-      });
-
-      const response = completion.choices[0]?.message?.content || 'No response received';
-      
-      // Add assistant response to chat
-      const assistantMessage = { role: 'assistant' as const, content: response };
-      setChatMessages(prev => [...prev, assistantMessage]);
-      
-    } catch (error: any) {
-      console.error('Chatbot error:', error);
-      toast.error(`Failed: ${error.message}`);
-    } finally {
-      setIsLoadingResponse(false);
-    }
-  };
-
-  const openChatbot = (dataset: Dataset) => {
-    setSelectedDataset(dataset);
-    setChatMessages([]); // Clear previous conversation
-    setShowChatbot(true);
-  };
-
-  const sendChatMessage = () => {
-    if (!currentQuestion.trim() || !selectedDataset) return;
-    
-    handleChatbotQuery(currentQuestion, selectedDataset);
-    setCurrentQuestion('');
-  };
 
   const handlePreview = (dataset: Dataset) => {
     setSelectedDataset(dataset);
@@ -111,6 +38,11 @@ const DataManagement: React.FC = () => {
   const handleAnalyze = (dataset: Dataset) => {
     setSelectedDataset(dataset);
     setShowAnalysis(true);
+  };
+
+  const openChat = (dataset: Dataset) => {
+    setChatDataset(dataset);
+    setShowChat(true);
   };
 
   const handleGenerateSyntheticData = async () => {
@@ -132,7 +64,6 @@ const DataManagement: React.FC = () => {
         rowCount 
       });
       
-      // Insert into database
       const { data: newDataset, error } = await supabase
         .from('datasets')
         .insert([{
@@ -156,7 +87,6 @@ const DataManagement: React.FC = () => {
 
       toast.success(`Generated ${rowCount} rows of ${generatorType} data!`);
       setShowGeneratorModal(false);
-      
       window.location.reload();
       
     } catch (error) {
@@ -311,7 +241,19 @@ const DataManagement: React.FC = () => {
 
       {/* Datasets Grid */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Datasets</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Your Datasets</h2>
+          {chatDataset && (
+            <button
+              onClick={() => setShowChat(!showChat)}
+              className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>{showChat ? 'Hide' : 'Show'} Chat</span>
+            </button>
+          )}
+        </div>
+        
         {datasets.length === 0 ? (
           <Card>
             <div className="text-center py-12">
@@ -337,12 +279,20 @@ const DataManagement: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {datasets.map((dataset) => (
-              <DatasetCard
-                key={dataset.id}
-                dataset={dataset}
-                onPreview={() => handlePreview(dataset)}
-                onAnalyze={() => handleAnalyze(dataset)}
-              />
+              <div key={dataset.id} className="relative">
+                <DatasetCard
+                  dataset={dataset}
+                  onPreview={() => handlePreview(dataset)}
+                  onAnalyze={() => handleAnalyze(dataset)}
+                />
+                <button
+                  onClick={() => openChat(dataset)}
+                  className="absolute top-3 right-3 p-2 bg-white rounded-lg shadow-md hover:bg-indigo-50 hover:shadow-lg transition-all group"
+                  title="Chat with this dataset"
+                >
+                  <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-indigo-600" />
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -399,98 +349,6 @@ const DataManagement: React.FC = () => {
                 <p className="text-gray-500 text-center py-8">No preview data available</p>
               )}
             </div>
-            <div className="p-6 border-t">
-              <Button
-                onClick={() => openChatbot(selectedDataset)}
-              >
-                Ask Chatbot About Dataset
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Chatbot Modal */}
-      {showChatbot && selectedDataset && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-purple-50">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
-                  Chat About: {selectedDataset.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">Ask questions about your dataset</p>
-              </div>
-              <button
-                onClick={() => setShowChatbot(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-              {chatMessages.length === 0 ? (
-                <div className="text-center py-12">
-                  <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Start a conversation about your dataset!</p>
-                  <p className="text-sm text-gray-400 mt-2">Try asking: "What insights can you provide?" or "Summarize the key metrics"</p>
-                </div>
-              ) : (
-                chatMessages.map((message, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                        message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-900 border border-gray-200'
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-              {isLoadingResponse && (
-                <div className="flex justify-start">
-                  <div className="bg-white text-gray-900 border border-gray-200 rounded-lg px-4 py-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="p-4 border-t bg-white">
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={currentQuestion}
-                  onChange={(e) => setCurrentQuestion(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                  placeholder="Ask a question about this dataset..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoadingResponse}
-                />
-                <Button
-                  onClick={sendChatMessage}
-                  disabled={isLoadingResponse || !currentQuestion.trim()}
-                  icon={<Sparkles className="w-4 h-4" />}
-                >
-                  Send
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -522,6 +380,13 @@ const DataManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Persistent Chat Sidebar */}
+      <PersistentChatSidebar
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        dataset={chatDataset}
+      />
     </div>
   );
 };
