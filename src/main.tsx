@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import App from './App.tsx';
 import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AlertCircle } from 'lucide-react';
@@ -35,144 +36,124 @@ import APIReference from './pages/APIReference.tsx';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
 import AsyncWorkloadDashboard from './pages/AsyncWorkloadDashboard.tsx';
-import Features from './components/Features.tsx';
 import UserGuideDetail from './pages/UserGuideDetail.tsx';
 import APIDocumentation from './pages/APIDocumentation.tsx';
-import { GlobalAIAssistant } from './components/ai/GlobalAIAssistant';
 
-// Global error handler for uncaught errors
-const GlobalErrorFallback = ({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) => {
+// Import Features component (you might need to create this)
+const Features = () => <div>Features Page</div>;
+
+// Global error fallback component
+function GlobalErrorFallback({ error }: { error: Error }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
-        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-          <AlertCircle className="w-6 h-6 text-red-600" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
+        <div className="flex items-center mb-4">
+          <AlertCircle className="w-8 h-8 text-red-500 mr-3" />
+          <h1 className="text-xl font-bold text-gray-900">Something went wrong</h1>
         </div>
-        <h2 className="mb-4 text-xl font-semibold text-center text-gray-900">Something went wrong</h2>
-        <div className="p-3 mb-4 overflow-auto text-sm bg-red-50 rounded-md text-red-600 max-h-32">
-          {error.message}
-        </div>
-        <p className="mb-4 text-sm text-gray-600">
-          We apologize for the inconvenience. Please try refreshing the page or contact support if the problem persists.
+        <p className="text-gray-600 mb-4">
+          We're sorry, but something unexpected happened. Please try refreshing the page.
         </p>
-        <div className="flex justify-center">
-          <button
-            onClick={resetErrorBoundary}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Try Again
-          </button>
-        </div>
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+            Error details
+          </summary>
+          <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+            {error.message}
+          </pre>
+        </details>
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition"
+        >
+          Reload Page
+        </button>
       </div>
     </div>
   );
-};
+}
 
-// Log errors to console in development
-const logError = (error: Error, info: { componentStack: string }) => {
-  console.error('Uncaught error:', error);
-  console.error('Component stack:', info.componentStack);
-};
-
-// Only use StrictMode in development
-const AppWrapper = ({ children }: { children: React.ReactNode }) => {
-  // Disable StrictMode to prevent double mounting/rendering
-  // Comment out the line below to re-enable StrictMode for debugging
-  if (import.meta.env.DEV) {
-    console.log('🔧 Running in development mode (StrictMode disabled for better performance)');
-    return <>{children}</>;
-  }
-  
-  return <React.StrictMode>{children}</React.StrictMode>;
-};
+// Error logging function
+function logError(error: Error, info: { componentStack: string }) {
+  console.error('Error caught by boundary:', error, info);
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <AppWrapper>
+  <React.StrictMode>
     <ErrorBoundary FallbackComponent={GlobalErrorFallback} onError={logError}>
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}
-      >
+      <Router>
         <AuthProvider>
           <UserProvider>
             <MLProvider>
               <NotificationProvider>
                 <TourProvider>
                   <DndProvider backend={HTML5Backend}>
-                    <GlobalAIAssistant>
-                      <Toaster 
-                        position="top-right" 
-                        toastOptions={{
+                    <Toaster 
+                      position="top-right" 
+                      toastOptions={{
+                        duration: 3000,
+                        style: {
+                          background: '#FFFFFF',
+                          color: '#1F2937',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          borderRadius: '0.375rem',
+                          padding: '0.75rem 1rem',
+                        },
+                        success: {
+                          iconTheme: {
+                            primary: '#10B981',
+                            secondary: '#FFFFFF',
+                          },
                           duration: 3000,
-                          style: {
-                            background: '#FFFFFF',
-                            color: '#1F2937',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                            borderRadius: '0.375rem',
-                            padding: '0.75rem 1rem',
+                        },
+                        error: {
+                          iconTheme: {
+                            primary: '#EF4444',
+                            secondary: '#FFFFFF',
                           },
-                          success: {
-                            iconTheme: {
-                              primary: '#10B981',
-                              secondary: '#FFFFFF',
-                            },
-                            duration: 3000,
-                          },
-                          error: {
-                            iconTheme: {
-                              primary: '#EF4444',
-                              secondary: '#FFFFFF',
-                            },
-                            duration: 4000,
-                          },
-                        }}
-                      />
-                      <Routes>
-                        {/* Landing page routes */}
-                        <Route path="/" element={<LandingLayout />}>
-                          <Route index element={<LandingPage />} />
-                          <Route path="features" element={<Features />} />
-                          <Route path="documentation" element={<Documentation />} />
-                          <Route path="api-reference" element={<APIReference />} />
-                        </Route>
-                        
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/password-reset" element={<PasswordReset />} />
-                        
-                        {/* Authenticated routes with layout - PROTECTED */}
-                        <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                          <Route index element={<Dashboard />} />
-                          <Route path="documentation" element={<Documentation />} />
-                          <Route path="data" element={<DataManagement />} />
-                          <Route path="feature-engineering" element={<FeatureEngineering />} />
-                          <Route path="train" element={<ModelTraining />} />
-                          <Route path="evaluate" element={<ModelEvaluation />} />
-                          <Route path="deploy" element={<Deployment />} />
-                          <Route path="monitoring" element={<ModelMonitoring />} />
-                          <Route path="visualizations" element={<Visualizations />} />
-                          <Route path="pipeline" element={<PipelineBuilder />} />
-                          <Route path="profile" element={<UserProfile />} />
-                          <Route path="settings" element={<AccountSettings />} />
-                          <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
-                          <Route path="api-management" element={<APIManagement />} />
-                          <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
-                          <Route path="documentation/api" element={<APIDocumentation />} />
-                        </Route>
-                        
-                        {/* Async workloads - PROTECTED */}
-                        <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                          <Route index element={<AsyncWorkloadDashboard />} />
-                        </Route>
-                        
-                        {/* Pipeline dashboard - PROTECTED */}
-                        <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
-                        
-                        {/* Catch-all redirect to landing page */}
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </GlobalAIAssistant>
+                          duration: 4000,
+                        },
+                      }}
+                    />
+                    <Routes>
+                      {/* Landing page routes */}
+                      <Route path="/" element={<LandingLayout />}>
+                        <Route index element={<LandingPage />} />
+                        <Route path="features" element={<Features />} />
+                        <Route path="documentation" element={<Documentation />} />
+                        <Route path="api-reference" element={<APIReference />} />
+                      </Route>
+                      
+                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/password-reset" element={<PasswordReset />} />
+                      
+                      {/* Authenticated routes with layout */}
+                      <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}> 
+                        <Route index element={<Dashboard />} />
+                        <Route path="documentation" element={<Documentation />} />
+                        <Route path="data" element={<DataManagement />} />
+                        <Route path="feature-engineering" element={<FeatureEngineering />} />
+                        <Route path="train" element={<ModelTraining />} />
+                        <Route path="evaluate" element={<ModelEvaluation />} />
+                        <Route path="deploy" element={<Deployment />} />
+                        <Route path="monitoring" element={<ModelMonitoring />} />
+                        <Route path="visualizations" element={<Visualizations />} />
+                        <Route path="pipeline" element={<PipelineBuilder />} />
+                        <Route path="profile" element={<UserProfile />} />
+                        <Route path="settings" element={<AccountSettings />} />
+                        <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
+                        <Route path="api-management" element={<APIManagement />} />
+                        <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
+                        <Route path="documentation/api" element={<APIDocumentation />} />
+                      </Route>
+                      
+                      <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                        <Route index element={<AsyncWorkloadDashboard />} />
+                      </Route>
+                      
+                      <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
                   </DndProvider>
                 </TourProvider>
               </NotificationProvider>
@@ -181,5 +162,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </Router>
     </ErrorBoundary>
-  </AppWrapper>
+  </React.StrictMode>
 );
