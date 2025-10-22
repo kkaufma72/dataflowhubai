@@ -219,14 +219,21 @@ const LandingPage = () => {
               The only no-code ML platform you need. Upload data, train models, and deploy to production with just a few clicks. No PhD required.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button 
+              <button
                 onClick={() => navigate('/signin')}
                 className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
-              <button 
+              <button
+                onClick={() => navigate('/demo')}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Try Demo Now
+              </button>
+              <button
                 onClick={() => navigate('/documentation')}
                 className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition-all"
               >
@@ -234,7 +241,7 @@ const LandingPage = () => {
               </button>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              No credit card required • 14-day free trial • Cancel anytime
+              Try demo without signup • No credit card required • 14-day free trial
             </p>
           </div>
         </div>
