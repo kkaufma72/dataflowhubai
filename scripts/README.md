@@ -7,13 +7,16 @@ Automatically create all Stripe products and prices without manual dashboard wor
 ### Option 1: Using npm script (Recommended)
 
 ```bash
-# 1. Install dependencies (if you haven't already)
+# 1. Pull latest changes (if working from the feature branch)
+git pull origin claude/implement-stripe-features-011CUMWT2EYeYJzh5EebYmj9
+
+# 2. Install dependencies (includes dotenv)
 npm install
 
-# 2. Make sure STRIPE_SECRET_KEY is in your .env file
+# 3. Make sure STRIPE_SECRET_KEY is in your .env file
 # It should already be there: sk_test_51SKT0E2MMddtMstz...
 
-# 3. Run the setup script
+# 4. Run the setup script
 npm run stripe:setup
 ```
 

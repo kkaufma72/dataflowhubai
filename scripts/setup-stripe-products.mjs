@@ -12,12 +12,11 @@
  * Make sure STRIPE_SECRET_KEY is set in your .env file first!
  */
 
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import dotenv from 'dotenv';
 
 // Load environment variables
-require('dotenv').config();
+dotenv.config();
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
@@ -120,7 +119,7 @@ async function createPrice(productId, priceData) {
     product: productId,
     unit_amount: priceData.amount,
     currency: 'usd',
-    recurring: `interval=${priceData.interval}`,
+    'recurring[interval]': priceData.interval,
     nickname: priceData.nickname
   });
 
@@ -172,20 +171,13 @@ async function setupStripeProducts() {
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // Optionally update .env file automatically
-    const envPath = path.join(process.cwd(), '.env');
-    if (fs.existsSync(envPath)) {
-      console.log('💾 Would you like to update your .env file automatically?');
-      console.log('   Copy the values above and paste them into your .env file');
-      console.log('   Or run this command to append them:');
-      console.log('');
-      console.log('   cat >> .env << EOF');
-      Object.entries(results).forEach(([key, value]) => {
-        console.log(`${key}=${value}`);
-      });
-      console.log('EOF');
-      console.log('');
-    }
+    console.log('💡 Quick command to update .env:\n');
+    console.log('cat >> .env << \'EOF\'');
+    Object.entries(results).forEach(([key, value]) => {
+      console.log(`${key}=${value}`);
+    });
+    console.log('EOF');
+    console.log('');
 
     console.log('🎉 Setup complete! Next steps:');
     console.log('   1. Update your .env file with the price IDs above');
