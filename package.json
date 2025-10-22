@@ -13,7 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
-    "test:a11y": "vitest run --config vitest.a11y.config.ts"
+    "test:a11y": "vitest run --config vitest.a11y.config.ts",
+    "stripe:setup": "node scripts/setup-stripe-products.js"
   },
   "dependencies": {
     "@langchain/community": "^1.0.0",
@@ -53,6 +54,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.2",
+    "dotenv": "^16.4.5",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
