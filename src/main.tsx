@@ -43,6 +43,7 @@ import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
 import UsageDashboard from './pages/UsageDashboard.tsx';
 import DemoPage from './pages/DemoPage.tsx';
 import TrashBin from './pages/TrashBin.tsx';
+import SignupComplete from './pages/SignupComplete.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
 
 const Features = () => <div>Features Page</div>;
@@ -133,6 +134,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/password-reset" element={<PasswordReset />} />
                         <Route path="/demo" element={<DemoPage />} />
+                        <Route path="/signup-complete" element={<SignupComplete />} />
 
                         {/* Authenticated routes with layout */}
                         <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}> 

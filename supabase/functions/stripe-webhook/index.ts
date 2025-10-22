@@ -76,9 +76,87 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   const userId = session.metadata?.user_id;
   const tier = session.metadata?.tier;
   const billing = session.metadata?.billing;
+  const isNewSignup = session.metadata?.new_signup === 'true';
+  const email = session.metadata?.email || session.customer_email;
 
-  if (!userId || !tier || !billing) {
-    console.error('Missing metadata in checkout session');
+  if (!tier || !billing) {
+    console.error('Missing tier or billing in checkout session');
+    return;
+  }
+
+  // Handle new signups (unauthenticated users)
+  if (isNewSignup && email) {
+    console.log('New signup detected for:', email);
+
+    try {
+      // Create user account in Supabase
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: false, // Require email confirmation
+        user_metadata: {
+          tier,
+          billing,
+          signup_via_stripe: true,
+          stripe_customer_id: session.customer,
+        },
+      });
+
+      if (authError) {
+        console.error('Error creating user:', authError);
+        return;
+      }
+
+      console.log('User created:', authData.user.id);
+
+      // Send password setup email
+      const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        data: {
+          tier,
+          billing,
+        },
+      });
+
+      if (inviteError) {
+        console.error('Error sending invite email:', inviteError);
+      }
+
+      // Store Stripe customer mapping
+      await supabaseAdmin.from('stripe_customers').insert({
+        user_id: authData.user.id,
+        stripe_customer_id: session.customer as string,
+        email,
+      });
+
+      // Get the subscription and store it
+      if (session.subscription && typeof session.subscription === 'string') {
+        const subscription = await stripe.subscriptions.retrieve(session.subscription);
+
+        // Store subscription with the new user's ID
+        await supabaseAdmin.from('subscriptions').insert({
+          user_id: authData.user.id,
+          stripe_customer_id: session.customer as string,
+          stripe_subscription_id: subscription.id,
+          stripe_price_id: subscription.items.data[0].price.id,
+          status: subscription.status,
+          tier,
+          billing_period: billing,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
+        });
+
+        console.log('Subscription created for new user');
+      }
+    } catch (error) {
+      console.error('Error handling new signup:', error);
+    }
+
+    return;
+  }
+
+  // Handle existing authenticated users
+  if (!userId) {
+    console.error('Missing user_id for authenticated user checkout');
     return;
   }
 
