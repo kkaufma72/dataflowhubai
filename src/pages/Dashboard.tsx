@@ -26,6 +26,8 @@ import DashboardStatsSkeleton from '../components/common/DashboardStatsSkeleton'
 import CardSkeleton from '../components/common/CardSkeleton';
 import DatasetCard from '../components/datasets/DatasetCard';
 import AddSampleDataButton from '../components/data/AddSampleDataButton';
+import UsageDashboard from '../components/engagement/UsageDashboard';
+
 
 interface WorkflowStep {
   id: string;
@@ -384,6 +386,11 @@ const Dashboard: React.FC = () => {
       
       <div className="mt-8">
         <RealTimeDashboard />
+      </div>
+
+      {/* Usage Dashboard */}
+      <div className="mt-8">
+        <UsageDashboard />
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 stats-cards">
