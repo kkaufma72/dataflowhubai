@@ -2,7 +2,7 @@
 
 DataFlowHub AI is an enterprise AutoML platform that enables businesses to build, train, and deploy machine learning models without specialized expertise.
 
-## Features
+## 🚀 Features
 
 - **Automated Machine Learning**: Train models with just a few clicks
 - **Data Management**: Upload, preprocess, and manage datasets
@@ -14,8 +14,18 @@ DataFlowHub AI is an enterprise AutoML platform that enables businesses to build
 - **Visualization**: Interactive charts and dashboards
 - **Pipeline Builder**: Create end-to-end ML pipelines with drag-and-drop
 - **Collaboration**: Team-based workflow with sharing and permissions
+- **AI Chat Assistant**: Query data and train models using natural language
 
-## Getting Started
+## 💳 Subscription Plans
+
+DataFlowHub AI offers flexible pricing plans:
+
+- **Free**: Perfect for getting started (3 datasets, 100 MB storage)
+- **Starter** ($29/mo): For individual data scientists (10 datasets, 5 GB storage)
+- **Professional** ($99/mo): For serious ML projects (unlimited datasets, 50 GB storage)
+- **Team** ($299/mo): For teams with advanced needs (team collaboration, 500 GB storage)
+
+## 🛠️ Getting Started
 
 ### Prerequisites
 
@@ -92,6 +102,21 @@ npm run test
 For more details on testing procedures and requirements, see [TESTING.md](./TESTING.md).
 
 ## Deployment
+
+### Production Deployment
+
+For detailed production deployment instructions, see:
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)**: Complete deployment guide
+- **[PRODUCTION_CONFIG.md](./PRODUCTION_CONFIG.md)**: Environment configuration guide
+- **[SECURITY_AUDIT.md](./SECURITY_AUDIT.md)**: Security audit and recommendations
+
+Quick deployment checklist:
+1. Set up Supabase project and run migrations
+2. Configure Stripe products and webhooks
+3. Deploy Edge Functions to Supabase
+4. Configure environment variables
+5. Deploy frontend to Netlify/Vercel
+6. Test authentication and payment flows
 
 ### Frontend Deployment
 

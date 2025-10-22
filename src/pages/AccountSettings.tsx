@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import { Bell, Moon, Sun, Lock, Shield, LogOut, Save, Loader2, Mail, AlertCircle } from 'lucide-react';
+import { Bell, Moon, Sun, Lock, Shield, LogOut, Save, Loader2, Mail, AlertCircle, CreditCard } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
+import SubscriptionManagement from '../components/subscription/SubscriptionManagement';
 
 const AccountSettings: React.FC = () => {
   const { userProfile, updateUserProfile, isLoadingProfile } = useUser();
   const { user } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'general' | 'security' | 'notifications'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'security' | 'notifications' | 'billing'>('general');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   
@@ -318,6 +319,17 @@ const AccountSettings: React.FC = () => {
               }`}
             >
               Notifications
+            </button>
+            <button
+              onClick={() => setActiveTab('billing')}
+              className={`py-4 px-6 text-sm font-medium ${
+                activeTab === 'billing'
+                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <CreditCard className="w-4 h-4 inline mr-2" />
+              Billing & Subscription
             </button>
           </nav>
         </div>
@@ -751,6 +763,18 @@ const AccountSettings: React.FC = () => {
                   {isUpdating ? 'Saving...' : 'Save Notification Settings'}
                 </Button>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'billing' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Subscription & Billing</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Manage your subscription, billing information, and payment methods.
+                </p>
+              </div>
+              <SubscriptionManagement />
             </div>
           )}
         </div>
