@@ -101,7 +101,7 @@ npx supabase login
 npx supabase link --project-ref bcobpxgktvgfsffdsiog
 npx supabase functions deploy stripe-webhook --no-verify-jwt
 npx supabase functions deploy create-checkout-session
-npx supabase functions deploy customer-portal
+npx supabase functions deploy create-customer-portal
 ```
 
 ### Option B: Using Homebrew
@@ -126,7 +126,7 @@ supabase functions deploy stripe-webhook --no-verify-jwt
 supabase functions deploy create-checkout-session
 
 # Deploy the customer portal function
-supabase functions deploy customer-portal
+supabase functions deploy create-customer-portal
 ```
 
 ### Option C: Using Supabase Dashboard (No CLI needed)
@@ -135,7 +135,7 @@ If you can't install the CLI, you can deploy via the dashboard:
 
 1. Go to: https://supabase.com/dashboard/project/bcobpxgktvgfsffdsiog/functions
 2. Click **"Create a new function"**
-3. For each function (`stripe-webhook`, `create-checkout-session`, `customer-portal`):
+3. For each function (`stripe-webhook`, `create-checkout-session`, `create-customer-portal`):
    - Click **"Upload function"**
    - Upload the folder from `supabase/functions/[function-name]/`
    - Or copy/paste the code from `index.ts`
