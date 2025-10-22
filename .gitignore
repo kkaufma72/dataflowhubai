@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment variables - DO NOT COMMIT
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,6 +29,24 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test coverage
+coverage
+*.lcov
+
+# Cypress
+cypress/videos
+cypress/screenshots
+
+# Build artifacts
+build
+.cache
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+tmp/
 .env
 .env.local
 .env.*.local
