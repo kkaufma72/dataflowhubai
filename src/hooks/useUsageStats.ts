@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { UsageStats, PLAN_LIMITS } from '../types/usage';
 import { useUser } from '../context/UserContext';
 import { useSubscription } from './useSubscription';
-import { useML } from '../context/MLContext';
+import { useMLContext } from '../context/MLContext';
 
 export const useUsageStats = () => {
   const { user } = useUser();
   const { subscription } = useSubscription();
-  const { datasets, models } = useML();
+  const { datasets, models } = useMLContext();
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
 

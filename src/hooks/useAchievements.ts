@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Achievement } from '../types/usage';
-import { useML } from '../context/MLContext';
+import { useMLContext } from '../context/MLContext';
 import { useUser } from '../context/UserContext';
 
 const ACHIEVEMENTS: Omit<Achievement, 'progress' | 'unlocked' | 'unlockedAt'>[] = [
@@ -115,7 +115,7 @@ const ACHIEVEMENTS: Omit<Achievement, 'progress' | 'unlocked' | 'unlockedAt'>[] 
 ];
 
 export const useAchievements = () => {
-  const { datasets, models } = useML();
+  const { datasets, models } = useMLContext();
   const { user } = useUser();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement[]>([]);
