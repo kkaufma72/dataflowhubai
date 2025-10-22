@@ -23,21 +23,11 @@ export const useStripeCheckout = () => {
     setError(null);
 
     try {
-      // Get the price ID
-      const priceId = STRIPE_PRICES[tier][billing];
-      
-      if (!priceId) {
-        throw new Error('Invalid pricing tier');
-      }
-
-      // Call your backend to create checkout session
+      // Call backend to create checkout session
       const { data, error: sessionError } = await supabase.functions.invoke(
         'create-checkout-session',
         {
           body: {
-            priceId,
-            userId: user.id,
-            userEmail: user.email,
             tier,
             billing,
           },
@@ -46,20 +36,16 @@ export const useStripeCheckout = () => {
 
       if (sessionError) throw sessionError;
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error('Stripe failed to load');
+      if (!data || !data.url) {
+        throw new Error('No checkout URL returned');
+      }
 
-      const { error: stripeError } = await stripe.redirectToCheckout({
-        sessionId: data.sessionId,
-      });
-
-      if (stripeError) throw stripeError;
+      // Redirect to Stripe Checkout URL
+      window.location.href = data.url;
 
     } catch (err) {
       console.error('Checkout error:', err);
       setError(err instanceof Error ? err.message : 'Failed to start checkout');
-    } finally {
       setLoading(false);
     }
   };
