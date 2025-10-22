@@ -27,6 +27,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Toaster } from 'react-hot-toast';
 import LandingPage from './pages/LandingPage.tsx';
 import LandingLayout from './components/layout/LandingLayout.tsx';
+import PricingPage from './pages/PricingPage.tsx';
 import UserProfile from './pages/UserProfile.tsx';
 import AccountSettings from './pages/AccountSettings.tsx';
 import PasswordReset from './pages/PasswordReset.tsx';
@@ -119,6 +120,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Route path="/" element={<LandingLayout />}>
                           <Route index element={<LandingPage />} />
                           <Route path="features" element={<Features />} />
+                          <Route path="pricing" element={<PricingPage />} />
                           <Route path="documentation" element={<Documentation />} />
                           <Route path="api-reference" element={<APIReference />} />
                         </Route>

@@ -10,8 +10,8 @@ export const STRIPE_PRICES = {
     annual: import.meta.env.VITE_STRIPE_STARTER_ANNUAL_PRICE_ID,
   },
   professional: {
-    monthly: import.meta.env.VITE_STRIPE_PRO_MONTHLY_PRICE_ID,
-    annual: import.meta.env.VITE_STRIPE_PRO_ANNUAL_PRICE_ID,
+    monthly: import.meta.env.VITE_STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID,
+    annual: import.meta.env.VITE_STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID,
   },
   team: {
     monthly: import.meta.env.VITE_STRIPE_TEAM_MONTHLY_PRICE_ID,
