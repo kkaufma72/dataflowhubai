@@ -88,8 +88,29 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
 
 ## Step 4: Deploy Supabase Functions
 
+**Run these commands on YOUR local machine (your Mac terminal):**
+
+### Option A: Using NPM (Recommended if Homebrew has issues)
+
 ```bash
-# Install Supabase CLI if not installed
+# Install Supabase CLI via npm
+npm install -g supabase
+
+# Or use npx without installing globally
+npx supabase login
+npx supabase link --project-ref bcobpxgktvgfsffdsiog
+npx supabase functions deploy stripe-webhook --no-verify-jwt
+npx supabase functions deploy create-checkout-session
+npx supabase functions deploy customer-portal
+```
+
+### Option B: Using Homebrew
+
+```bash
+# Fix permissions first
+sudo chown -R $(whoami) /usr/local/Cellar /usr/local/Homebrew
+
+# Install Supabase CLI
 brew install supabase/tap/supabase
 
 # Login to Supabase
@@ -107,6 +128,18 @@ supabase functions deploy create-checkout-session
 # Deploy the customer portal function
 supabase functions deploy customer-portal
 ```
+
+### Option C: Using Supabase Dashboard (No CLI needed)
+
+If you can't install the CLI, you can deploy via the dashboard:
+
+1. Go to: https://supabase.com/dashboard/project/bcobpxgktvgfsffdsiog/functions
+2. Click **"Create a new function"**
+3. For each function (`stripe-webhook`, `create-checkout-session`, `customer-portal`):
+   - Click **"Upload function"**
+   - Upload the folder from `supabase/functions/[function-name]/`
+   - Or copy/paste the code from `index.ts`
+4. Click **"Deploy"**
 
 After deployment, you'll get URLs like:
 ```
