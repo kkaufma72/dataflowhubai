@@ -29,6 +29,9 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   const { user } = useUser();
   const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const handleCTA = async () => {
     if (isFree) {
@@ -42,12 +45,28 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       return;
     }
 
+    // If user is not authenticated, show email modal
     if (!user) {
-      navigate('/signin');
+      setShowEmailModal(true);
       return;
     }
 
+    // Authenticated user - proceed directly to checkout
     await startCheckout({ tier, billing: billingPeriod });
+  };
+
+  const handleEmailSubmit = async () => {
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setEmailError('');
+
+    // Start checkout with email
+    await startCheckout({ tier, billing: billingPeriod, email });
   };
 
   const getDisplayPrice = () => {
@@ -171,6 +190,63 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       >
         {loading ? 'Loading...' : ctaText || 'Get Started'}
       </button>
+
+      {/* Email Modal for unauthenticated users */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Enter your email to continue
+            </h3>
+            <p className="text-gray-600 mb-6">
+              We'll send you a link to complete your registration after payment.
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleEmailSubmit()}
+                placeholder="you@example.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                autoFocus
+              />
+              {emailError && (
+                <p className="mt-2 text-sm text-red-600">{emailError}</p>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setEmail('');
+                  setEmailError('');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEmailSubmit}
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : 'Continue to Payment'}
+              </button>
+            </div>
+
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              By continuing, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

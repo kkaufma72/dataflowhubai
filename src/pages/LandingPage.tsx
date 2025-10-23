@@ -201,32 +201,68 @@ const LandingPage = () => {
         </div>
       </nav>
 
+      {/* Email Capture Banner */}
+      <div className="fixed top-16 w-full bg-indigo-600 text-white py-3 px-4 shadow-md z-40">
+        <div className="max-w-7xl mx-auto">
+          <form className="flex flex-col sm:flex-row gap-2 items-center justify-center" onSubmit={(e) => e.preventDefault()}>
+            <span className="text-sm font-medium">Get early access - join our beta waitlist:</span>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 sm:w-64 px-4 py-2 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                required
+              />
+              <button className="bg-white text-indigo-600 px-6 py-2 rounded font-semibold hover:bg-gray-100 transition whitespace-nowrap">
+                Join Waitlist
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-44 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-indigo-50 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-indigo-600 mr-2" />
-              <span className="text-sm font-medium text-indigo-600">AI-Powered Machine Learning Platform</span>
+            <div className="flex justify-center gap-3 mb-6 flex-wrap">
+              <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded-full font-semibold text-sm shadow-md">
+                🎯 BETA - Early Access Available
+              </span>
+              <div className="inline-flex items-center px-4 py-2 bg-indigo-50 rounded-full">
+                <Sparkles className="w-4 h-4 text-indigo-600 mr-2" />
+                <span className="text-sm font-medium text-indigo-600">AI-Powered Machine Learning Platform</span>
+              </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Build ML Models in
               <span className="text-indigo-600"> Minutes</span>
               <br />
               Not Months
+              <span className="block text-3xl md:text-4xl mt-2 text-gray-700">- Now in Beta!</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
               The only no-code ML platform you need. Upload data, train models, and deploy to production with just a few clicks. No PhD required.
             </p>
+            <p className="text-sm text-gray-500 mb-8 max-w-2xl mx-auto">
+              🚀 Join our beta program and help shape the future of no-code ML. Some features are actively being developed based on user feedback.
+            </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button 
+              <button
                 onClick={() => navigate('/signin')}
                 className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
-              <button 
+              <button
+                onClick={() => navigate('/demo')}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Try Demo Now
+              </button>
+              <button
                 onClick={() => navigate('/documentation')}
                 className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg text-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition-all"
               >
@@ -234,7 +270,7 @@ const LandingPage = () => {
               </button>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              No credit card required • 14-day free trial • Cancel anytime
+              Try demo without signup • No credit card required • 14-day free trial
             </p>
           </div>
         </div>
@@ -392,8 +428,11 @@ const LandingPage = () => {
             <p className="text-xl text-gray-600">
               Start free, scale as you grow
             </p>
+            <p className="text-gray-500 mt-2">
+              Save 17% with annual billing • No credit card required for free plan
+            </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
@@ -415,8 +454,12 @@ const LandingPage = () => {
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Community support
                 </li>
+                <li className="flex items-center text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  100 MB storage
+                </li>
               </ul>
-              <button 
+              <button
                 onClick={() => navigate('/signin')}
                 className="w-full bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
               >
@@ -424,10 +467,10 @@ const LandingPage = () => {
               </button>
             </div>
 
-            {/* Pro Plan */}
+            {/* Professional Plan */}
             <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-8 rounded-xl shadow-2xl border-4 border-indigo-800 transform scale-105">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold text-white">Pro</h3>
+                <h3 className="text-2xl font-bold text-white">Professional</h3>
                 <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-semibold">
                   POPULAR
                 </span>
@@ -435,6 +478,7 @@ const LandingPage = () => {
               <div className="mb-6">
                 <span className="text-4xl font-bold text-white">$99</span>
                 <span className="text-indigo-200">/month</span>
+                <p className="text-sm text-indigo-200 mt-1">or $82/mo billed annually</p>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-white">
@@ -451,48 +495,68 @@ const LandingPage = () => {
                 </li>
                 <li className="flex items-center text-white">
                   <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
+                  10 GB storage
+                </li>
+                <li className="flex items-center text-white">
+                  <CheckCircle className="w-5 h-5 text-indigo-300 mr-3 flex-shrink-0" />
                   API access
                 </li>
               </ul>
-              <button 
-                onClick={() => navigate('/signin')}
+              <button
+                onClick={() => navigate('/pricing')}
                 className="w-full bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg"
               >
                 Start Free Trial
               </button>
             </div>
 
-            {/* Enterprise Plan */}
+            {/* Team Plan */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Team</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-900">Custom</span>
+                <span className="text-4xl font-bold text-gray-900">$299</span>
+                <span className="text-gray-600">/month</span>
+                <p className="text-sm text-gray-500 mt-1">or $249/mo billed annually</p>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                  Everything in Pro
+                  Everything in Professional
+                </li>
+                <li className="flex items-center text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  Team collaboration
+                </li>
+                <li className="flex items-center text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  100 GB storage
+                </li>
+                <li className="flex items-center text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                  SSO integration
                 </li>
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                   Dedicated support
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                  Custom integrations
-                </li>
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                  SLA guarantees
-                </li>
               </ul>
-              <button 
-                onClick={() => navigate('/signin')}
+              <button
+                onClick={() => navigate('/pricing')}
                 className="w-full bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
               >
-                Contact Sales
+                Start Free Trial
               </button>
             </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <button
+              onClick={() => navigate('/pricing')}
+              className="text-indigo-600 hover:text-indigo-700 font-semibold inline-flex items-center"
+            >
+              View detailed pricing and features
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </button>
           </div>
         </div>
       </section>

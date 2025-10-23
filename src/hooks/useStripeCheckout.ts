@@ -6,6 +6,7 @@ import { useUser } from '../context/UserContext';
 interface CheckoutOptions {
   tier: 'starter' | 'professional' | 'team';
   billing: 'monthly' | 'annual';
+  email?: string; // Optional for unauthenticated users
 }
 
 export const useStripeCheckout = () => {
@@ -13,9 +14,10 @@ export const useStripeCheckout = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useUser();
 
-  const startCheckout = async ({ tier, billing }: CheckoutOptions) => {
-    if (!user) {
-      setError('You must be logged in to upgrade');
+  const startCheckout = async ({ tier, billing, email }: CheckoutOptions) => {
+    // For unauthenticated users, email is required
+    if (!user && !email) {
+      setError('Email is required');
       return;
     }
 
@@ -30,6 +32,7 @@ export const useStripeCheckout = () => {
           body: {
             tier,
             billing,
+            ...(email && { email }), // Include email if provided
           },
         }
       );

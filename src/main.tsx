@@ -39,7 +39,12 @@ import { TourProvider } from './components/common/TourProvider.tsx';
 import AsyncWorkloadDashboard from './pages/AsyncWorkloadDashboard.tsx';
 import UserGuideDetail from './pages/UserGuideDetail.tsx';
 import APIDocumentation from './pages/APIDocumentation.tsx';
-import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx'; // ADD THIS LINE
+import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
+import UsageDashboard from './pages/UsageDashboard.tsx';
+import DemoPage from './pages/DemoPage.tsx';
+import TrashBin from './pages/TrashBin.tsx';
+import SignupComplete from './pages/SignupComplete.tsx';
+import { DemoProvider } from './context/DemoContext.tsx';
 
 const Features = () => <div>Features Page</div>;
 
@@ -84,10 +89,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <UserProvider>
             <MLProvider>
-              <AIChatProvider> {/* ADD THIS - wraps everything */}
-                <NotificationProvider>
-                  <TourProvider>
-                    <DndProvider backend={HTML5Backend}>
+              <DemoProvider>
+                <AIChatProvider>
+                  <NotificationProvider>
+                    <TourProvider>
+                      <DndProvider backend={HTML5Backend}>
                       <Toaster 
                         position="top-right" 
                         toastOptions={{
@@ -127,7 +133,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         
                         <Route path="/signin" element={<SignIn />} />
                         <Route path="/password-reset" element={<PasswordReset />} />
-                        
+                        <Route path="/demo" element={<DemoPage />} />
+                        <Route path="/signup-complete" element={<SignupComplete />} />
+
                         {/* Authenticated routes with layout */}
                         <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}> 
                           <Route index element={<Dashboard />} />
@@ -146,6 +154,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                           <Route path="api-management" element={<APIManagement />} />
                           <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
                           <Route path="documentation/api" element={<APIDocumentation />} />
+                          <Route path="usage" element={<UsageDashboard />} />
+                          <Route path="trash" element={<TrashBin />} />
                         </Route>
                         
                         <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
@@ -155,10 +165,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>
-                    </DndProvider>
-                  </TourProvider>
-                </NotificationProvider>
-              </AIChatProvider> {/* CLOSE IT HERE */}
+                      </DndProvider>
+                    </TourProvider>
+                  </NotificationProvider>
+                </AIChatProvider>
+              </DemoProvider>
             </MLProvider>
           </UserProvider>
         </AuthProvider>
