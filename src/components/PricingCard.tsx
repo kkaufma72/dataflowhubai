@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useStripeCheckout } from '../hooks/useStripeCheckout';
-import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-
+import { useAuth } from '../components/auth/AuthProvider';
 interface PricingCardProps {
   title: string;
   price: number | 'Custom';
@@ -26,7 +25,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   isFree = false,
 }) => {
   const { startCheckout, loading, error } = useStripeCheckout();
-  const { user } = useUser();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -34,39 +33,55 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   const [emailError, setEmailError] = useState('');
 
   const handleCTA = async () => {
+    console.log('🎯 handleCTA clicked for tier:', tier);
+    console.log('👤 User status:', user ? 'Logged in as ' + user.email : 'Not logged in');
+    
     if (isFree) {
+      console.log('📝 Free tier - navigating to signin');
       navigate('/signin');
       return;
     }
 
     if (price === 'Custom') {
-      // For enterprise, open a contact form or email
-      window.location.href = 'mailto:sales@dataflowhubai.com?subject=Enterprise Plan Inquiry';
+      console.log('💼 Enterprise tier - opening email');
+      window.location.href = 'mailto:contact@dataflowhubai.com?subject=Enterprise Plan Inquiry';
       return;
     }
 
     // If user is not authenticated, show email modal
     if (!user) {
+      console.log('🔓 No user - showing email modal');
       setShowEmailModal(true);
       return;
     }
 
     // Authenticated user - proceed directly to checkout
+    console.log('✅ User authenticated - starting checkout directly');
     await startCheckout({ tier, billing: billingPeriod });
   };
 
   const handleEmailSubmit = async () => {
+    console.log('📧 handleEmailSubmit called with email:', email);
+    console.log('🎫 Tier:', tier, 'Billing:', billingPeriod);
+    
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
+      console.log('❌ Invalid email format');
       setEmailError('Please enter a valid email address');
       return;
     }
-
+  
+    console.log('✅ Email valid, starting checkout...');
     setEmailError('');
-
+  
     // Start checkout with email
-    await startCheckout({ tier, billing: billingPeriod, email });
+    try {
+      await startCheckout({ tier, billing: billingPeriod, email });
+      console.log('✅ Checkout initiated successfully');
+    } catch (err) {
+      console.error('❌ Error in handleEmailSubmit:', err);
+    }
   };
 
   const getDisplayPrice = () => {
@@ -117,7 +132,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         <div className="mb-4">
           <div className="flex gap-2 mb-4">
             <button
-              onClick={() => setBillingPeriod('monthly')}
+              onClick={() => {
+                console.log('📅 Billing period changed to: monthly');
+                setBillingPeriod('monthly');
+              }}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
                 billingPeriod === 'monthly'
                   ? isPopular
@@ -131,7 +149,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               Monthly
             </button>
             <button
-              onClick={() => setBillingPeriod('annual')}
+              onClick={() => {
+                console.log('📅 Billing period changed to: annual');
+                setBillingPeriod('annual');
+              }}
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition relative ${
                 billingPeriod === 'annual'
                   ? isPopular
@@ -173,7 +194,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
+          ⚠️ {error}
         </div>
       )}
 
@@ -188,7 +209,17 @@ export const PricingCard: React.FC<PricingCardProps> = ({
             : 'bg-gray-900 text-white hover:bg-gray-800'
         }`}
       >
-        {loading ? 'Loading...' : ctaText || 'Get Started'}
+        {loading ? (
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+          </span>
+        ) : (
+          ctaText || 'Get Started'
+        )}
       </button>
 
       {/* Email Modal for unauthenticated users */}
@@ -209,8 +240,16 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleEmailSubmit()}
+                onChange={(e) => {
+                  console.log('📝 Email input changed:', e.target.value);
+                  setEmail(e.target.value);
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    console.log('⏎ Enter key pressed');
+                    handleEmailSubmit();
+                  }
+                }}
                 placeholder="you@example.com"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 autoFocus
@@ -223,6 +262,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={() => {
+                  console.log('❌ Cancel clicked - closing modal');
                   setShowEmailModal(false);
                   setEmail('');
                   setEmailError('');
@@ -233,11 +273,24 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 Cancel
               </button>
               <button
-                onClick={handleEmailSubmit}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+                onClick={() => {
+                  console.log('💳 Continue to Payment clicked');
+                  handleEmailSubmit();
+                }}
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
-                {loading ? 'Processing...' : 'Continue to Payment'}
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : (
+                  'Continue to Payment'
+                )}
               </button>
             </div>
 

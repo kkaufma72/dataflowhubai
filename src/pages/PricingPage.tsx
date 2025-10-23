@@ -5,18 +5,19 @@ import { StripeDemoInfo } from '../components/StripeDemoInfo';
 const PricingPage: React.FC = () => {
   const pricingPlans = [
     {
-      title: 'Free',
-      price: 0,
+      title: 'Starter',
+      price: 25,
       tier: 'starter' as const,
       features: [
-        'Up to 3 datasets',
+        'Up to 10 datasets',
         'Basic visualizations',
-        'Community support',
-        '100 MB storage',
-        'Public projects only',
+        'Email support',
+        '500 MB storage',
+        'Private projects',
+        '14-day free trial',
       ],
-      ctaText: 'Get Started',
-      isFree: true,
+      ctaText: 'Start Free Trial',
+      isFree: false,
     },
     {
       title: 'Professional',
@@ -55,7 +56,6 @@ const PricingPage: React.FC = () => {
 
   return (
     <>
-      {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-4">
@@ -67,10 +67,10 @@ const PricingPage: React.FC = () => {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-indigo-100 mb-4">
-            Start free, scale as you grow
+            Start with a 14-day free trial, scale as you grow
           </p>
           <p className="text-indigo-200">
-            No credit card required • 14-day free trial on paid plans
+            No credit card required • Cancel anytime
           </p>
           <p className="text-sm text-indigo-200 mt-3">
             Beta users get grandfathered into special lifetime pricing
@@ -78,7 +78,6 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Cards */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 mb-12">
@@ -96,7 +95,6 @@ const PricingPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Demo Info - Only shown in test mode */}
           {import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.includes('test') && (
             <div className="max-w-4xl mx-auto">
               <StripeDemoInfo />
@@ -105,7 +103,6 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
@@ -176,7 +173,6 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -185,7 +181,7 @@ const PricingPage: React.FC = () => {
           <p className="text-xl text-indigo-100 mb-8">
             Join thousands of data teams building better models faster
           </p>
-          <a
+          
             href="/signin"
             className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
           >
@@ -193,7 +189,6 @@ const PricingPage: React.FC = () => {
           </a>
         </div>
       </section>
-    </>
   );
 };
 
