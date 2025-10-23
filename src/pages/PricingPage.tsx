@@ -154,7 +154,7 @@ const PricingPage: React.FC = () => {
                 Do you offer discounts for annual billing?
               </h3>
               <p className="text-gray-600">
-                Yes! Save 17% when you pay annually. You'll get 2 months free compared to monthly billing.
+                Yes! Save 17% when you pay annually. You will get 2 months free compared to monthly billing.
               </p>
             </div>
 
@@ -182,6 +182,7 @@ const PricingPage: React.FC = () => {
             Join thousands of data teams building better models faster
           </p>
           
+          <a
             href="/signin"
             className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
           >
@@ -189,6 +190,7 @@ const PricingPage: React.FC = () => {
           </a>
         </div>
       </section>
+    </>
   );
 };
 
