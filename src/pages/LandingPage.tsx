@@ -201,22 +201,51 @@ const LandingPage = () => {
         </div>
       </nav>
 
+      {/* Email Capture Banner */}
+      <div className="fixed top-16 w-full bg-indigo-600 text-white py-3 px-4 shadow-md z-40">
+        <div className="max-w-7xl mx-auto">
+          <form className="flex flex-col sm:flex-row gap-2 items-center justify-center" onSubmit={(e) => e.preventDefault()}>
+            <span className="text-sm font-medium">Get early access - join our beta waitlist:</span>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 sm:w-64 px-4 py-2 rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                required
+              />
+              <button className="bg-white text-indigo-600 px-6 py-2 rounded font-semibold hover:bg-gray-100 transition whitespace-nowrap">
+                Join Waitlist
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-44 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-indigo-50 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-indigo-600 mr-2" />
-              <span className="text-sm font-medium text-indigo-600">AI-Powered Machine Learning Platform</span>
+            <div className="flex justify-center gap-3 mb-6 flex-wrap">
+              <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded-full font-semibold text-sm shadow-md">
+                🎯 BETA - Early Access Available
+              </span>
+              <div className="inline-flex items-center px-4 py-2 bg-indigo-50 rounded-full">
+                <Sparkles className="w-4 h-4 text-indigo-600 mr-2" />
+                <span className="text-sm font-medium text-indigo-600">AI-Powered Machine Learning Platform</span>
+              </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Build ML Models in
               <span className="text-indigo-600"> Minutes</span>
               <br />
               Not Months
+              <span className="block text-3xl md:text-4xl mt-2 text-gray-700">- Now in Beta!</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
               The only no-code ML platform you need. Upload data, train models, and deploy to production with just a few clicks. No PhD required.
+            </p>
+            <p className="text-sm text-gray-500 mb-8 max-w-2xl mx-auto">
+              🚀 Join our beta program and help shape the future of no-code ML. Some features are actively being developed based on user feedback.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button

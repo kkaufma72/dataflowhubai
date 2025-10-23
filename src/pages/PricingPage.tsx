@@ -58,6 +58,11 @@ const PricingPage: React.FC = () => {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded-full font-semibold text-sm shadow-md">
+              🎯 BETA PRICING - Early Adopter Benefits
+            </span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Simple, Transparent Pricing
           </h1>
@@ -66,6 +71,9 @@ const PricingPage: React.FC = () => {
           </p>
           <p className="text-indigo-200">
             No credit card required • 14-day free trial on paid plans
+          </p>
+          <p className="text-sm text-indigo-200 mt-3">
+            Beta users get grandfathered into special lifetime pricing
           </p>
         </div>
       </section>
