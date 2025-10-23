@@ -47,6 +47,7 @@
     "react-loading-skeleton": "^3.4.0",
     "react-router-dom": "^6.22.2",
     "resend": "^6.2.0",
+    "stripe": "^19.1.0",
     "swagger-ui-react": "^5.12.0",
     "zod": "^3.25.76"
   },
@@ -54,7 +55,6 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.2",
-    "dotenv": "^16.4.5",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
@@ -64,6 +64,7 @@
     "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.17",
     "cypress": "^13.6.6",
+    "dotenv": "^16.4.5",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
