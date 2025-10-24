@@ -2,15 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => ({
-  plugins: [
-    react({
-      babel: {
-        plugins: mode === 'production' ? [
-          ['transform-remove-console', { exclude: ['error', 'warn'] }]
-        ] : []
-      }
-    })
-  ],
+  plugins: [react()],
   server: {
     port: 3002,
     strictPort: true,
@@ -80,8 +72,7 @@ export default defineConfig(({ mode }) => ({
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
     exclude: ['swagger-ui-react'],
     esbuildOptions: {
-      target: 'esnext',
-      drop: mode === 'production' ? ['console', 'debugger'] : []
+      target: 'esnext'
     }
   },
   preview: {
