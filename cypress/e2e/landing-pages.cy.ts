@@ -40,7 +40,7 @@ describe('Landing Pages and Public Routes', () => {
   });
 
   it('password reset page loads', () => {
-    cy.visit('/demo');
+    cy.visit('/password-reset');
     cy.get('body', { timeout: 15000 }).should('be.visible');
     cy.url().should('include', '/password-reset');
 
