@@ -1,8 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react({
+      babel: {
+        plugins: mode === 'production' ? [
+          ['transform-remove-console', { exclude: ['error', 'warn'] }]
+        ] : []
+      }
+    })
+  ],
   server: {
     port: 3002,
     strictPort: true,
@@ -28,53 +36,61 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    sourcemap: true,
+    sourcemap: mode === 'development',
     minify: 'esbuild',
     chunkSizeWarningLimit: 500,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Core vendor libraries
           'vendor': ['react', 'react-dom', 'react-router-dom'],
-
-          // Charting libraries
           'chart': ['chart.js', 'react-chartjs-2'],
-
-          // Large visualization libraries
           'd3': ['d3'],
-
-          // UI components
-          'ui': ['lucide-react'],
-
-          // Data processing
+          'ui': ['lucide-react', 'react-hot-toast', 'react-loading-skeleton'],
           'data': ['papaparse', 'file-saver', 'jszip'],
-
-          // Heavy third-party libraries (lazy loaded)
           'swagger': ['swagger-ui-react'],
-
-          // AI/ML libraries (heavy dependencies)
           'ai': ['openai'],
           'langchain': ['langchain', '@langchain/core', '@langchain/openai', '@langchain/community'],
-
-          // Supabase and authentication
           'supabase': ['@supabase/supabase-js', '@supabase/auth-ui-react', '@supabase/auth-ui-shared'],
-
-          // Stripe payment processing
-          'stripe': ['stripe', '@stripe/stripe-js']
-        }
+          'stripe': ['stripe', '@stripe/stripe-js'],
+          'utils': ['react-window', 'react-dnd', 'react-dnd-html5-backend', 'react-error-boundary', 'idb']
+        },
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `assets/images/[name]-[hash][extname]`;
+          } else if (/woff|woff2|eot|ttf|otf/i.test(ext)) {
+            return `assets/fonts/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
+        },
+        chunkFileNames: 'js/[name]-[hash].js',
+        entryFileNames: 'js/[name]-[hash].js'
+      },
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false
       }
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: [],
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+    exclude: ['swagger-ui-react'],
     esbuildOptions: {
-      target: 'esnext'
+      target: 'esnext',
+      drop: mode === 'production' ? ['console', 'debugger'] : []
     }
   },
   preview: {
     port: 3002,
     strictPort: true,
     host: true
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    legalComments: 'none'
   }
-});
+}));

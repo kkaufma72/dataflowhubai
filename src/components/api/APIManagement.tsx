@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Key, Copy, Check, RefreshCw, Clock, Shield, Settings, AlertCircle } from 'lucide-react';
 import Card from '../common/Card';
 import Button from '../common/Button';
-import SwaggerUI from 'swagger-ui-react';
-import 'swagger-ui-react/swagger-ui.css';
+import LazySwaggerUI from '../common/LazySwaggerUI';
 import { supabase } from '../../lib/supabase';
 import { handleApiError } from '../../lib/errorHandling';
 import Loading from '../common/Loading';
@@ -473,7 +472,7 @@ const APIManagement: React.FC = () => {
         <Card>
           <h3 className="mb-4 text-sm font-medium text-gray-700">API Documentation</h3>
           <div className="border border-gray-200 rounded-lg">
-            <SwaggerUI spec={swaggerSpec} />
+            <LazySwaggerUI spec={swaggerSpec} />
           </div>
         </Card>
       </div>

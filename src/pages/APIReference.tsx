@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Code, FileText, Book, Copy, Check } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import SwaggerUI from 'swagger-ui-react';
-import 'swagger-ui-react/swagger-ui.css';
-import { useState } from 'react';
+import LazySwaggerUI from '../components/common/LazySwaggerUI';
 
 const APIReference: React.FC = () => {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
@@ -285,7 +283,7 @@ print(prediction)`;
           <Card>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">API Endpoints</h2>
             <div className="border border-gray-200 rounded-lg">
-              <SwaggerUI spec={swaggerSpec} />
+              <LazySwaggerUI spec={swaggerSpec} />
             </div>
           </Card>
 
