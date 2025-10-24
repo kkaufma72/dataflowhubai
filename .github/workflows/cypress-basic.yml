@@ -1,0 +1,72 @@
+name: Cypress E2E Tests (Basic)
+
+# This is a simpler version without Cypress Cloud recording
+# Use this if you don't have CYPRESS_RECORD_KEY set up yet
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'claude/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          # Start the dev server
+          start: npm run dev
+          # Wait for dev server to be ready
+          wait-on: 'http://localhost:3002'
+          wait-on-timeout: 120
+          # Browser to use
+          browser: chrome
+          # Headless mode
+          headless: true
+        env:
+          # Add any environment variables needed for your app
+          NODE_ENV: test
+
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
+          if-no-files-found: ignore
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-results
+          path: cypress/results
+          if-no-files-found: ignore
