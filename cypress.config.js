@@ -7,7 +7,8 @@ export default defineConfig({
     supportFile: 'cypress/support/e2e.ts',
     viewportWidth: 1280,
     viewportHeight: 720,
-    video: false,
+    // Enable video in CI for debugging, disabled locally for speed
+    video: process.env.CI ? true : false,
     screenshotOnRunFailure: true,
     experimentalStudio: true,
     defaultCommandTimeout: 10000,
