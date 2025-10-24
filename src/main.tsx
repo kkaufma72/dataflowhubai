@@ -1,3 +1,5 @@
+import { SpeedInsights } from "@vercel/speed-insights/react"
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -86,6 +88,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary FallbackComponent={GlobalErrorFallback} onError={logError}>
       <Router>
+        <SpeedInsights />
         <AuthProvider>
           <UserProvider>
             <MLProvider>
