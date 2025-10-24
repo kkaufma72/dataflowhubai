@@ -1,52 +1,65 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import App from './App.tsx';
 import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AlertCircle } from 'lucide-react';
-import Documentation from './pages/Documentation.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import DataManagement from './pages/DataManagement.tsx';
-import FeatureEngineering from './pages/FeatureEngineering.tsx';
-import ModelTraining from './pages/ModelTraining.tsx';
-import ModelEvaluation from './pages/ModelEvaluation.tsx';
-import Deployment from './pages/Deployment.tsx';
-import ModelMonitoring from './pages/ModelMonitoring.tsx';
-import Visualizations from './pages/Visualizations.tsx';
-import PipelineBuilder from './pages/PipelineBuilder.tsx';
-import DataPipelineDashboard from './pages/DataPipelineDashboard.tsx';
-import SignIn from './pages/SignIn.tsx';
 import { MLProvider } from './context/MLContext.tsx';
 import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
-import PrivateRoute from './components/auth/PrivateRoute.tsx'; 
+import PrivateRoute from './components/auth/PrivateRoute.tsx';
 import AppLayout from './components/layout/AppLayout.tsx';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Toaster } from 'react-hot-toast';
-import LandingPage from './pages/LandingPage.tsx';
-import LandingLayout from './components/layout/LandingLayout.tsx';
-import PricingPage from './pages/PricingPage.tsx';
-import UserProfile from './pages/UserProfile.tsx';
-import AccountSettings from './pages/AccountSettings.tsx';
-import PasswordReset from './pages/PasswordReset.tsx';
-import DataCenterInfrastructureReport from './pages/DataCenterInfrastructureReport.tsx';
-import APIManagement from './components/api/APIManagement.tsx';
-import APIReference from './pages/APIReference.tsx';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
-import AsyncWorkloadDashboard from './pages/AsyncWorkloadDashboard.tsx';
-import UserGuideDetail from './pages/UserGuideDetail.tsx';
-import APIDocumentation from './pages/APIDocumentation.tsx';
 import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
-import UsageDashboard from './pages/UsageDashboard.tsx';
-import DemoPage from './pages/DemoPage.tsx';
-import TrashBin from './pages/TrashBin.tsx';
-import SignupComplete from './pages/SignupComplete.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
 
+// Lazy load all pages for better code splitting and performance
+const Documentation = lazy(() => import('./pages/Documentation.tsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.tsx'));
+const DataManagement = lazy(() => import('./pages/DataManagement.tsx'));
+const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
+const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
+const ModelEvaluation = lazy(() => import('./pages/ModelEvaluation.tsx'));
+const Deployment = lazy(() => import('./pages/Deployment.tsx'));
+const ModelMonitoring = lazy(() => import('./pages/ModelMonitoring.tsx'));
+const Visualizations = lazy(() => import('./pages/Visualizations.tsx'));
+const PipelineBuilder = lazy(() => import('./pages/PipelineBuilder.tsx'));
+const DataPipelineDashboard = lazy(() => import('./pages/DataPipelineDashboard.tsx'));
+const SignIn = lazy(() => import('./pages/SignIn.tsx'));
+const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
+const LandingLayout = lazy(() => import('./components/layout/LandingLayout.tsx'));
+const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
+const UserProfile = lazy(() => import('./pages/UserProfile.tsx'));
+const AccountSettings = lazy(() => import('./pages/AccountSettings.tsx'));
+const PasswordReset = lazy(() => import('./pages/PasswordReset.tsx'));
+const DataCenterInfrastructureReport = lazy(() => import('./pages/DataCenterInfrastructureReport.tsx'));
+const APIManagement = lazy(() => import('./components/api/APIManagement.tsx'));
+const APIReference = lazy(() => import('./pages/APIReference.tsx'));
+const AsyncWorkloadDashboard = lazy(() => import('./pages/AsyncWorkloadDashboard.tsx'));
+const UserGuideDetail = lazy(() => import('./pages/UserGuideDetail.tsx'));
+const APIDocumentation = lazy(() => import('./pages/APIDocumentation.tsx'));
+const UsageDashboard = lazy(() => import('./pages/UsageDashboard.tsx'));
+const DemoPage = lazy(() => import('./pages/DemoPage.tsx'));
+const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
+const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
+
 const Features = () => <div>Features Page</div>;
+
+// Loading fallback component for lazy loaded routes
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
 
 function GlobalErrorFallback({ error }: { error: Error }) {
   return (
@@ -121,50 +134,52 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                           },
                         }}
                       />
-                      <Routes>
-                        {/* Landing page routes */}
-                        <Route path="/" element={<LandingLayout />}>
-                          <Route index element={<LandingPage />} />
-                          <Route path="features" element={<Features />} />
-                          <Route path="pricing" element={<PricingPage />} />
-                          <Route path="documentation" element={<Documentation />} />
-                          <Route path="api-reference" element={<APIReference />} />
-                        </Route>
-                        
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/password-reset" element={<PasswordReset />} />
-                        <Route path="/demo" element={<DemoPage />} />
-                        <Route path="/signup-complete" element={<SignupComplete />} />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <Routes>
+                          {/* Landing page routes */}
+                          <Route path="/" element={<LandingLayout />}>
+                            <Route index element={<LandingPage />} />
+                            <Route path="features" element={<Features />} />
+                            <Route path="pricing" element={<PricingPage />} />
+                            <Route path="documentation" element={<Documentation />} />
+                            <Route path="api-reference" element={<APIReference />} />
+                          </Route>
 
-                        {/* Authenticated routes with layout */}
-                        <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}> 
-                          <Route index element={<Dashboard />} />
-                          <Route path="documentation" element={<Documentation />} />
-                          <Route path="data" element={<DataManagement />} />
-                          <Route path="feature-engineering" element={<FeatureEngineering />} />
-                          <Route path="train" element={<ModelTraining />} />
-                          <Route path="evaluate" element={<ModelEvaluation />} />
-                          <Route path="deploy" element={<Deployment />} />
-                          <Route path="monitoring" element={<ModelMonitoring />} />
-                          <Route path="visualizations" element={<Visualizations />} />
-                          <Route path="pipeline" element={<PipelineBuilder />} />
-                          <Route path="profile" element={<UserProfile />} />
-                          <Route path="settings" element={<AccountSettings />} />
-                          <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
-                          <Route path="api-management" element={<APIManagement />} />
-                          <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
-                          <Route path="documentation/api" element={<APIDocumentation />} />
-                          <Route path="usage" element={<UsageDashboard />} />
-                          <Route path="trash" element={<TrashBin />} />
-                        </Route>
-                        
-                        <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                          <Route index element={<AsyncWorkloadDashboard />} />
-                        </Route>
-                        
-                        <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
+                          <Route path="/signin" element={<SignIn />} />
+                          <Route path="/password-reset" element={<PasswordReset />} />
+                          <Route path="/demo" element={<DemoPage />} />
+                          <Route path="/signup-complete" element={<SignupComplete />} />
+
+                          {/* Authenticated routes with layout */}
+                          <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                            <Route index element={<Dashboard />} />
+                            <Route path="documentation" element={<Documentation />} />
+                            <Route path="data" element={<DataManagement />} />
+                            <Route path="feature-engineering" element={<FeatureEngineering />} />
+                            <Route path="train" element={<ModelTraining />} />
+                            <Route path="evaluate" element={<ModelEvaluation />} />
+                            <Route path="deploy" element={<Deployment />} />
+                            <Route path="monitoring" element={<ModelMonitoring />} />
+                            <Route path="visualizations" element={<Visualizations />} />
+                            <Route path="pipeline" element={<PipelineBuilder />} />
+                            <Route path="profile" element={<UserProfile />} />
+                            <Route path="settings" element={<AccountSettings />} />
+                            <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
+                            <Route path="api-management" element={<APIManagement />} />
+                            <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
+                            <Route path="documentation/api" element={<APIDocumentation />} />
+                            <Route path="usage" element={<UsageDashboard />} />
+                            <Route path="trash" element={<TrashBin />} />
+                          </Route>
+
+                          <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                            <Route index element={<AsyncWorkloadDashboard />} />
+                          </Route>
+
+                          <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
+                          <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                      </Suspense>
                       </DndProvider>
                     </TourProvider>
                   </NotificationProvider>

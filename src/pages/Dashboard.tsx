@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Database, 
   Layers, 
@@ -116,8 +116,33 @@ const Dashboard: React.FC = () => {
   };
   
   const nextStep = getNextStep();
-  
-  const statsCards = [
+
+  // Memoize expensive computations to avoid re-calculating on every render
+  const datasetsThisWeek = useMemo(() => {
+    return datasets.filter(d => {
+      const uploadDate = new Date(d.dateUploaded);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return uploadDate > weekAgo;
+    }).length;
+  }, [datasets]);
+
+  const trainedModelsCount = useMemo(() =>
+    models.filter(m => m.status === 'trained').length,
+    [models]
+  );
+
+  const deployedModelsCount = useMemo(() =>
+    models.filter(m => m.status === 'deployed').length,
+    [models]
+  );
+
+  const trainingModelsCount = useMemo(() =>
+    models.filter(m => m.status === 'training').length,
+    [models]
+  );
+
+  const statsCards = useMemo(() => [
     {
       title: 'Datasets',
       value: datasets.length,
@@ -125,12 +150,7 @@ const Dashboard: React.FC = () => {
       description: 'Available datasets',
       color: 'blue',
       path: '/app/data',
-      change: datasets.length > 0 ? '+' + datasets.filter(d => {
-        const uploadDate = new Date(d.dateUploaded);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return uploadDate > weekAgo;
-      }).length + ' this week' : 'Get started'
+      change: datasets.length > 0 ? `+${datasetsThisWeek} this week` : 'Get started'
     },
     {
       title: 'Models',
@@ -139,27 +159,27 @@ const Dashboard: React.FC = () => {
       description: 'Trained models',
       color: 'indigo',
       path: '/app/train',
-      change: models.length > 0 ? models.filter(m => m.status === 'trained').length + ' ready' : 'Train your first'
+      change: models.length > 0 ? `${trainedModelsCount} ready` : 'Train your first'
     },
     {
       title: 'Deployed',
-      value: models.filter((model) => model.status === 'deployed').length,
+      value: deployedModelsCount,
       icon: <BarChart2 className="w-8 h-8 text-emerald-500" />,
       description: 'Models in production',
       color: 'emerald',
       path: '/app/deploy',
-      change: models.filter(m => m.status === 'deployed').length > 0 ? 'Active now' : 'Deploy first model'
+      change: deployedModelsCount > 0 ? 'Active now' : 'Deploy first model'
     },
     {
       title: 'In Progress',
-      value: models.filter((model) => model.status === 'training').length,
+      value: trainingModelsCount,
       icon: <Clock className="w-8 h-8 text-amber-500" />,
       description: 'Training jobs',
       color: 'amber',
       path: '/app/train',
-      change: models.filter(m => m.status === 'training').length > 0 ? 'Running' : 'No active jobs'
+      change: trainingModelsCount > 0 ? 'Running' : 'No active jobs'
     },
-  ];
+  ], [datasets.length, models.length, datasetsThisWeek, trainedModelsCount, deployedModelsCount, trainingModelsCount]);
 
   const handlePreview = (dataset: any) => {
     setSelectedDataset(dataset);
