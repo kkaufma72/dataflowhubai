@@ -31,12 +31,17 @@ interface MLProviderProps {
 }
 
 export const MLProvider = ({ children }: MLProviderProps) => {
-  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [currentProject, setCurrentProjectState] = useState<Project | null>(null);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [models, setModels] = useState<MLModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
+
+  // Memoize setCurrentProject for stable reference
+  const setCurrentProject = useCallback((project: Project) => {
+    setCurrentProjectState(project);
+  }, []);
 
   const createDefaultProject = async (userId: string) => {
     try {
@@ -123,7 +128,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         throw new Error('Failed to load or create project');
       }
 
-      setCurrentProject({
+      setCurrentProjectState({
         id: project.id,
         name: project.name,
         description: project.description || '',
@@ -150,16 +155,13 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       if (datasetsResponse.error) throw datasetsResponse.error;
       if (modelsResponse.error) throw modelsResponse.error;
 
-      // Merge local and remote datasets
+      // Merge local and remote datasets - OPTIMIZED from O(n²) to O(n)
       const remoteDatasets = datasetsResponse.data || [];
-      const mergedDatasets = [...localDatasets];
-      
-      for (const remoteDataset of remoteDatasets) {
-        const localIndex = mergedDatasets.findIndex(d => d.id === remoteDataset.id);
-        if (localIndex === -1) {
-          mergedDatasets.push(remoteDataset);
-        }
-      }
+      const localIds = new Set(localDatasets.map(d => d.id));
+      const mergedDatasets = [
+        ...localDatasets,
+        ...remoteDatasets.filter(d => !localIds.has(d.id))
+      ];
 
       setDatasets(mergedDatasets);
       setModels(modelsResponse.data || []);
@@ -190,7 +192,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       } else if (event === 'SIGNED_OUT') {
         setDatasets([]);
         setModels([]);
-        setCurrentProject(null);
+        setCurrentProjectState(null);
         setHasFetched(false);
       }
     });
@@ -198,7 +200,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const addDataset = async (dataset: Dataset): Promise<Dataset> => {
+  const addDataset = useCallback(async (dataset: Dataset): Promise<Dataset> => {
     try {
       await storage.saveDataset(dataset);
       setDatasets(prev => [dataset, ...prev]);
@@ -207,7 +209,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       console.error('Error adding dataset:', error);
       throw error;
     }
-  };
+  }, []);
 
   const addModel = useCallback((model: MLModel) => {
     setModels(prev => [model, ...prev]);
@@ -234,7 +236,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     addDataset,
     addModel,
     updateModelStatus
-  }), [currentProject, datasets, models, isLoading, error, addModel, updateModelStatus]);
+  }), [currentProject, datasets, models, isLoading, error, setCurrentProject, addDataset, addModel, updateModelStatus]);
 
   return <MLContext.Provider value={value}>{children}</MLContext.Provider>;
 };

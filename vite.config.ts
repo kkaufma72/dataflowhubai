@@ -30,14 +30,37 @@ export default defineConfig({
     target: 'esnext',
     sourcemap: true,
     minify: 'esbuild',
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core vendor libraries
           'vendor': ['react', 'react-dom', 'react-router-dom'],
+
+          // Charting libraries
           'chart': ['chart.js', 'react-chartjs-2'],
+
+          // Large visualization libraries
+          'd3': ['d3'],
+
+          // UI components
           'ui': ['lucide-react'],
-          'data': ['papaparse', 'file-saver', 'jszip']
+
+          // Data processing
+          'data': ['papaparse', 'file-saver', 'jszip'],
+
+          // Heavy third-party libraries (lazy loaded)
+          'swagger': ['swagger-ui-react'],
+
+          // AI/ML libraries (heavy dependencies)
+          'ai': ['openai'],
+          'langchain': ['langchain', '@langchain/core', '@langchain/openai', '@langchain/community'],
+
+          // Supabase and authentication
+          'supabase': ['@supabase/supabase-js', '@supabase/auth-ui-react', '@supabase/auth-ui-shared'],
+
+          // Stripe payment processing
+          'stripe': ['stripe', '@stripe/stripe-js']
         }
       }
     }
@@ -45,7 +68,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
     exclude: [],
-    force: true,
     esbuildOptions: {
       target: 'esnext'
     }
