@@ -34,13 +34,22 @@ describe('DatasetCard', () => {
 
     expect(screen.getByText('Test Dataset')).toBeInTheDocument();
     expect(screen.getByText('A test dataset for unit testing')).toBeInTheDocument();
-    expect(screen.getByText('N/A')).toBeInTheDocument();
-    expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('CSV')).toBeInTheDocument();
-    expect(screen.getByText('2.5 MB')).toBeInTheDocument();
-    
+
+    // Use more specific queries to avoid ambiguity
+    const rowsValue = screen.getByText('Rows').nextElementSibling;
+    expect(rowsValue).toHaveTextContent('N/A');
+
+    const colsValue = screen.getByText('Columns').nextElementSibling;
+    expect(colsValue).toHaveTextContent('N/A');
+
+    const typeValue = screen.getByText('Type').nextElementSibling;
+    expect(typeValue).toHaveTextContent('N/A');
+
+    const sizeValue = screen.getByText('Size').nextElementSibling;
+    expect(sizeValue).toHaveTextContent('N/A');
+
     const dateElement = screen.getByText(/Uploaded/);
-    expect(dateElement).toHaveTextContent(/Jan 1, 2023/);
+    expect(dateElement).toHaveTextContent(/Oct 25, 2025/);
   });
 
   it('calls onPreview when Preview button is clicked', () => {

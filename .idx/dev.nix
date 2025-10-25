@@ -13,7 +13,7 @@
         command = [
           "npm"
           "run"
-          "dev"
+"dev"
           "--"
           "--port"
           "$PORT"
@@ -24,4 +24,5 @@
       };
     };
   };
+  services.docker.enable = true;
 }

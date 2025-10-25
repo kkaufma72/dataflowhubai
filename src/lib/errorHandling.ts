@@ -32,24 +32,31 @@ const getErrorMessage = (error: any): string => {
       return getErrorMessage(error.error);
     }
   
-    return ''; // Return empty string to allow fallback to work
+    return 'An unexpected error occurred';
   };
 
 /**
  * Handle API errors with user-friendly messages
  */
-export const handleApiError = (error: any, fallbackMessage: string = 'An unexpected error occurred'): { message: string, status?: number } => {
+export const handleApiError = (error: any, overrideMessage?: string): { message: string, status?: number } => {
   console.error('API Error:', error);
 
-  let message = getErrorMessage(error) || fallbackMessage;
-  let status = error?.status;
+  let message: string;
+  const originalMessage = getErrorMessage(error);
 
-  // Simplify common error messages
-  if (message.includes('Failed to fetch') || message.includes('Network request failed')) {
-    message = 'Connection error. Please check your internet connection.';
-  } else if (message.toLowerCase().includes('timeout')) {
-    message = 'The request timed out. Please try again.';
+  if (overrideMessage) {
+    message = overrideMessage;
+  } else {
+    message = originalMessage;
+    // Simplify common error messages if no override is present
+    if (message.toLowerCase().includes('timeout')) {
+      message = 'Request timed out. Please try again.';
+    } else if (message.includes('Failed to fetch') || message.includes('Network request failed')) {
+      message = 'Connection error. Please check your internet connection.';
+    }
   }
+  
+  let status = error?.status;
 
   // Truncate long messages
   if (message.length > 100) {

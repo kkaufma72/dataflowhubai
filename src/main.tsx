@@ -31,7 +31,6 @@ const PipelineBuilder = lazy(() => import('./pages/PipelineBuilder.tsx'));
 const DataPipelineDashboard = lazy(() => import('./pages/DataPipelineDashboard.tsx'));
 const SignIn = lazy(() => import('./pages/SignIn.tsx'));
 const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
-const LandingLayout = lazy(() => import('./components/layout/LandingLayout.tsx'));
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
 const UserProfile = lazy(() => import('./pages/UserProfile.tsx'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings.tsx'));
@@ -46,8 +45,6 @@ const UsageDashboard = lazy(() => import('./pages/UsageDashboard.tsx'));
 const DemoPage = lazy(() => import('./pages/DemoPage.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
-
-const Features = () => <div>Features Page</div>;
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
@@ -136,15 +133,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                       />
                       <Suspense fallback={<LoadingFallback />}>
                         <Routes>
-                          {/* Landing page routes */}
-                          <Route path="/" element={<LandingLayout />}>
-                            <Route index element={<LandingPage />} />
-                            <Route path="features" element={<Features />} />
-                            <Route path="pricing" element={<PricingPage />} />
-                            <Route path="documentation" element={<Documentation />} />
-                            <Route path="api-reference" element={<APIReference />} />
-                          </Route>
-
+                          {/* Landing page and other public routes */}
+                          <Route path="/" element={<LandingPage />} />
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/features" element={<div>Features Page</div>} />
+                          <Route path="/pricing" element={<PricingPage />} />
+                          <Route path="/documentation" element={<Documentation />} />
+                          <Route path="/api-reference" element={<APIReference />} />
                           <Route path="/signin" element={<SignIn />} />
                           <Route path="/password-reset" element={<PasswordReset />} />
                           <Route path="/demo" element={<DemoPage />} />
@@ -153,7 +148,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                           {/* Authenticated routes with layout */}
                           <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                             <Route index element={<Dashboard />} />
-                            <Route path="documentation" element={<Documentation />} />
                             <Route path="data" element={<DataManagement />} />
                             <Route path="feature-engineering" element={<FeatureEngineering />} />
                             <Route path="train" element={<ModelTraining />} />
