@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handleApiError, isNetworkError, isAuthError, getErrorMessage } from '../../lib/errorHandling';
+import { handleApiError, isNetworkError, isAuthError, getErrorMessage } from './errorHandling';
 
 // Mock toast
 vi.mock('react-hot-toast', () => ({

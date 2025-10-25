@@ -19,71 +19,59 @@ export interface ErrorLog {
   stack?: string;
 }
 
+const getErrorMessage = (error: any): string => {
+    if (typeof error === 'string') {
+      return error;
+    }
+  
+    if (error?.message) {
+      return error.message;
+    }
+  
+    if (error?.error) {
+      return getErrorMessage(error.error);
+    }
+  
+    return ''; // Return empty string to allow fallback to work
+  };
+
 /**
  * Handle API errors with user-friendly messages
  */
-export const handleApiError = (error: any, context?: string): void => {
+export const handleApiError = (error: any, fallbackMessage: string = 'An unexpected error occurred'): { message: string, status?: number } => {
   console.error('API Error:', error);
 
-  let message = 'An unexpected error occurred';
+  let message = getErrorMessage(error) || fallbackMessage;
+  let status = error?.status;
 
-  // Handle Supabase errors
-  if (error?.message) {
-    message = error.message;
+  // Simplify common error messages
+  if (message.includes('Failed to fetch') || message.includes('Network request failed')) {
+    message = 'Connection error. Please check your internet connection.';
+  } else if (message.toLowerCase().includes('timeout')) {
+    message = 'The request timed out. Please try again.';
   }
 
-  // Handle HTTP errors
-  if (error?.status) {
-    switch (error.status) {
-      case 400:
-        message = 'Invalid request. Please check your input.';
-        break;
-      case 401:
-        message = 'Unauthorized. Please sign in again.';
-        break;
-      case 403:
-        message = 'You do not have permission to perform this action.';
-        break;
-      case 404:
-        message = 'The requested resource was not found.';
-        break;
-      case 409:
-        message = 'A conflict occurred. The resource may already exist.';
-        break;
-      case 429:
-        message = 'Too many requests. Please try again later.';
-        break;
-      case 500:
-        message = 'Server error. Please try again later.';
-        break;
-      case 503:
-        message = 'Service unavailable. Please try again later.';
-        break;
-    }
+  // Truncate long messages
+  if (message.length > 100) {
+    message = `${message.substring(0, 100)}...`;
   }
 
-  // Handle network errors
-  if (error?.name === 'NetworkError' || error?.message?.includes('network')) {
-    message = 'Network error. Please check your internet connection.';
+  if (status === 404 && !message.toLowerCase().includes('not found')) {
+    message = 'The requested resource was not found.';
   }
 
-  // Add context if provided
-  if (context) {
-    message = `${context}: ${message}`;
-  }
-
-  // Show toast notification
   toast.error(message, {
     duration: 5000,
     position: 'top-right'
   });
 
-  // Log error (in production, send to error tracking service)
   logError({
-    error,
-    context,
-    timestamp: new Date().toISOString()
+    error: { message, status },
+    timestamp: new Date().toISOString(),
+    stack: error?.stack
   });
+
+  return { message, status };
 };
 
 /**
@@ -138,23 +126,21 @@ export const logError = (errorLog: Partial<ErrorLog>): void => {
     error: errorLog.error || { message: 'Unknown error' },
     context: errorLog.context,
     userId: errorLog.userId,
-    url: window.location.href,
+    url: typeof window !== 'undefined' ? window.location.href : '',
     stack: errorLog.error?.stack
   };
 
-  // Store in localStorage for debugging (in production, send to error tracking)
-  try {
-    const existingLogs = JSON.parse(localStorage.getItem('errorLogs') || '[]');
-    existingLogs.push(log);
-    
-    // Keep only last 50 errors
-    const recentLogs = existingLogs.slice(-50);
-    localStorage.setItem('errorLogs', JSON.stringify(recentLogs));
-  } catch (e) {
-    console.error('Failed to log error:', e);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const existingLogs = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      existingLogs.push(log);
+      const recentLogs = existingLogs.slice(-50);
+      localStorage.setItem('errorLogs', JSON.stringify(recentLogs));
+    } catch (e) {
+      console.error('Failed to log error:', e);
+    }
   }
 
-  // In production, send to error tracking service like Sentry
   if (import.meta.env.PROD) {
     // sendToErrorTracking(log);
   }
@@ -197,145 +183,24 @@ export const handleValidationError = (errors: Record<string, string[]>): void =>
   });
 };
 
-/**
- * Create error boundary handler
- */
 export const createErrorBoundaryHandler = (componentName: string) => {
   return (error: Error, errorInfo: any) => {
     console.error(`Error in ${componentName}:`, error, errorInfo);
-    
     logError({
-      error: {
-        message: error.message,
-        code: 'COMPONENT_ERROR',
-        details: errorInfo
-      },
+      error: { message: error.message, code: 'COMPONENT_ERROR', details: errorInfo },
       context: componentName,
       stack: error.stack
     });
-
-    toast.error(`An error occurred in ${componentName}. Please refresh the page.`, {
-      duration: 8000
-    });
   };
 };
 
-/**
- * Handle permission errors
- */
-export const handlePermissionError = (action: string): void => {
-  toast.error(`You don't have permission to ${action}. Please contact your administrator.`, {
-    duration: 5000
-  });
-};
-
-/**
- * Handle timeout errors
- */
-export const handleTimeoutError = (operation: string): void => {
-  toast.error(`${operation} timed out. Please try again.`, {
-    duration: 5000
-  });
-};
-
-/**
- * Wrapper for async operations with error handling
- */
-export const withErrorHandling = <T extends (...args: any[]) => Promise<any>>(
-  fn: T,
-  errorMessage?: string
-): T => {
-  return (async (...args: Parameters<T>) => {
-    try {
-      return await fn(...args);
-    } catch (error) {
-      handleApiError(error, errorMessage);
-      throw error;
-    }
-  }) as T;
-};
-
-/**
- * Check if error is a specific type
- */
 export const isNetworkError = (error: any): boolean => {
-  return (
-    error?.name === 'NetworkError' ||
-    error?.message?.includes('network') ||
-    error?.message?.includes('fetch')
-  );
+    const message = getErrorMessage(error).toLowerCase();
+    return message.includes('network') || message.includes('fetch') || message.includes('offline') || message.includes('connection');
 };
-
-export const isAuthError = (error: any): boolean => {
-  return error?.status === 401 || error?.code === 'UNAUTHORIZED';
-};
-
-export const isValidationError = (error: any): boolean => {
-  return error?.status === 400 || error?.code === 'VALIDATION_ERROR';
-};
-
-export const isNotFoundError = (error: any): boolean => {
-  return error?.status === 404 || error?.code === 'NOT_FOUND';
-};
-
-/**
- * Format error message for display
- */
-export const formatErrorMessage = (error: any): string => {
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  if (error?.message) {
-    return error.message;
-  }
-
-  if (error?.error) {
-    return formatErrorMessage(error.error);
-  }
-
-  return 'An unexpected error occurred';
-};
-
-/**
- * Create user-friendly error messages
- */
-export const getUserFriendlyMessage = (error: any): string => {
-  const technicalMessage = formatErrorMessage(error);
-
-  // Map technical errors to user-friendly messages
-  const friendlyMessages: Record<string, string> = {
-    'Network request failed': 'Unable to connect to the server. Please check your internet connection.',
-    'Failed to fetch': 'Unable to load data. Please try again.',
-    'Unauthorized': 'Your session has expired. Please sign in again.',
-    'Invalid credentials': 'The email or password you entered is incorrect.',
-    'Too many requests': 'You are making too many requests. Please wait a moment and try again.',
-    'Internal server error': 'Something went wrong on our end. Our team has been notified.'
-  };
-
-  // Check for exact matches
-  if (friendlyMessages[technicalMessage]) {
-    return friendlyMessages[technicalMessage];
-  }
-
-  // Check for partial matches
-  for (const [technical, friendly] of Object.entries(friendlyMessages)) {
-    if (technicalMessage.toLowerCase().includes(technical.toLowerCase())) {
-      return friendly;
-    }
-  }
-
-  return technicalMessage;
-};
-
-/**
- * Report error to monitoring service (placeholder)
- */
-export const reportError = (error: any, context?: any): void => {
-  // In production, integrate with services like:
-  // - Sentry: Sentry.captureException(error, { extra: context });
-  // - LogRocket: LogRocket.captureException(error, { extra: context });
-  // - Rollbar: Rollbar.error(error, context);
   
-  console.error('Error reported:', error, context);
+export const isAuthError = (error: any): boolean => {
+    return error?.status === 401 || error?.status === 403 || error?.code === 'UNAUTHORIZED';
 };
+
+export { getErrorMessage };

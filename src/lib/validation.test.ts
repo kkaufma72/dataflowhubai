@@ -6,7 +6,7 @@ import {
   urlSchema,
   validateForm,
   modelTrainingSchema
-} from '../../lib/validation';
+} from './validation';
 
 describe('Validation Schemas', () => {
   describe('emailSchema', () => {

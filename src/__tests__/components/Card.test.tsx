@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
 import Card from '../../components/common/Card';
 
 describe('Card component', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders children correctly', () => {
     render(
       <Card>
