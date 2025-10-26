@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PricingCard } from '../components/PricingCard';
 import { StripeDemoInfo } from '../components/StripeDemoInfo';
+import toast from 'react-hot-toast';
 
 const PricingPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Handle redirect parameters from Stripe
+    const canceled = searchParams.get('canceled');
+    const success = searchParams.get('success');
+    
+    if (canceled === 'true') {
+      toast.error('Payment canceled. You can try again anytime.');
+    } else if (success === 'true') {
+      toast.success('Payment successful! Check your email to set up your account.');
+    }
+  }, [searchParams]);
   const pricingPlans = [
     {
       title: 'Starter',

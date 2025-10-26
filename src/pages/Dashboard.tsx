@@ -20,7 +20,8 @@ import { useTour } from '../components/common/TourProvider';
 import { useAIChat } from '../components/ai/GlobalAIAssistant';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import RealTimeDashboard from '../components/dashboard/RealTimeDashboard';
 import DashboardStatsSkeleton from '../components/common/DashboardStatsSkeleton';
 import CardSkeleton from '../components/common/CardSkeleton';
@@ -42,8 +43,19 @@ const Dashboard: React.FC = () => {
   const { startTour } = useTour();
   const navigate = useNavigate();
   const { openChat } = useAIChat();
+  const [searchParams] = useSearchParams();
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
+
+  // Handle Stripe payment success redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    if (success === 'true') {
+      toast.success('Payment successful! Your subscription is now active.');
+      // Clean up URL
+      navigate('/app', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   // Calculate workflow progress
   useEffect(() => {

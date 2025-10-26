@@ -114,7 +114,9 @@ serve(async (req) => {
     // For unauthenticated users, we'll create the customer during checkout
 
     // Get the origin for success and cancel URLs
-    const origin = req.headers.get('origin') || 'http://localhost:5173';
+    // Use environment variable for production, fallback to origin header or localhost
+    const productionUrl = Deno.env.get('PRODUCTION_URL');
+    const origin = productionUrl || req.headers.get('origin') || 'http://localhost:5173';
 
     // Prepare checkout session options
     const sessionOptions: any = {
