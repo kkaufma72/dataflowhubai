@@ -42,6 +42,7 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [useCase, setUseCase] = useState<string>('');
 
   // Check for email verification success
   useEffect(() => {
@@ -160,6 +161,7 @@ const SignIn = () => {
         options: {
           data: {
             full_name: fullName,
+            use_case: useCase || 'general',
           },
           emailRedirectTo: `${window.location.origin}/signin?verified=true`,
         }
@@ -332,6 +334,38 @@ const SignIn = () => {
                       placeholder="John Doe"
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Use Case Field (Sign Up Only) */}
+              {isSignUp && (
+                <div>
+                  <label htmlFor="useCase" className="block text-sm font-medium text-gray-700 mb-2">
+                    What will you use this for?
+                  </label>
+                  <select
+                    id="useCase"
+                    name="useCase"
+                    required
+                    value={useCase}
+                    onChange={(e) => setUseCase(e.target.value)}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                  >
+                    <option value="">Select your use case</option>
+                    <option value="business-analytics">Business Analytics & KPIs</option>
+                    <option value="customer-insights">Customer Behavior & Insights</option>
+                    <option value="predictive-maintenance">Predictive Maintenance</option>
+                    <option value="fraud-detection">Fraud Detection & Security</option>
+                    <option value="recommendation-systems">Recommendation Systems</option>
+                    <option value="healthcare">Healthcare & Medical Analytics</option>
+                    <option value="finance">Financial Forecasting</option>
+                    <option value="marketing">Marketing & Campaign Optimization</option>
+                    <option value="supply-chain">Supply Chain Optimization</option>
+                    <option value="general">General Data Science</option>
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    This helps us personalize your AI assistant
+                  </p>
                 </div>
               )}
               

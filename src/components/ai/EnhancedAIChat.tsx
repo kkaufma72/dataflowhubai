@@ -1,14 +1,34 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader, Database, Sparkles, TrendingUp, BarChart3, AlertCircle } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
+import { useAuth } from '../auth/AuthProvider';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
+// Context-specific prompts based on use case
+const getUseCasePrompt = (useCase: string): string => {
+  const prompts: Record<string, string> = {
+    'business-analytics': 'Focus on helping users analyze business KPIs, revenue trends, and operational metrics. Provide insights on how to improve business performance and identify opportunities.',
+    'customer-insights': 'Help users understand customer behavior, segmentation, churn analysis, and lifetime value. Focus on actionable insights for customer acquisition and retention.',
+    'predictive-maintenance': 'Assist with predicting equipment failures, maintenance scheduling, and anomaly detection. Focus on reducing downtime and optimizing maintenance costs.',
+    'fraud-detection': 'Help identify fraudulent patterns, suspicious transactions, and security threats. Provide guidance on anomaly detection and risk scoring.',
+    'recommendation-systems': 'Assist with building recommendation engines, collaborative filtering, and personalization algorithms. Focus on improving user engagement and conversion.',
+    'healthcare': 'Help with medical data analysis, patient outcomes prediction, and clinical decision support. Always emphasize privacy and ethical considerations.',
+    'finance': 'Assist with financial forecasting, risk assessment, and portfolio optimization. Focus on time series analysis and volatility modeling.',
+    'marketing': 'Help optimize marketing campaigns, customer acquisition costs, and conversion funnels. Focus on ROI and attribution analysis.',
+    'supply-chain': 'Assist with demand forecasting, inventory optimization, and logistics planning. Focus on reducing costs and improving efficiency.',
+    'general': 'Provide general data science guidance, covering various ML algorithms, feature engineering, and model evaluation.',
+  };
+  
+  return prompts[useCase] || prompts['general'];
+};
+
 const EnhancedAIChat: React.FC = () => {
   const { datasets } = useMLContext();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,14 +89,21 @@ ${datasets.map(d => `- ${d.name} (${d.rows} rows, ${d.columns} columns)`).join('
 
     const userMessage: Message = { role: 'user', content: textToSend };
     
+    // Get user's use case for personalized prompts
+    const userUseCase = user?.user_metadata?.use_case || 'general';
+    const useCaseGuidance = getUseCasePrompt(userUseCase);
+    
     // Add system context about datasets
     const systemContext: Message = {
       role: 'system',
-      content: `You are a data analysis assistant helping users understand and work with their datasets. 
+      content: `You are a specialized data analysis assistant helping users understand and work with their datasets.
 
+Your specialization: ${useCaseGuidance}
+
+Current context:
 ${getDatasetContext()}
 
-Provide clear, actionable insights about their data. When suggesting analyses or visualizations, be specific and explain why they would be useful. If the user asks about operations, guide them on how to perform them in the platform.`,
+Provide clear, actionable insights tailored to the user's use case. When suggesting analyses or visualizations, be specific and explain why they would be useful. If the user asks about operations, guide them on how to perform them in the platform.`,
     };
 
     setMessages(prev => [...prev, userMessage]);

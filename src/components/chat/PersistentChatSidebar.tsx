@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Minimize2, Maximize2, Sparkles, Trash2, Copy, Check } from 'lucide-react';
 import { Dataset } from '../types';
 import toast from 'react-hot-toast';
+import { useAuth } from '../auth/AuthProvider';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,11 +16,30 @@ interface PersistentChatSidebarProps {
   dataset: Dataset | null;
 }
 
+// Context-specific prompts based on use case
+const getUseCasePrompt = (useCase: string): string => {
+  const prompts: Record<string, string> = {
+    'business-analytics': 'Focus on helping users analyze business KPIs, revenue trends, and operational metrics. Provide insights on how to improve business performance and identify opportunities.',
+    'customer-insights': 'Help users understand customer behavior, segmentation, churn analysis, and lifetime value. Focus on actionable insights for customer acquisition and retention.',
+    'predictive-maintenance': 'Assist with predicting equipment failures, maintenance scheduling, and anomaly detection. Focus on reducing downtime and optimizing maintenance costs.',
+    'fraud-detection': 'Help identify fraudulent patterns, suspicious transactions, and security threats. Provide guidance on anomaly detection and risk scoring.',
+    'recommendation-systems': 'Assist with building recommendation engines, collaborative filtering, and personalization algorithms. Focus on improving user engagement and conversion.',
+    'healthcare': 'Help with medical data analysis, patient outcomes prediction, and clinical decision support. Always emphasize privacy and ethical considerations.',
+    'finance': 'Assist with financial forecasting, risk assessment, and portfolio optimization. Focus on time series analysis and volatility modeling.',
+    'marketing': 'Help optimize marketing campaigns, customer acquisition costs, and conversion funnels. Focus on ROI and attribution analysis.',
+    'supply-chain': 'Assist with demand forecasting, inventory optimization, and logistics planning. Focus on reducing costs and improving efficiency.',
+    'general': 'Provide general data science guidance, covering various ML algorithms, feature engineering, and model evaluation.',
+  };
+  
+  return prompts[useCase] || prompts['general'];
+};
+
 const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
   isOpen,
   onClose,
   dataset
 }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -78,11 +98,19 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
       });
 
       const datasetInfo = JSON.stringify(dataset, null, 2);
+      
+      // Get user's use case for personalized prompts
+      const userUseCase = user?.user_metadata?.use_case || 'general';
+      const useCaseGuidance = getUseCasePrompt(userUseCase);
 
       const chatMessages = [
         {
           role: "system" as const,
-          content: `You are a helpful data analyst assistant. Here is the dataset information:\n${datasetInfo}\n\nProvide clear, concise insights. Use bullet points when listing items. Format numbers nicely.`
+          content: `You are a specialized data analyst assistant helping users understand their data.
+
+Your specialization: ${useCaseGuidance}
+
+Dataset information:\n${datasetInfo}\n\nProvide clear, concise insights tailored to the user's use case. Use bullet points when listing items. Format numbers nicely.`
         },
         ...messages.map(msg => ({
           role: msg.role,
