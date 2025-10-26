@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase, initializeSupabase, checkSupabaseHealth, handleSupabaseError } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
 import toast from 'react-hot-toast';
 
@@ -36,8 +35,29 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setIsLoadingProfile(true);
       setError(null);
 
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
+      // Get current user from localStorage to avoid hanging
+      const authData = localStorage.getItem('sb-bcobpxgktvgfsffdsiog-auth-token');
+      if (!authData) {
+        setUserProfile(null);
+        return;
+      }
+
+      let session: any = null;
+      try {
+        const parsedAuth = JSON.parse(authData);
+        if (parsedAuth?.user && parsedAuth?.access_token) {
+          session = {
+            user: parsedAuth.user,
+            access_token: parsedAuth.access_token,
+            refresh_token: parsedAuth.refresh_token
+          };
+        }
+      } catch (e) {
+        console.warn('Could not parse session from localStorage');
+        setUserProfile(null);
+        return;
+      }
+
       if (!session?.user) {
         setUserProfile(null);
         return;
@@ -191,17 +211,21 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   useEffect(() => {
     fetchUserProfile();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        fetchUserProfile();
-      } else if (event === 'SIGNED_OUT') {
-        setUserProfile(null);
-      }
-    });
+    // Listen for auth state changes via custom events
+    const handleAuthChange = () => {
+      fetchUserProfile();
+    };
+
+    const handleSignOut = () => {
+      setUserProfile(null);
+    };
+
+    window.addEventListener('auth-state-changed', handleAuthChange);
+    window.addEventListener('auth-signed-out', handleSignOut);
 
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener('auth-state-changed', handleAuthChange);
+      window.removeEventListener('auth-signed-out', handleSignOut);
     };
   }, []);
 

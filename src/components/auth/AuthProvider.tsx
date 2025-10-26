@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         
-        setSession(session);
+        setSession(session as any);
         setUser(session?.user ?? null);
         setLoading(false);
         isInitialMount.current = false;
@@ -138,22 +138,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       console.log('🔄 Auth state change:', event, !!session);
       
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out');
         await clearLocalData();
         setUser(null);
         setSession(null);
         setLoading(false);
+        // Dispatch custom event for UserContext
+        window.dispatchEvent(new CustomEvent('auth-signed-out'));
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('🔄 Token refreshed');
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        // Dispatch custom event for UserContext
+        window.dispatchEvent(new CustomEvent('auth-state-changed'));
       } else if (event === 'SIGNED_IN') {
         console.log('✅ User signed in:', session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        // Dispatch custom event for UserContext
+        window.dispatchEvent(new CustomEvent('auth-state-changed'));
         
         // For OAuth sign-ins, create user profile if it doesn't exist
         if (session?.user) {
