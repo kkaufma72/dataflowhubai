@@ -25,7 +25,7 @@ import {
 const navigation = [
   { 
     name: 'Dashboard', 
-    href: '/dashboard', 
+    href: '/app', 
     icon: HomeIcon, 
     exact: true 
   },

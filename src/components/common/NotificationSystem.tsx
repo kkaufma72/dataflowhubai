@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useEffect, createContext, useContext, ReactNode, useMemo } from 'react';
 import { X, Info, AlertTriangle, CheckCircle, Bell } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -168,17 +168,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     }
   }, []);
 
+  const contextValue = useMemo(() => ({
+    notifications,
+    addNotification,
+    removeNotification,
+    markAsRead,
+    markAllAsRead,
+    clearAll
+  }), [notifications]);
+
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        addNotification,
-        removeNotification,
-        markAsRead,
-        markAllAsRead,
-        clearAll
-      }}
-    >
+    <NotificationContext.Provider value={contextValue}>
       {children}
       {portalContainer && createPortal(
         <NotificationToasts 

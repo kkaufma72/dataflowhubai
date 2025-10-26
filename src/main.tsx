@@ -132,7 +132,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <Routes>
                           {/* Landing page and other public routes */}
                           <Route path="/" element={<LandingPage />} />
-                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/dashboard" element={<Navigate to="/app" replace />} />
                           <Route path="/features" element={<div>Features Page</div>} />
                           <Route path="/pricing" element={<PricingPage />} />
                           <Route path="/documentation" element={<Documentation />} />
@@ -155,6 +155,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                             <Route path="pipeline" element={<PipelineBuilder />} />
                             <Route path="profile" element={<UserProfile />} />
                             <Route path="settings" element={<AccountSettings />} />
+                            <Route path="documentation" element={<Documentation />} />
                             <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
                             <Route path="api-management" element={<APIManagement />} />
                             <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />

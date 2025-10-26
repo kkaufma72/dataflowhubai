@@ -52,7 +52,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
         <div className="flex justify-between h-16">
           {/* Left section - Professional Logo */}
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex items-center">
+            <Link to="/app" className="flex items-center">
               <Logo variant="horizontal" size="md" />
             </Link>
           </div>

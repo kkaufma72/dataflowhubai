@@ -16,7 +16,7 @@ import {
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import RealTimeMonitoring from '../components/monitoring/RealTimeMonitoring';
-import ModelPerformanceDashboard from '../components/monitoring/ModelPerformanceDashboard';
+const ModelPerformanceDashboard = React.lazy(() => import('../components/monitoring/ModelPerformanceDashboard'));
 import toast from 'react-hot-toast';
 
 const ModelMonitoring: React.FC = () => {
@@ -296,10 +296,12 @@ const ModelMonitoring: React.FC = () => {
       )}
 
       {activeTab === 'performance' && (
-        <ModelPerformanceDashboard
-          model={selectedModel}
-          timeRange={timeRange}
-        />
+        <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading performance...</div>}>
+          <ModelPerformanceDashboard
+            model={selectedModel}
+            timeRange={timeRange}
+          />
+        </React.Suspense>
       )}
     </div>
   );

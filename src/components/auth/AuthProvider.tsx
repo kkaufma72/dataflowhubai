@@ -261,7 +261,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/app/dashboard`,
+          redirectTo: `${window.location.origin}/app`,
           scopes: provider === 'github' ? 'read:user user:email' : undefined,
         }
       });

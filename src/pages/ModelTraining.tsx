@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package } from 'lucide-react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+const DndProvider = React.lazy(() => import('react-dnd').then(m => ({ default: m.DndProvider })));
+const loadHTML5Backend = () => import('react-dnd-html5-backend').then(m => m.HTML5Backend);
 import { useMLContext } from '../context/MLContext';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
 import Button from '../components/common/Button';
@@ -248,7 +248,10 @@ const ModelTraining: React.FC = () => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <React.Suspense fallback={null}>
+      {/* Lazily load DnD backend to avoid pulling it into main bundle */}
+      {/* @ts-ignore */}
+      <DndProvider backend={loadHTML5Backend as any}>
       <div>
         <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
           <div>
@@ -611,7 +614,8 @@ const ModelTraining: React.FC = () => {
           </div>
         )}
       </div>
-    </DndProvider>
+      </DndProvider>
+    </React.Suspense>
   );
 };
 

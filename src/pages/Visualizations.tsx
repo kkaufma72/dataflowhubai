@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import React from 'react';
 const InteractiveChartsModule = React.lazy(() => import('../components/visualizations/InteractiveCharts'));
 const InteractiveChart = (props: any) => (
   <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading chart...</div>}>

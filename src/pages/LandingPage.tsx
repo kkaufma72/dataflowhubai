@@ -44,7 +44,7 @@ const LandingPage: React.FC = () => {
         </p>
         <div className="mt-8 flex justify-center gap-4">
           <Link
-            to="/dashboard"
+            to="/app"
             className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300"
           >
             Get Started
@@ -141,8 +141,8 @@ const LandingPage: React.FC = () => {
             Start building your first intelligent data pipeline today. No credit card required.
           </p>
           <div className="mt-8">
-            <Link
-              to="/dashboard"
+          <Link
+            to="/app"
               className="px-10 py-4 bg-white text-blue-600 font-bold rounded-lg shadow-lg hover:bg-gray-100 transition-colors duration-300 text-lg"
             >
               Explore Your Dashboard
