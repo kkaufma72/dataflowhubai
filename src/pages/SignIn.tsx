@@ -123,6 +123,10 @@ const SignIn = () => {
         }
         throw error;
       }
+      
+      // Successful signin - redirect to dashboard
+      toast.success('Signed in successfully!');
+      navigate('/app', { replace: true });
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);
@@ -180,8 +184,15 @@ const SignIn = () => {
           icon: '📧'
         });
         
+        // Switch to signin mode to allow immediate signin if email is already verified
         setIsSignUp(false);
         setPassword('');
+        
+        // Show message about needing to verify email first
+        toast('After verifying your email, you can sign in to access your dashboard.', {
+          duration: 6000,
+          icon: '📧',
+        });
       }
     } catch (error: any) {
       console.error('Error signing up:', error);
