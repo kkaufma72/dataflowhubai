@@ -5,7 +5,7 @@ import Button from '../common/Button';
 import { MLModel } from '../../types';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import * as Papa from 'papaparse';
+// Lazy-load papaparse only when importing CSV to avoid bundling it by default
 
 interface ModelExportImportProps {
   model: MLModel;
@@ -231,7 +231,8 @@ main();
     reader.readAsText(file);
   };
 
-  const importCsv = (file: File) => {
+  const importCsv = async (file: File) => {
+    const Papa = (await import('papaparse')).default;
     Papa.parse(file, {
       header: true,
       complete: (results) => {
