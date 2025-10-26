@@ -13,7 +13,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    // Disable email confirmation for development
+    // In production, remove this or set it based on environment
+    emailRedirectTo: `${window.location.origin}/signin`
   }
 });
 

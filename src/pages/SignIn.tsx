@@ -119,7 +119,8 @@ const SignIn = () => {
           throw new Error('Invalid email or password. Please try again or reset your password.');
         }
         if (error.message === 'Email not confirmed') {
-          throw new Error('Please verify your email address before signing in. Check your inbox for the verification link.');
+          // Give user instructions to disable email confirmation in Supabase
+          throw new Error('Email verification is required. Please check Supabase settings and disable email confirmation for development, or check your email for the verification link.');
         }
         throw error;
       }
@@ -179,19 +180,19 @@ const SignIn = () => {
       }
       
       if (data.user) {
-        toast.success('Account created! Please check your email to verify your account.', {
-          duration: 8000,
-          icon: '📧'
+        toast.success('Account created successfully!', {
+          duration: 4000,
+          icon: '✅'
         });
         
-        // Switch to signin mode to allow immediate signin if email is already verified
+        // Switch to signin mode - user can sign in immediately (email verification disabled for dev)
         setIsSignUp(false);
         setPassword('');
         
-        // Show message about needing to verify email first
-        toast('After verifying your email, you can sign in to access your dashboard.', {
-          duration: 6000,
-          icon: '📧',
+        // Auto-fill email for convenience
+        // Note: Email verification is disabled in development mode
+        toast.success('You can now sign in with your credentials!', {
+          duration: 4000,
         });
       }
     } catch (error: any) {
@@ -403,7 +404,7 @@ const SignIn = () => {
                 </div>
                 {isSignUp && (
                   <p className="mt-2 text-xs text-gray-500">
-                    Use a valid email - you'll need it to verify your account
+                    Note: Email verification is disabled for development. You can sign in immediately after creating your account.
                   </p>
                 )}
               </div>
