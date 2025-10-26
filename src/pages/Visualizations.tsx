@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import InteractiveChart, { ChartDashboard, D3Visualization } from '../components/visualizations/InteractiveCharts';
+import React from 'react';
+const InteractiveChartsModule = React.lazy(() => import('../components/visualizations/InteractiveCharts'));
+const InteractiveChart = (props: any) => (
+  <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading chart...</div>}>
+    {/* @ts-ignore - default export */}
+    <InteractiveChartsModule.default {...props} />
+  </React.Suspense>
+);
+const D3Visualization = (props: any) => (
+  <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading visualization...</div>}>
+    {/* @ts-ignore - named export */}
+    <InteractiveChartsModule.D3Visualization {...props} />
+  </React.Suspense>
+);
+const ChartDashboard = (props: any) => (
+  <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading charts...</div>}>
+    {/* @ts-ignore - named export */}
+    <InteractiveChartsModule.ChartDashboard {...props} />
+  </React.Suspense>
+);
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { BarChart2, PieChart, LineChart, ScatterChart as ScatterPlot, RefreshCw, Download, Share, Filter, Sliders, Plus } from 'lucide-react';

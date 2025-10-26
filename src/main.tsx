@@ -9,8 +9,6 @@ import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
 import PrivateRoute from './components/auth/PrivateRoute.tsx';
 import AppLayout from './components/layout/AppLayout.tsx';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
@@ -103,7 +101,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <AIChatProvider>
                   <NotificationProvider>
                     <TourProvider>
-                      <DndProvider backend={HTML5Backend}>
                       <Toaster 
                         position="top-right" 
                         toastOptions={{
@@ -174,7 +171,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                           <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                       </Suspense>
-                      </DndProvider>
                     </TourProvider>
                   </NotificationProvider>
                 </AIChatProvider>

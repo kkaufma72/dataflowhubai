@@ -4,7 +4,6 @@ import { Line, Bar } from 'react-chartjs-2';
 import { ArrowUpRight, ArrowDownRight, Download, Share } from 'lucide-react';
 import Button from '../common/Button';
 import { saveAs } from 'file-saver';
-import * as d3 from 'd3';
 
 interface MetricPoint {
   timestamp: string;
