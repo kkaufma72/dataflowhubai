@@ -32,12 +32,19 @@ export const useStripeCheckout = () => {
       console.log('📞 Calling Supabase Edge Function: create-checkout-session');
       console.log('📤 Request body:', { tier, billing, ...(email && { email }) });
       
-      const response = await supabase.functions.invoke(
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - please try again')), 30000)
+      );
+      
+      const functionPromise = supabase.functions.invoke(
         'create-checkout-session',
         {
           body: { tier, billing, ...(email && { email }) },
         }
       );
+      
+      const response = await Promise.race([functionPromise, timeoutPromise]) as any;
 
       console.log('📥 ========== RESPONSE RECEIVED ==========');
       console.log('Full response object:', response);
@@ -101,6 +108,15 @@ export const useStripeCheckout = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start checkout';
       setError(errorMessage);
       setLoading(false);
+      
+      // Show user-friendly toast
+      const { default: toast } = await import('react-hot-toast');
+      toast.error(errorMessage);
+    } finally {
+      // Always reset loading state as a safety net
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     }
   };
 

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useStripeCheckout } from '../hooks/useStripeCheckout';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
+import toast from 'react-hot-toast';
 interface PricingCardProps {
   title: string;
   price: number | 'Custom';
@@ -31,6 +32,21 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+
+  // Show error toast when error occurs
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  // Reset modal when loading completes (success or error)
+  useEffect(() => {
+    if (!loading && showEmailModal) {
+      // Don't auto-close, let user see the error
+      // Modal will stay open so user can try again
+    }
+  }, [loading, showEmailModal]);
 
   const handleCTA = async () => {
     console.log('🎯 handleCTA clicked for tier:', tier);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Minimize2, Maximize2, Sparkles, Trash2, Copy, Check } from 'lucide-react';
-import { Dataset } from '../types';
+import { Dataset } from '../../types';
 import toast from 'react-hot-toast';
 import { useAuth } from '../auth/AuthProvider';
 

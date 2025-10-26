@@ -173,6 +173,30 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       setIsLoading(false);
       setHasFetched(true);
 
+      // Auto-load sample data for new users with no datasets
+      if (mergedDatasets.length === 0 && user?.id && project?.id) {
+        console.log('🎯 New user detected - auto-loading sample data...');
+        try {
+          const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
+          await seedEnhancedDatasets(user.id, project.id);
+          
+          // Refresh datasets after seeding
+          const refreshResponse = await supabaseFetch(
+            `/rest/v1/datasets?project_id=eq.${project.id}&user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,project_id,user_id&order=created_at.desc`,
+            { method: 'GET' }
+          );
+          
+          if (refreshResponse.ok) {
+            const refreshedDatasets = await refreshResponse.json();
+            setDatasets(refreshedDatasets);
+            console.log('✅ Sample data loaded for new user');
+          }
+        } catch (seedError) {
+          console.warn('Could not auto-load sample data:', seedError);
+          // Don't throw - this is optional
+        }
+      }
+
     } catch (err) {
       console.error('Error loading initial data:', err);
       const errorMessage = handleSupabaseError(err);
@@ -207,13 +231,16 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
   const addDataset = useCallback(async (dataset: Dataset): Promise<Dataset> => {
     try {
+      // Try to save to IndexedDB but don't fail if it hangs
       await storage.saveDataset(dataset);
-      setDatasets(prev => [dataset, ...prev]);
-      return dataset;
     } catch (error) {
-      console.error('Error adding dataset:', error);
-      throw error;
+      console.warn('⚠️ IndexedDB save failed, continuing anyway:', error);
+      // Don't throw - we still want to add to state
     }
+    
+    // Always update state regardless of IndexedDB result
+    setDatasets(prev => [dataset, ...prev]);
+    return dataset;
   }, []);
 
   const addModel = useCallback((model: MLModel) => {

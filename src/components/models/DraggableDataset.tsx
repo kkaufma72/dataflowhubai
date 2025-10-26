@@ -8,12 +8,14 @@ interface DraggableDatasetProps {
   dataset: Dataset;
   onDragStart?: () => void;
   onDragEnd?: () => void;
+  onClick?: () => void;
 }
 
 const DraggableDataset: React.FC<DraggableDatasetProps> = ({
   dataset,
   onDragStart,
   onDragEnd,
+  onClick,
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'dataset',
@@ -24,8 +26,12 @@ const DraggableDataset: React.FC<DraggableDatasetProps> = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: () => {
-      onDragEnd?.();
+    end: (item, monitor) => {
+      // Only call onDragEnd if the item was successfully dropped
+      const didDrop = monitor.didDrop();
+      if (didDrop && onDragEnd) {
+        onDragEnd();
+      }
     },
   }));
 
@@ -33,6 +39,7 @@ const DraggableDataset: React.FC<DraggableDatasetProps> = ({
     <div
       ref={drag}
       className={`cursor-move transition-all ${isDragging ? 'opacity-50' : ''}`}
+      onClick={onClick}
     >
       <Card className="hover:shadow-md">
         <div className="flex items-center">

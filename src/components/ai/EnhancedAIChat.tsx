@@ -75,7 +75,7 @@ Columns: ${dataset.columns}
 File type: ${dataset.fileType}
 Uploaded: ${new Date(dataset.dateUploaded).toLocaleDateString()}
 
-Column details: ${dataset.columnNames?.join(', ') || 'Not available'}`;
+Column details: ${dataset.preview_data?.columns?.join(', ') || 'Not available'}`;
       }
     }
 

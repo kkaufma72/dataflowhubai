@@ -279,11 +279,28 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       // Update progress before adding to context
       setUploadProgress(90);
       
-      await addDataset(datasetForContext);
-      console.log('✅ Dataset added to local context');
+      console.log('🔄 About to call addDataset...');
+      console.log('📦 Dataset for context:', datasetForContext);
       
-      console.log('🔄 About to set upload progress to 100...');
+      // Try to add to context, but don't block on IndexedDB
+      console.log('⏱️ Starting addDataset with 2s timeout...');
+      try {
+        const addDatasetPromise = addDataset(datasetForContext);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('addDataset timeout after 2s')), 2000)
+        );
+        
+        await Promise.race([addDatasetPromise, timeoutPromise]);
+        console.log('✅ Dataset added to local context');
+      } catch (error) {
+        console.warn('⚠️ addDataset failed or timed out:', error);
+        console.warn('⚠️ Continuing anyway - dataset is already in Supabase');
+        // Continue - dataset is already in Supabase and will be reloaded on next page refresh
+      }
+      
+      console.log('🔄 Setting upload progress to 100...');
       setUploadProgress(100);
+      console.log('✅ Upload complete!');
       
       toast.success(`Dataset "${file.name}" uploaded successfully!`, {
         duration: 4000,

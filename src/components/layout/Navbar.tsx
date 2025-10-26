@@ -131,11 +131,11 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
                   ) : (
                     <>
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm ring-2 ring-white dark:ring-gray-900">
-                        {userProfile?.full_name?.[0]?.toUpperCase() || 'U'}
+                        {userProfile?.fullName?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <div className="hidden md:block text-left">
                         <p className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                          {userProfile?.full_name || 'User'}
+                          {userProfile?.fullName || 'User'}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {userProfile?.email}
@@ -155,7 +155,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
                     <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl bg-white dark:bg-gray-800 shadow-strong ring-1 ring-black ring-opacity-5 animate-fade-in">
                       <div className="p-4 border-b border-gray-100 dark:border-gray-700">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {userProfile?.full_name || 'User'}
+                          {userProfile?.fullName || 'User'}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           {userProfile?.email}

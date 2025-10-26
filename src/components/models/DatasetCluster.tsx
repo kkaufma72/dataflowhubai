@@ -68,6 +68,11 @@ const DatasetCluster: React.FC<DatasetClusterProps> = ({
 }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'dataset',
+    drop: (item: { id: string }) => {
+      // Return success to signal a valid drop
+      console.log('Dataset dropped:', item.id);
+      return { success: true };
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),

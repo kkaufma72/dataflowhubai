@@ -33,12 +33,23 @@ export class StorageManager {
 
   async saveDataset(dataset: Dataset): Promise<void> {
     try {
+      console.log('💾 Starting IndexedDB save for dataset:', dataset.id);
       const db = await this.db;
-      await db.put('datasets', dataset);
-      console.log('Dataset saved to IndexedDB:', dataset.id);
+      console.log('💾 IndexedDB connection ready');
+      
+      // Add timeout to prevent hanging
+      await Promise.race([
+        db.put('datasets', dataset),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('IndexedDB save timeout after 3s')), 3000)
+        )
+      ]);
+      
+      console.log('✅ Dataset saved to IndexedDB:', dataset.id);
     } catch (error) {
-      console.error('Error saving dataset:', error);
-      throw new Error('Failed to save dataset to local storage');
+      console.error('❌ Error saving dataset to IndexedDB:', error);
+      // Don't throw - just log the error so upload can continue
+      console.warn('⚠️ Continuing without IndexedDB save - dataset is already in Supabase');
     }
   }
 

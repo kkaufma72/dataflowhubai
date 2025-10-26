@@ -40,9 +40,28 @@ export default defineConfig(({ mode }) => ({
       rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Only create chunks for actual dependencies that exist
+          // Split vendor into smaller chunks for better caching
           if (id.includes('node_modules')) {
-            // Group all vendor dependencies together
+            // Separate large libraries
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+              return 'charts';
+            }
+            if (id.includes('d3')) {
+              return 'd3';
+            }
+            if (id.includes('langchain') || id.includes('openai')) {
+              return 'ai';
+            }
+            if (id.includes('swagger')) {
+              return 'swagger';
+            }
+            if (id.includes('supabase')) {
+              return 'supabase';
+            }
+            if (id.includes('stripe')) {
+              return 'stripe';
+            }
+            // Group other vendor dependencies
             return 'vendor';
           }
         },

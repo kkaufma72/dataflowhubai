@@ -395,6 +395,7 @@ const ModelTraining: React.FC = () => {
                             key={dataset.id}
                             dataset={dataset}
                             onDragEnd={() => handleAddToCluster(dataset)}
+                            onClick={() => handleAddToCluster(dataset)}
                           />
                         ))}
                     </div>

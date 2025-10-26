@@ -149,11 +149,12 @@ const DataManagement: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const { columns, data } = generateSyntheticDataset({ 
+      const result = generateSyntheticDataset({ 
         name: `${generatorType}-sample`, 
-        type: generatorType, 
+        type: generatorType as 'marketing' | 'sales' | 'customer', 
         rowCount 
       });
+      const { columns, data } = result;
       
       const { data: newDataset, error } = await supabase
         .from('datasets')
@@ -589,7 +590,7 @@ const DataManagement: React.FC = () => {
                     </tbody>
                   </table>
                   <p className="text-sm text-gray-500 mt-4 text-center">
-                    Showing first 20 rows of {selectedDataset.row_count?.toLocaleString() || 0} total rows
+                    Showing first 20 rows of {selectedDataset.rows?.toLocaleString() || 0} total rows
                   </p>
                 </div>
               ) : (

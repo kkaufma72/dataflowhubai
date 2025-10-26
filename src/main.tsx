@@ -19,6 +19,7 @@ import { DemoProvider } from './context/DemoContext.tsx';
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
 const Dashboard = lazy(() => import('./pages/Dashboard.tsx'));
 const DataManagement = lazy(() => import('./pages/DataManagement.tsx'));
+const DatasetOverview = lazy(() => import('./pages/DatasetOverview.tsx'));
 const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
 const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
 const ModelEvaluation = lazy(() => import('./pages/ModelEvaluation.tsx'));
@@ -43,6 +44,7 @@ const UsageDashboard = lazy(() => import('./pages/UsageDashboard.tsx'));
 const DemoPage = lazy(() => import('./pages/DemoPage.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
+const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
@@ -86,7 +88,7 @@ function GlobalErrorFallback({ error }: { error: Error }) {
   );
 }
 
-function logError(error: Error, info: { componentStack: string }) {
+function logError(error: Error, info: any) {
   console.error('Error caught by boundary:', error, info);
 }
 
@@ -130,6 +132,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                       />
                       <Suspense fallback={<LoadingFallback />}>
                         <Routes>
+                          {/* OAuth callback handler - must be before /app route */}
+                          <Route path="/app/auth/callback" element={<OAuthCallback />} />
+                          
                           {/* Landing page and other public routes */}
                           <Route path="/" element={<LandingPage />} />
                           <Route path="/dashboard" element={<Navigate to="/app" replace />} />
@@ -146,6 +151,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                           <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                             <Route index element={<Dashboard />} />
                             <Route path="data" element={<DataManagement />} />
+                            <Route path="dataset-overview" element={<DatasetOverview />} />
                             <Route path="feature-engineering" element={<FeatureEngineering />} />
                             <Route path="train" element={<ModelTraining />} />
                             <Route path="evaluate" element={<ModelEvaluation />} />

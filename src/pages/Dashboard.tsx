@@ -110,16 +110,26 @@ const Dashboard: React.FC = () => {
     if (!isLoading && currentProject) {
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
       if (!hasVisitedBefore) {
-        addNotification({
-          type: 'info',
-          title: 'Welcome to DataFlowHub AI',
-          message: 'Get started by uploading a dataset or exploring the platform features.',
-          duration: 6000
-        });
+        // Show contextual welcome based on whether user has data
+        if (datasets.length > 0) {
+          addNotification({
+            type: 'success',
+            title: '🎉 Welcome! Sample data loaded',
+            message: 'We\'ve loaded sample datasets to help you get started. Click on a dataset to explore or upload your own!',
+            duration: 8000
+          });
+        } else {
+          addNotification({
+            type: 'info',
+            title: 'Welcome to DataFlowHub AI',
+            message: 'Get started by uploading a dataset or use the "Add Sample Data" button to explore features.',
+            duration: 6000
+          });
+        }
         localStorage.setItem('hasVisitedDashboard', 'true');
       }
     }
-  }, [isLoading, currentProject, addNotification]);
+  }, [isLoading, currentProject, datasets.length, addNotification]);
   
   // Determine the next recommended step
   const getNextStep = () => {
@@ -532,7 +542,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">{model.name}</h3>
-                      <p className="text-sm text-gray-500">{model.algorithm}</p>
+                      <p className="text-sm text-gray-500">{model.modelType || 'ML Model'}</p>
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${

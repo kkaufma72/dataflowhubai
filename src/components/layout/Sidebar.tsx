@@ -109,6 +109,13 @@ const Sidebar: React.FC = () => {
       description: 'Manage datasets'
     },
     {
+      name: 'Dataset Overview',
+      href: '/app/dataset-overview',
+      icon: BarChart3,
+      badge: null,
+      description: 'Dataset insights & analytics'
+    },
+    {
       name: 'Feature Engineering',
       href: '/app/feature-engineering',
       icon: Sparkles,
