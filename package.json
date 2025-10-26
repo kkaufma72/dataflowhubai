@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "cypress run",
+    "test:e2e:ci": "start-server-and-test 'npm run build && npm run preview' http://localhost:3002 'cypress run'",
     "test:e2e:open": "cypress open",
     "test:a11y": "vitest run --config vitest.a11y.config.ts",
     "stripe:setup": "node scripts/setup-stripe-products.mjs"
@@ -72,6 +73,7 @@
     "jsdom": "^27.0.1",
     "msw": "^2.2.3",
     "postcss": "^8.4.35",
+    "start-server-and-test": "^2.1.2",
     "supabase": "^2.53.6",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",

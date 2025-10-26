@@ -49,7 +49,8 @@ export const handleApiError = (error: any, overrideMessage?: string): { message:
   } else {
     message = originalMessage;
     // Simplify common error messages if no override is present
-    if (message.toLowerCase().includes('timeout')) {
+    const lower = message.toLowerCase();
+    if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('etimedout')) {
       message = 'Request timed out. Please try again.';
     } else if (message.includes('Failed to fetch') || message.includes('Network request failed')) {
       message = 'Connection error. Please check your internet connection.';
