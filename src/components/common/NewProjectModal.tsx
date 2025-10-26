@@ -4,10 +4,16 @@ import { X, Folder, Plus } from 'lucide-react';
 import Button from './Button';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
-import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
 const MAX_NAME_LENGTH = 100;
+
+interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
 
 interface NewProjectModalProps {
   isOpen: boolean;
@@ -62,7 +68,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
         
         console.log('📡 Inserting project:', projectData);
         
-        const { data: insertedProjects, error: insertError } = await supabaseInsert('projects', projectData);
+        const { data: insertedProjects, error: insertError } = await supabaseInsert<Project>('projects', projectData);
         
         if (insertError) {
           console.error('❌ Insert failed:', insertError);
@@ -127,7 +133,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
       {/* Modal Content - Standard centering approach */}
       <div className="flex min-h-screen items-center justify-center p-4 pt-20 pb-20">
         <div
-          className="relative w-full max-w-md bg-white rounded-lg shadow-2xl border-8 border-red-600"
+          className="relative w-full max-w-md bg-white rounded-lg shadow-2xl"
           style={{ zIndex: 100000 }}
           onClick={(e) => e.stopPropagation()}
         >

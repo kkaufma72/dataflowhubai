@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 500,
     cssCodeSplit: true,
     reportCompressedSize: false,
-    rollupOptions: {
+      rollupOptions: {
       output: {
         manualChunks: (id) => {
           // Only create chunks for actual dependencies that exist
@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => ({
           }
         },
         assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) return `assets/[name]-[hash][extname]`;
           const info = assetInfo.name.split('.');
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
@@ -58,11 +59,6 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js'
-      },
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false
       }
     }
   },

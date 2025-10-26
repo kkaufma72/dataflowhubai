@@ -81,7 +81,7 @@ export async function supabaseInsert<T>(
       };
     }
     
-    const insertedData = await response.json();
+    const insertedData = await response.json() as T[];
     return { data: insertedData, error: null };
   } catch (error) {
     console.error(`❌ Insert to ${table} error:`, error);
