@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, lazy, Suspense } from 'react';
 import { Step } from 'react-joyride';
 import { useLocation } from 'react-router-dom';
-import GuidedTour from './GuidedTour';
+// Lazy-load GuidedTour to avoid pulling in react-joyride on initial load
+const GuidedTour = lazy(() => import('./GuidedTour'));
 
 // Define tour steps for different sections of the app
 const dashboardTourSteps: Step[] = [
@@ -187,18 +188,20 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
     >
       {children}
       {activeTour && (
-        <GuidedTour
-          steps={allTourSteps[activeTour]}
-          run={isTourRunning}
-          onFinish={handleTourFinish}
-          onSkip={handleTourSkip}
-          location={location}
-          continuous={true}
-          showSkipButton={true}
-          showProgress={true}
-          disableOverlayClose={false}
-          spotlightClicks={false}
-        />
+        <Suspense fallback={null}>
+          <GuidedTour
+            steps={allTourSteps[activeTour]}
+            run={isTourRunning}
+            onFinish={handleTourFinish}
+            onSkip={handleTourSkip}
+            location={location}
+            continuous={true}
+            showSkipButton={true}
+            showProgress={true}
+            disableOverlayClose={false}
+            spotlightClicks={false}
+          />
+        </Suspense>
       )}
     </TourContext.Provider>
   );

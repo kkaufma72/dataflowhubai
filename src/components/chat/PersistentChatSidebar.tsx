@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Minimize2, Maximize2, Sparkles, Trash2, Copy, Check } from 'lucide-react';
 import { Dataset } from '../types';
-import OpenAI from 'openai';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -72,6 +71,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
         return;
       }
 
+      const { default: OpenAI } = await import('openai');
       const openai = new OpenAI({
         apiKey: apiKey,
         dangerouslyAllowBrowser: true

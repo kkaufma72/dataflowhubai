@@ -1,6 +1,7 @@
 import React from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React from 'react';
+const DndProvider = React.lazy(() => import('react-dnd').then(m => ({ default: m.DndProvider })));
+const loadHTML5Backend = () => import('react-dnd-html5-backend').then(m => m.HTML5Backend);
 import PipelineBuilder from '../components/pipeline/PipelineBuilder';
 
 const PipelineBuilderPage: React.FC = () => {
@@ -15,9 +16,12 @@ const PipelineBuilderPage: React.FC = () => {
         </div>
       </div>
 
-      <DndProvider backend={HTML5Backend}>
+      <React.Suspense fallback={null}>
+        {/* @ts-ignore */}
+        <DndProvider backend={loadHTML5Backend as any}>
         <PipelineBuilder />
-      </DndProvider>
+        </DndProvider>
+      </React.Suspense>
     </div>
   );
 };

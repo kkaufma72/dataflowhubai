@@ -3,7 +3,6 @@ import { Card } from '../common/Card';
 import { BarChart2, Info, Download, Filter, ArrowUpDown } from 'lucide-react';
 import Button from '../common/Button';
 import { Bar } from 'react-chartjs-2';
-import * as d3 from 'd3';
 
 interface FeatureImportanceChartProps {
   featureImportance: {feature: string; importance: number}[];
