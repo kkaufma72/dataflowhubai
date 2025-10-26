@@ -3,6 +3,7 @@ import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supaba
 import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
 import { generateSampleDatasets } from '../lib/sampleData';
+import { useAuth } from '../components/auth/AuthProvider';
 
 interface MLContextType {
   currentProject: Project | null;
@@ -31,6 +32,7 @@ interface MLProviderProps {
 }
 
 export const MLProvider = ({ children }: MLProviderProps) => {
+  const { user } = useAuth();
   const [currentProject, setCurrentProjectState] = useState<Project | null>(null);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [models, setModels] = useState<MLModel[]>([]);
@@ -90,10 +92,10 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       setIsLoading(true);
       setError(null);
 
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check if user is authenticated from AuthProvider context (don't call supabase.auth.getSession() as it hangs)
+      const isAuthenticated = !!user;
       
-      if (!session) {
+      if (!isAuthenticated) {
         // Not logged in - just load sample data
         const localDatasets = await initializeSampleData();
         setDatasets(localDatasets);
@@ -108,20 +110,27 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         throw new Error('Failed to connect to database');
       }
 
-      // OPTIMIZATION: Single query to get or create project
-      let { data: projects, error: projectError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true })
-        .limit(1);
+      if (!user?.id) {
+        throw new Error('User ID not available');
+      }
 
-      if (projectError) throw projectError;
+      // OPTIMIZATION: Single query to get or create project using direct fetch
+      const { supabaseFetch } = await import('../lib/supabaseHelpers');
+      
+      const projectsResponse = await supabaseFetch(
+        `/rest/v1/projects?user_id=eq.${user.id}&order=created_at.asc&limit=1&select=*`,
+        { method: 'GET' }
+      );
+
+      let projects = [];
+      if (projectsResponse.ok) {
+        projects = await projectsResponse.json();
+      }
 
       let project = projects?.[0];
       
       if (!project) {
-        project = await createDefaultProject(session.user.id);
+        project = await createDefaultProject(user.id);
       }
 
       if (!project) {
@@ -135,36 +144,32 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         createdAt: project.created_at
       });
 
-      // OPTIMIZATION: Parallel fetch of datasets and models (2 requests instead of many)
+      // OPTIMIZATION: Parallel fetch of datasets and models using direct fetch
       const [datasetsResponse, modelsResponse, localDatasets] = await Promise.all([
-        supabase
-          .from('datasets')
-          .select('id, name, description, row_count, column_count, file_type, file_size, created_at, project_id, user_id')
-          .eq('project_id', project.id)
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('models')
-          .select('*')
-          .eq('project_id', project.id)
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false }),
+        supabaseFetch(
+          `/rest/v1/datasets?project_id=eq.${project.id}&user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,project_id,user_id&order=created_at.desc`,
+          { method: 'GET' }
+        ),
+        supabaseFetch(
+          `/rest/v1/models?project_id=eq.${project.id}&user_id=eq.${user.id}&select=*&order=created_at.desc`,
+          { method: 'GET' }
+        ),
         initializeSampleData()
       ]);
 
-      if (datasetsResponse.error) throw datasetsResponse.error;
-      if (modelsResponse.error) throw modelsResponse.error;
+      // Parse fetch responses
+      const remoteDatasets = datasetsResponse.ok ? await datasetsResponse.json() : [];
+      const remoteModels = modelsResponse.ok ? await modelsResponse.json() : [];
 
       // Merge local and remote datasets - OPTIMIZED from O(n²) to O(n)
-      const remoteDatasets = datasetsResponse.data || [];
       const localIds = new Set(localDatasets.map(d => d.id));
       const mergedDatasets = [
         ...localDatasets,
-        ...remoteDatasets.filter(d => !localIds.has(d.id))
+        ...remoteDatasets.filter((d: any) => !localIds.has(d.id))
       ];
 
       setDatasets(mergedDatasets);
-      setModels(modelsResponse.data || []);
+      setModels(remoteModels);
       setIsLoading(false);
       setHasFetched(true);
 
@@ -175,7 +180,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       setIsLoading(false);
       setHasFetched(true);
     }
-  }, [hasFetched]);
+  }, [hasFetched, user]);
 
   // Only load data once on mount
   useEffect(() => {

@@ -70,25 +70,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('🚀 AuthProvider mounting...');
     let mounted = true;
 
-    // Check active sessions and set the user
+    // Check active sessions and set the user (avoid supabase.auth.getSession() as it hangs)
     const initializeAuth = async () => {
       try {
-        console.log('📡 Getting session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('📡 Getting session from localStorage...');
+        
+        // Try to get session from localStorage first (Supabase stores it there)
+        const authData = localStorage.getItem('sb-bcobpxgktvgfsffdsiog-auth-token');
+        let session = null;
+        
+        if (authData) {
+          try {
+            const parsedAuth = JSON.parse(authData);
+            // Create a session-like object from localStorage data
+            if (parsedAuth?.user && parsedAuth?.access_token) {
+              session = {
+                user: parsedAuth.user,
+                access_token: parsedAuth.access_token,
+                refresh_token: parsedAuth.refresh_token
+              };
+              console.log('✅ Session found in localStorage:', session.user?.email);
+            }
+          } catch (e) {
+            console.warn('Could not parse session from localStorage');
+          }
+        }
         
         if (!mounted) {
           console.log('⚠️ Component unmounted, skipping session update');
           return;
         }
         
-        if (error) {
-          console.error('❌ Session error:', error);
-          await handleAuthError(error);
-          setLoading(false);
-          return;
-        }
-        
-        console.log('✅ Session retrieved:', !!session, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);

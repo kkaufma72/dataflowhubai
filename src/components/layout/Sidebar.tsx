@@ -250,9 +250,10 @@ const Sidebar: React.FC = () => {
                   <div className="border-t border-gray-700 mt-2 pt-2">
                     <button
                       onClick={() => {
-                        // This would open a new project modal
-                        toast.info('New project creation coming soon!');
+                        // Open new project modal - this will be handled by the parent component
                         setIsProjectDropdownOpen(false);
+                        // Dispatch a custom event to open the modal
+                        window.dispatchEvent(new CustomEvent('openNewProjectModal'));
                       }}
                       className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center text-indigo-400"
                     >

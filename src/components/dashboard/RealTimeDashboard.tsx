@@ -15,12 +15,9 @@ import {
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useNavigate } from 'react-router-dom';
-import NewProjectModal from '../common/NewProjectModal';
-
 const RealTimeDashboard: React.FC = () => {
   const { datasets, models } = useMLContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const navigate = useNavigate();
   
   // Sample metrics data
@@ -58,7 +55,7 @@ const RealTimeDashboard: React.FC = () => {
           </Button>
           <Button
             size="sm"
-            onClick={() => setShowNewProjectModal(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('openNewProjectModal'))}
             icon={<Plus className="w-4 h-4" />}
           >
             New Project
@@ -224,11 +221,6 @@ const RealTimeDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* New Project Modal */}
-      <NewProjectModal 
-        isOpen={showNewProjectModal}
-        onClose={() => setShowNewProjectModal(false)}
-      />
     </div>
   );
 };

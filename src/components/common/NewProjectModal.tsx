@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { X, Folder, Plus } from 'lucide-react';
 import Button from './Button';
 import { useMLContext } from '../../context/MLContext';
+import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -17,6 +19,14 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
   const [projectDescription, setProjectDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setCurrentProject } = useMLContext();
+  const { user } = useAuth();
+
+  // Debug logging
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log('🎯 NewProjectModal rendering with z-index: 99999/100000');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -28,57 +38,99 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
       return;
     }
     
+    if (!user) {
+      toast.error('You must be logged in to create a project');
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
+      console.log('🔄 Creating project:', projectName);
+      console.log('👤 Using authenticated user:', user.email);
       
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        toast.error('You must be logged in to create a project');
-        return;
-      }
-      
-      // Create project in Supabase
-      const { data: newProject, error } = await supabase
-        .from('projects')
-        .insert([{
+      try {
+        console.log('🔄 Creating project with direct REST API...');
+        
+        // Use helper function for insert
+        const { supabaseInsert } = await import('../../lib/supabaseHelpers');
+        
+        const projectData = {
           name: projectName,
           description: projectDescription,
-          user_id: session.user.id
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      // Set as current project (this will trigger MLContext to reload and clear datasets/models)
-      setCurrentProject({
-        id: newProject.id,
-        name: newProject.name,
-        description: newProject.description || '',
-        createdAt: newProject.created_at
-      });
-      
-      toast.success('Project created successfully');
-      
-      // Reset form
-      setProjectName('');
-      setProjectDescription('');
-      onClose();
+          user_id: user.id
+        };
+        
+        console.log('📡 Inserting project:', projectData);
+        
+        const { data: insertedProjects, error: insertError } = await supabaseInsert('projects', projectData);
+        
+        if (insertError) {
+          console.error('❌ Insert failed:', insertError);
+          toast.error(`Failed to create project: ${insertError.message}`);
+          return;
+        }
+        
+        if (!insertedProjects || insertedProjects.length === 0) {
+          console.error('❌ No data returned from insert');
+          toast.error('Project created but no data returned');
+          return;
+        }
+        
+        const createdProject = insertedProjects[0];
+        console.log('✅ Project created successfully:', createdProject);
+        
+        // Set as current project
+        setCurrentProject({
+          id: createdProject.id,
+          name: createdProject.name,
+          description: createdProject.description || '',
+          createdAt: createdProject.created_at
+        });
+        
+        console.log('✅ All done!');
+        toast.success('Project created successfully');
+        
+        // Reset form
+        setProjectName('');
+        setProjectDescription('');
+        onClose();
+      } catch (dbError) {
+        console.error('❌ Unexpected error:', dbError);
+        const errorMessage = dbError instanceof Error ? dbError.message : 'An unexpected error occurred';
+        toast.error(errorMessage);
+      }
     } catch (error) {
-      console.error('Error creating project:', error);
-      toast.error('Failed to create project');
+      console.error('❌ Error creating project:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create project';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} aria-hidden="true" />
-        
-        <div className="inline-block w-full max-w-md overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle">
+  const modalContent = (
+    <div
+      className="fixed inset-0 overflow-y-auto"
+      style={{ zIndex: 99999 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        style={{ zIndex: 99998 }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Modal Content - Standard centering approach */}
+      <div className="flex min-h-screen items-center justify-center p-4 pt-20 pb-20">
+        <div
+          className="relative w-full max-w-md bg-white rounded-lg shadow-2xl border-8 border-red-600"
+          style={{ zIndex: 100000 }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
@@ -156,6 +208,10 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
       </div>
     </div>
   );
+
+  // Use Portal to render at document root level
+  const portalRoot = document.getElementById('modal-portal') || document.body;
+  return ReactDOM.createPortal(modalContent, portalRoot);
 };
 
 export default NewProjectModal;

@@ -528,12 +528,37 @@ const DataManagement: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900">
                 Preview: {selectedDataset.name}
               </h3>
-              <button
-                onClick={handleClosePreview}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (selectedDataset.preview_data) {
+                      const csv = [
+                        selectedDataset.preview_data.columns.join(','),
+                        ...selectedDataset.preview_data.rows.map(row => row.join(','))
+                      ].join('\n');
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${selectedDataset.name}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('Dataset exported successfully!');
+                    }
+                  }}
+                  icon={<Database className="w-4 h-4" />}
+                >
+                  Export CSV
+                </Button>
+                <button
+                  onClick={handleClosePreview}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-auto p-6">
               {selectedDataset.preview_data ? (

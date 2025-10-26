@@ -13,7 +13,7 @@ interface DataUploaderProps {
 }
 
 const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
-  const { currentProject } = useMLContext();
+  const { currentProject, addDataset } = useMLContext();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -145,7 +145,10 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   };
 
   const handleUpload = async () => {
+    console.log('🎯 handleUpload called');
+    
     if (!file || !currentProject || !user) {
+      console.log('❌ Missing requirements:', { file: !!file, currentProject: !!currentProject, user: !!user });
       setError('Missing file, project, or user authentication');
       return;
     }
@@ -205,34 +208,67 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         previewRows: previewData.rows.length
       });
 
-      // Insert into Supabase
-      const { data: newDataset, error: supabaseError } = await supabase
-        .from('datasets')
-        .insert([{
-          name: truncateFileName(file.name),
-          description: `Uploaded ${file.name.split('.').pop()?.toUpperCase()} file`,
-          file_type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
-          file_size: fileSizeFormatted,
-          row_count: rows.length,
-          column_count: columns.length,
-          preview_data: previewData,
-          project_id: currentProject.id,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
-        .select()
-        .single();
+      // Insert into Supabase using direct fetch (Supabase client hangs)
+      const { supabaseInsert } = await import('../../lib/supabaseHelpers');
+      
+      const datasetData = {
+        name: truncateFileName(file.name),
+        description: `Uploaded ${file.name.split('.').pop()?.toUpperCase()} file`,
+        file_type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
+        file_size: fileSizeFormatted,
+        row_count: rows.length,
+        column_count: columns.length,
+        preview_data: previewData,
+        project_id: currentProject.id,
+        user_id: user.id
+      };
+
+      console.log('💾 Inserting dataset:', datasetData);
+      console.log('📡 About to call supabaseInsert...');
+      
+      const { data: insertedDatasets, error: insertError } = await supabaseInsert('datasets', datasetData);
+      
+      console.log('📡 supabaseInsert returned:', { data: insertedDatasets, error: insertError });
 
       clearInterval(interval);
 
-      if (supabaseError) {
-        console.error('❌ Supabase error:', supabaseError);
-        throw supabaseError;
+      if (insertError) {
+        console.error('❌ Insert failed:', insertError);
+        throw insertError;
       }
 
-      console.log('✅ Dataset saved to Supabase:', newDataset);
+      if (!insertedDatasets || insertedDatasets.length === 0) {
+        throw new Error('No data returned from insert');
+      }
 
+      const newDataset = insertedDatasets[0];
+      
+      console.log('✅ Dataset saved to Supabase:', newDataset);
+      
+      // Add to local state
+      const datasetForContext: any = {
+        id: newDataset.id,
+        name: newDataset.name,
+        description: newDataset.description || '',
+        rows: newDataset.row_count,
+        columns: newDataset.column_count,
+        row_count: newDataset.row_count,
+        column_count: newDataset.column_count,
+        dateUploaded: newDataset.created_at,
+        created_at: newDataset.created_at,
+        fileType: newDataset.file_type,
+        file_type: newDataset.file_type,
+        fileSize: newDataset.file_size,
+        file_size: newDataset.file_size,
+        projectId: newDataset.project_id,
+        project_id: newDataset.project_id,
+        preview_data: newDataset.preview_data
+      };
+      
+      await addDataset(datasetForContext);
+      console.log('✅ Dataset added to local context');
+      
+      console.log('🔄 About to set upload progress to 100...');
       setUploadProgress(100);
       
       toast.success(`Dataset "${file.name}" uploaded successfully!`, {
@@ -248,8 +284,6 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       // Close modal after short delay
       setTimeout(() => {
         if (onClose) onClose();
-        // Reload to show new dataset
-        window.location.reload();
       }, 1000);
 
     } catch (err) {
@@ -377,7 +411,12 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
 
       <div className="mt-6 flex space-x-3">
         <Button
-          onClick={handleUpload}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleUpload();
+          }}
           disabled={!file || uploading || !currentProject}
           className="flex-1"
         >
@@ -385,6 +424,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         </Button>
         {onClose && (
           <Button
+            type="button"
             onClick={onClose}
             variant="outline"
             disabled={uploading}

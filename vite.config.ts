@@ -35,18 +35,12 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-          'chart': ['chart.js', 'react-chartjs-2'],
-          'd3': ['d3'],
-          'ui': ['lucide-react', 'react-hot-toast', 'react-loading-skeleton'],
-          'data': ['papaparse', 'file-saver', 'jszip'],
-          'swagger': ['swagger-ui-react'],
-          'ai': ['openai'],
-          'langchain': ['langchain', '@langchain/core', '@langchain/openai', '@langchain/community'],
-          'supabase': ['@supabase/supabase-js', '@supabase/auth-ui-react', '@supabase/auth-ui-shared'],
-          'stripe': ['stripe', '@stripe/stripe-js'],
-          'utils': ['react-window', 'react-dnd', 'react-dnd-html5-backend', 'react-error-boundary', 'idb']
+        manualChunks: (id) => {
+          // Only create chunks for actual dependencies that exist
+          if (id.includes('node_modules')) {
+            // Group all vendor dependencies together
+            return 'vendor';
+          }
         },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('.');

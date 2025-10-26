@@ -31,6 +31,13 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const navigate = useNavigate();
 
+  // Listen for custom event from Sidebar
+  React.useEffect(() => {
+    const handleOpenNewProjectModal = () => setShowNewProjectModal(true);
+    window.addEventListener('openNewProjectModal', handleOpenNewProjectModal);
+    return () => window.removeEventListener('openNewProjectModal', handleOpenNewProjectModal);
+  }, []);
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -99,6 +106,16 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
               >
                 <HelpCircle className="h-5 w-5" />
               </Link>
+
+              {/* New Project Button */}
+              <button
+                onClick={() => setShowNewProjectModal(true)}
+                className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                title="Create New Project"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Project</span>
+              </button>
 
               {/* Divider */}
               <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
