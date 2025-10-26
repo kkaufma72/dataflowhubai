@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => ({
     host: true
   },
   esbuild: {
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    drop: mode === 'production' ? ['debugger'] : [], // Keep console logs for debugging
     legalComments: 'none'
   }
 }));
