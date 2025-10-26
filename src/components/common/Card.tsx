@@ -17,15 +17,20 @@ const Card: React.FC<CardProps> = ({
   className = '',
   role = 'region',
 }) => {
+  const titleId = title ? `card-title-${title.toLowerCase().replace(/\s+/g, '-')}` : undefined;
+  const descriptionId = description ? `card-desc-${title?.toLowerCase().replace(/\s+/g, '-') || 'card'}` : undefined;
+
   return (
     <div 
       className={`bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden ${className}`}
       role={role}
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       {(title || description) && (
-        <div className="px-4 py-5 border-b border-gray-100 sm:px-6" role="heading" aria-level={3}>
-          {title && <h3 className="text-lg font-medium leading-6 text-gray-900" id={`card-title-${title.toLowerCase().replace(/\s+/g, '-')}`}>{title}</h3>}
-          {description && <p className="mt-1 text-sm text-gray-500" id={`card-desc-${title?.toLowerCase().replace(/\s+/g, '-') || 'card'}`}>{description}</p>}
+        <div className="px-4 py-5 border-b border-gray-100 sm:px-6">
+          {title && <h3 className="text-lg font-medium leading-6 text-gray-900" id={titleId}>{title}</h3>}
+          {description && <p className="mt-1 text-sm text-gray-500" id={descriptionId}>{description}</p>}
         </div>
       )}
       <div className="px-4 py-5 sm:p-6">{children}</div>

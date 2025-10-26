@@ -48,7 +48,7 @@ export const checkSupabaseHealth = async () => {
 
 // Handle Supabase errors
 export const handleSupabaseError = (error: any) => {
-  console.error('Supabase error:', error);
+  console.error('Supabase error:', JSON.stringify(error, null, 2));
   if (error?.message) {
     return error.message;
   }

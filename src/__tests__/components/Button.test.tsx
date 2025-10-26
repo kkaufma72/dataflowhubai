@@ -1,8 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import Button from '../../components/common/Button';
 
 describe('Button component', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders correctly with default props', () => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole('button')).toHaveTextContent('Click me');

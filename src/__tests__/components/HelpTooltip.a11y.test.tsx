@@ -1,9 +1,14 @@
-import { render } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { axe } from 'jest-axe';
 import HelpTooltip from '../../components/common/HelpTooltip';
+import React from 'react';
 
 describe('HelpTooltip accessibility', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('should not have any accessibility violations', async () => {
     const { container } = render(
       <HelpTooltip content="This is a helpful tooltip" />

@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['src/setupTests.ts']
+  },
   server: {
     port: 3002,
     strictPort: true,
@@ -64,7 +68,7 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-    exclude: ['swagger-ui-react'],
+    exclude: ['swagger-ui-react', 'jsdom'],
     esbuildOptions: {
       target: 'esnext'
     }
