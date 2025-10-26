@@ -3,11 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Home,
   Database,
-  Layers,
   Settings,
   BarChart3,
-  FileText,
-  Users,
   GitBranch,
   Activity,
   Zap,
@@ -15,7 +12,6 @@ import {
   ChevronRight,
   Sparkles,
   FolderKanban,
-  Upload,
   Brain,
   LineChart,
   ChevronDown,
@@ -68,7 +64,7 @@ const Sidebar: React.FC = () => {
       if (error) throw error;
       
       if (data) {
-        setProjects(data.map(p => ({
+        setProjects(data.map((p: any) => ({
           id: p.id,
           name: p.name,
           description: p.description || '',

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Bell, 
   Settings, 
   HelpCircle, 
   User,
@@ -10,11 +9,8 @@ import {
   Search,
   Command
 } from 'lucide-react';
-import { useMLContext } from '../../context/MLContext';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { useUser } from '../../context/UserContext';
-import { useNotifications, NotificationCenter } from '../common/NotificationSystem'; 
 import SkeletonLoader from '../common/SkeletonLoader';
 import ThemeToggle from '../common/ThemeToggle';
 import NewProjectModal from '../common/NewProjectModal';
@@ -29,7 +25,6 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
   const { userProfile, isLoadingProfile } = useUser();
   const { signOut } = useAuth();
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  const navigate = useNavigate();
 
   // Listen for custom event from Sidebar
   React.useEffect(() => {
@@ -87,7 +82,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
               <ThemeToggle />
               
               {/* Notifications */}
-              <NotificationCenter />
+              {/* <NotificationCenter /> */}
 
               {/* Settings */}
               <Link

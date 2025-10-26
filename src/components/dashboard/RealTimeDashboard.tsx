@@ -1,24 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import Button from '../common/Button';
 import { 
   Activity, 
   BarChart2, 
-  Clock, 
   Database, 
   Server, 
   Zap, 
   RefreshCw,
-  ArrowUpRight,
   ArrowDownRight,
   Plus
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
-import { useNavigate } from 'react-router-dom';
+
 const RealTimeDashboard: React.FC = () => {
   const { datasets, models } = useMLContext();
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   
   // Sample metrics data
   const metrics = {
