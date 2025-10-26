@@ -4,9 +4,22 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
-import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import Papa from 'papaparse';
+
+interface Dataset {
+  id: string;
+  name: string;
+  description: string | null;
+  file_type: string;
+  file_size: string;
+  row_count: number;
+  column_count: number;
+  preview_data: any;
+  project_id: string;
+  user_id: string;
+  created_at: string;
+}
 
 interface DataUploaderProps {
   onClose?: () => void;
@@ -81,13 +94,13 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     return `${nameWithoutExt.slice(0, maxBaseLength)}...${extension}`;
   };
 
-  const parseCSV = (content: string): { columns: string[], rows: any[][] } => {
+  const parseCSV = (content: string): Promise<{ columns: string[], rows: any[][] }> => {
     return new Promise((resolve, reject) => {
       Papa.parse(content, {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: false,
-        complete: (results) => {
+        complete: (results: any) => {
           console.log('📊 CSV Parsed:', results);
           
           if (results.errors.length > 0) {
@@ -96,7 +109,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           
           const columns = results.meta.fields || [];
           const rows = results.data.map((row: any) => 
-            columns.map(col => row[col] ?? '')
+            columns.map((col: string) => row[col] ?? '')
           );
           
           console.log('✅ Columns:', columns);
@@ -104,7 +117,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           
           resolve({ columns, rows });
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('CSV parsing error:', error);
           reject(error);
         }
@@ -181,16 +194,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         sampleRow: rows[0]
       });
 
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const newProgress = prev + Math.random() * 15;
-          return newProgress > 90 ? 90 : newProgress;
-        });
-      }, 200);
-
       const fileSize = (file.size / 1024).toFixed(1);
-      const fileSizeUnit = file.size < 1024 * 1024 ? 'KB' : 'MB';
       const fileSizeFormatted = file.size < 1024 * 1024 
         ? `${fileSize} KB` 
         : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
@@ -207,6 +211,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         rows: rows.length,
         previewRows: previewData.rows.length
       });
+
+      // Set initial progress to 10%
+      setUploadProgress(10);
 
       // Insert into Supabase using direct fetch (Supabase client hangs)
       const { supabaseInsert } = await import('../../lib/supabaseHelpers');
@@ -226,11 +233,15 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       console.log('💾 Inserting dataset:', datasetData);
       console.log('📡 About to call supabaseInsert...');
       
+      // Update progress before insert
+      setUploadProgress(30);
+      
       const { data: insertedDatasets, error: insertError } = await supabaseInsert('datasets', datasetData);
       
       console.log('📡 supabaseInsert returned:', { data: insertedDatasets, error: insertError });
 
-      clearInterval(interval);
+      // Update progress after insert
+      setUploadProgress(80);
 
       if (insertError) {
         console.error('❌ Insert failed:', insertError);
@@ -241,7 +252,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         throw new Error('No data returned from insert');
       }
 
-      const newDataset = insertedDatasets[0];
+      const newDataset = insertedDatasets[0] as Dataset;
       
       console.log('✅ Dataset saved to Supabase:', newDataset);
       
@@ -264,6 +275,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         project_id: newDataset.project_id,
         preview_data: newDataset.preview_data
       };
+      
+      // Update progress before adding to context
+      setUploadProgress(90);
       
       await addDataset(datasetForContext);
       console.log('✅ Dataset added to local context');
