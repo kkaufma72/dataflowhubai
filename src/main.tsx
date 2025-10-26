@@ -14,6 +14,8 @@ import { NotificationProvider } from './components/common/NotificationSystem.tsx
 import { TourProvider } from './components/common/TourProvider.tsx';
 import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
+import SupabaseConfigError from './components/common/SupabaseConfigError.tsx';
+import { isSupabaseConfigured } from './lib/supabase.ts';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
@@ -92,100 +94,109 @@ function logError(error: Error, info: any) {
   console.error('Error caught by boundary:', error, info);
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary FallbackComponent={GlobalErrorFallback} onError={logError}>
-      <Router>
-        <AuthProvider>
-          <UserProvider>
-            <MLProvider>
-              <DemoProvider>
-                <AIChatProvider>
-                  <NotificationProvider>
-                    <TourProvider>
-                      <Toaster 
-                        position="top-right" 
-                        toastOptions={{
-                          duration: 3000,
-                          style: {
-                            background: '#FFFFFF',
-                            color: '#1F2937',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                            borderRadius: '0.375rem',
-                            padding: '0.75rem 1rem',
-                          },
-                          success: {
-                            iconTheme: {
-                              primary: '#10B981',
-                              secondary: '#FFFFFF',
-                            },
+// Check if Supabase is configured before rendering the full app
+if (!isSupabaseConfigured) {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <SupabaseConfigError />
+    </React.StrictMode>
+  );
+} else {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <ErrorBoundary FallbackComponent={GlobalErrorFallback} onError={logError}>
+        <Router>
+          <AuthProvider>
+            <UserProvider>
+              <MLProvider>
+                <DemoProvider>
+                  <AIChatProvider>
+                    <NotificationProvider>
+                      <TourProvider>
+                        <Toaster
+                          position="top-right"
+                          toastOptions={{
                             duration: 3000,
-                          },
-                          error: {
-                            iconTheme: {
-                              primary: '#EF4444',
-                              secondary: '#FFFFFF',
+                            style: {
+                              background: '#FFFFFF',
+                              color: '#1F2937',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              borderRadius: '0.375rem',
+                              padding: '0.75rem 1rem',
                             },
-                            duration: 4000,
-                          },
-                        }}
-                      />
-                      <Suspense fallback={<LoadingFallback />}>
-                        <Routes>
-                          {/* OAuth callback handler - must be before /app route */}
-                          <Route path="/app/auth/callback" element={<OAuthCallback />} />
-                          
-                          {/* Landing page and other public routes */}
-                          <Route path="/" element={<LandingPage />} />
-                          <Route path="/dashboard" element={<Navigate to="/app" replace />} />
-                          <Route path="/features" element={<div>Features Page</div>} />
-                          <Route path="/pricing" element={<PricingPage />} />
-                          <Route path="/documentation" element={<Documentation />} />
-                          <Route path="/api-reference" element={<APIReference />} />
-                          <Route path="/signin" element={<SignIn />} />
-                          <Route path="/password-reset" element={<PasswordReset />} />
-                          <Route path="/demo" element={<DemoPage />} />
-                          <Route path="/signup-complete" element={<SignupComplete />} />
+                            success: {
+                              iconTheme: {
+                                primary: '#10B981',
+                                secondary: '#FFFFFF',
+                              },
+                              duration: 3000,
+                            },
+                            error: {
+                              iconTheme: {
+                                primary: '#EF4444',
+                                secondary: '#FFFFFF',
+                              },
+                              duration: 4000,
+                            },
+                          }}
+                        />
+                        <Suspense fallback={<LoadingFallback />}>
+                          <Routes>
+                            {/* OAuth callback handler - must be before /app route */}
+                            <Route path="/app/auth/callback" element={<OAuthCallback />} />
 
-                          {/* Authenticated routes with layout */}
-                          <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                            <Route index element={<Dashboard />} />
-                            <Route path="data" element={<DataManagement />} />
-                            <Route path="dataset-overview" element={<DatasetOverview />} />
-                            <Route path="feature-engineering" element={<FeatureEngineering />} />
-                            <Route path="train" element={<ModelTraining />} />
-                            <Route path="evaluate" element={<ModelEvaluation />} />
-                            <Route path="deploy" element={<Deployment />} />
-                            <Route path="monitoring" element={<ModelMonitoring />} />
-                            <Route path="visualizations" element={<Visualizations />} />
-                            <Route path="pipeline" element={<PipelineBuilder />} />
-                            <Route path="profile" element={<UserProfile />} />
-                            <Route path="settings" element={<AccountSettings />} />
-                            <Route path="documentation" element={<Documentation />} />
-                            <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
-                            <Route path="api-management" element={<APIManagement />} />
-                            <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
-                            <Route path="documentation/api" element={<APIDocumentation />} />
-                            <Route path="usage" element={<UsageDashboard />} />
-                            <Route path="trash" element={<TrashBin />} />
-                          </Route>
+                            {/* Landing page and other public routes */}
+                            <Route path="/" element={<LandingPage />} />
+                            <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+                            <Route path="/features" element={<div>Features Page</div>} />
+                            <Route path="/pricing" element={<PricingPage />} />
+                            <Route path="/documentation" element={<Documentation />} />
+                            <Route path="/api-reference" element={<APIReference />} />
+                            <Route path="/signin" element={<SignIn />} />
+                            <Route path="/password-reset" element={<PasswordReset />} />
+                            <Route path="/demo" element={<DemoPage />} />
+                            <Route path="/signup-complete" element={<SignupComplete />} />
 
-                          <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                            <Route index element={<AsyncWorkloadDashboard />} />
-                          </Route>
+                            {/* Authenticated routes with layout */}
+                            <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                              <Route index element={<Dashboard />} />
+                              <Route path="data" element={<DataManagement />} />
+                              <Route path="dataset-overview" element={<DatasetOverview />} />
+                              <Route path="feature-engineering" element={<FeatureEngineering />} />
+                              <Route path="train" element={<ModelTraining />} />
+                              <Route path="evaluate" element={<ModelEvaluation />} />
+                              <Route path="deploy" element={<Deployment />} />
+                              <Route path="monitoring" element={<ModelMonitoring />} />
+                              <Route path="visualizations" element={<Visualizations />} />
+                              <Route path="pipeline" element={<PipelineBuilder />} />
+                              <Route path="profile" element={<UserProfile />} />
+                              <Route path="settings" element={<AccountSettings />} />
+                              <Route path="documentation" element={<Documentation />} />
+                              <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
+                              <Route path="api-management" element={<APIManagement />} />
+                              <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
+                              <Route path="documentation/api" element={<APIDocumentation />} />
+                              <Route path="usage" element={<UsageDashboard />} />
+                              <Route path="trash" element={<TrashBin />} />
+                            </Route>
 
-                          <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
-                          <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
-                      </Suspense>
-                    </TourProvider>
-                  </NotificationProvider>
-                </AIChatProvider>
-              </DemoProvider>
-            </MLProvider>
-          </UserProvider>
-        </AuthProvider>
-      </Router>
-    </ErrorBoundary>
-  </React.StrictMode>
-);
+                            <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+                              <Route index element={<AsyncWorkloadDashboard />} />
+                            </Route>
+
+                            <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                          </Routes>
+                        </Suspense>
+                      </TourProvider>
+                    </NotificationProvider>
+                  </AIChatProvider>
+                </DemoProvider>
+              </MLProvider>
+            </UserProvider>
+          </AuthProvider>
+        </Router>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+}
