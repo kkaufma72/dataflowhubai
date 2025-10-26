@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package } from 'lucide-react';
-const DndProvider = React.lazy(() => import('react-dnd').then(m => ({ default: m.DndProvider })));
-const loadHTML5Backend = () => import('react-dnd-html5-backend').then(m => m.HTML5Backend);
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
 import Button from '../components/common/Button';
@@ -32,7 +32,7 @@ const ModelTraining: React.FC = () => {
     f1Score: number;
     precision: number;
     recall: number;
-  } | null>(null);
+  } | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<'train' | 'compare' | 'versions' | 'export'>('train');
   const [crossValidationResults, setCrossValidationResults] = useState<any[] | null>(null);
 
@@ -197,7 +197,7 @@ const ModelTraining: React.FC = () => {
 
     setIsClusterTraining(true);
     setClusterProgress(0);
-    setClusterResults(null);
+    setClusterResults(undefined);
 
     toast.loading('Starting cluster training...', { id: 'cluster-training' });
 
@@ -248,10 +248,7 @@ const ModelTraining: React.FC = () => {
   };
 
   return (
-    <React.Suspense fallback={null}>
-      {/* Lazily load DnD backend to avoid pulling it into main bundle */}
-      {/* @ts-ignore */}
-      <DndProvider backend={loadHTML5Backend as any}>
+    <DndProvider backend={HTML5Backend}>
       <div>
         <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
           <div>
@@ -614,8 +611,7 @@ const ModelTraining: React.FC = () => {
           </div>
         )}
       </div>
-      </DndProvider>
-    </React.Suspense>
+    </DndProvider>
   );
 };
 
