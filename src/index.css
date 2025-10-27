@@ -8,6 +8,40 @@
     @apply bg-gray-950 text-gray-100;
   }
   
+  /* Ensure all text is readable on dark background */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-gray-100;
+  }
+  
+  p {
+    @apply text-gray-300;
+  }
+  
+  label {
+    @apply text-gray-300;
+  }
+  
+  /* Override any dark text colors */
+  .text-gray-900 {
+    @apply text-gray-100 !important;
+  }
+  
+  .text-gray-800 {
+    @apply text-gray-200 !important;
+  }
+  
+  .text-gray-700 {
+    @apply text-gray-300 !important;
+  }
+  
+  .text-gray-600 {
+    @apply text-gray-400 !important;
+  }
+  
+  .text-gray-500 {
+    @apply text-gray-500 !important;
+  }
+  
   /* Scrollbar styling for dark theme */
   ::-webkit-scrollbar {
     width: 10px;
