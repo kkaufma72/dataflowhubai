@@ -7,7 +7,7 @@ import Button from '../common/Button';
 import { useAuth } from '../auth/AuthProvider';
 import { UserProfile } from '../../utils/personalizedPrompts';
 import { runAgentOrchestrator } from '../../lib/aiAgents';
-import { getMarketingQuickActions, isMarketingUser } from '../../lib/agents/marketingAgent';
+import { getMarketingQuickActions, isMarketingUser } from '../../lib/agents/marketingAgentSimple';
 import { saveConversation, loadConversation, buildPromptWithMemory } from '../../lib/conversationMemory';
 import toast from 'react-hot-toast';
 
