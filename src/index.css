@@ -2,44 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Koyfin Dark Theme - Global Styles */
+/* Koyfin Dark Theme - Global Styles with Better Contrast */
 @layer base {
   body {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-gray-950 text-white;
   }
   
-  /* Ensure all text is readable on dark background */
+  /* Ensure all headings are very readable */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-100;
+    @apply text-white font-semibold;
   }
   
+  /* Paragraphs and text */
   p {
-    @apply text-gray-300;
+    @apply text-gray-200;
   }
   
+  /* Labels */
   label {
-    @apply text-gray-300;
-  }
-  
-  /* Override any dark text colors */
-  .text-gray-900 {
-    @apply text-gray-100 !important;
-  }
-  
-  .text-gray-800 {
-    @apply text-gray-200 !important;
-  }
-  
-  .text-gray-700 {
-    @apply text-gray-300 !important;
-  }
-  
-  .text-gray-600 {
-    @apply text-gray-400 !important;
-  }
-  
-  .text-gray-500 {
-    @apply text-gray-500 !important;
+    @apply text-gray-200 font-medium;
   }
   
   /* Scrollbar styling for dark theme */
@@ -69,17 +50,27 @@
   
   /* Terminal text */
   .terminal-text {
-    @apply text-gray-100 font-mono;
+    @apply text-white font-mono;
   }
   
   /* Terminal label */
   .terminal-label {
-    @apply text-xs font-medium text-gray-400 uppercase tracking-wider;
+    @apply text-xs font-medium text-gray-300 uppercase tracking-wider;
   }
   
   /* Terminal metric */
   .terminal-metric {
-    @apply text-3xl font-bold text-gray-100 font-mono;
+    @apply text-3xl font-bold text-white font-mono;
+  }
+  
+  /* Page headers */
+  .page-header {
+    @apply text-white font-bold;
+  }
+  
+  /* Descriptive text */
+  .page-description {
+    @apply text-gray-300;
   }
   
   /* Terminal list item */
@@ -119,20 +110,25 @@
   @apply bg-gray-900 border border-gray-800 rounded-lg p-4;
 }
 
-/* Input dark theme */
+/* Input dark theme - Better contrast */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
 select,
 textarea {
-  @apply bg-gray-900 border-gray-800 text-gray-100;
-  @apply focus:border-indigo-500 focus:ring-indigo-500;
+  @apply bg-gray-800 border-gray-700 text-white;
+  @apply focus:border-indigo-400 focus:ring-indigo-400 focus:bg-gray-900;
 }
 
 input::placeholder,
 textarea::placeholder {
-  @apply text-gray-500;
+  @apply text-gray-400;
+}
+
+/* Button text */
+button {
+  @apply text-white;
 }
 
 /* Button dark theme overrides */
@@ -150,11 +146,11 @@ thead {
 }
 
 th {
-  @apply text-gray-400 font-semibold uppercase tracking-wider text-xs;
+  @apply text-gray-200 font-semibold uppercase tracking-wider text-xs;
 }
 
 td {
-  @apply text-gray-300 border-b border-gray-800;
+  @apply text-gray-100 border-b border-gray-800;
 }
 
 tr:hover {
