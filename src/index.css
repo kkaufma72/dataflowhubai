@@ -2,80 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Koyfin Dark Theme - Global Styles with Better Contrast */
+/* Clean Light Theme - Better Readability */
 @layer base {
   body {
-    @apply bg-gray-950 text-white;
+    @apply bg-white text-gray-900 text-base leading-relaxed;
+    font-size: 16px; /* Larger base font size */
   }
   
-  /* Ensure all headings are very readable */
+  /* Headings with better contrast and sizing */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-white font-semibold;
+    @apply text-gray-900 font-semibold leading-tight;
   }
   
-  /* Paragraphs and text */
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-2xl; }
+  h4 { @apply text-xl; }
+  h5 { @apply text-lg; }
+  h6 { @apply text-base; }
+  
+  /* Paragraphs and text - larger and more readable */
   p {
-    @apply text-gray-200;
+    @apply text-gray-700 text-base leading-relaxed;
   }
   
   /* Labels */
   label {
-    @apply text-gray-200 font-medium;
+    @apply text-gray-800 font-medium text-base;
   }
   
-  /* Scrollbar styling for dark theme */
+  /* Better readability for small text */
+  .text-xs { font-size: 0.875rem; }
+  .text-sm { font-size: 1rem; }
+  
+  /* Clean scrollbar styling */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-gray-900;
+    @apply bg-gray-100;
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-700 rounded-lg;
+    @apply bg-gray-400 rounded-lg;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-600;
+    @apply bg-gray-500;
   }
 }
 
 @layer components {
-  /* Terminal-style card */
+  /* Clean card styles - better readability */
   .terminal-card {
-    @apply bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors;
+    @apply bg-white border border-gray-200 rounded-lg hover:border-gray-300 shadow-sm hover:shadow-md transition-all;
   }
   
-  /* Terminal text */
+  /* Readable text */
   .terminal-text {
-    @apply text-white font-mono;
+    @apply text-gray-900 font-sans text-base;
   }
   
-  /* Terminal label */
+  /* Clean labels - larger and more readable */
   .terminal-label {
-    @apply text-xs font-medium text-gray-300 uppercase tracking-wider;
+    @apply text-sm font-semibold text-gray-700 uppercase tracking-wide;
   }
   
-  /* Terminal metric */
+  /* Large, readable metrics */
   .terminal-metric {
-    @apply text-3xl font-bold text-white font-mono;
+    @apply text-4xl font-bold text-gray-900 font-sans;
   }
   
-  /* Page headers */
+  /* Page headers - larger and more readable */
   .page-header {
-    @apply text-white font-bold;
+    @apply text-gray-900 font-bold text-3xl;
   }
   
-  /* Descriptive text */
+  /* Descriptive text - better contrast */
   .page-description {
-    @apply text-gray-300;
+    @apply text-gray-700 text-lg leading-relaxed;
   }
   
-  /* Terminal list item */
+  /* Clean list items */
   .terminal-list-item {
-    @apply flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 transition-all;
+    @apply flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200;
   }
   
   /* Status indicator */
@@ -105,63 +117,100 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Chart container dark theme */
+/* Chart container - clean light theme */
 .chart-container {
-  @apply bg-gray-900 border border-gray-800 rounded-lg p-4;
+  @apply bg-white border border-gray-200 rounded-lg p-6 shadow-sm;
 }
 
-/* Input dark theme - Better contrast */
+/* Input styles - clean and readable */
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
 select,
 textarea {
-  @apply bg-gray-800 border-gray-700 text-white;
-  @apply focus:border-indigo-400 focus:ring-indigo-400 focus:bg-gray-900;
+  @apply bg-white border-2 border-gray-300 text-gray-900 text-base px-4 py-3 rounded-lg;
+  @apply focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:bg-white;
+  @apply hover:border-gray-400 transition-all;
 }
 
 input::placeholder,
 textarea::placeholder {
-  @apply text-gray-400;
+  @apply text-gray-500 text-base;
 }
 
-/* Button text */
+/* Button styles - better readability */
 button {
+  @apply text-base font-semibold px-4 py-2 rounded-lg transition-all;
+}
+
+/* Primary buttons */
+.bg-indigo-600 {
   @apply text-white;
 }
 
-/* Button dark theme overrides */
-button:not(.btn-light) {
-  @apply transition-all;
+/* Secondary buttons */
+.bg-gray-100, .bg-gray-200 {
+  @apply text-gray-900;
 }
 
-/* Table dark theme */
+/* Utility classes for better readability */
+.readable-text {
+  @apply text-base leading-relaxed text-gray-800;
+}
+
+.readable-heading {
+  @apply text-2xl font-bold text-gray-900 mb-4;
+}
+
+.readable-card {
+  @apply bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-all;
+}
+
+/* Improved spacing for better readability */
+.content-spacing > * + * {
+  margin-top: 1.5rem;
+}
+
+/* Make sure all text is easily readable */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Table light theme - better readability */
 table {
-  @apply bg-gray-900;
-}
-
-thead {
-  @apply bg-gray-800 border-b border-gray-700;
+  @apply bg-white border border-gray-200 text-base;
 }
 
 th {
-  @apply text-gray-200 font-semibold uppercase tracking-wider text-xs;
+  @apply bg-gray-50 text-gray-900 font-semibold text-base px-4 py-3;
 }
 
 td {
-  @apply text-gray-100 border-b border-gray-800;
+  @apply text-gray-800 px-4 py-3 border-t border-gray-200;
 }
 
 tr:hover {
-  @apply bg-gray-800/50;
+  @apply bg-gray-50;
 }
 
-/* Modal dark theme */
+thead {
+  @apply bg-gray-50 border-b border-gray-200;
+}
+
+/* th styles already defined above */
+
+/* td styles already defined above */
+
+/* tr:hover styles already defined above */
+
+/* Modal light theme - better readability */
 .modal-overlay {
-  @apply bg-black/70 backdrop-blur-sm;
+  @apply bg-black/40 backdrop-blur-sm;
 }
 
 .modal-content {
-  @apply bg-gray-900 border border-gray-800 text-gray-100;
+  @apply bg-white border border-gray-300 text-gray-900 shadow-xl rounded-lg;
 }
