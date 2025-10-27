@@ -4,10 +4,12 @@ import Card from '../components/common/Card';
 import DataUploader from '../components/data/DataUploader';
 import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
-import { Dataset } from '../types';
-import { Database, Upload, X, Sparkles, MessageSquare, Shield, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
+import { Dataset, Project } from '../types';
+import { Database, Upload, X, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
+import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
@@ -30,6 +32,7 @@ const LoadingFallback: React.FC = () => (
 const DataManagement: React.FC = () => {
   const { datasets, currentProject, addDataset } = useMLContext();
   const { user } = useAuth();
+  const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
@@ -44,6 +47,10 @@ const DataManagement: React.FC = () => {
   const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Move dataset state
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [datasetToMove, setDatasetToMove] = useState<Dataset | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -155,6 +162,51 @@ const DataManagement: React.FC = () => {
     }
   }, [addDataset]);
 
+  // Move dataset handlers
+  const handleMoveDataset = useCallback((dataset: Dataset) => {
+    setDatasetToMove(dataset);
+    setShowMoveModal(true);
+  }, []);
+
+  const handleConfirmMove = useCallback(async (targetProject: Project) => {
+    if (!datasetToMove || !user) return;
+    
+    const result = await moveDatasetToProject(
+      datasetToMove.id, 
+      targetProject.id, 
+      targetProject.name, 
+      user.id
+    );
+    
+    if (result.success) {
+      // Refresh datasets - in a real app you'd want to update the context
+      window.location.reload();
+    }
+    
+    setShowMoveModal(false);
+    setDatasetToMove(null);
+  }, [datasetToMove, user, moveDatasetToProject]);
+
+  const handleCloseMoveModal = useCallback(() => {
+    setShowMoveModal(false);
+    setDatasetToMove(null);
+  }, []);
+
+  // Delete and archive handlers
+  const handleDeleteDataset = useCallback(async (dataset: Dataset) => {
+    if (!user) return;
+    await deleteDataset(dataset, user.id);
+    // Refresh datasets - in a real app you'd want to update the context
+    window.location.reload();
+  }, [user, deleteDataset]);
+
+  const handleArchiveDataset = useCallback(async (dataset: Dataset) => {
+    if (!user) return;
+    await archiveDataset(dataset, user.id);
+    // Refresh datasets - in a real app you'd want to update the context  
+    window.location.reload();
+  }, [user, archiveDataset]);
+
   const handleCloseUploader = useCallback(() => {
     setShowUploader(false);
   }, []);
@@ -176,25 +228,31 @@ const DataManagement: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const result = generateSyntheticDataset({ 
-        name: `${generatorType}-sample`, 
-        type: generatorType as 'marketing' | 'sales' | 'customer', 
-        rowCount 
-      });
-      const { columns, data } = result;
+      // Map our generator type to available types in the synthetic data generator
+      const typeMapping: Record<string, 'marketing' | 'financial' | 'ecommerce'> = {
+        'marketing': 'marketing',
+        'sales': 'ecommerce', // Map sales to ecommerce data
+        'customer': 'financial' // Map customer to financial data
+      };
       
-      const { data: newDataset, error } = await supabase
+      const result = generateSyntheticDataset(
+        typeMapping[generatorType] || 'marketing', 
+        rowCount 
+      );
+      const { columns, rows } = result;
+      
+      const { error } = await supabase
         .from('datasets')
         .insert([{
           name: `${generatorType.charAt(0).toUpperCase() + generatorType.slice(1)} Sample Dataset`,
           description: `Synthetic ${generatorType} dataset with ${rowCount} rows`,
           file_type: 'csv',
-          file_size: `${(data.length * columns.length * 10 / 1024).toFixed(2)} KB`,
-          row_count: data.length,
+          file_size: `${(rows.length * columns.length * 10 / 1024).toFixed(2)} KB`,
+          row_count: rows.length,
           column_count: columns.length,
           preview_data: {
             columns: columns,
-            rows: data.slice(0, 100)
+            rows: rows.slice(0, 100)
           },
           project_id: currentProject.id,
           user_id: user.id
@@ -291,7 +349,11 @@ const DataManagement: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              <DataConnector onClose={handleCloseConnector} />
+              <DataConnector onConnect={(connection) => {
+                console.log('Connected to:', connection);
+                toast.success(`Connected to ${connection.name}`);
+                handleCloseConnector();
+              }} />
             </div>
           </div>
         </div>
@@ -403,6 +465,9 @@ const DataManagement: React.FC = () => {
                   onQualityCheck={handleQualityCheck}
                   onChat={openChat}
                   onTransform={handleTransform}
+                  onMove={handleMoveDataset}
+                  onDelete={handleDeleteDataset}
+                  onArchive={handleArchiveDataset}
                 />
               ))}
             </div>
@@ -687,6 +752,15 @@ const DataManagement: React.FC = () => {
           />
         </Suspense>
       )}
+
+      {/* Move Dataset Modal */}
+      <ProjectSelectorModal
+        isOpen={showMoveModal}
+        onClose={handleCloseMoveModal}
+        onSelectProject={handleConfirmMove}
+        currentProjectId={currentProject?.id}
+        datasetName={datasetToMove?.name || ''}
+      />
     </div>
   );
 };

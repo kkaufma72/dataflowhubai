@@ -149,11 +149,91 @@ export const useDatasetActions = () => {
     }
   };
 
+  /**
+   * Move dataset to a different project
+   */
+  const moveDatasetToProject = async (datasetId: string, targetProjectId: string, targetProjectName: string, userId: string) => {
+    try {
+      console.log('Moving dataset:', { datasetId, targetProjectId, targetProjectName, userId });
+
+      // First, verify the user owns the dataset
+      const { data: dataset, error: selectError } = await supabase
+        .from('datasets')
+        .select('id, name, user_id, project_id')
+        .eq('id', datasetId)
+        .eq('user_id', userId)
+        .single();
+
+      if (selectError) {
+        console.error('Error selecting dataset:', selectError);
+        throw new Error('Dataset not found or access denied');
+      }
+
+      if (!dataset) {
+        throw new Error('Dataset not found or you do not have permission to move it');
+      }
+
+      console.log('Found dataset:', dataset);
+
+      // Verify the target project exists and user has access
+      const { data: targetProject, error: projectError } = await supabase
+        .from('projects')
+        .select('id, name')
+        .eq('id', targetProjectId)
+        .single();
+
+      if (projectError || !targetProject) {
+        console.error('Error finding target project:', projectError);
+        throw new Error('Target project not found or access denied');
+      }
+
+      console.log('Target project verified:', targetProject);
+
+      // Now perform the move
+      const { error: updateError } = await supabase
+        .from('datasets')
+        .update({
+          project_id: targetProjectId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', datasetId)
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('Update error details:', updateError);
+        throw updateError;
+      }
+
+      console.log('Dataset moved successfully');
+      toast.success(`Dataset "${dataset.name}" moved to "${targetProjectName}" successfully`);
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('Error moving dataset:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to move dataset';
+      if (error.message.includes('not found')) {
+        errorMessage = 'Dataset or target project not found';
+      } else if (error.message.includes('access denied') || error.message.includes('permission')) {
+        errorMessage = 'Permission denied - you can only move your own datasets';
+      } else if (error.code === 'PGRST116') {
+        errorMessage = 'Dataset not found or access denied';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
+      return { success: false, error };
+    }
+  };
+
   return {
     deleteDataset,
     archiveDataset,
     restoreDataset,
     permanentlyDelete,
+    moveDatasetToProject,
     isDeleting,
     isArchiving
   };
