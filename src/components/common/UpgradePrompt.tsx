@@ -83,7 +83,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-purple-600 mb-2">
           {featureInfo.title}
         </h2>
         <p className="text-gray-600">
@@ -110,7 +110,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-sm text-gray-600 mb-1">Current Plan</p>
-          <p className="text-2xl font-bold text-gray-900">Free</p>
+          <p className="text-2xl font-bold text-purple-600">Free</p>
           <p className="text-xs text-gray-500 mt-2">
             3 datasets • 20 AI questions/month
           </p>

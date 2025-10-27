@@ -317,7 +317,7 @@ const DatasetInsights: React.FC = () => {
     return (
       <div className="text-center py-12">
         <Database className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">No Datasets Available</h2>
+        <h2 className="text-2xl font-bold text-purple-600 mb-2">No Datasets Available</h2>
         <p className="text-gray-600 mb-4">Upload datasets to view insights and visualizations.</p>
         <Button onClick={() => navigate('/app/data')}>
           Go to Data Management
@@ -331,7 +331,7 @@ const DatasetInsights: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dataset Insights</h1>
+          <h1 className="text-2xl font-bold text-purple-600">Dataset Insights</h1>
           <p className="mt-1 text-sm text-gray-500">
             Comprehensive analytics and visualizations for your datasets
           </p>
@@ -381,7 +381,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Datasets</p>
-                  <p className="text-2xl font-bold text-gray-900">{datasets.length}</p>
+                  <p className="text-2xl font-bold text-purple-600">{datasets.length}</p>
                 </div>
               </div>
             </Card>
@@ -393,7 +393,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Rows</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-purple-600">
                     {stats.totalRows.toLocaleString()}
                   </p>
                 </div>
@@ -407,7 +407,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Columns</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-purple-600">
                     {stats.totalColumns.toLocaleString()}
                   </p>
                 </div>
@@ -421,7 +421,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Avg Rows/Dataset</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-purple-600">
                     {stats.avgRows.toLocaleString()}
                   </p>
                 </div>

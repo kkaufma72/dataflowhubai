@@ -141,7 +141,7 @@ const UserGuideDetail: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Guide Not Found</h1>
+          <h1 className="text-2xl font-bold text-purple-600">Guide Not Found</h1>
           <p className="mt-2 text-gray-600">The guide you're looking for doesn't exist or has been moved.</p>
           <Button
             className="mt-4"

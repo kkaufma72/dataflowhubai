@@ -340,7 +340,7 @@ print(prediction)`;
     <div>
       <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Model Deployment</h1>
+          <h1 className="text-2xl font-bold text-purple-600">Model Deployment</h1>
           <p className="mt-1 text-sm text-gray-500">
             Deploy your models and make them available as APIs
           </p>

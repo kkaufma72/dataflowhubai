@@ -300,7 +300,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
           <div className="space-y-8">
             {/* Features Grid */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Features</h2>
+              <h2 className="text-2xl font-bold text-purple-600 mb-6">Key Features</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
@@ -352,7 +352,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'search' && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Knowledge Search</h2>
+            <h2 className="text-2xl font-bold text-purple-600 mb-6">Knowledge Search</h2>
             <div className="bg-white rounded-lg border border-gray-200">
               <KnowledgeSearchPanel
                 onResultClick={(result) => {
@@ -367,7 +367,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'chat' && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Enhanced AI Chat</h2>
+            <h2 className="text-2xl font-bold text-purple-600 mb-6">Enhanced AI Chat</h2>
             <div className="h-[600px]">
               <EnhancedRAGChat
                 dataset={demoDataset}
@@ -383,7 +383,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'workflow' && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Use Cases & Workflows</h2>
+            <h2 className="text-2xl font-bold text-purple-600 mb-6">Use Cases & Workflows</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {useCases.map((useCase, index) => (

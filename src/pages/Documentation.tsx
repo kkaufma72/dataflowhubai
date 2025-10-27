@@ -11,7 +11,7 @@ const Documentation: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Documentation</h1>
+        <h1 className="text-2xl font-bold text-purple-600">Documentation</h1>
         <p className="mt-1 text-sm text-gray-500">
           Learn how to use and integrate with our AutoML platform
         </p>

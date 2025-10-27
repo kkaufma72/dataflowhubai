@@ -120,7 +120,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Storage Used</h3>
-          <p className="text-2xl font-bold text-gray-900 mb-2">
+          <p className="text-2xl font-bold text-purple-600 mb-2">
             {formatBytes(stats.storageUsed)}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
@@ -150,7 +150,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Datasets</h3>
-          <p className="text-2xl font-bold text-gray-900 mb-2">
+          <p className="text-2xl font-bold text-purple-600 mb-2">
             {stats.datasetsCount}
           </p>
           {stats.datasetsLimit !== Infinity ? (
@@ -181,7 +181,7 @@ const UsageDashboard: React.FC = () => {
             </span>
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Models Trained</h3>
-          <p className="text-2xl font-bold text-gray-900 mb-2">
+          <p className="text-2xl font-bold text-purple-600 mb-2">
             {stats.modelsCreated}
           </p>
           <p className="text-xs text-gray-500">
@@ -205,7 +205,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">API Calls</h3>
-          <p className="text-2xl font-bold text-gray-900 mb-2">
+          <p className="text-2xl font-bold text-purple-600 mb-2">
             {stats.apiCallsThisMonth.toLocaleString()}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
@@ -304,14 +304,14 @@ const UsageDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <div className="text-sm text-gray-600 mb-1">Account Age</div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-purple-600">
               {stats.accountAge} {stats.accountAge === 1 ? 'day' : 'days'}
             </div>
           </div>
           <div>
             <div className="text-sm text-gray-600 mb-1">Current Streak</div>
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-gray-900">{stats.streak}</div>
+              <div className="text-2xl font-bold text-purple-600">{stats.streak}</div>
               {stats.streak > 0 && <span className="text-2xl">🔥</span>}
             </div>
           </div>

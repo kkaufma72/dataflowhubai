@@ -30,7 +30,7 @@ const UserGuide: React.FC<UserGuideProps> = ({
           <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
             <Book className="w-6 h-6 text-indigo-600" />
           </div>
-          <h1 className="ml-4 text-2xl font-bold text-gray-900">{title}</h1>
+          <h1 className="ml-4 text-2xl font-bold text-purple-600">{title}</h1>
         </div>
         <p className="text-gray-600">{description}</p>
       </div>

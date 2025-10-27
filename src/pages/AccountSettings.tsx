@@ -276,7 +276,7 @@ const AccountSettings: React.FC = () => {
   if (!userProfile) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900">Account Not Found</h2>
+        <h2 className="text-2xl font-bold text-purple-600">Account Not Found</h2>
         <p className="mt-2 text-gray-600">Please sign in to view your account settings.</p>
       </div>
     );
@@ -284,7 +284,7 @@ const AccountSettings: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h1>
+      <h1 className="text-2xl font-bold text-purple-600 mb-6">Account Settings</h1>
       
       <div className="bg-white shadow rounded-lg">
         <div className="border-b border-gray-200">

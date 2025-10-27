@@ -136,7 +136,7 @@ const UserProfile: React.FC = () => {
   if (!userProfile && user) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">User Profile</h1>
+        <h1 className="text-2xl font-bold text-purple-600 mb-6">User Profile</h1>
         
         <Card>
           <div className="text-center py-12">
@@ -168,7 +168,7 @@ const UserProfile: React.FC = () => {
   if (!userProfile && !user) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900">Profile Not Found</h2>
+        <h2 className="text-2xl font-bold text-purple-600">Profile Not Found</h2>
         <p className="mt-2 text-gray-600">Please sign in to view your profile.</p>
       </div>
     );
@@ -176,7 +176,7 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">User Profile</h1>
+      <h1 className="text-2xl font-bold text-purple-600 mb-6">User Profile</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Card */}

@@ -26,7 +26,7 @@ const SignupComplete: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
         <div className="text-center">
           <Loader className="h-12 w-12 text-indigo-600 animate-spin mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-purple-600 mb-2">
             Processing your payment...
           </h2>
           <p className="text-gray-600">Please wait while we set up your account.</p>
@@ -43,7 +43,7 @@ const SignupComplete: React.FC = () => {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-purple-600 mb-2">
               Something went wrong
             </h2>
             <p className="text-gray-600 mb-6">

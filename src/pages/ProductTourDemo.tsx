@@ -248,7 +248,7 @@ const ProductTourDemo: React.FC = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-100">Datasets</p>
+                  <p className="text-sm text-gray-600">Datasets</p>
                   <p className="text-3xl font-bold text-blue-600">{DEMO_DATASETS.length}</p>
                 </div>
                 <Database className="w-10 h-10 text-blue-500" />
@@ -259,7 +259,7 @@ const ProductTourDemo: React.FC = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-100">Models</p>
+                  <p className="text-sm text-gray-600">Models</p>
                   <p className="text-3xl font-bold text-purple-600">{DEMO_MODELS.length}</p>
                 </div>
                 <Brain className="w-10 h-10 text-purple-500" />
@@ -270,7 +270,7 @@ const ProductTourDemo: React.FC = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-100">Daily Predictions</p>
+                  <p className="text-sm text-gray-600">Daily Predictions</p>
                   <p className="text-3xl font-bold text-green-600">2.4B</p>
                 </div>
                 <TrendingUp className="w-10 h-10 text-green-500" />
@@ -281,7 +281,7 @@ const ProductTourDemo: React.FC = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-100">Accuracy</p>
+                  <p className="text-sm text-gray-600">Accuracy</p>
                   <p className="text-3xl font-bold text-indigo-600">96.7%</p>
                 </div>
                 <Target className="w-10 h-10 text-indigo-500" />
@@ -291,15 +291,15 @@ const ProductTourDemo: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white text-white">ML Workflow Progress</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">ML Workflow Progress</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">Enterprise Data Pipeline</p>
-                  <p className="text-sm text-gray-100">127 datasets • 25.6GB processed • 99.7% quality</p>
+                  <p className="font-medium text-gray-900">Enterprise Data Pipeline</p>
+                  <p className="text-sm text-gray-600">127 datasets • 25.6GB processed • 99.7% quality</p>
                 </div>
                 <span className="text-green-600 font-medium">Production Ready</span>
               </div>
@@ -309,8 +309,8 @@ const ProductTourDemo: React.FC = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">Advanced Feature Engineering</p>
-                  <p className="text-sm text-gray-100">1,247 features • Auto-generated insights • Real-time optimization</p>
+                  <p className="font-medium text-gray-900">Advanced Feature Engineering</p>
+                  <p className="text-sm text-gray-600">1,247 features • Auto-generated insights • Real-time optimization</p>
                 </div>
                 <span className="text-green-600 font-medium">Complete</span>
               </div>
@@ -320,8 +320,8 @@ const ProductTourDemo: React.FC = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-white">AI Model Deployment</p>
-                  <p className="text-sm text-gray-100">{DEMO_MODELS.length} models • 96.7% avg accuracy • 2.4B daily predictions</p>
+                  <p className="font-medium text-gray-900">AI Model Deployment</p>
+                  <p className="text-sm text-gray-600">{DEMO_MODELS.length} models • 96.7% avg accuracy • 2.4B daily predictions</p>
                 </div>
                 <span className="text-green-600 font-medium">Production Scale</span>
               </div>
@@ -340,7 +340,7 @@ const ProductTourDemo: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white flex items-center text-white">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center text-gray-900">
                 <Upload className="w-5 h-5 mr-2" />
                 Data Sources
               </h3>
@@ -348,9 +348,9 @@ const ProductTourDemo: React.FC = () => {
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <Database className="w-5 h-5 text-white" />
+                      <Database className="w-5 h-5 text-gray-900" />
                     </div>
-                    <span className="font-medium text-white">CSV Upload</span>
+                    <span className="font-medium text-gray-900">CSV Upload</span>
                   </div>
                   <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
@@ -358,9 +358,9 @@ const ProductTourDemo: React.FC = () => {
                 <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <Cpu className="w-5 h-5 text-white" />
+                      <Cpu className="w-5 h-5 text-gray-900" />
                     </div>
-                    <span className="font-medium text-white">API Connections</span>
+                    <span className="font-medium text-gray-900">API Connections</span>
                   </div>
                   <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
@@ -368,9 +368,9 @@ const ProductTourDemo: React.FC = () => {
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                      <Database className="w-5 h-5 text-white" />
+                      <Database className="w-5 h-5 text-gray-900" />
                     </div>
-                    <span className="font-medium text-white">Database Sync</span>
+                    <span className="font-medium text-gray-900">Database Sync</span>
                   </div>
                   <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
@@ -378,7 +378,7 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
                 <Shield className="w-5 h-5 mr-2" />
                 Data Quality Score
               </h3>
@@ -386,7 +386,7 @@ const ProductTourDemo: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Completeness</span>
-                    <span className="text-sm text-gray-100">96%</span>
+                    <span className="text-sm text-gray-600">96%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-green-500 h-2 rounded-full" style={{width: '96%'}}></div>
@@ -396,7 +396,7 @@ const ProductTourDemo: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Consistency</span>
-                    <span className="text-sm text-gray-100">94%</span>
+                    <span className="text-sm text-gray-600">94%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-blue-500 h-2 rounded-full" style={{width: '94%'}}></div>
@@ -406,7 +406,7 @@ const ProductTourDemo: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Accuracy</span>
-                    <span className="text-sm text-gray-100">98%</span>
+                    <span className="text-sm text-gray-600">98%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-purple-500 h-2 rounded-full" style={{width: '98%'}}></div>
@@ -423,7 +423,7 @@ const ProductTourDemo: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white">Available Datasets</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Available Datasets</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {DEMO_DATASETS.map((dataset) => (
                 <div 
@@ -436,7 +436,7 @@ const ProductTourDemo: React.FC = () => {
                   onClick={() => setSelectedDataset(dataset)}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-white">{dataset.name}</h4>
+                    <h4 className="font-medium text-gray-900">{dataset.name}</h4>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       dataset.status === 'active' 
                         ? 'bg-green-100 text-green-800' 
@@ -445,8 +445,8 @@ const ProductTourDemo: React.FC = () => {
                       {dataset.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-100 mb-3">{dataset.description}</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-200">
+                  <p className="text-sm text-gray-600 mb-3">{dataset.description}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
                     <div>Rows: {dataset.rows.toLocaleString()}</div>
                     <div>Cols: {dataset.columns}</div>
                     <div>Size: {dataset.size}</div>
@@ -458,13 +458,13 @@ const ProductTourDemo: React.FC = () => {
             
             {selectedDataset && (
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium mb-2 text-white">Data Preview - {selectedDataset.name}</h4>
+                <h4 className="font-medium mb-2 text-gray-900">Data Preview - {selectedDataset.name}</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-100">
                         {selectedDataset.preview.columns.map((col) => (
-                          <th key={col} className="px-3 py-2 text-left font-medium text-white">{col}</th>
+                          <th key={col} className="px-3 py-2 text-left font-medium text-gray-900">{col}</th>
                         ))}
                       </tr>
                     </thead>
@@ -472,7 +472,7 @@ const ProductTourDemo: React.FC = () => {
                       {selectedDataset.preview.data.map((row, idx) => (
                         <tr key={idx} className="border-t">
                           {selectedDataset.preview.columns.map((col) => (
-                            <td key={col} className="px-3 py-2 text-gray-100">{row[col]}</td>
+                            <td key={col} className="px-3 py-2 text-gray-600">{(row as any)[col]}</td>
                           ))}
                         </tr>
                       ))}
@@ -495,14 +495,14 @@ const ProductTourDemo: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Chat with Your Data
               </h3>
               
               <div className="h-64 overflow-y-auto bg-gray-50 rounded-lg p-4 mb-4">
                 {chatMessages.length === 0 && (
-                  <div className="text-center text-gray-200 mt-16">
+                  <div className="text-center text-gray-700 mt-16">
                     <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Ask me anything about your datasets!</p>
                   </div>
@@ -512,7 +512,7 @@ const ProductTourDemo: React.FC = () => {
                   <div key={idx} className={`mb-4 ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
                     <div className={`inline-block p-3 rounded-lg max-w-xs ${
                       msg.type === 'user' 
-                        ? 'bg-blue-500 text-white' 
+                        ? 'bg-blue-500 text-gray-900' 
                         : 'bg-white border border-gray-200'
                     }`}>
                       {msg.content}
@@ -527,7 +527,7 @@ const ProductTourDemo: React.FC = () => {
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask about your data..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-300"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-300"
                 />
                 <Button type="submit" variant="primary">
                   Send
@@ -535,7 +535,7 @@ const ProductTourDemo: React.FC = () => {
               </form>
               
               <div className="mt-4">
-                <p className="text-sm text-gray-100 mb-2">Try asking:</p>
+                <p className="text-sm text-gray-600 mb-2">Try asking:</p>
                 <div className="space-y-1">
                   {[
                     "What's the average purchase amount by age group?",
@@ -555,14 +555,14 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Recent Insights</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Recent Insights</h3>
               <div className="space-y-4">
                 {DEMO_CHAT_CONVERSATIONS.map((conv) => (
                   <div key={conv.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="mb-2">
-                      <p className="text-sm font-medium text-white">Q: {conv.question}</p>
+                      <p className="text-sm font-medium text-gray-900">Q: {conv.question}</p>
                     </div>
-                    <div className="text-sm text-gray-100 bg-gray-50 p-3 rounded">
+                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
                       {conv.answer}
                     </div>
                   </div>
@@ -572,24 +572,24 @@ const ProductTourDemo: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white">AI Capabilities</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">AI Capabilities</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <BarChart2 className="w-8 h-8 text-blue-600 mb-2" />
                 <h4 className="font-medium mb-1">Smart Analytics</h4>
-                <p className="text-sm text-gray-100">Automatically discover patterns and correlations in your data</p>
+                <p className="text-sm text-gray-600">Automatically discover patterns and correlations in your data</p>
               </div>
               
               <div className="p-4 bg-purple-50 rounded-lg">
                 <Brain className="w-8 h-8 text-purple-600 mb-2" />
                 <h4 className="font-medium mb-1">ML Recommendations</h4>
-                <p className="text-sm text-gray-100">Get suggestions for feature engineering and model selection</p>
+                <p className="text-sm text-gray-600">Get suggestions for feature engineering and model selection</p>
               </div>
               
               <div className="p-4 bg-green-50 rounded-lg">
                 <Sparkles className="w-8 h-8 text-green-600 mb-2" />
                 <h4 className="font-medium mb-1">Auto Insights</h4>
-                <p className="text-sm text-gray-100">Receive proactive insights and anomaly detection</p>
+                <p className="text-sm text-gray-600">Receive proactive insights and anomaly detection</p>
               </div>
             </div>
           </Card>
@@ -605,7 +605,7 @@ const ProductTourDemo: React.FC = () => {
       component: (
         <div className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
               <Sparkles className="w-5 h-5 mr-2" />
               Feature Transformation Pipeline
             </h3>
@@ -632,7 +632,7 @@ const ProductTourDemo: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-sm">{transform.name}</p>
-                          <p className="text-xs text-gray-100">{transform.description}</p>
+                          <p className="text-xs text-gray-600">{transform.description}</p>
                         </div>
                         {transform.applied && <CheckCircle className="w-4 h-4 text-green-600" />}
                       </div>
@@ -652,7 +652,7 @@ const ProductTourDemo: React.FC = () => {
                   ].map((feature) => (
                     <div key={feature.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{feature.name}</p>
+                        <p className="text-sm font-medium text-gray-900">{feature.name}</p>
                         <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                           <div 
                             className="bg-blue-500 h-2 rounded-full" 
@@ -670,7 +670,7 @@ const ProductTourDemo: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Automated Feature Selection</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Automated Feature Selection</h3>
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Correlation Analysis</h4>
@@ -689,21 +689,21 @@ const ProductTourDemo: React.FC = () => {
               </div>
               
               <div className="mt-4 text-center">
-                <p className="text-sm text-gray-100">
+                <p className="text-sm text-gray-600">
                   Final feature count: <span className="font-bold text-green-600">24 features</span>
                 </p>
               </div>
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Data Preprocessing</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Data Preprocessing</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <span className="text-sm">Missing Value Imputation</span>
                   </div>
-                  <span className="text-sm text-gray-100">2.3% filled</span>
+                  <span className="text-sm text-gray-600">2.3% filled</span>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -711,7 +711,7 @@ const ProductTourDemo: React.FC = () => {
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <span className="text-sm">Outlier Detection</span>
                   </div>
-                  <span className="text-sm text-gray-100">0.8% flagged</span>
+                  <span className="text-sm text-gray-600">0.8% flagged</span>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -719,7 +719,7 @@ const ProductTourDemo: React.FC = () => {
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <span className="text-sm">Data Type Validation</span>
                   </div>
-                  <span className="text-sm text-gray-100">100% valid</span>
+                  <span className="text-sm text-gray-600">100% valid</span>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -727,7 +727,7 @@ const ProductTourDemo: React.FC = () => {
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <span className="text-sm">Duplicate Removal</span>
                   </div>
-                  <span className="text-sm text-gray-100">45 removed</span>
+                  <span className="text-sm text-gray-600">45 removed</span>
                 </div>
               </div>
               
@@ -748,7 +748,7 @@ const ProductTourDemo: React.FC = () => {
       component: (
         <div className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white flex items-center">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
               <Brain className="w-5 h-5 mr-2" />
               Model Training Dashboard
             </h3>
@@ -765,7 +765,7 @@ const ProductTourDemo: React.FC = () => {
                   onClick={() => setSelectedModel(model)}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-medium text-white">{model.name}</h4>
+                    <h4 className="font-medium text-gray-900">{model.name}</h4>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       model.status === 'deployed' 
                         ? 'bg-green-100 text-green-800'
@@ -776,7 +776,7 @@ const ProductTourDemo: React.FC = () => {
                       {model.status}
                     </span>
                   </div>
-                  <div className="space-y-1 text-xs text-gray-100">
+                  <div className="space-y-1 text-xs text-gray-600">
                     <div>Type: {model.type}</div>
                     <div>Algorithm: {model.algorithm}</div>
                     <div>Accuracy: {(model.accuracy * 100).toFixed(1)}%</div>
@@ -791,19 +791,19 @@ const ProductTourDemo: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-blue-600">{(selectedModel.accuracy * 100).toFixed(1)}%</p>
-                    <p className="text-sm text-gray-100">Accuracy</p>
+                    <p className="text-sm text-gray-600">Accuracy</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-purple-600">{(selectedModel.precision * 100).toFixed(1)}%</p>
-                    <p className="text-sm text-gray-100">Precision</p>
+                    <p className="text-sm text-gray-600">Precision</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-600">{(selectedModel.recall * 100).toFixed(1)}%</p>
-                    <p className="text-sm text-gray-100">Recall</p>
+                    <p className="text-sm text-gray-600">Recall</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-indigo-600">{(selectedModel.f1Score * 100).toFixed(1)}%</p>
-                    <p className="text-sm text-gray-100">F1 Score</p>
+                    <p className="text-sm text-gray-600">F1 Score</p>
                   </div>
                 </div>
                 
@@ -837,7 +837,7 @@ const ProductTourDemo: React.FC = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Algorithm Comparison</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Algorithm Comparison</h3>
               <div className="space-y-4">
                 {[
                   { name: 'XGBoost', accuracy: 92.4, speed: 'Fast', complexity: 'Medium' },
@@ -847,15 +847,15 @@ const ProductTourDemo: React.FC = () => {
                 ].map((algo) => (
                   <div key={algo.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex-1">
-                      <p className="font-medium text-white">{algo.name}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-100 mt-1">
+                      <p className="font-medium text-gray-900">{algo.name}</p>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span>Speed: {algo.speed}</span>
                         <span>Complexity: {algo.complexity}</span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">{algo.accuracy}%</p>
-                      <p className="text-sm text-gray-100">Accuracy</p>
+                      <p className="text-sm text-gray-600">Accuracy</p>
                     </div>
                   </div>
                 ))}
@@ -863,11 +863,11 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Training Progress</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Training Progress</h3>
               <div className="space-y-4">
                 <div className="p-4 bg-yellow-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-white">Sales Forecasting Model</span>
+                    <span className="font-medium text-gray-900">Sales Forecasting Model</span>
                     <span className="text-sm text-yellow-700">Training...</span>
                   </div>
                   <div className="w-full bg-yellow-200 rounded-full h-2 mb-2">
@@ -933,7 +933,7 @@ const ProductTourDemo: React.FC = () => {
               </div>
               <h3 className="font-semibold text-lg mb-2">Global API Endpoints</h3>
               <p className="text-3xl font-bold text-green-600 mb-1">{DEMO_MODELS.length}</p>
-              <p className="text-sm text-gray-100">Production-ready models</p>
+              <p className="text-sm text-gray-600">Production-ready models</p>
             </Card>
             
             <Card className="p-6 text-center">
@@ -942,7 +942,7 @@ const ProductTourDemo: React.FC = () => {
               </div>
               <h3 className="font-semibold text-lg mb-2">Predictions/sec</h3>
               <p className="text-3xl font-bold text-blue-600 mb-1">47K</p>
-              <p className="text-sm text-gray-100">Enterprise-scale traffic</p>
+              <p className="text-sm text-gray-600">Enterprise-scale traffic</p>
             </Card>
             
             <Card className="p-6 text-center">
@@ -951,19 +951,19 @@ const ProductTourDemo: React.FC = () => {
               </div>
               <h3 className="font-semibold text-lg mb-2">Global Latency</h3>
               <p className="text-3xl font-bold text-purple-600 mb-1">8ms</p>
-              <p className="text-sm text-gray-100">Edge-optimized response</p>
+              <p className="text-sm text-gray-600">Edge-optimized response</p>
             </Card>
           </div>
           
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white">Deployed Models</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Deployed Models</h3>
             <div className="space-y-4">
               {DEMO_MODELS.filter(m => m.status === 'deployed' || m.status === 'trained').map((model) => (
                 <div key={model.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-white">{model.name}</h4>
-                      <p className="text-sm text-gray-100">{model.algorithm} • {model.type}</p>
+                      <h4 className="font-medium text-gray-900">{model.name}</h4>
+                      <p className="text-sm text-gray-600">{model.algorithm} • {model.type}</p>
                     </div>
                     <span className={`px-3 py-1 text-sm rounded-full ${
                       model.status === 'deployed' 
@@ -978,17 +978,17 @@ const ProductTourDemo: React.FC = () => {
                     <div className="bg-gray-50 rounded-lg p-3 mb-3">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <p className="text-gray-100">Endpoint URL</p>
+                          <p className="text-gray-600">Endpoint URL</p>
                           <p className="font-mono text-xs bg-white p-2 rounded border">
                             https://api.dataflow.ai/v1/predict/{model.id}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-100">Requests Today</p>
+                          <p className="text-gray-600">Requests Today</p>
                           <p className="font-bold text-lg">{model.predictions.toLocaleString()}</p>
                         </div>
                         <div>
-                          <p className="text-gray-100">Uptime</p>
+                          <p className="text-gray-600">Uptime</p>
                           <p className="font-bold text-lg text-green-600">99.97%</p>
                         </div>
                       </div>
@@ -1022,37 +1022,37 @@ const ProductTourDemo: React.FC = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Deployment Options</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Deployment Options</h3>
               <div className="space-y-3">
                 <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
                   <div className="flex items-center space-x-3 mb-2">
                     <Zap className="w-5 h-5 text-blue-600" />
-                    <span className="font-medium text-white">REST API</span>
-                    <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded">Recommended</span>
+                    <span className="font-medium text-gray-900">REST API</span>
+                    <span className="px-2 py-1 bg-blue-600 text-gray-900 text-xs rounded">Recommended</span>
                   </div>
                   <p className="text-sm text-blue-800">High-performance REST endpoints with auto-scaling</p>
                 </div>
                 
                 <div className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3 mb-2">
-                    <Database className="w-5 h-5 text-gray-100" />
-                    <span className="font-medium text-white">Batch Processing</span>
+                    <Database className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">Batch Processing</span>
                   </div>
-                  <p className="text-sm text-gray-100">Process large datasets on schedule</p>
+                  <p className="text-sm text-gray-600">Process large datasets on schedule</p>
                 </div>
                 
                 <div className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3 mb-2">
-                    <Activity className="w-5 h-5 text-gray-100" />
-                    <span className="font-medium text-white">Real-time Streaming</span>
+                    <Activity className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">Real-time Streaming</span>
                   </div>
-                  <p className="text-sm text-gray-100">Process data streams in real-time</p>
+                  <p className="text-sm text-gray-600">Process data streams in real-time</p>
                 </div>
               </div>
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Infrastructure</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Infrastructure</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-3">
@@ -1104,38 +1104,38 @@ const ProductTourDemo: React.FC = () => {
             <Card className="p-4 text-center">
               <Activity className="w-8 h-8 text-green-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-green-600">99.99%</p>
-              <p className="text-sm text-gray-100">Enterprise SLA Uptime</p>
+              <p className="text-sm text-gray-600">Enterprise SLA Uptime</p>
             </Card>
             
             <Card className="p-4 text-center">
               <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-blue-600">96.7%</p>
-              <p className="text-sm text-gray-100">Platform-wide Accuracy</p>
+              <p className="text-sm text-gray-600">Platform-wide Accuracy</p>
             </Card>
             
             <Card className="p-4 text-center">
               <Clock className="w-8 h-8 text-purple-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-purple-600">8ms</p>
-              <p className="text-sm text-gray-100">Global Edge Latency</p>
+              <p className="text-sm text-gray-600">Global Edge Latency</p>
             </Card>
             
             <Card className="p-4 text-center">
               <BarChart2 className="w-8 h-8 text-orange-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-orange-600">47K</p>
-              <p className="text-sm text-gray-100">Predictions/sec</p>
+              <p className="text-sm text-gray-600">Predictions/sec</p>
             </Card>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Model Performance Trends</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Model Performance Trends</h3>
               <div className="space-y-4">
                 <div className="p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-white">Enterprise Churn Prediction</span>
+                    <span className="font-medium text-gray-900">Enterprise Churn Prediction</span>
                     <span className="text-green-600 text-sm">↗ +3.2%</span>
                   </div>
-                  <div className="text-sm text-gray-100 mb-2">Accuracy: 94.1% → 96.7%</div>
+                  <div className="text-sm text-gray-600 mb-2">Accuracy: 94.1% → 96.7%</div>
                   <div className="w-full bg-green-200 rounded-full h-2">
                     <div className="bg-green-600 h-2 rounded-full" style={{width: '96.7%'}}></div>
                   </div>
@@ -1143,10 +1143,10 @@ const ProductTourDemo: React.FC = () => {
                 
                 <div className="p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-white">Global Revenue Intelligence</span>
+                    <span className="font-medium text-gray-900">Global Revenue Intelligence</span>
                     <span className="text-green-600 text-sm">↗ +2.8%</span>
                   </div>
-                  <div className="text-sm text-gray-100 mb-2">Accuracy: 91.2% → 94.3%</div>
+                  <div className="text-sm text-gray-600 mb-2">Accuracy: 91.2% → 94.3%</div>
                   <div className="w-full bg-green-200 rounded-full h-2">
                     <div className="bg-green-600 h-2 rounded-full" style={{width: '94.3%'}}></div>
                   </div>
@@ -1154,10 +1154,10 @@ const ProductTourDemo: React.FC = () => {
                 
                 <div className="p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-white">AI Recommendation Engine</span>
+                    <span className="font-medium text-gray-900">AI Recommendation Engine</span>
                     <span className="text-green-600 text-sm">↗ +4.1%</span>
                   </div>
-                  <div className="text-sm text-gray-100 mb-2">Accuracy: 89.8% → 93.4%</div>
+                  <div className="text-sm text-gray-600 mb-2">Accuracy: 89.8% → 93.4%</div>
                   <div className="w-full bg-green-200 rounded-full h-2">
                     <div className="bg-green-600 h-2 rounded-full" style={{width: '93.4%'}}></div>
                   </div>
@@ -1166,13 +1166,13 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4 text-white">Data Drift Detection</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Data Drift Detection</h3>
               <div className="space-y-4">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="font-medium text-white">Feature Distribution</span>
+                      <span className="font-medium text-gray-900">Feature Distribution</span>
                     </div>
                     <span className="text-green-600 text-sm">Stable</span>
                   </div>
@@ -1183,7 +1183,7 @@ const ProductTourDemo: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                      <span className="font-medium text-white">Age Distribution</span>
+                      <span className="font-medium text-gray-900">Age Distribution</span>
                     </div>
                     <span className="text-yellow-600 text-sm">Minor Drift</span>
                   </div>
@@ -1194,7 +1194,7 @@ const ProductTourDemo: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-white">Target Variable</span>
+                      <span className="font-medium text-gray-900">Target Variable</span>
                     </div>
                     <span className="text-blue-600 text-sm">Normal</span>
                   </div>
@@ -1204,7 +1204,7 @@ const ProductTourDemo: React.FC = () => {
               
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-2">Automatic Actions</h4>
-                <div className="text-sm text-gray-100 space-y-1">
+                <div className="text-sm text-gray-600 space-y-1">
                   <div>✓ Triggered model retraining for age drift</div>
                   <div>✓ Updated feature importance weights</div>
                   <div>✓ Sent alert to data team</div>
@@ -1214,7 +1214,7 @@ const ProductTourDemo: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-white">Recent Alerts & Actions</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Recent Alerts & Actions</h3>
             <div className="space-y-3">
               <div className="flex items-start space-x-3 p-4 bg-red-50 rounded-lg border border-red-200">
                 <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
@@ -1270,7 +1270,7 @@ const ProductTourDemo: React.FC = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <a
           href="/signin"
-          className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300"
+          className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-900 font-semibold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300"
         >
           <Zap className="w-5 h-5" />
           Start Free Trial
@@ -1283,16 +1283,16 @@ const ProductTourDemo: React.FC = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <StepIcon className="w-6 h-6 text-white" />
+                <StepIcon className="w-6 h-6 text-gray-900" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">DataFlow Hub AI</h1>
-                <p className="text-sm text-gray-100">Interactive Product Tour</p>
+                <h1 className="text-2xl font-bold text-gray-900">DataFlow Hub AI</h1>
+                <p className="text-sm text-gray-600">Interactive Product Tour</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-100">
+              <div className="text-sm text-gray-600">
                 Step {currentStep + 1} of {tourSteps.length}
               </div>
               <Button
@@ -1307,7 +1307,7 @@ const ProductTourDemo: React.FC = () => {
               {/* Sign Up Button */}
               <a
                 href="/signin"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-900 font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 <Zap className="w-4 h-4" />
                 Sign Up Free
@@ -1328,10 +1328,10 @@ const ProductTourDemo: React.FC = () => {
                 onClick={() => goToStep(index)}
                 className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   index === currentStep
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-indigo-600 text-gray-900'
                     : index < currentStep
                     ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-100 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {index < currentStep ? (
@@ -1350,10 +1350,10 @@ const ProductTourDemo: React.FC = () => {
         {/* Current Step Header */}
         <div className="mb-8 text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <StepIcon className="w-8 h-8 text-white" />
+            <StepIcon className="w-8 h-8 text-gray-900" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">{currentTourStep.title}</h2>
-          <p className="text-lg text-gray-100 max-w-2xl mx-auto">{currentTourStep.description}</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{currentTourStep.title}</h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{currentTourStep.description}</p>
         </div>
 
         {/* Step Content */}
@@ -1401,7 +1401,7 @@ const ProductTourDemo: React.FC = () => {
 
         {/* Sign Up CTA Section */}
         <div className="mt-16 mb-16">
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-gray-900 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
             <div className="max-w-4xl mx-auto">
               <div className="mb-6">
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold backdrop-blur-sm">
@@ -1431,7 +1431,7 @@ const ProductTourDemo: React.FC = () => {
                 
                 <a
                   href="/pricing"
-                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white border-opacity-30 text-white font-medium rounded-lg hover:border-opacity-50 hover:bg-white hover:bg-opacity-10 transition-all backdrop-blur-sm"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white border-opacity-30 text-gray-900 font-medium rounded-lg hover:border-opacity-50 hover:bg-white hover:bg-opacity-10 transition-all backdrop-blur-sm"
                 >
                   View Pricing
                   <ArrowRight className="w-4 h-4" />
@@ -1457,14 +1457,14 @@ const ProductTourDemo: React.FC = () => {
         </div>
         {/* Feature Highlights */}
         <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-white mb-8">Why DataFlow Hub AI?</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">Why DataFlow Hub AI?</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-6 h-6 text-blue-600" />
               </div>
               <h4 className="text-lg font-semibold mb-2">AI-Powered Automation</h4>
-              <p className="text-gray-100">Automate complex ML workflows with intelligent feature engineering and model selection</p>
+              <p className="text-gray-600">Automate complex ML workflows with intelligent feature engineering and model selection</p>
             </div>
             
             <div className="p-6">
@@ -1472,7 +1472,7 @@ const ProductTourDemo: React.FC = () => {
                 <Zap className="w-6 h-6 text-green-600" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Production Ready</h4>
-              <p className="text-gray-100">Deploy models instantly with auto-scaling infrastructure and monitoring</p>
+              <p className="text-gray-600">Deploy models instantly with auto-scaling infrastructure and monitoring</p>
             </div>
             
             <div className="p-6">
@@ -1480,7 +1480,7 @@ const ProductTourDemo: React.FC = () => {
                 <MessageSquare className="w-6 h-6 text-purple-600" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Natural Language</h4>
-              <p className="text-gray-100">Query your data and train models using simple natural language commands</p>
+              <p className="text-gray-600">Query your data and train models using simple natural language commands</p>
             </div>
           </div>
         </div>
