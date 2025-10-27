@@ -47,7 +47,7 @@ const PricingPage: React.FC = () => {
         'All export formats',
         'Priority support',
       ],
-      ctaText: 'Start Free Trial',
+      ctaText: 'Upgrade to Pro',
       isPopular: true,
     },
     {
@@ -81,10 +81,10 @@ const PricingPage: React.FC = () => {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-indigo-100 mb-4">
-            Start with a 14-day free trial, scale as you grow
+            Start free forever, upgrade when you need more
           </p>
           <p className="text-indigo-200">
-            No credit card required • Cancel anytime
+            No credit card required • Free tier always available
           </p>
           <p className="text-sm text-indigo-200 mt-3">
             Beta users get grandfathered into special lifetime pricing
@@ -200,7 +200,7 @@ const PricingPage: React.FC = () => {
             href="/signin"
             className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
           >
-            Start Your Free Trial
+            Get Started Free
           </a>
         </div>
       </section>

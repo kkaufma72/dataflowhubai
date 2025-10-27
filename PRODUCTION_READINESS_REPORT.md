@@ -349,7 +349,7 @@ See: [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
 
 **Your app is:**
 - ✅ Code quality verified
-- ✅ Performance optimized  
+- ✅ Performance optimized
 - ✅ Security audited
 - ✅ Thoroughly tested
 - ✅ Well documented
