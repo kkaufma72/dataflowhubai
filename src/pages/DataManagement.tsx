@@ -58,11 +58,15 @@ const DataManagement: React.FC = () => {
   
   // View mode state
   const [viewMode, setViewMode] = useState<'grid' | 'organize'>('grid');
+  
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<any>({});
 
-  // Memoize expensive calculations
+  // Memoize expensive calculations (use filtered datasets)
   const totalPages = useMemo(() => 
-    Math.ceil(datasets.length / pageSize), 
-    [datasets.length, pageSize]
+    Math.ceil(filteredDatasets.length / pageSize), 
+    [filteredDatasets.length, pageSize]
   );
 
   const startIndex = useMemo(() => 
@@ -75,9 +79,73 @@ const DataManagement: React.FC = () => {
     [startIndex, pageSize]
   );
 
+  // Filter and search datasets
+  const filteredDatasets = useMemo(() => {
+    let result = [...datasets];
+
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(ds => 
+        ds.name.toLowerCase().includes(query) ||
+        ds.description?.toLowerCase().includes(query) ||
+        ds.preview_data?.columns?.some(col => col.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply file type filter
+    if (filters.fileType) {
+      result = result.filter(ds => 
+        (ds.file_type || ds.fileType)?.toLowerCase() === filters.fileType.toLowerCase()
+      );
+    }
+
+    // Apply date filter
+    if (filters.dateRange) {
+      const now = new Date();
+      result = result.filter(ds => {
+        const uploadDate = new Date(ds.created_at || ds.dateUploaded || '');
+        switch (filters.dateRange) {
+          case 'today':
+            return uploadDate.toDateString() === now.toDateString();
+          case 'week':
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return uploadDate > weekAgo;
+          case 'month':
+            return uploadDate.getMonth() === now.getMonth() && uploadDate.getFullYear() === now.getFullYear();
+          case 'year':
+            return uploadDate.getFullYear() === now.getFullYear();
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply size filter
+    if (filters.sizeRange) {
+      result = result.filter(ds => {
+        const rows = ds.row_count || ds.rows || 0;
+        switch (filters.sizeRange) {
+          case 'small':
+            return rows < 1000;
+          case 'medium':
+            return rows >= 1000 && rows < 10000;
+          case 'large':
+            return rows >= 10000 && rows < 100000;
+          case 'xlarge':
+            return rows >= 100000;
+          default:
+            return true;
+        }
+      });
+    }
+
+    return result;
+  }, [datasets, searchQuery, filters]);
+
   const paginatedDatasets = useMemo(() => 
-    datasets.slice(startIndex, endIndex),
-    [datasets, startIndex, endIndex]
+    filteredDatasets.slice(startIndex, endIndex), 
+    [filteredDatasets, startIndex, endIndex]
   );
 
   // Reset to page 1 when datasets change
@@ -306,34 +374,75 @@ const DataManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* CRM-Style Search & Filter Header */}
+      {datasets.length > 0 && (
+        <CRMDatabaseHeader
+          totalCount={filteredDatasets.length}
+          onSearch={setSearchQuery}
+          onUpload={() => setShowUploader(true)}
+          onFilter={setFilters}
+          searchQuery={searchQuery}
+          onBulkAction={(action) => {
+            if (action === 'export') {
+              toast.success('Export feature coming soon!');
+            } else if (action === 'ai-insights') {
+              toast.success('AI bulk insights coming soon!');
+            }
+          }}
+        />
+      )}
+
+      {/* View Mode Toggle & Quick Actions */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
-        <div className="flex flex-wrap gap-3">
-          <Button
-            onClick={() => setShowUploader(true)}
-            icon={<Upload className="w-4 h-4" />}
-          >
-            Upload Dataset
-          </Button>
-          <Button
-            onClick={() => setShowConnector(true)}
-            variant="outline"
-            icon={<Database className="w-4 h-4" />}
-          >
-            Connect Data Source
-          </Button>
-          <Button
-            onClick={() => setShowGeneratorModal(true)}
-            variant="outline"
-            icon={<Sparkles className="w-4 h-4" />}
-          >
-            Generate Sample Data
-          </Button>
-        </div>
+        {datasets.length === 0 ? (
+          // Show upload buttons when no datasets
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => setShowUploader(true)}
+              icon={<Upload className="w-4 h-4" />}
+            >
+              Upload Dataset
+            </Button>
+            <Button
+              onClick={() => setShowConnector(true)}
+              variant="outline"
+              icon={<Database className="w-4 h-4" />}
+            >
+              Connect Data Source
+            </Button>
+            <Button
+              onClick={() => setShowGeneratorModal(true)}
+              variant="outline"
+              icon={<Sparkles className="w-4 h-4" />}
+            >
+              Generate Sample Data
+            </Button>
+          </div>
+        ) : (
+          // Show quick actions when datasets exist
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => setShowConnector(true)}
+              variant="outline"
+              size="sm"
+              icon={<Database className="w-4 h-4" />}
+            >
+              Connect Source
+            </Button>
+            <Button
+              onClick={() => setShowGeneratorModal(true)}
+              variant="outline"
+              size="sm"
+              icon={<Sparkles className="w-4 h-4" />}
+            >
+              Generate Data
+            </Button>
+          </div>
+        )}
 
         {/* View Mode Toggle */}
         {datasets.length > 0 && (
-          <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1">
+          <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm">
             <button
               onClick={() => setViewMode('grid')}
               className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
@@ -501,7 +610,7 @@ const DataManagement: React.FC = () => {
         ) : viewMode === 'organize' ? (
           // ORGANIZE VIEW - Drag and Drop Buckets
           <DatasetOrganizer
-            datasets={datasets}
+            datasets={filteredDatasets}
             onPreview={handlePreview}
             onDelete={(dataset) => {
               if (confirm(`Delete "${dataset.name}"?`)) {
@@ -817,6 +926,31 @@ const DataManagement: React.FC = () => {
         onSelectProject={handleConfirmMove}
         currentProjectId={currentProject?.id}
         datasetName={datasetToMove?.name || ''}
+      />
+
+      {/* Floating AI Assistant */}
+      <FloatingAIAssistant
+        onAction={(action) => {
+          switch (action) {
+            case 'upload':
+              setShowUploader(true);
+              break;
+            case 'organize':
+              setViewMode('organize');
+              break;
+            case 'analyze':
+              if (datasets.length > 0) {
+                handleQualityCheck(datasets[0]);
+              } else {
+                toast.error('Upload a dataset first');
+              }
+              break;
+            case 'search':
+              // Focus search bar
+              document.querySelector('input[type="text"]')?.focus();
+              break;
+          }
+        }}
       />
     </div>
   );
