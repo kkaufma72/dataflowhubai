@@ -77,24 +77,22 @@ export const useSubscription = (): SubscriptionStatus => {
             features: getFeaturesByTier(tier)
           });
         } else {
-          // No active subscription - default to Pro for beta (don't block!)
-          // TODO: Change to 'free' after setting up Stripe subscriptions
+          // No active subscription - free tier
           setSubscription({
-            tier: 'professional',
-            status: 'active',
+            tier: 'free',
+            status: 'none',
             isLoading: false,
-            features: getFeaturesByTier('professional')
+            features: getFreeFeatures()
           });
         }
       } catch (error) {
         console.error('Error fetching subscription:', error);
-        // Default to Pro tier on error (for beta - don't block users!)
-        // Change to 'free' after you setup subscriptions table
+        // Default to free tier on error
         setSubscription({
-          tier: 'professional',
-          status: 'active',
+          tier: 'free',
+          status: 'none',
           isLoading: false,
-          features: getFeaturesByTier('professional')
+          features: getFreeFeatures()
         });
       }
     };
