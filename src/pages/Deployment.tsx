@@ -23,7 +23,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import DeploymentStatusMonitor from '../components/monitoring/DeploymentStatusMonitor';
 
-const Deployment: React.FC = () => {
+const DeploymentPage: React.FC = () => {
   const { models, updateModelStatus } = useMLContext();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -923,6 +923,15 @@ print(prediction)`;
         </div>
       </Card>
     </div>
+  );
+};
+
+// Wrap deployment page with premium gate
+const Deployment: React.FC = () => {
+  return (
+    <PremiumFeatureGate feature="deploy">
+      <DeploymentPage />
+    </PremiumFeatureGate>
   );
 };
 

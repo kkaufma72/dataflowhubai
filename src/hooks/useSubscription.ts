@@ -1,104 +1,135 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useUser } from '../context/UserContext';
+// Subscription Hook - Check user's subscription tier and feature access
 
-export interface Subscription {
-  id: string;
-  user_id: string;
-  stripe_customer_id: string;
-  stripe_subscription_id: string;
-  stripe_price_id: string;
-  status: string;
-  tier: string;
-  billing_period: string;
-  current_period_start: string;
-  current_period_end: string;
-  cancel_at_period_end: boolean;
-  canceled_at: string | null;
-  created_at: string;
-  updated_at: string;
+import { useState, useEffect } from 'react';
+import { useAuth } from '../components/auth/AuthProvider';
+import { supabase } from '../lib/supabase';
+
+export type SubscriptionTier = 'free' | 'professional' | 'team';
+
+export interface SubscriptionStatus {
+  tier: SubscriptionTier;
+  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'none';
+  isLoading: boolean;
+  features: {
+    canTrainModels: boolean;
+    canDeploy: boolean;
+    canMonitor: boolean;
+    canEvaluate: boolean;
+    unlimitedDatasets: boolean;
+    unlimitedAIQuestions: boolean;
+    voiceInput: boolean;
+    advancedAnalytics: boolean;
+    teamCollaboration: boolean;
+  };
 }
 
-export const useSubscription = () => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useUser();
+export const useSubscription = (): SubscriptionStatus => {
+  const { user } = useAuth();
+  const [subscription, setSubscription] = useState<SubscriptionStatus>({
+    tier: 'free',
+    status: 'none',
+    isLoading: true,
+    features: {
+      canTrainModels: false,
+      canDeploy: false,
+      canMonitor: false,
+      canEvaluate: false,
+      unlimitedDatasets: false,
+      unlimitedAIQuestions: false,
+      voiceInput: false,
+      advancedAnalytics: false,
+      teamCollaboration: false
+    }
+  });
 
   useEffect(() => {
-    if (!user) {
-      setSubscription(null);
-      setLoading(false);
-      return;
-    }
+    const fetchSubscription = async () => {
+      if (!user) {
+        setSubscription({
+          tier: 'free',
+          status: 'none',
+          isLoading: false,
+          features: getFreeFeatures()
+        });
+        return;
+      }
+
+      try {
+        // Check if user has active subscription
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+
+        if (data) {
+          // User has active subscription
+          const tier = data.tier as SubscriptionTier;
+          setSubscription({
+            tier,
+            status: data.status,
+            isLoading: false,
+            features: getFeaturesByTier(tier)
+          });
+        } else {
+          // No active subscription - free tier
+          setSubscription({
+            tier: 'free',
+            status: 'none',
+            isLoading: false,
+            features: getFreeFeatures()
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching subscription:', error);
+        // Default to free tier on error
+        setSubscription({
+          tier: 'free',
+          status: 'none',
+          isLoading: false,
+          features: getFreeFeatures()
+        });
+      }
+    };
 
     fetchSubscription();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('subscription_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'subscriptions',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchSubscription();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [user]);
 
-  const fetchSubscription = async () => {
-    if (!user) return;
+  return subscription;
+};
 
-    try {
-      setLoading(true);
-      const { data, error: fetchError } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single();
+// Feature access by tier
+const getFreeFeatures = () => ({
+  canTrainModels: false,      // 🔒 Premium only
+  canDeploy: false,           // 🔒 Premium only
+  canMonitor: false,          // 🔒 Premium only
+  canEvaluate: false,         // 🔒 Premium only
+  unlimitedDatasets: false,   // Limited to 3
+  unlimitedAIQuestions: false, // Limited to 20/month
+  voiceInput: true,           // ✅ Available to all
+  advancedAnalytics: false,   // 🔒 Premium only
+  teamCollaboration: false    // 🔒 Team tier only
+});
 
-      if (fetchError) {
-        if (fetchError.code === 'PGRST116') {
-          // No subscription found - this is not an error
-          setSubscription(null);
-          setError(null);
-        } else {
-          throw fetchError;
-        }
-      } else {
-        setSubscription(data);
-        setError(null);
-      }
-    } catch (err) {
-      console.error('Error fetching subscription:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch subscription');
-    } finally {
-      setLoading(false);
-    }
-  };
+const getFeaturesByTier = (tier: SubscriptionTier) => {
+  if (tier === 'professional' || tier === 'team') {
+    return {
+      canTrainModels: true,      // ✅ Unlocked
+      canDeploy: true,           // ✅ Unlocked
+      canMonitor: true,          // ✅ Unlocked
+      canEvaluate: true,         // ✅ Unlocked
+      unlimitedDatasets: true,
+      unlimitedAIQuestions: true,
+      voiceInput: true,
+      advancedAnalytics: true,
+      teamCollaboration: tier === 'team'
+    };
+  }
 
-  const hasActiveSubscription = subscription?.status === 'active';
-  const isTrialing = subscription?.status === 'trialing';
-  const isPastDue = subscription?.status === 'past_due';
-
-  return {
-    subscription,
-    loading,
-    error,
-    hasActiveSubscription,
-    isTrialing,
-    isPastDue,
-    refetch: fetchSubscription,
-  };
+  return getFreeFeatures();
 };

@@ -21,11 +21,13 @@ import {
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
 import { Project } from '../../types';
+import { useSubscription } from '../../hooks/useSubscription';
 import toast from 'react-hot-toast';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { currentProject, datasets, models, setCurrentProject } = useMLContext();
+  const subscription = useSubscription();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -134,19 +136,22 @@ const Sidebar: React.FC = () => {
       badge: models?.length || null,
       description: 'Train and evaluate ML models',
       section: true,
+      premium: true,
       items: [
         {
           name: 'Train Models',
           href: '/app/train',
           icon: Brain,
           description: 'Create new models',
-          dataTour: 'train-models'
+          dataTour: 'train-models',
+          premium: true
         },
         {
           name: 'Evaluate',
           href: '/app/evaluate',
           icon: BarChart3,
-          description: 'Test model performance'
+          description: 'Test model performance',
+          premium: true
         }
       ]
     },
@@ -156,18 +161,21 @@ const Sidebar: React.FC = () => {
       badge: null,
       description: 'Production deployment',
       section: true,
+      premium: true,
       items: [
         {
           name: 'Deploy',
           href: '/app/deploy',
           icon: Zap,
-          description: 'Publish models'
+          description: 'Publish models',
+          premium: true
         },
         {
           name: 'Monitoring',
           href: '/app/monitoring',
           icon: Activity,
-          description: 'Track performance'
+          description: 'Track performance',
+          premium: true
         }
       ]
     }
@@ -334,6 +342,8 @@ const Sidebar: React.FC = () => {
                 <div className={isCollapsed ? 'space-y-1' : 'space-y-0.5'}>
                   {item.items.map((subItem: any) => {
                     const active = isActive(subItem.href);
+                    const isPremium = subItem.premium && subscription.tier === 'free';
+                    
                     return (
                       <Link
                         key={subItem.name}
@@ -343,7 +353,7 @@ const Sidebar: React.FC = () => {
                           active
                             ? 'bg-indigo-600 text-white shadow-md'
                             : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                        } ${!isCollapsed && 'ml-2'}`}
+                        } ${!isCollapsed && 'ml-2'} ${isPremium ? 'opacity-60' : ''}`}
                         title={isCollapsed ? subItem.description : ''}
                       >
                         <subItem.icon
@@ -351,7 +361,16 @@ const Sidebar: React.FC = () => {
                             active ? 'text-white' : 'text-gray-400 group-hover:text-white'
                           }`}
                         />
-                        {!isCollapsed && <span className="flex-1 truncate">{subItem.name}</span>}
+                        {!isCollapsed && (
+                          <span className="flex-1 truncate flex items-center gap-2">
+                            {subItem.name}
+                            {isPremium && (
+                              <span className="text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full font-semibold">
+                                PRO
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}
