@@ -6,8 +6,8 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { useAuth } from '../auth/AuthProvider';
 import { UserProfile } from '../../utils/personalizedPrompts';
-import { runAgentOrchestrator } from '../../lib/aiAgents';
-import { getMarketingQuickActions, isMarketingUser } from '../../lib/agents/marketingAgentSimple';
+import { runAgentOrchestrator, isMarketingUser } from '../../lib/aiAgents';
+import { getMarketingQuickActions } from '../../lib/agents/marketingAgentSimple';
 import { saveConversation, loadConversation, buildPromptWithMemory } from '../../lib/conversationMemory';
 import toast from 'react-hot-toast';
 

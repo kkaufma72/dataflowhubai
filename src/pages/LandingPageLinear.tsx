@@ -236,6 +236,122 @@ const LandingPageLinear: React.FC = () => {
         </div>
       </section>
 
+      {/* Cloud Platform Integrations Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-white to-gray-50/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Connect your entire data stack
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Seamlessly integrate with cloud platforms and databases you're already using
+            </p>
+          </div>
+
+          {/* Cloud Platforms Row */}
+          <div className="mb-12">
+            <h3 className="text-lg font-semibold text-gray-800 text-center mb-8">Cloud Platforms</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 items-center justify-items-center">
+              {/* Google Cloud Platform */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer relative" title="Google Cloud Platform - BigQuery, Cloud SQL, Firestore">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">☁️</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">Google Cloud</span>
+              </div>
+
+              {/* Amazon AWS */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="Amazon AWS - S3, RDS, DynamoDB, Redshift">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">⚡</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">Amazon AWS</span>
+              </div>
+
+              {/* Microsoft Azure */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="Microsoft Azure - SQL Database, Cosmos DB, Blob Storage">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🔷</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">Microsoft Azure</span>
+              </div>
+
+              {/* IBM Cloud */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="IBM Cloud - Db2, Cloudant, Watson">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🌐</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">IBM Cloud</span>
+              </div>
+
+              {/* Oracle Cloud */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="Oracle Cloud - Autonomous Database, MySQL HeatWave">
+                <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🔶</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">Oracle Cloud</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Databases Row */}
+          <div className="mb-12">
+            <h3 className="text-lg font-semibold text-gray-800 text-center mb-8">Popular Databases</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-items-center">
+              {/* PostgreSQL */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="PostgreSQL - Advanced open-source relational database">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🐘</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">PostgreSQL</span>
+              </div>
+
+              {/* MySQL */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="MySQL - World's most popular open-source database">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🐬</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">MySQL</span>
+              </div>
+
+              {/* MongoDB */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="MongoDB - Leading NoSQL document database">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">🍃</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">MongoDB</span>
+              </div>
+
+              {/* Snowflake */}
+              <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="Snowflake - Cloud data warehouse platform">
+                <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="text-white font-bold text-sm">❄️</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center">Snowflake</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Integration Benefits */}
+          <div className="text-center">
+            <div className="flex flex-wrap justify-center gap-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-700">Enterprise Security</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+                <CheckCircle className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">5-minute Setup</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-200 rounded-full">
+                <CheckCircle className="w-4 h-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-700">No Code Required</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Live Transformation Demo Section */}
       <section className="py-32 px-6 bg-gray-50/50">
         <div className="max-w-6xl mx-auto">
