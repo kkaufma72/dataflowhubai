@@ -228,8 +228,8 @@ const ModelEvaluation = () => {
           <TabPanel>
             <Card className="mt-6">
               <Title>Feature Importance</Title>
-              {selectedDataset?.previewData?.columns.map((feature, idx) => {
-                const importance = 1 - (idx / (selectedDataset.previewData?.columns.length || 1));
+              {selectedDataset?.preview_data?.columns.map((feature, idx) => {
+                const importance = 1 - (idx / (selectedDataset.preview_data?.columns.length || 1));
                 return (
                   <div key={idx} className="mt-4">
                     <Flex>
@@ -255,7 +255,7 @@ const ModelEvaluation = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {selectedDataset?.previewData?.rows.slice(0, 5).map((row, idx) => (
+                  {selectedDataset?.preview_data?.rows.slice(0, 5).map((row, idx) => (
                     <TableRow key={idx}>
                       <TableCell>
                         <div className="max-w-xs truncate">

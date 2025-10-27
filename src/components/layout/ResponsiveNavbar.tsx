@@ -21,7 +21,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-// Define navigation structure
+// Define navigation structure - Simplified 3-section workflow
 const navigation = [
   { 
     name: 'Dashboard', 
@@ -30,42 +30,28 @@ const navigation = [
     exact: true 
   },
   {
-    name: 'AI Assistant',
-    href: '/app/ai-chat',
-    icon: MessageSquare,
-    exact: false,
-    highlight: true // Makes it stand out with special styling
-  },
-  {
-    name: 'Data Preparation',
+    name: 'Data',
     icon: Database,
     children: [
-      { name: 'Data Management', href: '/app/data', icon: FileSpreadsheet },
+      { name: 'Browse & Upload', href: '/app/data', icon: FileSpreadsheet },
+      { name: 'Insights & Charts', href: '/app/insights', icon: BarChart3 },
       { name: 'Feature Engineering', href: '/app/feature-engineering', icon: Wand2 },
     ]
   },
   {
-    name: 'Model Development',
+    name: 'Build Models',
     icon: Layers,
     children: [
-      { name: 'Model Training', href: '/app/train', icon: Layers },
-      { name: 'Model Evaluation', href: '/app/evaluate', icon: BarChart3 },
+      { name: 'Train Models', href: '/app/train', icon: Layers },
+      { name: 'Evaluate', href: '/app/evaluate', icon: BarChart3 },
     ]
   },
   {
-    name: 'Production',
+    name: 'Deploy & Monitor',
     icon: Rocket,
     children: [
-      { name: 'Deployment', href: '/app/deploy', icon: Rocket },
+      { name: 'Deploy', href: '/app/deploy', icon: Rocket },
       { name: 'Monitoring', href: '/app/monitoring', icon: Activity },
-    ]
-  },
-  {
-    name: 'Advanced',
-    icon: GitBranch,
-    children: [
-      { name: 'Visualizations', href: '/app/visualizations', icon: PieChart },
-      { name: 'Pipeline Builder', href: '/app/pipeline', icon: GitBranch },
     ]
   }
 ];

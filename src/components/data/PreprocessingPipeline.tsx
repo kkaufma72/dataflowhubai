@@ -67,7 +67,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
   const [activeTab, setActiveTab] = useState<'profile' | 'pipeline' | 'batch' | 'streaming'>('profile');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState(0);
-  const [previewData, setPreviewData] = useState<{
+  const [preview_data, setPreviewData] = useState<{
     original: any[][];
     processed: any[][];
     columns: string[];
@@ -134,7 +134,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
 
   // Run preprocessing pipeline
   const runPreprocessing = async () => {
-    if (!dataset.previewData) {
+    if (!dataset.preview_data) {
       toast.error('No data available for preprocessing');
       return;
     }
@@ -152,7 +152,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
       }, 200);
       
       // Process the data
-      const { columns, rows } = dataset.previewData;
+      const { columns, rows } = dataset.preview_data;
       const result = applyPreprocessingPipeline(rows, columns, preprocessingOptions);
       
       // Clear interval and set progress to 100%
@@ -193,7 +193,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
     // In a real application, you might want to accumulate or sample the streaming data
     // For now, we'll just update the preview with the latest batch
     setPreviewData({
-      original: dataset.previewData?.rows.slice(0, 5) || [],
+      original: dataset.preview_data?.rows.slice(0, 5) || [],
       processed: processedData.slice(0, 5),
       columns
     });
@@ -877,7 +877,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
               </div>
             )}
             
-            {showPreview && previewData && (
+            {showPreview && preview_data && (
               <div className="mt-6">
                 <h4 className="text-sm font-medium text-gray-700 mb-4">Preview</h4>
                 <div className="overflow-x-auto">
@@ -887,7 +887,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Row
                         </th>
-                        {previewData.columns.map((column, i) => (
+                        {preview_data.columns.map((column, i) => (
                           <th 
                             key={i} 
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -898,7 +898,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {previewData.processed.map((row, rowIndex) => (
+                      {preview_data.processed.map((row, rowIndex) => (
                         <tr key={rowIndex}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {rowIndex + 1}

@@ -72,8 +72,21 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       if (localDatasets.length === 0) {
         console.log('Initializing sample datasets...');
         const sampleDatasets = generateSampleDatasets();
-        await Promise.all(sampleDatasets.map(dataset => storage.saveDataset(dataset)));
-        localDatasets = sampleDatasets;
+        // Convert SampleDataset to Dataset format
+        const convertedDatasets: Dataset[] = sampleDatasets.map(sd => ({
+          id: sd.id,
+          name: sd.name,
+          description: sd.description,
+          rows: sd.row_count,
+          columns: sd.column_count,
+          dateUploaded: sd.dateUploaded,
+          fileType: sd.file_type,
+          fileSize: sd.file_size,
+          projectId: sd.project_id,
+          preview_data: sd.preview_data
+        }));
+        await Promise.all(convertedDatasets.map(dataset => storage.saveDataset(dataset)));
+        localDatasets = convertedDatasets;
         console.log('Sample datasets initialized:', localDatasets.length);
       }
 
@@ -215,15 +228,20 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
   // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        setHasFetched(false); // Reset to allow refetch
-      } else if (event === 'SIGNED_OUT') {
-        setDatasets([]);
-        setModels([]);
-        setCurrentProjectState(null);
-        setHasFetched(false);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      // Note: event and session parameters not used, so removed to avoid linter warnings
+      const checkAuthState = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setHasFetched(false); // Reset to allow refetch
+        } else {
+          setDatasets([]);
+          setModels([]);
+          setCurrentProjectState(null);
+          setHasFetched(false);
+        }
+      };
+      checkAuthState();
     });
 
     return () => subscription.unsubscribe();
@@ -251,7 +269,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     setModels(prev =>
       prev.map(model =>
         model.id === id
-          ? { ...model, status, ...(metrics && { metrics }) }
+          ? { ...model, status: status as MLModel['status'], ...(metrics && { metrics }) }
           : model
       )
     );

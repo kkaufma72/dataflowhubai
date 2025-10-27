@@ -39,15 +39,15 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
   const [filterType, setFilterType] = useState<'all' | 'numeric' | 'categorical' | 'datetime' | 'text'>('all');
 
   useEffect(() => {
-    if (dataset && dataset.previewData) {
+    if (dataset && dataset.preview_data) {
       analyzeFeatures();
     }
   }, [dataset]);
 
   const analyzeFeatures = () => {
-    if (!dataset.previewData) return;
+    if (!dataset.preview_data) return;
 
-    const { columns, rows } = dataset.previewData;
+    const { columns, rows } = dataset.preview_data;
     const metadata: FeatureMetadata[] = [];
 
     columns.forEach((column, colIndex) => {
@@ -139,7 +139,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
   };
 
   const sortedAndFilteredFeatures = () => {
-    if (!dataset.previewData) return [];
+    if (!dataset.preview_data) return [];
     
     let features = featureMetadata;
     
@@ -333,7 +333,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
                   <div className="flex items-center">
                     <span className="text-sm text-gray-900">{feature.missingValues}</span>
                     <span className="ml-1 text-sm text-gray-500">
-                      ({((feature.missingValues / dataset.previewData!.rows.length) * 100).toFixed(1)}%)
+                      ({((feature.missingValues / dataset.preview_data!.rows.length) * 100).toFixed(1)}%)
                     </span>
                   </div>
                 </td>

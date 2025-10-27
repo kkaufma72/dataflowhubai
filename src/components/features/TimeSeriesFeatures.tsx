@@ -50,7 +50,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
     windows: [3],
     operations: ['mean']
   });
-  const [previewData, setPreviewData] = useState<any[] | null>(null);
+  const [preview_data, setPreviewData] = useState<any[] | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [newLag, setNewLag] = useState<number>(1);
   const [newWindow, setNewWindow] = useState<number>(3);
@@ -58,8 +58,8 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
 
   // Check if dataset has potential timestamp column
   useEffect(() => {
-    if (dataset && dataset.previewData && !config.timestampColumn) {
-      const columns = dataset.previewData.columns;
+    if (dataset && dataset.preview_data && !config.timestampColumn) {
+      const columns = dataset.preview_data.columns;
       const timestampCol = columns.find(col => 
         col.toLowerCase().includes('timestamp') || 
         col.toLowerCase().includes('date') ||
@@ -313,14 +313,14 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
   };
 
   const getPreviewChartData = () => {
-    if (!previewData) return null;
+    if (!preview_data) return null;
     
     return {
-      labels: previewData.dates,
+      labels: preview_data.dates,
       datasets: [
         {
           label: 'Original',
-          data: previewData.values,
+          data: preview_data.values,
           borderColor: 'rgb(79, 70, 229)',
           backgroundColor: 'rgba(79, 70, 229, 0.1)',
           fill: false,
@@ -328,7 +328,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
         },
         {
           label: 'Lag (t-1)',
-          data: previewData.lagValues,
+          data: preview_data.lagValues,
           borderColor: 'rgb(16, 185, 129)',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
           fill: false,
@@ -336,7 +336,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
         },
         {
           label: 'Rolling Mean (7-day)',
-          data: previewData.rollingValues,
+          data: preview_data.rollingValues,
           borderColor: 'rgb(245, 158, 11)',
           backgroundColor: 'rgba(245, 158, 11, 0.1)',
           fill: false,
@@ -376,9 +376,9 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
   };
 
   const getNumericFeatures = () => {
-    if (!dataset.previewData) return [];
+    if (!dataset.preview_data) return [];
     
-    const { columns, rows } = dataset.previewData;
+    const { columns, rows } = dataset.preview_data;
     const numericFeatures: string[] = [];
     
     columns.forEach((column, colIndex) => {
@@ -395,9 +395,9 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
   };
 
   const getDatetimeFeatures = () => {
-    if (!dataset.previewData) return [];
+    if (!dataset.preview_data) return [];
     
-    const { columns, rows } = dataset.previewData;
+    const { columns, rows } = dataset.preview_data;
     const datetimeFeatures: string[] = [];
     
     columns.forEach((column, colIndex) => {
@@ -828,7 +828,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
         </div>
       </Card>
 
-      {previewData && (
+      {preview_data && (
         <Card>
           <h3 className="text-sm font-medium text-gray-900 mb-4">Time Series Feature Preview</h3>
           

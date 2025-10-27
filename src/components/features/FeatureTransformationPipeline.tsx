@@ -52,7 +52,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
     config: {}
   });
   const [editingTransformationId, setEditingTransformationId] = useState<string | null>(null);
-  const [previewData, setPreviewData] = useState<any[] | null>(null);
+  const [preview_data, setPreviewData] = useState<any[] | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   const transformationTypes = [
@@ -152,7 +152,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
       const preview = [];
       
       // Get a few sample rows from the dataset
-      const sampleRows = dataset.previewData?.rows.slice(0, 5) || [];
+      const sampleRows = dataset.preview_data?.rows.slice(0, 5) || [];
       
       // For each sample row, create a before/after comparison
       for (const row of sampleRows) {
@@ -160,7 +160,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
         const transformedValues: Record<string, any> = {};
         
         // Get original values for selected features
-        dataset.previewData?.columns.forEach((col, index) => {
+        dataset.preview_data?.columns.forEach((col, index) => {
           if (selectedFeatures.includes(col)) {
             originalValues[col] = row[index];
           }
@@ -504,7 +504,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
         )}
       </Card>
 
-      {previewData && (
+      {preview_data && (
         <Card>
           <h3 className="text-sm font-medium text-gray-900 mb-4">Transformation Preview</h3>
           
@@ -524,7 +524,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {previewData.flatMap((row, rowIndex) => 
+                {preview_data.flatMap((row, rowIndex) => 
                   Object.keys(row.original).map((feature, featureIndex) => (
                     <tr key={`${rowIndex}-${featureIndex}`} className={rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

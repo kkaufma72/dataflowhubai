@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Dataset } from '../../types';
 import { 
   Database, 
@@ -8,9 +8,11 @@ import {
   Shield,
   Calendar,
   FileText,
-  HardDrive
+  HardDrive,
+  Sparkles
 } from 'lucide-react';
 import Button from '../common/Button';
+import { calculateDatasetHealth, getHealthBadgeProps } from '../../utils/datasetHealthScore';
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -18,6 +20,7 @@ interface DatasetCardProps {
   onAnalyze: (dataset: Dataset) => void;
   onQualityCheck: (dataset: Dataset) => void;
   onChat: (dataset: Dataset) => void;
+  onTransform?: (dataset: Dataset) => void;
 }
 
 const DatasetCard: React.FC<DatasetCardProps> = ({
@@ -25,8 +28,13 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
   onPreview,
   onAnalyze,
   onQualityCheck,
-  onChat
+  onChat,
+  onTransform
 }) => {
+  // Calculate health score
+  const healthResult = useMemo(() => calculateDatasetHealth(dataset), [dataset]);
+  const badgeProps = useMemo(() => getHealthBadgeProps(healthResult.score), [healthResult.score]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -61,11 +69,28 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 relative">
+      {/* Health Score Badge */}
+      <div className="absolute top-3 right-3 z-10">
+        <div 
+          className="px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1.5 border-2"
+          style={{ 
+            backgroundColor: healthResult.color + '15',
+            color: healthResult.color,
+            borderColor: healthResult.color + '40'
+          }}
+          title={`Health Score: ${healthResult.score}/100 - ${badgeProps.label}`}
+        >
+          <span>{badgeProps.emoji}</span>
+          <span>{healthResult.score}</span>
+          <span className="font-extrabold text-sm">{healthResult.grade}</span>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 pr-16">
             <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
               <span className="text-2xl">{getFileIcon((dataset as any).file_type || (dataset as any).fileType)}</span>
             </div>
@@ -149,6 +174,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
           size="sm"
           icon={<Shield className="w-4 h-4" />}
           className="flex-1"
+          data-tour="health-score"
         >
           Quality
         </Button>
@@ -170,10 +196,26 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
           size="sm"
           icon={<MessageSquare className="w-4 h-4" />}
           className="flex-1"
+          data-tour="ask-ai"
         >
           Ask AI
         </Button>
       </div>
+      
+      {onTransform && (
+        <div className="px-6 pb-6">
+          <Button
+            onClick={() => onTransform(dataset)}
+            variant="primary"
+            size="sm"
+            icon={<Sparkles className="w-4 h-4" />}
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+            data-tour="transform-studio"
+          >
+            ✨ Transform with AI
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -57,9 +57,9 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
 
   // Initialize selected features from dataset
   useEffect(() => {
-    if (dataset && dataset.previewData?.columns) {
+    if (dataset && dataset.preview_data?.columns) {
       // Exclude ID columns and timestamp columns by default
-      const initialFeatures = dataset.previewData.columns.filter(col => 
+      const initialFeatures = dataset.preview_data.columns.filter(col => 
         !col.toLowerCase().includes('id') && 
         !col.toLowerCase().includes('_id') &&
         !col.toLowerCase().includes('timestamp') &&
@@ -70,7 +70,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
       setSelectedFeatures(initialFeatures);
       
       // Find potential timestamp column
-      const timestampCol = dataset.previewData.columns.find(col => 
+      const timestampCol = dataset.preview_data.columns.find(col => 
         col.toLowerCase().includes('timestamp') || 
         col.toLowerCase().includes('date') ||
         col.toLowerCase().includes('time')
@@ -84,7 +84,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
       }
       
       // Generate mock feature importance
-      generateFeatureImportance(dataset.previewData.columns);
+      generateFeatureImportance(dataset.preview_data.columns);
     }
   }, [dataset]);
 

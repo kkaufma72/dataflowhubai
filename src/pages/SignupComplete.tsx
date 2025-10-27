@@ -47,18 +47,18 @@ const SignupComplete: React.FC = () => {
               Something went wrong
             </h2>
             <p className="text-gray-600 mb-6">
-              We couldn't complete your signup. Please contact support if the issue persists.
+              We couldn't complete your signup. Please try creating an account.
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => navigate('/pricing')}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                onClick={() => navigate('/signin')}
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
               >
-                Back to Pricing
+                Go to Sign Up
               </button>
               <button
                 onClick={() => window.location.href = 'mailto:support@dataflowhubai.com'}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
               >
                 Contact Support
               </button>
@@ -158,18 +158,12 @@ const SignupComplete: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
+        <div className="mt-8 flex justify-center">
           <button
             onClick={() => navigate('/signin')}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg"
+            className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg"
           >
-            Go to Sign In
-          </button>
-          <button
-            onClick={() => navigate('/')}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
-          >
-            Back to Home
+            Continue to Sign In
           </button>
         </div>
 

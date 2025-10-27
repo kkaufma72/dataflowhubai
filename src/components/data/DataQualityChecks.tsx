@@ -110,11 +110,11 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
 
   // Initialize with some default rules based on dataset
   useEffect(() => {
-    if (dataset && dataset.previewData?.columns) {
+    if (dataset && dataset.preview_data?.columns) {
       const defaultRules: QualityRule[] = [];
       
       // Add completeness rule for each column
-      dataset.previewData.columns.forEach(column => {
+      dataset.preview_data.columns.forEach(column => {
         // Skip ID columns for completeness checks
         if (!column.toLowerCase().includes('id')) {
           defaultRules.push({
@@ -131,7 +131,7 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
       });
       
       // Add uniqueness rule for ID columns
-      const idColumns = dataset.previewData.columns.filter(column => 
+      const idColumns = dataset.preview_data.columns.filter(column => 
         column.toLowerCase().includes('id')
       );
       
@@ -149,7 +149,7 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
       });
       
       // Add some consistency rules for specific column types
-      const dateColumns = dataset.previewData.columns.filter(column => 
+      const dateColumns = dataset.preview_data.columns.filter(column => 
         column.toLowerCase().includes('date') || 
         column.toLowerCase().includes('time')
       );
@@ -168,9 +168,9 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
       });
       
       // Add some accuracy rules for numeric columns
-      const numericColumns = dataset.previewData.columns.filter((column, index) => {
+      const numericColumns = dataset.preview_data.columns.filter((column, index) => {
         // Check if most values in this column are numeric
-        const values = dataset.previewData!.rows.map(row => row[index]);
+        const values = dataset.preview_data!.rows.map(row => row[index]);
         const numericCount = values.filter(value => !isNaN(Number(value))).length;
         return numericCount / values.length > 0.8;
       });

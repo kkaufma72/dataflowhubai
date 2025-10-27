@@ -72,7 +72,7 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
   }, []);
 
   const startProcessing = async () => {
-    if (!dataset.previewData) {
+    if (!dataset.preview_data) {
       toast.error('No data available for processing');
       return;
     }
@@ -91,7 +91,7 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
 
     try {
       // Get data from dataset
-      const { columns, rows } = dataset.previewData;
+      const { columns, rows } = dataset.preview_data;
       
       // Calculate total batches
       const totalBatches = Math.ceil(rows.length / batchSize);

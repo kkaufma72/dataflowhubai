@@ -59,7 +59,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   };
 
   // Get available columns from dataset
-  const availableColumns = dataset.previewData?.columns || [];
+  const availableColumns = dataset.preview_data?.columns || [];
 
   // Reset target variable if it's not in the new dataset's columns
   useEffect(() => {

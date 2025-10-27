@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { 
   Database, 
   Layers, 
@@ -18,6 +18,7 @@ import { useMLContext } from '../context/MLContext';
 import { useNotifications } from '../components/common/NotificationSystem';
 import { useTour } from '../components/common/TourProvider';
 import { useAIChat } from '../components/ai/GlobalAIAssistant';
+import { useAuth } from '../components/auth/AuthProvider';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -27,6 +28,9 @@ import DashboardStatsSkeleton from '../components/common/DashboardStatsSkeleton'
 import CardSkeleton from '../components/common/CardSkeleton';
 import DatasetCard from '../components/datasets/DatasetCard';
 import AddSampleDataButton from '../components/data/AddSampleDataButton';
+
+// Lazy load onboarding components
+const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
 
 interface WorkflowStep {
   id: string;
@@ -41,11 +45,38 @@ const Dashboard: React.FC = () => {
   const { datasets, models, isLoading, currentProject } = useMLContext();
   const { addNotification } = useNotifications();
   const { startTour } = useTour();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { openChat } = useAIChat();
   const [searchParams] = useSearchParams();
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
+  const [showMagicMoment, setShowMagicMoment] = useState(false);
+
+  // Check if user should see Magic Moment welcome
+  useEffect(() => {
+    const hasSeenMagicMoment = localStorage.getItem('hasSeenMagicMoment');
+    const hasSkipped = localStorage.getItem('hasSkippedMagicMoment');
+    
+    // Show if: first time, no datasets, and hasn't seen/skipped before
+    if (!hasSeenMagicMoment && !hasSkipped && datasets.length === 0 && !isLoading && user) {
+      // Small delay for smooth transition
+      setTimeout(() => {
+        setShowMagicMoment(true);
+      }, 1000);
+    }
+  }, [datasets.length, isLoading, user]);
+
+  const handleMagicMomentClose = () => {
+    setShowMagicMoment(false);
+    localStorage.setItem('hasSeenMagicMoment', 'true');
+  };
+
+  const handleSampleLoaded = () => {
+    // Mark as complete
+    localStorage.setItem('hasSeenMagicMoment', 'true');
+    // Could trigger confetti or celebration here
+  };
 
   // Handle Stripe payment success redirect
   useEffect(() => {
@@ -596,6 +627,25 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Magic Moment Welcome Modal */}
+      {showMagicMoment && user && (
+        <Suspense fallback={null}>
+          <MagicMomentWelcome
+            userProfile={{
+              full_name: user.user_metadata?.full_name,
+              email: user.email,
+              company: user.user_metadata?.company,
+              job_title: user.user_metadata?.job_title,
+              use_case: user.user_metadata?.use_case,
+              linkedin_url: user.user_metadata?.linkedin_url
+            }}
+            onClose={handleMagicMomentClose}
+            onSampleLoaded={handleSampleLoaded}
+          />
+        </Suspense>
+      )}
+
     </div>
   );
 };
