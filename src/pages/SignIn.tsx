@@ -566,16 +566,18 @@ const SignIn = () => {
                 )}
               </div>
 
-              {/* Forgot Password Link (Sign In Only) */}
+              {/* Password Reset - Temporarily disabled during beta */}
               {!isSignUp && (
                 <div className="flex items-center justify-end">
-                  <button
-                    type="button"
-                    onClick={handlePasswordReset}
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
-                  >
-                    Forgot your password?
-                  </button>
+                  <p className="text-sm text-gray-500">
+                    Forgot password? Email{' '}
+                    <a 
+                      href="mailto:support@dataflowhub.ai" 
+                      className="text-indigo-600 hover:text-indigo-500 font-medium"
+                    >
+                      support@dataflowhub.ai
+                    </a>
+                  </p>
                 </div>
               )}
 
