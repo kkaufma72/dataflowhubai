@@ -51,6 +51,8 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   const handleCTA = async () => {
     console.log('🎯 handleCTA clicked for tier:', tier);
     console.log('👤 User status:', user ? 'Logged in as ' + user.email : 'Not logged in');
+    console.log('🔍 User object:', user);
+    console.log('📧 User email:', user?.email);
     
     if (isFree) {
       console.log('📝 Free tier - navigating to signin');
@@ -64,15 +66,18 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       return;
     }
 
-    // If user is not authenticated, show email modal
-    if (!user) {
-      console.log('🔓 No user - showing email modal');
+    // Check for user authentication more thoroughly
+    if (!user || !user.email) {
+      console.log('🔓 No user or no email - showing email modal');
+      console.log('User exists:', !!user);
+      console.log('User email exists:', !!user?.email);
       setShowEmailModal(true);
       return;
     }
 
     // Authenticated user - proceed directly to checkout
     console.log('✅ User authenticated - starting checkout directly');
+    console.log('📤 Starting checkout with user email:', user.email);
     await startCheckout({ tier, billing: billingPeriod });
   };
 
