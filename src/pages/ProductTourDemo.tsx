@@ -1286,8 +1286,8 @@ const ProductTourDemo: React.FC = () => {
                 <StepIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">DataFlow Hub AI</h1>
-                <p className="text-sm text-gray-100">Interactive Product Tour</p>
+                <h1 className="text-2xl font-bold text-gray-900">DataFlow Hub AI</h1>
+                <p className="text-sm text-gray-700">Interactive Product Tour</p>
               </div>
             </div>
             
@@ -1352,8 +1352,8 @@ const ProductTourDemo: React.FC = () => {
           <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <StepIcon className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-2">{currentTourStep.title}</h2>
-          <p className="text-lg text-gray-100 max-w-2xl mx-auto">{currentTourStep.description}</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">{currentTourStep.title}</h2>
+          <p className="text-lg text-gray-700 max-w-2xl mx-auto">{currentTourStep.description}</p>
         </div>
 
         {/* Step Content */}
@@ -1457,7 +1457,7 @@ const ProductTourDemo: React.FC = () => {
         </div>
         {/* Feature Highlights */}
         <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-white mb-8">Why DataFlow Hub AI?</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">Why DataFlow Hub AI?</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
