@@ -27,7 +27,7 @@ import {
 import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/common/Button';
 
-const ModelEvaluation = () => {
+const ModelEvaluationContent = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { models, datasets } = useMLContext();
@@ -273,6 +273,14 @@ const ModelEvaluation = () => {
         </TabPanels>
       </TabGroup>
     </main>
+  );
+};
+
+const ModelEvaluation = () => {
+  return (
+    <PremiumFeatureGate feature="evaluate">
+      <ModelEvaluationContent />
+    </PremiumFeatureGate>
   );
 };
 

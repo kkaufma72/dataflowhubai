@@ -19,7 +19,7 @@ import RealTimeMonitoring from '../components/monitoring/RealTimeMonitoring';
 const ModelPerformanceDashboard = React.lazy(() => import('../components/monitoring/ModelPerformanceDashboard'));
 import toast from 'react-hot-toast';
 
-const ModelMonitoring: React.FC = () => {
+const ModelMonitoringContent: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { models, datasets, updateModelStatus } = useMLContext();
@@ -304,6 +304,14 @@ const ModelMonitoring: React.FC = () => {
         </React.Suspense>
       )}
     </div>
+  );
+};
+
+const ModelMonitoring: React.FC = () => {
+  return (
+    <PremiumFeatureGate feature="monitoring">
+      <ModelMonitoringContent />
+    </PremiumFeatureGate>
   );
 };
 

@@ -15,6 +15,7 @@ import ModelComparison from '../components/models/ModelComparison';
 import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import CrossValidation from '../components/models/CrossValidation';
+import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 import toast from 'react-hot-toast';
 
 const ModelTraining: React.FC = () => {
@@ -248,7 +249,8 @@ const ModelTraining: React.FC = () => {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <PremiumFeatureGate feature="train_models">
+      <DndProvider backend={HTML5Backend}>
       <div>
         <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
           <div>
@@ -613,6 +615,7 @@ const ModelTraining: React.FC = () => {
         )}
       </div>
     </DndProvider>
+    </PremiumFeatureGate>
   );
 };
 
