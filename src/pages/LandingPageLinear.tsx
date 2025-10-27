@@ -2,14 +2,14 @@
 // Minimalist, elegant, with subtle animations and clean typography
 
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight, CheckCircle, Menu, X } from 'lucide-react';
 import InteractiveLiveDemo from '../components/landing/InteractiveLiveDemo';
 import LiveDataTransformDemo from '../components/landing/LiveDataTransformDemo';
 
 const LandingPageLinear: React.FC = () => {
-  const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -35,7 +35,7 @@ const LandingPageLinear: React.FC = () => {
               <span className="text-xl font-semibold text-gray-900">DataFlowHub</span>
             </div>
 
-            {/* Navigation Links */}
+            {/* Navigation Links - Desktop */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Features</a>
               <a href="#pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
@@ -43,8 +43,8 @@ const LandingPageLinear: React.FC = () => {
               <Link to="/documentation" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Docs</Link>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex items-center space-x-4">
+            {/* CTA Buttons - Desktop */}
+            <div className="hidden md:flex items-center space-x-4">
               <Link
                 to="/signin"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
@@ -58,8 +58,71 @@ const LandingPageLinear: React.FC = () => {
                 Get started
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg">
+            <div className="px-6 py-4 space-y-4">
+              <a 
+                href="#features" 
+                className="block text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
+              </a>
+              <a 
+                href="#pricing" 
+                className="block text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pricing
+              </a>
+              <Link 
+                to="/product-tour" 
+                className="block text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Product Tour
+              </Link>
+              <Link 
+                to="/documentation" 
+                className="block text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Docs
+              </Link>
+              <div className="pt-4 border-t border-gray-200 space-y-2">
+                <Link
+                  to="/signin"
+                  className="block w-full px-4 py-2 text-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/signin"
+                  className="block w-full px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-all text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get started
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section - Linear Style */}
@@ -82,7 +145,7 @@ const LandingPageLinear: React.FC = () => {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-[64px] font-bold leading-[1.1] tracking-tight text-gray-900 mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[1.1] tracking-tight text-gray-900 mb-6">
             Talk to your data
             <br />
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -91,7 +154,7 @@ const LandingPageLinear: React.FC = () => {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl text-gray-600 max-w-2xl mb-10 leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mb-10 leading-relaxed">
             Transform, analyze, and understand your business data using natural language. 
             No SQL. No formulas. Just ask.
           </p>
@@ -112,17 +175,17 @@ const LandingPageLinear: React.FC = () => {
           </div>
 
           {/* Secondary CTA Buttons */}
-          <div className="flex items-center gap-4 mb-12">
+          <div className="flex flex-col sm:flex-row items-center gap-4 mb-12">
             <Link
               to="/signin"
-              className="group px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-all hover:shadow-xl flex items-center gap-2"
+              className="group w-full sm:w-auto px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-all hover:shadow-xl flex items-center justify-center gap-2"
             >
               Start for free
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               to="/demo"
-              className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:border-gray-900 hover:bg-gray-50 transition-all"
+              className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:border-gray-900 hover:bg-gray-50 transition-all text-center"
             >
               Watch demo
             </Link>
@@ -251,7 +314,7 @@ const LandingPageLinear: React.FC = () => {
           {/* Cloud Platforms Row */}
           <div className="mb-12">
             <h3 className="text-lg font-semibold text-gray-800 text-center mb-8">Cloud Platforms</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 items-center justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6 items-center justify-items-center">
               {/* Google Cloud Platform */}
               <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer relative" title="Google Cloud Platform - BigQuery, Cloud SQL, Firestore">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-green-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
@@ -297,7 +360,7 @@ const LandingPageLinear: React.FC = () => {
           {/* Databases Row */}
           <div className="mb-12">
             <h3 className="text-lg font-semibold text-gray-800 text-center mb-8">Popular Databases</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 items-center justify-items-center">
               {/* PostgreSQL */}
               <div className="group flex flex-col items-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all cursor-pointer" title="PostgreSQL - Advanced open-source relational database">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
@@ -364,6 +427,85 @@ const LandingPageLinear: React.FC = () => {
             </p>
           </div>
           <LiveDataTransformDemo />
+        </div>
+      </section>
+
+      {/* Customer Testimonials Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-gray-50/30 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Trusted by data professionals worldwide
+            </h2>
+            <p className="text-lg text-gray-600">
+              See how teams are transforming their data workflows
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                "DataFlowHub AI reduced our data analysis time from hours to minutes. The natural language queries are game-changing."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">SM</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">Sarah Mitchell</p>
+                  <p className="text-gray-500 text-xs">Data Analyst, TechCorp</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                "Finally, a tool that lets me focus on insights instead of wrestling with complex queries. Absolutely love it!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">MJ</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">Mike Johnson</p>
+                  <p className="text-gray-500 text-xs">Marketing Director, StartupXYZ</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
+                ))}
+              </div>
+              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                "The AI-powered data quality scoring saved us weeks of manual data cleaning. ROI was immediate."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">AL</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">Alex Lee</p>
+                  <p className="text-gray-500 text-xs">Chief Data Officer, FinanceInc</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
