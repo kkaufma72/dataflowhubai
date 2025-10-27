@@ -28,30 +28,22 @@ if (!STRIPE_SECRET_KEY) {
 
 console.log('🎯 Starting Stripe product setup...\n');
 
-// Product configurations
+// Product configurations - Updated for production
 const PRODUCTS = [
   {
-    name: 'Starter Plan',
-    description: 'Perfect for individuals getting started with AI',
-    prices: [
-      { amount: 2900, interval: 'month', nickname: 'Starter Monthly' },
-      { amount: 29000, interval: 'year', nickname: 'Starter Annual' }
-    ]
-  },
-  {
     name: 'Professional Plan',
-    description: 'Advanced features for power users',
+    description: 'Unlimited datasets, AI chat, advanced analytics, ML models, and priority support',
     prices: [
-      { amount: 9900, interval: 'month', nickname: 'Professional Monthly' },
-      { amount: 99000, interval: 'year', nickname: 'Professional Annual' }
+      { amount: 4900, interval: 'month', nickname: 'Pro Monthly' },      // $49/month
+      { amount: 46800, interval: 'year', nickname: 'Pro Annual' }        // $39/month ($468/year) - save $120
     ]
   },
   {
     name: 'Team Plan',
-    description: 'Collaboration tools for teams',
+    description: 'Everything in Pro plus team collaboration, shared workspaces, and admin controls',
     prices: [
-      { amount: 29900, interval: 'month', nickname: 'Team Monthly' },
-      { amount: 299000, interval: 'year', nickname: 'Team Annual' }
+      { amount: 14900, interval: 'month', nickname: 'Team Monthly' },    // $149/month
+      { amount: 142800, interval: 'year', nickname: 'Team Annual' }      // $119/month ($1,428/year) - save $360
     ]
   }
 ];
@@ -130,17 +122,14 @@ async function createPrice(productId, priceData) {
 // Main setup function
 async function setupStripeProducts() {
   const results = {
-    VITE_STRIPE_STARTER_MONTHLY_PRICE_ID: '',
-    VITE_STRIPE_STARTER_ANNUAL_PRICE_ID: '',
-    VITE_STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID: '',
-    VITE_STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID: '',
+    VITE_STRIPE_PRO_MONTHLY_PRICE_ID: '',
+    VITE_STRIPE_PRO_ANNUAL_PRICE_ID: '',
     VITE_STRIPE_TEAM_MONTHLY_PRICE_ID: '',
     VITE_STRIPE_TEAM_ANNUAL_PRICE_ID: ''
   };
 
   const envVarKeys = [
-    ['VITE_STRIPE_STARTER_MONTHLY_PRICE_ID', 'VITE_STRIPE_STARTER_ANNUAL_PRICE_ID'],
-    ['VITE_STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID', 'VITE_STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID'],
+    ['VITE_STRIPE_PRO_MONTHLY_PRICE_ID', 'VITE_STRIPE_PRO_ANNUAL_PRICE_ID'],
     ['VITE_STRIPE_TEAM_MONTHLY_PRICE_ID', 'VITE_STRIPE_TEAM_ANNUAL_PRICE_ID']
   ];
 
