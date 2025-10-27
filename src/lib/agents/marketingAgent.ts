@@ -1,8 +1,9 @@
 // Marketing Intelligence Agent
 // Specialized agent for marketing analytics, copywriting, and campaign strategy
 
-import { ChatOpenAI } from "@langchain/openai";
-import { DynamicStructuredTool } from "@langchain/core/tools";
+// Marketing Intelligence Agent - Production-safe version
+// Removed LangChain imports to avoid bundling issues in production
+
 import { z } from "zod";
 import { Dataset } from '../../types';
 import { UserProfile } from '../../utils/personalizedPrompts';
@@ -56,15 +57,13 @@ const MARKETING_FRAMEWORKS = {
 // CUSTOMER SEGMENTATION TOOLS
 // ============================================================================
 
+// Tools defined as regular functions (not DynamicStructuredTool to avoid LangChain bundling issues)
+
 export const createCustomerSegmentationTool = (dataset: Dataset) => {
-  return new DynamicStructuredTool({
+  return {
     name: "segment_customers",
     description: "Segment customers based on behavior, demographics, or value",
-    schema: z.object({
-      segment_by: z.array(z.string()).describe("Columns to segment by (e.g., purchase_frequency, lifetime_value, location)"),
-      num_segments: z.number().default(4).describe("Number of segments to create")
-    }),
-    func: async ({ segment_by, num_segments }) => {
+    execute: async (segment_by: string[], num_segments: number = 4) => {
       if (!dataset.preview_data?.columns || !dataset.preview_data?.rows) {
         return "No customer data available for segmentation";
       }
@@ -102,7 +101,7 @@ export const createCustomerSegmentationTool = (dataset: Dataset) => {
         recommendations: generateSegmentRecommendations(topSegments)
       }, null, 2);
     }
-  });
+  };
 };
 
 const generateSegmentRecommendations = (segments: any[]) => {
@@ -122,14 +121,10 @@ const generateSegmentRecommendations = (segments: any[]) => {
 // ============================================================================
 
 export const createPersonaGeneratorTool = (dataset: Dataset) => {
-  return new DynamicStructuredTool({
+  return {
     name: "generate_customer_personas",
     description: "Create detailed buyer personas from customer data",
-    schema: z.object({
-      num_personas: z.number().default(3).describe("Number of personas to create"),
-      focus_attributes: z.array(z.string()).optional().describe("Specific attributes to focus on")
-    }),
-    func: async ({ num_personas, focus_attributes }) => {
+    execute: async (num_personas: number = 3, focus_attributes?: string[]) => {
       if (!dataset.preview_data) {
         return "No customer data available";
       }
@@ -159,7 +154,7 @@ export const createPersonaGeneratorTool = (dataset: Dataset) => {
         usage_tip: "Use these personas to tailor your marketing messages, ad targeting, and content strategy"
       }, null, 2);
     }
-  });
+  };
 };
 
 const extractCharacteristics = (rows: any[], columns: string[], focusAttributes?: string[]) => {
@@ -196,22 +191,12 @@ const suggestMessagingAngle = (rows: any[], columns: string[]) => {
 
 export const createCopywritingTools = (userProfile: UserProfile) => {
   return [
-    new DynamicStructuredTool({
+    {
       name: "generate_marketing_copy",
       description: "Generate marketing copy using proven frameworks (AIDA, PAS, FAB, StoryBrand)",
-      schema: z.object({
-        framework: z.enum(["AIDA", "PAS", "FAB", "StoryBrand"]).describe("Marketing framework to use"),
-        content_type: z.enum(["email", "ad", "landing_page", "social_post", "blog_intro"]),
-        product_name: z.string().describe("Product or service name"),
-        key_benefit: z.string().describe("Main benefit or value proposition"),
-        target_audience: z.string().describe("Who is this for?"),
-        tone: z.enum(["professional", "casual", "urgent", "friendly", "authoritative"]).default("professional")
-      }),
-      func: async ({ framework, content_type, product_name, key_benefit, target_audience, tone }) => {
-        const llm = new ChatOpenAI({ 
-          modelName: "gpt-4o", 
-          temperature: 0.8 // More creative for copywriting
-        });
+      execute: async (framework: string, content_type: string, product_name: string, key_benefit: string, target_audience: string, tone: string = "professional") => {
+        const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+        if (!apiKey) throw new Error('OpenAI API key not configured');
 
         const frameworkGuide = MARKETING_FRAMEWORKS[framework];
         
@@ -246,7 +231,7 @@ Write the ${content_type} now:`;
         
         return JSON.stringify({
           framework_used: framework,
-          copy: response.content,
+          copy: aiResponse,
           tips: [
             "Test this copy with A/B variations",
             "Personalize the opening for each segment",
@@ -254,18 +239,12 @@ Write the ${content_type} now:`;
           ]
         }, null, 2);
       }
-    }),
-
-    new DynamicStructuredTool({
+    },
+    {
       name: "create_ab_test_variations",
       description: "Generate A/B test variations of marketing copy",
-      schema: z.object({
-        original_copy: z.string(),
-        num_variations: z.number().default(3),
-        test_element: z.enum(["headline", "cta", "body", "entire_copy"]).default("headline")
-      }),
-      func: async ({ original_copy, num_variations, test_element }) => {
-        const llm = new ChatOpenAI({ modelName: "gpt-4o", temperature: 0.9 });
+      execute: async (original_copy: string, num_variations: number = 3, test_element: string = "headline") => {
+        // Simplified version without LangChain
 
         const prompt = `Generate ${num_variations} A/B test variations.
 
