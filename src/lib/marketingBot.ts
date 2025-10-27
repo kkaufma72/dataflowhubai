@@ -1,28 +1,28 @@
-// AI Marketing Bot - Automated Marketing Assistant
-// Generates content, schedules posts, analyzes performance
+/**
+ * Marketing Content Generation Bot
+ * 
+ * ⚠️ SECURITY WARNING: All functions now use secure backend Edge Functions
+ * instead of direct OpenAI API calls from the client.
+ * 
+ * This prevents API key exposure and unauthorized usage.
+ */
 
-import { buildMarketingSystemPrompt } from './agents/marketingAgentSimple';
+import { secureMarketingContent } from './secureAI';
 
-export interface MarketingBotConfig {
-  platform: string;
-  brand_voice: string;
-  target_audience: string;
-  content_pillars: string[];
-  posting_frequency: string;
-}
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
 
 export interface GeneratedContent {
-  type: 'tweet' | 'linkedin_post' | 'blog_post' | 'product_hunt' | 'reddit_post' | 'email';
-  platform: string;
   content: string;
-  hashtags?: string[];
+  metadata?: any;
   image_suggestion?: string;
   best_time_to_post?: string;
   cta?: string;
 }
 
 // ============================================================================
-// CONTENT GENERATION
+// CONTENT GENERATION FUNCTIONS
 // ============================================================================
 
 /**
@@ -33,10 +33,7 @@ export const generateProductHuntPost = async (productDetails: {
   tagline: string;
   features: string[];
   uniqueValue: string;
-}) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
+}): Promise<string> => {
   const prompt = `Create a compelling Product Hunt launch post.
 
 Product: ${productDetails.name}
@@ -68,66 +65,29 @@ Make it:
 
 Use emojis strategically.`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 1000
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'product_hunt');
 };
 
 /**
  * Generate Twitter Thread
  */
-export const generateTwitterThread = async (topic: string, numTweets: number = 7) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
+export const generateTwitterThread = async (topic: string, numTweets: number = 7): Promise<string> => {
   const prompt = `Create a ${numTweets}-tweet thread about: ${topic}
 
-For a SaaS product launch (DataFlowHub AI - AI-powered data analytics)
+Format:
+1/X Hook tweet (grab attention, ask a question or make bold claim)
+2/X Problem (what pain point exists)
+3/X-N/X Solution points (tips, insights, examples)
+X/X Call to action
 
-Requirements:
-- Tweet 1: Hook (surprising stat or bold claim)
-- Tweet 2-5: Value props and features
-- Tweet 6: Social proof or demo
-- Tweet 7: CTA with link
+Rules:
+- Max 280 chars per tweet
+- Use emojis for visual appeal
+- Make tweet 1 ultra-compelling
+- Include 1-2 hashtags in final tweet
+- End with clear CTA`;
 
-Each tweet:
-- Max 280 characters
-- Include emojis
-- No hashtags in thread (save for final tweet)
-- Conversational tone
-- Visual descriptions (for accompanying images)
-
-Make it viral-worthy!`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.9,
-      max_tokens: 1200
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'twitter');
 };
 
 /**
@@ -136,10 +96,7 @@ Make it viral-worthy!`;
 export const generateDailySocialContent = async (
   platform: 'twitter' | 'linkedin' | 'facebook',
   contentPillar: 'education' | 'product_update' | 'customer_story' | 'tips' | 'inspiration'
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
+): Promise<string> => {
   const platformGuidelines = {
     twitter: 'Max 280 chars, casual tone, use emojis, 2-3 hashtags',
     linkedin: '150-300 words, professional tone, thought leadership, 3-5 hashtags',
@@ -170,22 +127,7 @@ Also suggest:
 - Image/visual idea
 - Engagement tactics`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 600
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'social');
 };
 
 /**
@@ -195,52 +137,28 @@ export const generateBlogPost = async (
   topic: string,
   keywords: string[],
   wordCount: number = 1500
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
-  const prompt = `Write a comprehensive blog post:
+): Promise<string> => {
+  const prompt = `Create a comprehensive blog post outline.
 
 Topic: ${topic}
 Target Keywords: ${keywords.join(', ')}
 Word Count: ~${wordCount} words
 
-For: DataFlowHub AI blog (AI-powered data analytics platform)
-
 Structure:
-1. SEO Title (60 chars, includes primary keyword)
-2. Meta Description (155 chars)
-3. Introduction (hook + problem statement)
-4. Main Content (H2 sections with examples)
-5. How DataFlowHub Helps (product integration)
-6. Conclusion + CTA
+1. **Title** (SEO-optimized, includes primary keyword)
+2. **Meta Description** (155 chars)
+3. **Introduction** (Hook, problem, promise)
+4. **Main Sections** (H2 headers with bullet points)
+5. **Conclusion** (Summary + CTA)
 
-Make it:
-- SEO-optimized
-- Actionable (practical tips)
-- Example-heavy (show, don't tell)
-- Naturally mention DataFlowHub
-- Include internal links suggestions
-- Not overly promotional
+Requirements:
+- SEO-optimized headings
+- Include all target keywords naturally
+- Provide value upfront
+- Clear next steps
+- Include data/statistics placeholders`;
 
-Tone: Helpful expert, not salesy`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 2500
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'blog');
 };
 
 /**
@@ -249,10 +167,7 @@ Tone: Helpful expert, not salesy`;
 export const generateAdCopy = async (
   platform: 'google' | 'facebook' | 'linkedin',
   objective: 'awareness' | 'conversion' | 'signup'
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
+): Promise<string> => {
   const platformSpecs = {
     google: {
       headline_max: 30,
@@ -299,377 +214,187 @@ Make them:
 
 Platform best practices for ${platform}.`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.9,
-      max_tokens: 1500
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'ad');
 };
 
 /**
  * Generate Email Campaign
  */
 export const generateEmailCampaign = async (
-  campaignType: 'welcome' | 'onboarding' | 'engagement' | 'conversion',
+  campaignType: 'onboarding' | 'nurture' | 'promotion' | 'reengagement',
   numEmails: number = 5
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
+): Promise<string> => {
+  const prompt = `Create a ${numEmails}-email ${campaignType} campaign for DataFlowHub AI.
 
-  const prompt = `Create a ${numEmails}-email ${campaignType} campaign.
+For each email, provide:
+1. **Subject Line** (compelling, 40-50 chars)
+2. **Preview Text** (complements subject, 80-100 chars)
+3. **Body Copy** (150-300 words)
+4. **CTA Button Text**
+5. **Optimal Send Time**
 
-Product: DataFlowHub AI
-Audience: New signups (free tier users)
-Goal: ${campaignType === 'conversion' ? 'Convert to $49/mo Pro plan' : 'Engage and activate users'}
+Campaign Flow:
+${campaignType === 'onboarding' ? '- Welcome → Setup → First Win → Feature Discovery → Power User'
+  : campaignType === 'nurture' ? '- Educational → Case Study → Comparison → Trial Offer → Follow-up'
+  : campaignType === 'promotion' ? '- Teaser → Launch → Benefits → Urgency → Last Chance'
+  : '- We Miss You → Value Reminder → Special Offer → Success Stories → Final Call'}
 
-For each email provide:
-1. **Day**: When to send (Day 0, 3, 7, etc.)
-2. **Subject Line**: (50 chars max, high open rate)
-3. **Preview Text**: (40 chars, appears in inbox)
-4. **Body**: (200-300 words, conversational)
-5. **CTA**: (Clear button text)
-6. **Goal**: What this email accomplishes
+Make each email:
+- Value-first (not salesy)
+- Personalized
+- Scannable (short paragraphs)
+- Mobile-optimized
+- Clear single CTA`;
 
-Campaign arc:
-- Email 1: Welcome, set expectations
-- Email 2-4: Provide value, build trust
-- Email 5: Strong conversion push
+  return await secureMarketingContent(prompt, 'email');
+};
 
-Tone: Helpful friend, not pushy salesperson
+/**
+ * Generate Customer Personas
+ */
+export const generateCustomerPersonas = async (
+  industry: string,
+  numPersonas: number = 3
+): Promise<string> => {
+  const prompt = `Create ${numPersonas} detailed customer personas for DataFlowHub AI in the ${industry} industry.
+
+For each persona, include:
+1. **Name & Role** (e.g., "Analytics Annie - Marketing Manager")
+2. **Demographics** (Age, Location, Company Size)
+3. **Goals** (What they want to achieve)
+4. **Challenges** (Pain points & frustrations)
+5. **Tech Stack** (Tools they currently use)
+6. **Buying Behavior** (Decision criteria, objections)
+7. **Messaging Angle** (How to position to them)
+8. **Content Preferences** (Where they consume info)
+
+Make them:
+- Realistic and specific
+- Based on real market data
+- Actionable for marketing
+- Different from each other`;
+
+  return await secureMarketingContent(prompt, 'email'); // Using email as fallback
+};
+
+/**
+ * Generate Landing Page Copy
+ */
+export const generateLandingPageCopy = async (
+  productFeature: string,
+  targetAudience: string
+): Promise<string> => {
+  const prompt = `Create high-converting landing page copy for: ${productFeature}
+
+Target Audience: ${targetAudience}
 
 Include:
-- Personalization tokens: {{name}}
-- Feature highlights
-- User success stories
-- Upgrade benefits
+1. **Hero Section**
+   - Headline (10 words max, clear value prop)
+   - Subheadline (20 words, expand on promise)
+   - CTA button text
+
+2. **Problem Section**
+   - Headline
+   - 3 pain points (short bullets)
+
+3. **Solution Section**
+   - Headline
+   - How it works (3-4 steps)
+
+4. **Benefits Section**
+   - Headline
+   - 3 key benefits with icons
+
+5. **Social Proof Section**
+   - Headline
+   - Testimonial placeholder
+   - Trust badges/stats
+
+6. **CTA Section**
+   - Headline
+   - Risk reversal statement
+   - Button text
+
+Use persuasive copywriting techniques:
+- AIDA framework
+- Benefit-driven
+- Specific numbers
+- Active voice
 - Urgency (subtle)`;
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 2000
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'email'); // Using email as fallback
 };
 
 /**
- * Generate 30-Day Content Calendar
+ * Generate SEO Meta Tags
  */
-export const generateContentCalendar = async (
-  platforms: string[],
-  startDate: Date
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
+export const generateSEOMetaTags = async (
+  pageTitle: string,
+  primaryKeyword: string
+): Promise<string> => {
+  const prompt = `Create SEO-optimized meta tags for a page about: ${pageTitle}
 
-  const prompt = `Create a 30-day content calendar for DataFlowHub AI launch.
+Primary Keyword: ${primaryKeyword}
 
-Platforms: ${platforms.join(', ')}
-Start Date: ${startDate.toLocaleDateString()}
+Generate:
+1. **Title Tag** (50-60 chars, includes keyword)
+2. **Meta Description** (150-160 chars, compelling, includes keyword)
+3. **H1 Heading** (Variation of title, natural language)
+4. **5 Related Keywords** (LSI keywords for content)
+5. **Open Graph Tags** (for social sharing)
+6. **Schema Markup Suggestions**
 
-Content Pillars:
-1. Education (how-to, tips)
-2. Product features (showcase capabilities)
-3. Customer success (testimonials, case studies)
-4. Industry insights (data trends)
-5. Behind-the-scenes (founder story)
+Make them:
+- Click-worthy
+- Keyword-optimized
+- User-intent focused
+- Compliant with Google guidelines`;
 
-For each day, provide:
-- Date
-- Platform
-- Content type
-- Post topic/angle
-- Key message
-- CTA
-- Hashtags (if applicable)
-
-Balance:
-- 40% educational
-- 30% product
-- 20% social proof
-- 10% promotional
-
-Mix formats:
-- Text posts
-- Videos
-- Images
-- Polls
-- Threads
-
-Optimize posting times for each platform.`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 3000
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'blog');
 };
 
 /**
- * Analyze Competition
+ * Generate Cold Email Outreach
  */
-export const analyzeCompetition = async (competitors: string[]) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
+export const generateColdEmail = async (
+  recipientRole: string,
+  valueProposition: string
+): Promise<string> => {
+  const prompt = `Create a cold email for outreach to: ${recipientRole}
 
-  const prompt = `Analyze these competitors for DataFlowHub AI:
+Value Proposition: ${valueProposition}
 
-Competitors: ${competitors.join(', ')}
+Structure:
+1. **Subject Line** (Personalized, 5-7 words)
+2. **Opening** (Pattern interrupt, about them not you)
+3. **Value Prop** (One clear benefit, 2 sentences max)
+4. **Proof** (Social proof or data point)
+5. **CTA** (Low-friction ask)
+6. **Signature** (Professional)
 
-For each, identify:
-1. **Positioning**: How they position themselves
-2. **Pricing**: Their pricing strategy
-3. **Key Features**: What they emphasize
-4. **Messaging**: Taglines, value props
-5. **Gaps**: What they're missing (our opportunities)
+Follow best practices:
+- Under 100 words total
+- Personalized opening
+- No buzzwords/jargon
+- Single clear CTA
+- Professional but casual tone
+- Mobile-friendly format
 
-Then provide:
-**Differentiation Strategy**: How to position DataFlowHub
-**Messaging Angles**: What to emphasize
-**Target Customers**: Who to focus on (underserved by competitors)
-**Marketing Channels**: Where they're weak
+Include 3 variations to A/B test.`;
 
-Be specific and actionable.`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.6,
-      max_tokens: 2000
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  return await secureMarketingContent(prompt, 'email');
 };
 
-/**
- * Generate Response to Comments/Feedback
- */
-export const generateCommentResponse = async (
-  originalComment: string,
-  context: 'product_hunt' | 'reddit' | 'twitter' | 'support'
-) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OpenAI API key required');
-
-  const toneGuide = {
-    product_hunt: 'Friendly, grateful, helpful. Engage authentically.',
-    reddit: 'Casual, transparent, avoid marketing speak.',
-    twitter: 'Brief, witty, conversational.',
-    support: 'Professional, helpful, solution-oriented.'
-  };
-
-  const prompt = `Generate a response to this ${context} comment:
-
-Comment: "${originalComment}"
-
-Context: DataFlowHub AI (AI data analytics platform)
-Tone: ${toneGuide[context]}
-
-Response should:
-- Thank them for feedback
-- Address their point directly
-- Provide value (answer, tip, or insight)
-- Invite continued conversation
-- Include CTA if appropriate (subtle!)
-
-Keep it authentic and helpful, not salesy.
-Max 200 words.`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 300
-    })
-  });
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+export default {
+  generateProductHuntPost,
+  generateTwitterThread,
+  generateDailySocialContent,
+  generateBlogPost,
+  generateAdCopy,
+  generateEmailCampaign,
+  generateCustomerPersonas,
+  generateLandingPageCopy,
+  generateSEOMetaTags,
+  generateColdEmail
 };
-
-/**
- * Generate Launch Week Content Bundle
- */
-export const generateLaunchWeekBundle = async () => {
-  const bundle = {
-    productHunt: '',
-    twitterThread: '',
-    linkedinPost: '',
-    redditPost: '',
-    blogPost: '',
-    emailAnnouncement: ''
-  };
-
-  // Generate all content in parallel
-  const [ph, twitter, linkedin, reddit, blog, email] = await Promise.all([
-    generateProductHuntPost({
-      name: 'DataFlowHub AI',
-      tagline: 'Talk to your data - Get AI insights',
-      features: [
-        'Natural language data transformation',
-        'Voice-enabled AI chat',
-        '27 industry personalizations',
-        'Multi-agent AI system',
-        'Conversation memory'
-      ],
-      uniqueValue: 'Only platform combining voice, natural language, and industry-specific AI'
-    }),
-    generateTwitterThread('Launching DataFlowHub AI - AI that understands YOUR industry', 8),
-    generateLinkedInLaunchPost(),
-    generateRedditLaunchPost(),
-    generateBlogPost('How We Built an AI Data Platform in 5 Hours', ['AI', 'data analytics', 'SaaS'], 1200),
-    generateEmailCampaign('welcome', 1)
-  ]);
-
-  bundle.productHunt = ph;
-  bundle.twitterThread = twitter;
-  bundle.linkedinPost = linkedin;
-  bundle.redditPost = reddit;
-  bundle.blogPost = blog;
-  bundle.emailAnnouncement = email;
-
-  return bundle;
-};
-
-// Helper functions
-const generateLinkedInLaunchPost = async () => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: `Write a LinkedIn launch post for DataFlowHub AI.
-
-Professional tone, 200-250 words.
-Highlight: Voice input, natural language, 27 industry personalizations
-Include: Personal founder story, vision, CTA
-Hashtags: #AI #DataAnalytics #SaaS #ProductLaunch #Startup`
-      }],
-      temperature: 0.7,
-      max_tokens: 500
-    })
-  });
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
-};
-
-const generateRedditLaunchPost = async () => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: `Write a Reddit r/SideProject launch post for DataFlowHub AI.
-
-Casual tone, transparent, technical details welcomed.
-Title: Catchy, specific
-Body: 300 words
-Include: Tech stack, unique features, asking for feedback
-No marketing speak!
-Link to interactive demo`
-      }],
-      temperature: 0.8,
-      max_tokens: 600
-    })
-  });
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
-};
-
-// ============================================================================
-// AUTOMATION
-// ============================================================================
-
-/**
- * Auto-generate weekly content
- */
-export const runWeeklyContentGeneration = async () => {
-  console.log('🤖 Marketing Bot: Generating weekly content...');
-  
-  const calendar = await generateContentCalendar(
-    ['twitter', 'linkedin'],
-    new Date()
-  );
-  
-  console.log('✅ Content calendar generated for next 7 days');
-  console.log(calendar);
-  
-  return calendar;
-};
-
-/**
- * Save generated content to file
- */
-export const saveMarketingContent = (content: string, filename: string) => {
-  // In a real app, you'd save to database or file system
-  // For now, log and allow download
-  console.log('📝 Generated content saved:', filename);
-  
-  // Create downloadable file
-  const blob = new Blob([content], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-

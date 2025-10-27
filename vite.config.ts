@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
     setupFiles: ['src/setupTests.ts']
   },
   server: {
-    port: 3002,
+    port: 3003,  // Changed port to force fresh cache
     strictPort: true,
     host: true,
     watch: {
@@ -20,15 +20,20 @@ export default defineConfig(({ mode }) => ({
       timeout: 120000,
       protocol: 'ws',
       host: 'localhost',
-      port: 3002,
-      clientPort: 3002,
+      port: 3003,  // Changed HMR port
+      clientPort: 3003,
       overlay: true
     },
     fs: {
       strict: true,
       allow: ['.', '..']
     },
-    middlewareMode: false
+    middlewareMode: false,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
   },
   build: {
     target: 'esnext',
@@ -90,14 +95,26 @@ export default defineConfig(({ mode }) => ({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      'lucide-react',
+      // LangChain ES module dependencies that need pre-bundling
+      'camelcase',
+      'decamelize',
+      'uuid',
+      'p-retry',
+      'p-queue',
+      'semver'
+    ],
     exclude: ['swagger-ui-react', 'jsdom', '@langchain/langgraph', '@langchain/core', '@langchain/openai'],
     esbuildOptions: {
       target: 'esnext'
     }
   },
   preview: {
-    port: 3002,
+    port: 3003,  // Changed preview port
     strictPort: true,
     host: true
   },

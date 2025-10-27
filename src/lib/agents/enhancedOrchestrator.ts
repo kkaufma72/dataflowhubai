@@ -405,18 +405,34 @@ export class EnhancedOrchestrator {
  */
 let globalOrchestrator: EnhancedOrchestrator | null = null;
 
+/**
+ * ⚠️ SECURITY WARNING: This orchestrator is temporarily disabled
+ * 
+ * The EnhancedOrchestrator requires significant refactoring to work with
+ * the new secure Edge Function architecture. 
+ * 
+ * Use runAgentOrchestrator() from aiAgents.ts instead, which is now secure.
+ * 
+ * TODO: Refactor RAGAgent and EnhancedOrchestrator to use Edge Functions
+ */
 export const getEnhancedOrchestrator = async (): Promise<EnhancedOrchestrator> => {
-  if (!globalOrchestrator) {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-    
-    globalOrchestrator = new EnhancedOrchestrator(apiKey);
-    await globalOrchestrator.initialize();
-  }
+  throw new Error(
+    'EnhancedOrchestrator is temporarily disabled for security reasons. ' +
+    'Use runAgentOrchestrator() from aiAgents.ts instead.'
+  );
   
-  return globalOrchestrator;
+  // Original code disabled:
+  // if (!globalOrchestrator) {
+  //   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  //   if (!apiKey) {
+  //     throw new Error('OpenAI API key not configured');
+  //   }
+  //   
+  //   globalOrchestrator = new EnhancedOrchestrator(apiKey);
+  //   await globalOrchestrator.initialize();
+  // }
+  // 
+  // return globalOrchestrator;
 };
 
 /**

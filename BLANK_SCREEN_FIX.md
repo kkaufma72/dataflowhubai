@@ -20,7 +20,7 @@ Common causes and fixes:
 ```bash
 VITE_SUPABASE_URL=https://bcobpxgktvgfsffdsiog.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjb2JweGdrdHZnZnNmZmRzaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4NDE1NDQsImV4cCI6MjA3NjQxNzU0NH0.xI0sbMYLa7ln-XcbESHr4Y9tLNzg_LLkZAySj0O5a04
-VITE_OPENAI_API_KEY=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
+VITE_OPENAI_API_KEY=***REVOKED-KEY-DO-NOT-USE***
 ```
 
 **Important:** Set for **ALL environments** (Production, Preview, Development)

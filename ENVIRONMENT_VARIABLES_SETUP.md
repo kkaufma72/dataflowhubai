@@ -11,7 +11,7 @@ The application requires these environment variables to function properly:
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
 
 ### AI Integration
-- `VITE_OPENAI_API_KEY` - Your OpenAI API key for AI features
+- ~~`VITE_OPENAI_API_KEY`~~ - **DEPRECATED - DO NOT USE** (Moved to Supabase Edge Function for security)
 
 ### Optional Variables
 - `VITE_ASYNC_WORKLOAD_API_KEY` - For async workload features (if needed)
@@ -40,7 +40,7 @@ The application requires these environment variables to function properly:
    ```env
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-   VITE_OPENAI_API_KEY=your-openai-api-key
+   # VITE_OPENAI_API_KEY - REMOVED for security (now in Supabase Edge Function)
    ```
 
 5. **Deploy Changes**
@@ -69,7 +69,7 @@ The application requires these environment variables to function properly:
    ```env
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-   VITE_OPENAI_API_KEY=your-openai-api-key
+   # VITE_OPENAI_API_KEY - REMOVED for security (now in Supabase Edge Function)
    ```
 
 5. **Deploy Changes**

@@ -97,42 +97,17 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
         conversationHistory: messages
       };
 
-      const systemPrompt = buildPersonalizedSystemPrompt(context);
-
-      // Call OpenAI API
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      // Call secure Edge Function instead of direct OpenAI API
+      const { secureAIChat } = await import('../../lib/secureAI');
       
-      if (!apiKey) {
-        throw new Error('OpenAI API key not configured');
-      }
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages.map(m => ({ role: m.role, content: m.content })),
-            { role: 'user', content: text }
-          ],
-          temperature: 0.7,
-          max_tokens: 500,
-          presence_penalty: 0.6,
-          frequency_penalty: 0.3
-        })
+      const response = await secureAIChat({
+        question: text,
+        dataset,
+        userProfile,
+        conversationHistory: messages.map(m => ({ role: m.role, content: m.content }))
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to get AI response');
-      }
-
-      const data = await response.json();
-      const aiResponse = data.choices[0]?.message?.content || 'No response generated';
+      const aiResponse = response.text || 'No response generated';
       
       // Format response based on user profile
       const formattedResponse = formatAIResponse(aiResponse, userProfile);

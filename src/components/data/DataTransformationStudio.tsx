@@ -79,12 +79,8 @@ const DataTransformationStudio: React.FC<DataTransformationStudioProps> = ({
     toast.loading('Processing transformation...', { id: 'transform' });
 
     try {
-      // Parse command using OpenAI
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey) {
-        throw new Error('OpenAI API key not configured');
-      }
+      // Use secure Edge Function for AI operations
+      const { secureAIChat } = await import('../../lib/secureAI');
 
       const systemPrompt = `You are a data transformation expert. Parse natural language commands into structured operations.
 
@@ -108,29 +104,16 @@ Parse this command and return JSON:
   "description": "Human-readable explanation"
 }`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+      const response = await secureAIChat({
+        question: `${systemPrompt}\n\nCommand: ${userCommand}`,
+        dataset,
+        userProfile: {
+          use_case: 'data-transformation'
         },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userCommand }
-          ],
-          temperature: 0.3,
-          response_format: { type: "json_object" }
-        })
+        conversationHistory: []
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to parse command');
-      }
-
-      const data = await response.json();
-      const parsedCommand = JSON.parse(data.choices[0]?.message?.content || '{}');
+      const parsedCommand = JSON.parse(response.text || '{}');
 
       // Execute the transformation
       const result = await executeTransformation(parsedCommand, dataset);

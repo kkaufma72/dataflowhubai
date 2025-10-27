@@ -1,15 +1,34 @@
 // Enhanced AI Chat with Streaming, Agents, and Auto-Actions
 import React, { useState, useEffect, useRef } from 'react';
 import { Dataset } from '../../types';
-import { MessageSquare, Send, Sparkles, X, User, Bot, Loader2, Mic, MicOff, Image as ImageIcon } from 'lucide-react';
+import { Send, Sparkles, X, User, Bot, Loader2, Mic, MicOff } from 'lucide-react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { useAuth } from '../auth/AuthProvider';
 import { UserProfile } from '../../utils/personalizedPrompts';
-import { runAgentOrchestrator, isMarketingUser } from '../../lib/aiAgents';
+import { runAgentOrchestrator } from '../../lib/aiAgents';
+import { secureAIChat } from '../../lib/secureAI';
 import { getMarketingQuickActions } from '../../lib/agents/marketingAgentSimple';
-import { saveConversation, loadConversation, buildPromptWithMemory } from '../../lib/conversationMemory';
+import { saveConversation, loadConversation } from '../../lib/conversationMemory';
 import toast from 'react-hot-toast';
+
+// Local implementation to prevent bundling issues - NO external dependencies
+const isMarketingUser = (userProfile: UserProfile): boolean => {
+  try {
+    const marketingUseCases = [
+      'marketing-analytics',
+      'customer-insights',
+      'sales-forecasting',
+      'business-analytics',
+      'real-estate',
+      'retail'
+    ];
+    return marketingUseCases.includes(userProfile?.use_case || '');
+  } catch (error) {
+    console.error('isMarketingUser error:', error);
+    return false;
+  }
+};
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,7 +56,6 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile>({});
   const [isListening, setIsListening] = useState(false);
-  const [generatedCharts, setGeneratedCharts] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognition = useRef<any>(null);
@@ -225,11 +243,6 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
       };
       
       setMessages(prev => [...prev, assistantMessage]);
-
-      // If charts were generated, store them for rendering
-      if (response.charts && response.charts.length > 0) {
-        setGeneratedCharts(prev => [...prev, ...response.charts]);
-      }
 
     } catch (error: any) {
       console.error('Error calling AI agents:', error);

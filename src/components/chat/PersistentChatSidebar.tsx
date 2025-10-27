@@ -84,52 +84,26 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      // Use secure Edge Function instead of direct OpenAI API
+      const { secureAIChat } = await import('../../lib/secureAI');
 
-      if (!apiKey) {
-        toast.error('OpenAI API key not configured');
-        return;
-      }
+      // Build user profile from metadata
+      const userProfile = {
+        full_name: user?.user_metadata?.full_name,
+        email: user?.email,
+        company: user?.user_metadata?.company,
+        job_title: user?.user_metadata?.job_title,
+        use_case: user?.user_metadata?.use_case || 'general'
+      };
 
-      const { default: OpenAI } = await import('openai');
-      const openai = new OpenAI({
-        apiKey: apiKey,
-        dangerouslyAllowBrowser: true
+      const aiResponse = await secureAIChat({
+        question,
+        dataset,
+        userProfile,
+        conversationHistory: messages.map(m => ({ role: m.role, content: m.content }))
       });
 
-      const datasetInfo = JSON.stringify(dataset, null, 2);
-      
-      // Get user's use case for personalized prompts
-      const userUseCase = user?.user_metadata?.use_case || 'general';
-      const useCaseGuidance = getUseCasePrompt(userUseCase);
-
-      const chatMessages = [
-        {
-          role: "system" as const,
-          content: `You are a specialized data analyst assistant helping users understand their data.
-
-Your specialization: ${useCaseGuidance}
-
-Dataset information:\n${datasetInfo}\n\nProvide clear, concise insights tailored to the user's use case. Use bullet points when listing items. Format numbers nicely.`
-        },
-        ...messages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        {
-          role: "user" as const,
-          content: question
-        }
-      ];
-
-      const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: chatMessages,
-        temperature: 0.7,
-        max_tokens: 500
-      });
-
-      const response = completion.choices[0]?.message?.content || 'No response received';
+      const response = aiResponse.text || 'No response received';
 
       const assistantMessage: Message = {
         role: 'assistant',
