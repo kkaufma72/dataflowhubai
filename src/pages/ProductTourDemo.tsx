@@ -1266,6 +1266,7 @@ const ProductTourDemo: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+<<<<<<< HEAD
       {/* Floating Signup CTA - Sticky */}
       <div className="fixed bottom-6 right-6 z-50">
         <a
@@ -1277,6 +1278,8 @@ const ProductTourDemo: React.FC = () => {
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </a>
       </div>
+=======
+>>>>>>> origin/main
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1389,6 +1392,7 @@ const ProductTourDemo: React.FC = () => {
           </Button>
         </div>
 
+<<<<<<< HEAD
         {/* Sign Up CTA Section */}
         <div className="mt-16 mb-16">
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
@@ -1446,6 +1450,8 @@ const ProductTourDemo: React.FC = () => {
           </div>
         </div>
 
+=======
+>>>>>>> origin/main
         {/* Feature Highlights */}
         <div className="mt-16 text-center">
           <h3 className="text-2xl font-bold text-gray-900 mb-8">Why DataFlow Hub AI?</h3>

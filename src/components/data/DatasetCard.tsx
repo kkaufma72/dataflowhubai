@@ -9,7 +9,10 @@ import {
   Calendar,
   FileText,
   HardDrive,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Archive,
+  MoreVertical
 } from 'lucide-react';
 import Button from '../common/Button';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../../utils/datasetHealthScore';
@@ -21,6 +24,8 @@ interface DatasetCardProps {
   onQualityCheck: (dataset: Dataset) => void;
   onChat: (dataset: Dataset) => void;
   onTransform?: (dataset: Dataset) => void;
+  onDelete?: (dataset: Dataset) => void;
+  onArchive?: (dataset: Dataset) => void;
 }
 
 const DatasetCard: React.FC<DatasetCardProps> = ({
@@ -29,8 +34,11 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
   onAnalyze,
   onQualityCheck,
   onChat,
-  onTransform
+  onTransform,
+  onDelete,
+  onArchive
 }) => {
+  const [showMenu, setShowMenu] = React.useState(false);
   // Calculate health score
   const healthResult = useMemo(() => calculateDatasetHealth(dataset), [dataset]);
   const badgeProps = useMemo(() => getHealthBadgeProps(healthResult.score), [healthResult.score]);
@@ -70,6 +78,50 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 relative">
+      {/* Actions Menu */}
+      <div className="absolute top-3 right-14 z-10">
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            title="More actions"
+          >
+            <MoreVertical className="w-4 h-4 text-gray-600" />
+          </button>
+          
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20">
+              {onArchive && (
+                <button
+                  onClick={() => {
+                    onArchive(dataset);
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <Archive className="w-4 h-4" />
+                  Archive
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => {
+                    if (confirm(`Delete "${dataset.name}"? It will be moved to trash for 30 days.`)) {
+                      onDelete(dataset);
+                      setShowMenu(false);
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Health Score Badge */}
       <div className="absolute top-3 right-3 z-10">
         <div 
