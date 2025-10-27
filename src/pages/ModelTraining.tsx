@@ -256,13 +256,25 @@ const ModelTraining: React.FC = () => {
     <PremiumFeatureGate feature="train_models">
       <DndProvider backend={HTML5Backend}>
       <div>
-        <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-purple-600">Model Training</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Train and manage machine learning models
-            </p>
+        {/* Page Header - Improved visibility */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Layers className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                Model Training
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 font-medium">
+                Train and deploy production-ready machine learning models
+              </p>
+            </div>
           </div>
+        </div>
+
+        <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
+          <div className="hidden"></div>
           <div className="mt-4 md:mt-0">
             {datasets.length > 0 && !isTraining && (
               <div className="flex items-center space-x-2">

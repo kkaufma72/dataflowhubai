@@ -286,10 +286,22 @@ const DataManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Data Management"
-        description="Upload, connect, and manage your datasets"
-      />
+      {/* Page Header - Improved visibility */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Database className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              Data Management
+            </h1>
+            <p className="mt-2 text-lg text-gray-600 font-medium">
+              Upload, connect, and manage your datasets
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">

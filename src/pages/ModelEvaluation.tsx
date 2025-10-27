@@ -84,28 +84,35 @@ const ModelEvaluationContent = () => {
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-indigo-600" />
+      {/* Page Header - Improved visibility */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Database className="w-7 h-7 text-white" />
           </div>
           <div>
-            <Title>{selectedModel.name}</Title>
-            <Text>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              {selectedModel.name}
+            </h1>
+            <p className="mt-2 text-lg text-gray-600 font-medium">
               {selectedDataset ? (
                 <>
-                  Trained on <span className="font-medium">{selectedDataset.name}</span>
+                  Trained on <span className="font-semibold text-gray-700">{selectedDataset.name}</span>
                   {' • '}
-                  <span className="text-gray-500">
+                  <span className="text-gray-600">
                     {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
                   </span>
                 </>
               ) : (
                 'Dataset information not available'
               )}
-            </Text>
+            </p>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-6">
+        <div className="hidden"></div>
         
         <div className="flex items-center space-x-2">
           <Button

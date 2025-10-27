@@ -144,13 +144,25 @@ const ModelMonitoringContent: React.FC = () => {
 
   return (
     <div>
-      <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-purple-600">Model Monitoring</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Monitor model performance and detect drift in real-time
-          </p>
+      {/* Page Header - Improved visibility */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Activity className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              Model Monitoring
+            </h1>
+            <p className="mt-2 text-lg text-gray-600 font-medium">
+              Monitor model performance and detect drift in real-time
+            </p>
+          </div>
         </div>
+      </div>
+
+      <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
+        <div className="hidden"></div>
         <div className="flex items-center mt-4 space-x-4 md:mt-0">
           <select
             value={timeRange}

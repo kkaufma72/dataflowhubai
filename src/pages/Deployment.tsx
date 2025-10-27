@@ -13,7 +13,8 @@ import {
   Globe,
   Key,
   Eye,
-  Download
+  Download,
+  Layers
 } from 'lucide-react';
 import { useMLContext } from '../context/MLContext';
 import Button from '../components/common/Button';
@@ -338,12 +339,20 @@ print(prediction)`;
 
   return (
     <div>
-      <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-purple-600">Model Deployment</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Deploy your models and make them available as APIs
-          </p>
+      {/* Page Header - Improved visibility */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Rocket className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              Model Deployment
+            </h1>
+            <p className="mt-2 text-lg text-gray-600 font-medium">
+              Deploy your models and make them available as production APIs
+            </p>
+          </div>
         </div>
       </div>
 
