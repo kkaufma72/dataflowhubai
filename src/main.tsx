@@ -37,6 +37,7 @@ const APIReference = lazy(() => import('./pages/APIReference.tsx'));
 const UserGuideDetail = lazy(() => import('./pages/UserGuideDetail.tsx'));
 const UsageDashboard = lazy(() => import('./pages/UsageDashboard.tsx'));
 const DemoPage = lazy(() => import('./pages/DemoPage.tsx'));
+const ProductTourDemo = lazy(() => import('./pages/ProductTourDemo.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
 const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
@@ -148,6 +149,7 @@ if (!isSupabaseConfigured) {
                             <Route path="/signin" element={<SignIn />} />
                             <Route path="/password-reset" element={<PasswordReset />} />
                             <Route path="/demo" element={<DemoPage />} />
+                            <Route path="/product-tour" element={<ProductTourDemo />} />
                             <Route path="/signup-complete" element={<SignupComplete />} />
 
                             {/* Authenticated routes with layout */}

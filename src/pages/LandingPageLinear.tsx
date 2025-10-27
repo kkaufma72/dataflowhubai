@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight, CheckCircle } from 'lucide-react';
 import InteractiveLiveDemo from '../components/landing/InteractiveLiveDemo';
 import LiveDataTransformDemo from '../components/landing/LiveDataTransformDemo';
 
@@ -39,6 +39,7 @@ const LandingPageLinear: React.FC = () => {
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Features</a>
               <a href="#pricing" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
+              <Link to="/product-tour" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Product Tour</Link>
               <Link to="/documentation" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Docs</Link>
             </div>
 
@@ -95,7 +96,22 @@ const LandingPageLinear: React.FC = () => {
             No SQL. No formulas. Just ask.
           </p>
 
-          {/* CTA Buttons */}
+          {/* Main CTA - Product Tour Spotlight */}
+          <div className="mb-8">
+            <Link
+              to="/product-tour"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-2xl hover:shadow-3xl hover:scale-105 transform"
+            >
+              <Sparkles className="w-6 h-6" />
+              🚀 Interactive Product Tour - See All Features
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <p className="text-sm text-gray-500 mt-2 text-center">
+              ✨ No signup required • Full platform demo • Enterprise-scale data
+            </p>
+          </div>
+
+          {/* Secondary CTA Buttons */}
           <div className="flex items-center gap-4 mb-12">
             <Link
               to="/signin"
@@ -428,6 +444,54 @@ const LandingPageLinear: React.FC = () => {
           <p className="text-sm text-gray-500 mt-4">
             No credit card required • Free forever for 3 datasets
           </p>
+        </div>
+      </section>
+
+      {/* Product Tour CTA Banner */}
+      <section className="py-20 px-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-full">
+              <Sparkles className="w-4 h-4" />
+              Interactive Demo
+            </span>
+          </div>
+          
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            See DataFlowHub AI in Action
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Experience the full platform with enterprise-scale data, 5 AI models, and 2.4B daily predictions. 
+            No signup required.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              to="/product-tour"
+              className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-2xl hover:shadow-3xl hover:scale-105 transform"
+            >
+              <Sparkles className="w-6 h-6" />
+              🚀 Start Interactive Tour
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            
+            <div className="text-sm text-gray-500">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  96.7% AI Accuracy
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  25.6GB Data Scale
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  8ms Latency
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
