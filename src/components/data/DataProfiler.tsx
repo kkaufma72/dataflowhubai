@@ -51,9 +51,9 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     }
   }, [dataset]);
 
-  // FIXED: Complete rewrite with proper validation
+  // OPTIMIZED: Async processing to prevent UI blocking
   const generateProfile = async () => {
-    // FIXED: Validate preview_data structure
+    // Validate preview_data structure
     if (!dataset.preview_data || !dataset.preview_data.columns || !dataset.preview_data.rows) {
       toast.error('No preview data available');
       return;
@@ -62,28 +62,34 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     setIsLoading(true);
     
     try {
-      setTimeout(() => {
-        const { columns, rows } = dataset.preview_data!;
-        
-        // FIXED: Validate rows is an array with data
-        if (!Array.isArray(rows) || rows.length === 0) {
-          toast.error('Dataset contains no data rows');
-          setIsLoading(false);
-          return;
-        }
-        
-        // FIXED: Use generateDataProfile (correct function name)
-        const dataProfile = generateDataProfile(rows, columns);
-        setProfile(dataProfile);
+      const { columns, rows } = dataset.preview_data!;
+      
+      // Validate rows is an array with data
+      if (!Array.isArray(rows) || rows.length === 0) {
+        toast.error('Dataset contains no data rows');
         setIsLoading(false);
-        
-        // Select first column by default
-        if (columns.length > 0 && !selectedColumn) {
-          setSelectedColumn(columns[0]);
-        }
-        
-        toast.success('Data profile generated successfully');
-      }, 500);
+        return;
+      }
+      
+      // OPTIMIZATION: Use requestIdleCallback or setTimeout to prevent blocking
+      // This allows the UI to stay responsive during heavy computation
+      await new Promise(resolve => setTimeout(resolve, 0));
+      
+      const dataProfile = generateDataProfile({ columns, rows });
+      setProfile(dataProfile);
+      setIsLoading(false);
+      
+      // Select first column by default
+      if (columns.length > 0 && !selectedColumn) {
+        setSelectedColumn(columns[0]);
+      }
+      
+      const rowCount = rows.length;
+      toast.success(
+        rowCount > 10000 
+          ? `Profile generated (sampled from ${rowCount.toLocaleString()} rows)`
+          : 'Data profile generated successfully'
+      );
     } catch (error) {
       console.error('Error generating profile:', error);
       setIsLoading(false);

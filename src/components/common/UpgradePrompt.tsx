@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Zap, TrendingUp, X } from 'lucide-react';
+import { Sparkles, Zap, TrendingUp, X, CreditCard } from 'lucide-react';
 import Button from './Button';
 import Card from './Card';
+import { useStripeCheckout } from '../../hooks/useStripeCheckout';
 
 interface UpgradePromptProps {
   feature: string;
@@ -14,6 +15,7 @@ interface UpgradePromptProps {
 
 const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal = true }) => {
   const navigate = useNavigate();
+  const { startCheckout, loading } = useStripeCheckout();
 
   const featureDescriptions: Record<string, { title: string; description: string; benefits: string[] }> = {
     train_models: {
@@ -141,30 +143,47 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       </div>
 
       {/* CTA Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3">
         <Button
-          onClick={() => navigate('/pricing')}
+          onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
           variant="primary"
-          className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-          icon={<TrendingUp className="w-4 h-4" />}
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg py-4"
+          icon={loading ? undefined : <CreditCard className="w-5 h-5" />}
+          disabled={loading}
         >
-          Upgrade to Pro
+          {loading ? 'Starting Checkout...' : 'Start 14-Day Free Trial'}
         </Button>
-        {onClose && (
+        
+        <div className="flex gap-3">
           <Button
-            onClick={onClose}
+            onClick={() => navigate('/pricing')}
             variant="outline"
-            className="px-6"
+            className="flex-1"
+            icon={<TrendingUp className="w-4 h-4" />}
           >
-            Maybe Later
+            See All Plans
           </Button>
-        )}
+          {onClose && (
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="flex-1"
+            >
+              Maybe Later
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Satisfaction Guarantee */}
-      <p className="text-center text-sm text-gray-500 mt-4">
-        ✨ 14-day free trial • Cancel anytime • No questions asked
-      </p>
+      <div className="mt-4 text-center">
+        <p className="text-sm font-semibold text-gray-900 mb-1">
+          💳 $49/month • Start free trial now
+        </p>
+        <p className="text-xs text-gray-500">
+          ✨ 14-day free trial • Cancel anytime • No questions asked
+        </p>
+      </div>
     </div>
   );
 

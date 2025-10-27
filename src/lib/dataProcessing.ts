@@ -184,46 +184,65 @@ export interface ColumnStats {
   };
   
   /**
-   * Profile an entire dataset
+   * Profile an entire dataset (OPTIMIZED for performance)
    */
   export const profileDataset = (data: { columns: string[]; rows: any[][] }): DataProfile => {
     const { columns, rows } = data;
     const totalRows = rows.length;
     const totalColumns = columns.length;
   
-    // Calculate memory usage (rough estimate)
-    const memoryBytes = JSON.stringify(data).length;
+    // OPTIMIZATION 1: Skip expensive memory calculation for large datasets
+    const memoryBytes = totalRows > 10000 
+      ? totalRows * totalColumns * 50  // Rough estimate
+      : JSON.stringify(data.slice(0, 1000)).length * (totalRows / Math.min(1000, totalRows)); // Sample-based
     const memoryUsage = formatBytes(memoryBytes);
   
-    // Find duplicate rows
-    const rowStrings = rows.map(row => JSON.stringify(row));
-    const uniqueRows = new Set(rowStrings);
-    const duplicateRows = totalRows - uniqueRows.size;
-    const duplicatePercent = Number(((duplicateRows / totalRows) * 100).toFixed(2));
+    // OPTIMIZATION 2: Skip duplicate detection for large datasets (too expensive)
+    let duplicateRows = 0;
+    let duplicatePercent = 0;
+    
+    if (totalRows < 5000) {
+      const rowStrings = rows.map(row => JSON.stringify(row));
+      const uniqueRows = new Set(rowStrings);
+      duplicateRows = totalRows - uniqueRows.size;
+      duplicatePercent = Number(((duplicateRows / totalRows) * 100).toFixed(2));
+    }
   
-    // Profile each column
+    // OPTIMIZATION 3: Sample large datasets for profiling
+    const sampleSize = Math.min(10000, totalRows);
+    const sampleRows = totalRows > sampleSize 
+      ? rows.filter((_, i) => i % Math.ceil(totalRows / sampleSize) === 0).slice(0, sampleSize)
+      : rows;
+  
+    // Profile each column (using sampled data for large datasets)
     const columnStats: ColumnStats[] = columns.map((colName, colIndex) => {
-      const columnValues = rows.map(row => row[colIndex]);
+      const columnValues = sampleRows.map(row => row[colIndex]);
       return profileColumn(colName, columnValues);
     });
   
-    // Calculate correlations for numeric columns
-    const numericColumns = columnStats.filter(col => col.type === 'numeric');
+    // OPTIMIZATION 4: Limit correlation calculations
+    const numericColumns = columnStats.filter(col => col.type === 'numeric').slice(0, 10); // Max 10 columns
     const correlations: Array<{ col1: string; col2: string; correlation: number }> = [];
   
-    for (let i = 0; i < numericColumns.length; i++) {
-      for (let j = i + 1; j < numericColumns.length; j++) {
-        const col1Values = rows.map(row => Number(row[columns.indexOf(numericColumns[i].name)]));
-        const col2Values = rows.map(row => Number(row[columns.indexOf(numericColumns[j].name)]));
-        
-        const correlation = calculateCorrelation(col1Values, col2Values);
-        
-        if (!isNaN(correlation) && Math.abs(correlation) > 0.1) {
-          correlations.push({
-            col1: numericColumns[i].name,
-            col2: numericColumns[j].name,
-            correlation: Number(correlation.toFixed(3))
-          });
+    // Only calculate correlations if we have reasonable number of columns
+    if (numericColumns.length > 1 && numericColumns.length <= 10) {
+      for (let i = 0; i < numericColumns.length; i++) {
+        for (let j = i + 1; j < numericColumns.length; j++) {
+          const col1Index = columns.indexOf(numericColumns[i].name);
+          const col2Index = columns.indexOf(numericColumns[j].name);
+          
+          const col1Values = sampleRows.map(row => Number(row[col1Index]));
+          const col2Values = sampleRows.map(row => Number(row[col2Index]));
+          
+          const correlation = calculateCorrelation(col1Values, col2Values);
+          
+          if (!isNaN(correlation) && Math.abs(correlation) > 0.1) {
+            correlations.push({
+              col1: numericColumns[i].name,
+              col2: numericColumns[j].name,
+              correlation: Number(correlation.toFixed(3))
+            });
+          }
         }
       }
     }
