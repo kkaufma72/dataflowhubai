@@ -1266,6 +1266,17 @@ const ProductTourDemo: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Floating Signup CTA - Sticky */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <a
+          href="/signin"
+          className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300"
+        >
+          <Zap className="w-5 h-5" />
+          Start Free Trial
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </a>
+      </div>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1376,6 +1387,63 @@ const ProductTourDemo: React.FC = () => {
             {currentStep === tourSteps.length - 1 ? 'Start Over' : 'Next'}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
+        </div>
+
+        {/* Sign Up CTA Section */}
+        <div className="mt-16 mb-16">
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-6">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold backdrop-blur-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  Tour Complete
+                </span>
+              </div>
+              
+              <h2 className="text-4xl font-bold mb-4">
+                Ready to Transform Your Data?
+              </h2>
+              <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+                You've just seen our enterprise-scale platform with <strong>96.7% AI accuracy</strong>, 
+                <strong> 2.4B daily predictions</strong>, and <strong>8ms global latency</strong>. 
+                Start your AI journey today.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <a
+                  href="/signin"
+                  className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-xl hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Zap className="w-6 h-6" />
+                  Start Free Trial
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
+                
+                <a
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white border-opacity-30 text-white font-medium rounded-lg hover:border-opacity-50 hover:bg-white hover:bg-opacity-10 transition-all backdrop-blur-sm"
+                >
+                  View Pricing
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div className="flex items-center justify-center gap-2 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
+                  <CheckCircle className="w-4 h-4 text-green-300" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
+                  <CheckCircle className="w-4 h-4 text-green-300" />
+                  <span>Enterprise security</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
+                  <CheckCircle className="w-4 h-4 text-green-300" />
+                  <span>24/7 expert support</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Feature Highlights */}
