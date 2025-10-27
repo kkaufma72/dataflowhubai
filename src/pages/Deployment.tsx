@@ -18,6 +18,7 @@ import {
 import { useMLContext } from '../context/MLContext';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
+import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 import { MLModel, DeploymentConfig } from '../types';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';

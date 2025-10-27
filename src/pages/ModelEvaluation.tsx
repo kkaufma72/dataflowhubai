@@ -26,6 +26,7 @@ import {
 } from '@tremor/react';
 import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/common/Button';
+import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 
 const ModelEvaluationContent = () => {
   const [searchParams] = useSearchParams();

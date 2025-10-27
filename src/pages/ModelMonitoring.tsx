@@ -16,6 +16,7 @@ import {
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import RealTimeMonitoring from '../components/monitoring/RealTimeMonitoring';
+import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 const ModelPerformanceDashboard = React.lazy(() => import('../components/monitoring/ModelPerformanceDashboard'));
 import toast from 'react-hot-toast';
 
