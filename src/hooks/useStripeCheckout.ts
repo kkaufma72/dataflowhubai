@@ -18,8 +18,10 @@ export const useStripeCheckout = () => {
     console.log('📦 Input params:', { tier, billing, email });
     console.log('👤 User context:', user ? `Logged in as ${user.email}` : 'Not logged in');
     
-    if (!user && !email) {
-      console.error('❌ No user and no email provided');
+    // Verify we have either a logged-in user or an email
+    const emailToUse = email || user?.email;
+    if (!emailToUse) {
+      console.error('❌ No user email available');
       setError('Email is required');
       return;
     }
@@ -30,7 +32,7 @@ export const useStripeCheckout = () => {
 
     try {
       console.log('📞 Calling Supabase Edge Function: create-checkout-session');
-      console.log('📤 Request body:', { tier, billing, ...(email && { email }) });
+      console.log('📤 Request body:', { tier, billing, email: emailToUse });
       
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
@@ -40,7 +42,7 @@ export const useStripeCheckout = () => {
       const functionPromise = supabase.functions.invoke(
         'create-checkout-session',
         {
-          body: { tier, billing, ...(email && { email }) },
+          body: { tier, billing, email: emailToUse },
         }
       );
       
