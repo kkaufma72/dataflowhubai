@@ -2,6 +2,8 @@
  * Docker TensorFlow Trainer Component
  * 
  * Connect to your existing TensorFlow Docker container
+ * 
+ * ⚠️ PREMIUM FEATURE: Requires Pro subscription
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,6 +11,7 @@ import { Dataset } from '../../types';
 import { createTensorFlowClient, TrainResponse } from '../../lib/tensorflowDocker';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import PremiumFeatureGate from '../common/PremiumFeatureGate';
 import { Brain, Play, Download, Loader2, CheckCircle, Server, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -138,7 +141,8 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
   };
 
   return (
-    <div className="space-y-6">
+    <PremiumFeatureGate feature="train_models">
+      <div className="space-y-6">
       {/* Connection Status */}
       <Card>
         <div className="flex items-center justify-between">
@@ -337,6 +341,7 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
         </Card>
       )}
     </div>
+    </PremiumFeatureGate>
   );
 };
 

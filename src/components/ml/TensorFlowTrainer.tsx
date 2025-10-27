@@ -2,6 +2,8 @@
  * TensorFlow.js Model Trainer Component
  * 
  * Train ML models directly in the browser
+ * 
+ * ⚠️ PREMIUM FEATURE: Requires Pro subscription
  */
 
 import React, { useState } from 'react';
@@ -9,6 +11,7 @@ import { Dataset } from '../../types';
 import { buildModel, trainModel, TrainingConfig, TrainingProgress, getModelSummary, preprocessData } from '../../lib/tensorflowClient';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import PremiumFeatureGate from '../common/PremiumFeatureGate';
 import { Brain, Play, Download, Loader2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -99,7 +102,8 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
   const latestProgress = trainingProgress[trainingProgress.length - 1];
 
   return (
-    <div className="space-y-6">
+    <PremiumFeatureGate feature="train_models">
+      <div className="space-y-6">
       <Card>
         <div className="flex items-center space-x-3 mb-6">
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -265,6 +269,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
         </Card>
       )}
     </div>
+    </PremiumFeatureGate>
   );
 };
 
