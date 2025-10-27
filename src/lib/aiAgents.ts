@@ -1,13 +1,12 @@
 // AIRoutSystem using LangChain and LangGraph
 // Multi-agent collaboration for powerful data analysis
 
-import { ChatOpenAI } from "@langchain/openai";
-import { DynamicStructuredTool } from "@langchain/core/tools";
+// Note: LangChain imports can cause bundling issues in production
+// Using direct OpenAI API calls instead for reliability
 import { z } from "zod";
 import { Dataset } from '../types';
 import { UserProfile } from '../utils/personalizedPrompts';
 import * as stats from 'simple-statistics';
-import { createMarketingAgent, isMarketingUser } from './agents/marketingAgent';
 
 // ============================================================================
 // AGENT TOOLS - Functions that agents can call
@@ -540,38 +539,8 @@ export const createBusinessTools = (dataset: Dataset, userProfile: UserProfile) 
 // AI AGENTS
 // ============================================================================
 
-/**
- * Data Analyst Agent - Main analysis agent
- */
-export const createDataAnalystAgent = (dataset: Dataset, userProfile: UserProfile) => {
-  return new ChatOpenAI({
-    modelName: "gpt-4o",
-    temperature: 0.2,
-    streaming: false
-  });
-};
-
-/**
- * Chart Generator Agent - Creates visualizations
- */
-export const createChartAgent = (dataset: Dataset) => {
-  return new ChatOpenAI({
-    modelName: "gpt-4o-mini", // Faster for chart generation
-    temperature: 0,
-    streaming: false
-  });
-};
-
-/**
- * Insight Finder Agent - Discovers patterns
- */
-export const createInsightAgent = (dataset: Dataset, userProfile: UserProfile) => {
-  return new ChatOpenAI({
-    modelName: "gpt-4o",
-    temperature: 0.4, // Slightly creative for insights
-    streaming: false
-  });
-};
+// Removed LangChain agent creation to avoid bundling issues
+// Using direct OpenAI API calls in orchestrator instead
 
 // ============================================================================
 // ORCHESTRATOR
@@ -621,7 +590,6 @@ export const runAgentOrchestrator = async (
     let systemPrompt = "";
     
     if (intent.needsMarketing || isMarketingUser(userProfile)) {
-      const { buildMarketingSystemPrompt } = await import('./agents/marketingAgent');
       systemPrompt = buildMarketingSystemPrompt(userProfile, dataset);
     } else {
       systemPrompt = buildAnalystPrompt(context);
