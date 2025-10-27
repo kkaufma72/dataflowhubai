@@ -1,5 +1,5 @@
 // Enhanced AI Chat with Streaming, Agents, and Auto-Actions
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Dataset } from '../../types';
 import { Send, Sparkles, X, User, Bot, Loader2, Mic, MicOff } from 'lucide-react';
 import Card from '../common/Card';
@@ -209,7 +209,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   };
 
-  const handleSendMessage = async (messageText?: string) => {
+  const handleSendMessage = useCallback(async (messageText?: string) => {
     const text = messageText || input.trim();
     if (!text || isLoading) return;
 
@@ -257,7 +257,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [input, isLoading, dataset, userProfile, messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -267,29 +267,32 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   };
 
   // Quick action buttons (context-aware based on user profile)
-  const quickActions = isMarketingUser(userProfile) 
-    ? getMarketingQuickActions(userProfile).map(qa => ({
-        label: qa.label,
-        action: () => handleSendMessage(qa.prompt)
-      }))
-    : [
-        {
-          label: "📊 Create Dashboard",
-          action: () => handleSendMessage("Create a dashboard with the 4 most important charts for this data")
-        },
-        {
-          label: "🧹 Clean Data",
-          action: () => handleSendMessage("Analyze data quality and clean any issues automatically")
-        },
-        {
-          label: "🔍 Find Insights",
-          action: () => handleSendMessage("Find the 3 most important insights I should know about this data")
-        },
-        {
-          label: "🤖 Suggest Model",
-          action: () => handleSendMessage("What ML model should I train with this data and why?")
-        }
-      ];
+  // Memoized to prevent re-creation on every render (which causes input focus loss)
+  const quickActions = useMemo(() => {
+    return isMarketingUser(userProfile) 
+      ? getMarketingQuickActions(userProfile).map(qa => ({
+          label: qa.label,
+          action: () => handleSendMessage(qa.prompt)
+        }))
+      : [
+          {
+            label: "📊 Create Dashboard",
+            action: () => handleSendMessage("Create a dashboard with the 4 most important charts for this data")
+          },
+          {
+            label: "🧹 Clean Data",
+            action: () => handleSendMessage("Analyze data quality and clean any issues automatically")
+          },
+          {
+            label: "🔍 Find Insights",
+            action: () => handleSendMessage("Find the 3 most important insights I should know about this data")
+          },
+          {
+            label: "🤖 Suggest Model",
+            action: () => handleSendMessage("What ML model should I train with this data and why?")
+          }
+        ];
+  }, [userProfile, handleSendMessage]);
 
   const ChatContent = () => (
     <>

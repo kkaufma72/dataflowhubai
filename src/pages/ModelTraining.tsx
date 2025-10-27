@@ -16,6 +16,8 @@ import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import CrossValidation from '../components/models/CrossValidation';
 import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
+import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
+import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import toast from 'react-hot-toast';
 
 const ModelTraining: React.FC = () => {
@@ -34,7 +36,7 @@ const ModelTraining: React.FC = () => {
     precision: number;
     recall: number;
   } | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState<'train' | 'compare' | 'versions' | 'export'>('train');
+  const [activeTab, setActiveTab] = useState<'train' | 'compare' | 'versions' | 'export' | 'tensorflow'>('train');
   const [crossValidationResults, setCrossValidationResults] = useState<any[] | null>(null);
 
   const trainingModels = models.filter((model) => model.status === 'training');
@@ -380,6 +382,17 @@ const ModelTraining: React.FC = () => {
                 >
                   Export/Import
                 </button>
+                <button
+                  onClick={() => setActiveTab('tensorflow')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                    activeTab === 'tensorflow'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Package className="w-4 h-4" />
+                  <span>TensorFlow</span>
+                </button>
               </nav>
             </div>
 
@@ -445,6 +458,82 @@ const ModelTraining: React.FC = () => {
                 model={trainedModels[0]} 
                 onImport={handleImportModel}
               />
+            )}
+
+            {activeTab === 'tensorflow' && (
+              <div className="space-y-6">
+                {/* Dataset Selector for TensorFlow */}
+                {!selectedDataset && (
+                  <Card>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Select Dataset for TensorFlow Training</h3>
+                    <select
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      value=""
+                      onChange={(e) => handleDatasetSelect(e.target.value)}
+                    >
+                      <option value="">Choose a dataset...</option>
+                      {datasets.map((dataset) => (
+                        <option key={dataset.id} value={dataset.id}>
+                          {dataset.name} ({dataset.rows} rows, {dataset.columns} columns)
+                        </option>
+                      ))}
+                    </select>
+                  </Card>
+                )}
+
+                {selectedDataset && (
+                  <>
+                    {/* Dataset Info */}
+                    <Card>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{selectedDataset.name}</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {selectedDataset.rows} rows × {selectedDataset.columns} columns
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedDataset(null)}
+                        >
+                          Change Dataset
+                        </Button>
+                      </div>
+                    </Card>
+
+                    {/* Browser-Based TensorFlow.js */}
+                    <div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                          <Package className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">TensorFlow.js (Browser)</h3>
+                          <p className="text-sm text-gray-500">Train models directly in your browser - no server needed</p>
+                        </div>
+                      </div>
+                      <TensorFlowTrainer dataset={selectedDataset} />
+                    </div>
+
+                    {/* Docker-Based TensorFlow (if configured) */}
+                    {import.meta.env.VITE_TENSORFLOW_API_URL && (
+                      <div>
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <Package className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">TensorFlow (Docker GPU)</h3>
+                            <p className="text-sm text-gray-500">Server-side training with GPU acceleration</p>
+                          </div>
+                        </div>
+                        <DockerTensorFlowTrainer dataset={selectedDataset} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )}
           </div>
         )}
