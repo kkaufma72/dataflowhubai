@@ -8,7 +8,7 @@ import { MLProvider } from './context/MLContext.tsx';
 import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
 import PrivateRoute from './components/auth/PrivateRoute.tsx';
-import AppLayout from './components/layout/AppLayout.tsx';
+import AppLayout from './components/layout/AppLayoutKoyfin.tsx'; // Koyfin dark theme
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
