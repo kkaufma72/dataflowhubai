@@ -136,4 +136,4 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Supabase](https://supabase.io/)
 - [Chart.js](https://www.chartjs.org/)
-- [D3.js](https://d3js.org/)
+- [D3.js](https://d3js.org/)// Trigger Vercel redeploy with env vars
