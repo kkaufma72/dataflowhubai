@@ -1431,7 +1431,7 @@ const ProductTourDemo: React.FC = () => {
                 
                 <a
                   href="/pricing"
-                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white border-opacity-30 text-gray-900 font-medium rounded-lg hover:border-opacity-50 hover:bg-white hover:bg-opacity-10 transition-all backdrop-blur-sm"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white border-opacity-30 text-white font-medium rounded-lg hover:border-opacity-50 hover:bg-white hover:bg-opacity-10 transition-all backdrop-blur-sm"
                 >
                   View Pricing
                   <ArrowRight className="w-4 h-4" />
@@ -1455,7 +1455,6 @@ const ProductTourDemo: React.FC = () => {
             </div>
           </div>
         </div>
-
         {/* Feature Highlights */}
         <div className="mt-16 text-center">
           <h3 className="text-2xl font-bold text-gray-900 mb-8">Why DataFlow Hub AI?</h3>
