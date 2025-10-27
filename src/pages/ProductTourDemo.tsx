@@ -1389,7 +1389,6 @@ const ProductTourDemo: React.FC = () => {
           </Button>
         </div>
 
-<<<<<<< HEAD
         {/* Sign Up CTA Section */}
         <div className="mt-16 mb-16">
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
