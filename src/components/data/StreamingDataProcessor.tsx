@@ -106,7 +106,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
   
   // Start streaming
   const startStreaming = () => {
-    if (!dataset?.previewData?.columns) {
+    if (!dataset?.preview_data?.columns) {
       toast.error('No dataset available for streaming simulation');
       return;
     }
@@ -279,13 +279,13 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
       let batchData: any[][] = [];
       let columns: string[] = [];
       
-      if (configRef.current.simulateData && dataset?.previewData) {
+      if (configRef.current.simulateData && dataset?.preview_data) {
         // Simulate data using the dataset preview
-        columns = dataset.previewData.columns;
+        columns = dataset.preview_data.columns;
         
         // Generate random rows based on the dataset
         const batchSize = configRef.current.batchSize;
-        const datasetRows = dataset.previewData.rows;
+        const datasetRows = dataset.preview_data.rows;
         
         for (let i = 0; i < batchSize; i++) {
           // Either take a random row from the dataset or modify it slightly
@@ -328,7 +328,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Use dataset columns if available
-        columns = dataset?.previewData?.columns || ['col1', 'col2', 'col3'];
+        columns = dataset?.preview_data?.columns || ['col1', 'col2', 'col3'];
         
         // Generate random data
         const batchSize = configRef.current.batchSize;

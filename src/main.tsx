@@ -19,29 +19,22 @@ import { isSupabaseConfigured } from './lib/supabase.ts';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
-const Dashboard = lazy(() => import('./pages/Dashboard.tsx'));
+const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Koyfin-style terminal dashboard
 const DataManagement = lazy(() => import('./pages/DataManagement.tsx'));
-const DatasetOverview = lazy(() => import('./pages/DatasetOverview.tsx'));
+const DatasetInsights = lazy(() => import('./pages/DatasetInsights.tsx'));
 const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
 const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
 const ModelEvaluation = lazy(() => import('./pages/ModelEvaluation.tsx'));
 const Deployment = lazy(() => import('./pages/Deployment.tsx'));
 const ModelMonitoring = lazy(() => import('./pages/ModelMonitoring.tsx'));
-const Visualizations = lazy(() => import('./pages/Visualizations.tsx'));
-const PipelineBuilder = lazy(() => import('./pages/PipelineBuilder.tsx'));
-const DataPipelineDashboard = lazy(() => import('./pages/DataPipelineDashboard.tsx'));
 const SignIn = lazy(() => import('./pages/SignIn.tsx'));
-const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
+const LandingPage = lazy(() => import('./pages/LandingPageLinear.tsx')); // Linear-style minimalist landing
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
 const UserProfile = lazy(() => import('./pages/UserProfile.tsx'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings.tsx'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset.tsx'));
-const DataCenterInfrastructureReport = lazy(() => import('./pages/DataCenterInfrastructureReport.tsx'));
-const APIManagement = lazy(() => import('./components/api/APIManagement.tsx'));
 const APIReference = lazy(() => import('./pages/APIReference.tsx'));
-const AsyncWorkloadDashboard = lazy(() => import('./pages/AsyncWorkloadDashboard.tsx'));
 const UserGuideDetail = lazy(() => import('./pages/UserGuideDetail.tsx'));
-const APIDocumentation = lazy(() => import('./pages/APIDocumentation.tsx'));
 const UsageDashboard = lazy(() => import('./pages/UsageDashboard.tsx'));
 const DemoPage = lazy(() => import('./pages/DemoPage.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
@@ -161,30 +154,22 @@ if (!isSupabaseConfigured) {
                             <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                               <Route index element={<Dashboard />} />
                               <Route path="data" element={<DataManagement />} />
-                              <Route path="dataset-overview" element={<DatasetOverview />} />
+                              <Route path="insights" element={<DatasetInsights />} />
+                              <Route path="dataset-overview" element={<DatasetInsights />} />
+                              <Route path="visualizations" element={<DatasetInsights />} />
                               <Route path="feature-engineering" element={<FeatureEngineering />} />
                               <Route path="train" element={<ModelTraining />} />
                               <Route path="evaluate" element={<ModelEvaluation />} />
                               <Route path="deploy" element={<Deployment />} />
                               <Route path="monitoring" element={<ModelMonitoring />} />
-                              <Route path="visualizations" element={<Visualizations />} />
-                              <Route path="pipeline" element={<PipelineBuilder />} />
                               <Route path="profile" element={<UserProfile />} />
                               <Route path="settings" element={<AccountSettings />} />
                               <Route path="documentation" element={<Documentation />} />
-                              <Route path="data-center-report" element={<DataCenterInfrastructureReport />} />
-                              <Route path="api-management" element={<APIManagement />} />
                               <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
-                              <Route path="documentation/api" element={<APIDocumentation />} />
                               <Route path="usage" element={<UsageDashboard />} />
                               <Route path="trash" element={<TrashBin />} />
                             </Route>
 
-                            <Route path="/async-workloads" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                              <Route index element={<AsyncWorkloadDashboard />} />
-                            </Route>
-
-                            <Route path="/pipeline/dashboard" element={<PrivateRoute><DataPipelineDashboard /></PrivateRoute>} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                           </Routes>
                         </Suspense>

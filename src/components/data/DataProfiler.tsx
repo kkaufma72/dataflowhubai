@@ -46,15 +46,15 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const [activeTab, setActiveTab] = useState<'overview' | 'columns' | 'issues' | 'recommendations'>('overview');
 
   useEffect(() => {
-    if (dataset && dataset.previewData) {
+    if (dataset && dataset.preview_data) {
       generateProfile();
     }
   }, [dataset]);
 
   // FIXED: Complete rewrite with proper validation
   const generateProfile = async () => {
-    // FIXED: Validate previewData structure
-    if (!dataset.previewData || !dataset.previewData.columns || !dataset.previewData.rows) {
+    // FIXED: Validate preview_data structure
+    if (!dataset.preview_data || !dataset.preview_data.columns || !dataset.preview_data.rows) {
       toast.error('No preview data available');
       return;
     }
@@ -63,7 +63,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     
     try {
       setTimeout(() => {
-        const { columns, rows } = dataset.previewData!;
+        const { columns, rows } = dataset.preview_data!;
         
         // FIXED: Validate rows is an array with data
         if (!Array.isArray(rows) || rows.length === 0) {
@@ -271,7 +271,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     );
   };
 
-  if (!dataset.previewData) {
+  if (!dataset.preview_data) {
     return (
       <Card>
         <div className="flex items-center justify-center p-8">

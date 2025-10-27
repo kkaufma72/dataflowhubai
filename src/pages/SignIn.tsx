@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Card from '../components/common/Card';
 import Logo from '../components/common/Logo';
 import { Mail, Lock, Loader2, AlertCircle, User, ArrowLeft, Github } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
+import { AuthChangeEvent } from '@supabase/supabase-js';
 
 // Email validation function to prevent fake/test emails
 const isValidEmail = (email: string): boolean => {
@@ -43,6 +44,9 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [useCase, setUseCase] = useState<string>('');
+  const [company, setCompany] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
 
   // Check for email verification success
   useEffect(() => {
@@ -63,7 +67,7 @@ const SignIn = () => {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+        if (session && !isSignUp) {
           console.log('User already has active session, redirecting to:', from);
           setRedirectInProgress(true);
           navigate(from, { replace: true });
@@ -75,13 +79,17 @@ const SignIn = () => {
     
     checkSession();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       console.log('Auth state change in SignIn:', event);
       
-      if (event === 'SIGNED_IN' && !redirectInProgress) {
-        console.log('Signed in event detected, redirecting to:', from);
+      // Only redirect on SIGNED_IN if we're not in signup mode
+      // This prevents redirect when user just created account
+      if (event === 'SIGNED_IN' && !redirectInProgress && !isSignUp) {
+        console.log('Signed in event detected (not signup), redirecting to:', from);
         setRedirectInProgress(true);
         navigate(from, { replace: true });
+      } else if (event === 'SIGNED_IN' && isSignUp) {
+        console.log('Signup detected - staying on page, user can now sign in');
       }
     });
 
@@ -89,7 +97,7 @@ const SignIn = () => {
       console.log('SignIn component unmounting, cleaning up subscription');
       subscription.unsubscribe();
     };
-  }, [navigate, from, redirectInProgress]);
+  }, [navigate, from, redirectInProgress, isSignUp]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +117,7 @@ const SignIn = () => {
       setIsLoading(true);
       setError('');
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
@@ -140,8 +148,10 @@ const SignIn = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !fullName) {
-      setError('Please fill in all fields');
+    // Validate required fields
+    if (!email || !password || !fullName || !useCase) {
+      setError('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
     
@@ -153,12 +163,22 @@ const SignIn = () => {
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
     try {
       setIsLoading(true);
       setError('');
+      
+      console.log('Starting signup with profile:', {
+        email,
+        fullName,
+        company,
+        jobTitle,
+        useCase,
+        hasLinkedIn: !!linkedinUrl
+      });
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -167,21 +187,42 @@ const SignIn = () => {
           data: {
             full_name: fullName,
             use_case: useCase || 'general',
+            company: company || '',
+            job_title: jobTitle || '',
+            linkedin_url: linkedinUrl || '',
           },
           emailRedirectTo: `${window.location.origin}/signin?verified=true`,
         }
       });
       
+      console.log('Signup response:', { data, error });
+      
       if (error) {
+        console.error('Supabase signup error:', error);
+        
+        // Handle specific error cases
         if (error.message === 'User already registered') {
           throw new Error('An account with this email already exists. Please sign in instead.');
         }
-        throw error;
+        if (error.message.includes('Email rate limit exceeded')) {
+          throw new Error('Too many signup attempts. Please wait a few minutes and try again.');
+        }
+        if (error.message.includes('Database error')) {
+          throw new Error('Database connection issue. Please try again in a moment.');
+        }
+        if (error.message.includes('invalid') && error.message.includes('api')) {
+          throw new Error('API configuration issue. Please check Supabase settings (see SUPABASE_AUTH_FIX.md)');
+        }
+        
+        // Generic error with full message
+        throw new Error(error.message || 'Signup failed. Please try again.');
       }
       
       if (data.user) {
-        toast.success('Account created successfully!', {
-          duration: 4000,
+        console.log('User created successfully:', data.user.id);
+        
+        toast.success('🎉 Account created successfully!', {
+          duration: 5000,
           icon: '✅'
         });
         
@@ -189,16 +230,18 @@ const SignIn = () => {
         setIsSignUp(false);
         setPassword('');
         
-        // Auto-fill email for convenience
-        // Note: Email verification is disabled in development mode
+        // Show success message
         toast.success('You can now sign in with your credentials!', {
-          duration: 4000,
+          duration: 5000,
         });
+        
+        // Don't redirect - stay on signin page
+        console.log('Signup complete - user can now sign in');
       }
     } catch (error: any) {
-      console.error('Error signing up:', error);
-      setError(error.message);
-      toast.error(error.message);
+      console.error('Error during signup:', error);
+      setError(error.message || 'An error occurred during signup');
+      toast.error(error.message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -349,11 +392,68 @@ const SignIn = () => {
                 </div>
               )}
 
+              {/* Company Field (Sign Up Only) */}
+              {isSignUp && (
+                <div>
+                  <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                    Company
+                  </label>
+                  <input
+                    id="company"
+                    name="company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    placeholder="Acme Corp"
+                  />
+                </div>
+              )}
+
+              {/* Job Title Field (Sign Up Only) */}
+              {isSignUp && (
+                <div>
+                  <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                    Job Title
+                  </label>
+                  <input
+                    id="jobTitle"
+                    name="jobTitle"
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    placeholder="Data Scientist"
+                  />
+                </div>
+              )}
+
+              {/* LinkedIn URL Field (Sign Up Only) */}
+              {isSignUp && (
+                <div>
+                  <label htmlFor="linkedinUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    LinkedIn Profile (Optional)
+                  </label>
+                  <input
+                    id="linkedinUrl"
+                    name="linkedinUrl"
+                    type="url"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Helps us tailor AI responses to your industry and expertise
+                  </p>
+                </div>
+              )}
+
               {/* Use Case Field (Sign Up Only) */}
               {isSignUp && (
                 <div>
                   <label htmlFor="useCase" className="block text-sm font-medium text-gray-700 mb-2">
-                    What will you use this for?
+                    Primary Use Case
                   </label>
                   <select
                     id="useCase"
@@ -363,20 +463,49 @@ const SignIn = () => {
                     onChange={(e) => setUseCase(e.target.value)}
                     className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
                   >
-                    <option value="">Select your use case</option>
-                    <option value="business-analytics">Business Analytics & KPIs</option>
-                    <option value="customer-insights">Customer Behavior & Insights</option>
-                    <option value="predictive-maintenance">Predictive Maintenance</option>
-                    <option value="fraud-detection">Fraud Detection & Security</option>
-                    <option value="recommendation-systems">Recommendation Systems</option>
-                    <option value="healthcare">Healthcare & Medical Analytics</option>
-                    <option value="finance">Financial Forecasting</option>
-                    <option value="marketing">Marketing & Campaign Optimization</option>
-                    <option value="supply-chain">Supply Chain Optimization</option>
-                    <option value="general">General Data Science</option>
+                    <option value="">What will you use this app for?</option>
+                    
+                    <optgroup label="💼 Business & Finance">
+                      <option value="accounting">Accounting & Bookkeeping</option>
+                      <option value="financial-management">Financial Management & Planning</option>
+                      <option value="taxes">Tax Preparation & Analysis</option>
+                      <option value="budgeting">Budgeting & Expense Tracking</option>
+                      <option value="invoicing">Invoicing & Billing</option>
+                      <option value="payroll">Payroll Management</option>
+                    </optgroup>
+                    
+                    <optgroup label="🏢 Industry-Specific">
+                      <option value="real-estate">Real Estate & Property Management</option>
+                      <option value="retail">Retail & E-commerce</option>
+                      <option value="healthcare">Healthcare & Medical Records</option>
+                      <option value="legal">Legal & Compliance</option>
+                      <option value="manufacturing">Manufacturing & Inventory</option>
+                      <option value="construction">Construction & Project Management</option>
+                    </optgroup>
+                    
+                    <optgroup label="📊 Analytics & Insights">
+                      <option value="business-analytics">Business Analytics & Reporting</option>
+                      <option value="customer-insights">Customer Data & CRM</option>
+                      <option value="sales-forecasting">Sales Forecasting</option>
+                      <option value="marketing-analytics">Marketing & Campaign Analytics</option>
+                      <option value="hr-analytics">HR & Workforce Analytics</option>
+                    </optgroup>
+                    
+                    <optgroup label="🎯 Personal Use">
+                      <option value="personal-finance">Personal Finance & Investments</option>
+                      <option value="personal-projects">Personal Projects & Research</option>
+                      <option value="education">Education & Learning</option>
+                    </optgroup>
+                    
+                    <optgroup label="🔬 Advanced">
+                      <option value="predictive-analytics">Predictive Analytics & Forecasting</option>
+                      <option value="fraud-detection">Fraud Detection & Security</option>
+                      <option value="risk-management">Risk Management</option>
+                      <option value="data-science">General Data Science & ML</option>
+                    </optgroup>
                   </select>
                   <p className="mt-2 text-xs text-gray-500">
-                    This helps us personalize your AI assistant
+                    Personalizes your AI assistant's responses
                   </p>
                 </div>
               )}

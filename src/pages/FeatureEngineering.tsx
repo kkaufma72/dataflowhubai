@@ -31,8 +31,8 @@ const FeatureEngineering: React.FC = () => {
       if (dataset) {
         setSelectedDataset(dataset);
         // Initialize with all non-ID columns
-        if (dataset.previewData?.columns) {
-          const initialFeatures = dataset.previewData.columns.filter(col => 
+        if (dataset.preview_data?.columns) {
+          const initialFeatures = dataset.preview_data.columns.filter(col => 
             !col.toLowerCase().includes('id') && 
             !col.toLowerCase().includes('_id')
           );
@@ -41,8 +41,8 @@ const FeatureEngineering: React.FC = () => {
       }
     } else if (datasets.length > 0) {
       setSelectedDataset(datasets[0]);
-      if (datasets[0].previewData?.columns) {
-        const initialFeatures = datasets[0].previewData.columns.filter(col => 
+      if (datasets[0].preview_data?.columns) {
+        const initialFeatures = datasets[0].preview_data.columns.filter(col => 
           !col.toLowerCase().includes('id') && 
           !col.toLowerCase().includes('_id')
         );
@@ -172,7 +172,7 @@ const FeatureEngineering: React.FC = () => {
             <div className="p-4 bg-indigo-50 rounded-lg">
               <h4 className="text-sm font-medium text-indigo-900 mb-2">Selected Features</h4>
               <p className="text-2xl font-semibold text-indigo-700">{engineeredFeatures.length}</p>
-              <p className="text-sm text-indigo-600">out of {selectedDataset.previewData?.columns.length || 0} original features</p>
+              <p className="text-sm text-indigo-600">out of {selectedDataset.preview_data?.columns.length || 0} original features</p>
             </div>
             
             <div className="p-4 bg-green-50 rounded-lg">

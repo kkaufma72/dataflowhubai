@@ -35,9 +35,9 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     minify: 'esbuild',
     chunkSizeWarningLimit: 500,
-    cssCodeSplit: true,
     reportCompressedSize: false,
-      rollupOptions: {
+    cssCodeSplit: true,
+    rollupOptions: {
       output: {
         manualChunks: (id) => {
           // Split vendor into smaller chunks for better caching
@@ -78,7 +78,8 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js'
-      }
+      },
+      external: ['swagger-ui-react'] // Exclude problematic library
     }
   },
   optimizeDeps: {
@@ -94,7 +95,13 @@ export default defineConfig(({ mode }) => ({
     host: true
   },
   esbuild: {
-    drop: mode === 'production' ? ['debugger'] : [], // Keep console logs for debugging
+    drop: mode === 'production' ? ['debugger'] : [],
     legalComments: 'none'
+  },
+  css: {
+    devSourcemap: false,
+    modules: {
+      localsConvention: 'camelCaseOnly'
+    }
   }
 }));

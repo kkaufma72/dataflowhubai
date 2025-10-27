@@ -89,76 +89,87 @@ const Sidebar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+  // Simplified 3-section workflow navigation
   const navigation = [
     {
       name: 'Dashboard',
       href: '/app',
       icon: Home,
       badge: null,
-      description: 'Overview and quick actions'
+      description: 'Overview and quick actions',
+      single: true
     },
     {
       name: 'Data',
-      href: '/app/data',
       icon: Database,
       badge: datasets.length || null,
-      description: 'Manage datasets'
+      description: 'Work with your datasets',
+      section: true,
+      items: [
+        {
+          name: 'Browse & Upload',
+          href: '/app/data',
+          icon: Database,
+          description: 'Manage your datasets',
+          dataTour: 'sidebar-data'
+        },
+        {
+          name: 'Insights & Charts',
+          href: '/app/insights',
+          icon: BarChart3,
+          description: 'Visualize and analyze',
+          dataTour: 'insights'
+        },
+        {
+          name: 'Feature Engineering',
+          href: '/app/feature-engineering',
+          icon: Sparkles,
+          description: 'Transform and enhance data'
+        }
+      ]
     },
     {
-      name: 'Dataset Overview',
-      href: '/app/dataset-overview',
-      icon: BarChart3,
-      badge: null,
-      description: 'Dataset insights & analytics'
-    },
-    {
-      name: 'Feature Engineering',
-      href: '/app/feature-engineering',
-      icon: Sparkles,
-      badge: null,
-      description: 'Create features'
-    },
-    {
-      name: 'Models',
-      href: '/app/train',
+      name: 'Build Models',
       icon: Brain,
       badge: models?.length || null,
-      description: 'Train and deploy models'
+      description: 'Train and evaluate ML models',
+      section: true,
+      items: [
+        {
+          name: 'Train Models',
+          href: '/app/train',
+          icon: Brain,
+          description: 'Create new models',
+          dataTour: 'train-models'
+        },
+        {
+          name: 'Evaluate',
+          href: '/app/evaluate',
+          icon: BarChart3,
+          description: 'Test model performance'
+        }
+      ]
     },
     {
-      name: 'Pipelines',
-      href: '/app/pipeline',
-      icon: GitBranch,
-      badge: null,
-      description: 'Build ML pipelines'
-    },
-    {
-      name: 'Evaluation',
-      href: '/app/evaluate',
-      icon: BarChart3,
-      badge: null,
-      description: 'Evaluate models'
-    },
-    {
-      name: 'Monitoring',
-      href: '/app/monitoring',
-      icon: Activity,
-      badge: null,
-      description: 'Monitor performance'
-    },
-    {
-      name: 'Deployments',
-      href: '/app/deploy',
+      name: 'Deploy & Monitor',
       icon: Zap,
       badge: null,
-      description: 'Deploy models'
-    },
-    {
-      name: 'Visualizations',
-      href: '/app/visualizations',
-      icon: LineChart,
-      badge: null,
-      description: 'Data insights'
+      description: 'Production deployment',
+      section: true,
+      items: [
+        {
+          name: 'Deploy',
+          href: '/app/deploy',
+          icon: Zap,
+          description: 'Publish models'
+        },
+        {
+          name: 'Monitoring',
+          href: '/app/monitoring',
+          icon: Activity,
+          description: 'Track performance'
+        }
+      ]
     }
   ];
 
@@ -272,9 +283,10 @@ const Sidebar: React.FC = () => {
       )}
 
       {/* Main Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <div className="space-y-1">
-          {navigation.map((item) => {
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
+        {navigation.map((item: any) => {
+          // Single item (like Dashboard)
+          if (item.single && item.href) {
             const active = isActive(item.href);
             return (
               <Link
@@ -285,30 +297,71 @@ const Sidebar: React.FC = () => {
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                     : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                 }`}
-                title={isCollapsed ? item.name : ''}
+                title={isCollapsed ? item.description : ''}
               >
-                <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'} ${
-                  active ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                }`} />
-                
+                <item.icon
+                  className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'} ${
+                    active ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                  }`}
+                />
+                {!isCollapsed && <span className="flex-1 truncate">{item.name}</span>}
+              </Link>
+            );
+          }
+
+          // Section with sub-items
+          if (item.section && item.items) {
+            return (
+              <div key={item.name} className="space-y-1">
+                {/* Section Header */}
                 {!isCollapsed && (
-                  <>
-                    <span className="flex-1">{item.name}</span>
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <item.icon className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        {item.name}
+                      </span>
+                    </div>
                     {item.badge !== null && (
-                      <span className={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        active 
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-gray-700 text-gray-300'
-                      }`}>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
                         {item.badge}
                       </span>
                     )}
-                  </>
+                  </div>
                 )}
-              </Link>
+                
+                {/* Section Items */}
+                <div className={isCollapsed ? 'space-y-1' : 'space-y-0.5'}>
+                  {item.items.map((subItem: any) => {
+                    const active = isActive(subItem.href);
+                    return (
+                      <Link
+                        key={subItem.name}
+                        to={subItem.href}
+                        data-tour={(subItem as any).dataTour}
+                        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                          active
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                        } ${!isCollapsed && 'ml-2'}`}
+                        title={isCollapsed ? subItem.description : ''}
+                      >
+                        <subItem.icon
+                          className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-4 h-4 mr-3'} ${
+                            active ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                          }`}
+                        />
+                        {!isCollapsed && <span className="flex-1 truncate">{subItem.name}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
-          })}
-        </div>
+          }
+
+          return null;
+        })}
 
         {/* Divider */}
         <div className="py-2">

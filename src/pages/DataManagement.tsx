@@ -16,7 +16,9 @@ import { supabase } from '../lib/supabase';
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
 const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDashboard'));
-const PersistentChatSidebar = lazy(() => import('../components/chat/PersistentChatSidebar'));
+const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
+const DatasetHealthCard = lazy(() => import('../components/data/DatasetHealthCard'));
+const DataTransformationStudio = lazy(() => import('../components/data/DataTransformationStudio'));
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -26,7 +28,7 @@ const LoadingFallback: React.FC = () => (
 );
 
 const DataManagement: React.FC = () => {
-  const { datasets, currentProject } = useMLContext();
+  const { datasets, currentProject, addDataset } = useMLContext();
   const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
@@ -37,6 +39,8 @@ const DataManagement: React.FC = () => {
   const [showQuality, setShowQuality] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatDataset, setChatDataset] = useState<Dataset | null>(null);
+  const [showTransformStudio, setShowTransformStudio] = useState(false);
+  const [transformDataset, setTransformDataset] = useState<Dataset | null>(null);
   const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -126,7 +130,30 @@ const DataManagement: React.FC = () => {
 
   const handleCloseChat = useCallback(() => {
     setShowChat(false);
+    setChatDataset(null);
   }, []);
+
+  const handleTransform = useCallback((dataset: Dataset) => {
+    setTransformDataset(dataset);
+    setShowTransformStudio(true);
+  }, []);
+
+  const handleCloseTransform = useCallback(() => {
+    setShowTransformStudio(false);
+    setTransformDataset(null);
+  }, []);
+
+  const handleSaveTransformedDataset = useCallback(async (transformed: Dataset) => {
+    try {
+      await addDataset(transformed);
+      toast.success('✨ Transformed dataset saved!');
+      setShowTransformStudio(false);
+      setTransformDataset(null);
+    } catch (error) {
+      console.error('Error saving transformed dataset:', error);
+      toast.error('Failed to save transformed dataset');
+    }
+  }, [addDataset]);
 
   const handleCloseUploader = useCallback(() => {
     setShowUploader(false);
@@ -375,6 +402,7 @@ const DataManagement: React.FC = () => {
                   onAnalyze={handleAnalyze}
                   onQualityCheck={handleQualityCheck}
                   onChat={openChat}
+                  onTransform={handleTransform}
                 />
               ))}
             </div>
@@ -495,7 +523,13 @@ const DataManagement: React.FC = () => {
             </div>
             <div className="flex-1 overflow-auto p-6">
               <Suspense fallback={<LoadingFallback />}>
-                <DataQualityDashboard dataset={selectedDataset} />
+                <div className="space-y-6">
+                  {/* Health Score Card */}
+                  <DatasetHealthCard dataset={selectedDataset} showDetails={true} />
+                  
+                  {/* Detailed Quality Dashboard */}
+                  <DataQualityDashboard dataset={selectedDataset} />
+                </div>
               </Suspense>
             </div>
             <div className="flex justify-end space-x-3 p-6 border-t">
@@ -631,14 +665,28 @@ const DataManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Persistent Chat Sidebar with Lazy Loading */}
-      <Suspense fallback={null}>
-        <PersistentChatSidebar
-          isOpen={showChat}
-          onClose={handleCloseChat}
-          dataset={chatDataset}
-        />
-      </Suspense>
+      {/* Enhanced AI Chat Modal with Marketing Intelligence */}
+      {showChat && chatDataset && (
+        <Suspense fallback={<LoadingFallback />}>
+          <EnhancedAIChat
+            dataset={chatDataset}
+            onClose={handleCloseChat}
+            isModal={true}
+          />
+        </Suspense>
+      )}
+
+      {/* Data Transformation Studio */}
+      {showTransformStudio && transformDataset && (
+        <Suspense fallback={<LoadingFallback />}>
+          <DataTransformationStudio
+            dataset={transformDataset}
+            onSave={handleSaveTransformedDataset}
+            onClose={handleCloseTransform}
+            isModal={true}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };
