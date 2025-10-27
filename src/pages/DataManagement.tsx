@@ -63,23 +63,7 @@ const DataManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
 
-  // Memoize expensive calculations (use filtered datasets)
-  const totalPages = useMemo(() => 
-    Math.ceil(filteredDatasets.length / pageSize), 
-    [filteredDatasets.length, pageSize]
-  );
-
-  const startIndex = useMemo(() => 
-    (currentPage - 1) * pageSize, 
-    [currentPage, pageSize]
-  );
-
-  const endIndex = useMemo(() => 
-    startIndex + pageSize, 
-    [startIndex, pageSize]
-  );
-
-  // Filter and search datasets
+  // FIXED: Filter and search datasets FIRST (before using it in totalPages)
   const filteredDatasets = useMemo(() => {
     let result = [...datasets];
 
@@ -142,6 +126,22 @@ const DataManagement: React.FC = () => {
 
     return result;
   }, [datasets, searchQuery, filters]);
+
+  // FIXED: Calculate pagination values AFTER filteredDatasets is defined
+  const totalPages = useMemo(() => 
+    Math.ceil(filteredDatasets.length / pageSize), 
+    [filteredDatasets.length, pageSize]
+  );
+
+  const startIndex = useMemo(() => 
+    (currentPage - 1) * pageSize, 
+    [currentPage, pageSize]
+  );
+
+  const endIndex = useMemo(() => 
+    startIndex + pageSize, 
+    [startIndex, pageSize]
+  );
 
   const paginatedDatasets = useMemo(() => 
     filteredDatasets.slice(startIndex, endIndex), 
