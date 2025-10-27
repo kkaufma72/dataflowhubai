@@ -79,12 +79,19 @@ export default defineConfig(({ mode }) => ({
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js'
       },
-      external: ['swagger-ui-react'] // Exclude problematic library
+      external: ['swagger-ui-react'], // Exclude problematic library
+      onwarn(warning, warn) {
+        // Suppress LangChain circular dependency warnings
+        if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('@langchain')) {
+          return;
+        }
+        warn(warning);
+      }
     }
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-    exclude: ['swagger-ui-react', 'jsdom'],
+    exclude: ['swagger-ui-react', 'jsdom', '@langchain/langgraph', '@langchain/core', '@langchain/openai'],
     esbuildOptions: {
       target: 'esnext'
     }
