@@ -2,244 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes wave {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  25% {
-    transform: translateY(-15px);
-  }
-  50% {
-    transform: translateY(0);
-  }
-  75% {
-    transform: translateY(15px);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                 0 0 20px rgba(255, 255, 255, 0.5),
-                 0 0 30px rgba(138, 43, 226, 0.5);
-  }
-  50% {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
-                 0 0 30px rgba(255, 255, 255, 0.5),
-                 0 0 40px rgba(138, 43, 226, 0.5);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
-  animation-delay: var(--animation-delay, 0ms);
-}
-
-body {
-  margin: 0;
-  overflow-x: hidden;
-  font-family: 'Open Sans', system-ui, sans-serif;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', system-ui, sans-serif;
-}
-
-.section-padding {
-  padding: 5rem 0;
-}
-
-.container-custom {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.btn {
-  @apply inline-flex items-center justify-center px-4 py-2 font-medium transition-colors duration-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
-
-.btn-primary {
-  @apply text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
-}
-
-.btn-secondary {
-  @apply text-white bg-purple-600 hover:bg-purple-700 focus:ring-purple-500;
-}
-
-.card {
-  @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
-}
-
-.feature-card {
-  @apply p-6 bg-white rounded-lg shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
-}
-
-.feature-icon-wrapper {
-  @apply flex items-center justify-center w-12 h-12 mb-4 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:bg-opacity-20 dark:text-indigo-400;
-}
-
-.testimonial-card {
-  @apply p-6 bg-white rounded-lg shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
-}
-
-.shadow-custom-lg {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-@keyframes floatUp {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-floatUp {
-  animation: floatUp 8s ease-in-out infinite;
-}
-
-/* Dark mode styles */
-.dark {
-  color-scheme: dark;
-}
-
-.dark .btn-primary {
-  @apply bg-indigo-600 hover:bg-indigo-700 text-white;
-}
-
-.dark .btn-secondary {
-  @apply bg-purple-600 hover:bg-purple-700 text-white;
-}
-
-/* Animation for notifications */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
-
-/* Responsive improvements */
-@media (max-width: 640px) {
-  .container-custom {
-    padding: 0 1rem;
+/* Koyfin Dark Theme - Global Styles */
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100;
   }
   
-  .section-padding {
-    padding: 3rem 0;
+  /* Scrollbar styling for dark theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
   }
   
-  .card {
-    padding: 1rem;
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-900;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-lg;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
   }
 }
 
-/* Accessibility improvements */
-:focus-visible {
-  outline: 2px solid #4F46E5;
-  outline-offset: 2px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* Skeleton animation */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+@layer components {
+  /* Terminal-style card */
+  .terminal-card {
+    @apply bg-gray-900 border border-gray-800 rounded-lg hover:border-gray-700 transition-colors;
   }
-  50% {
-    opacity: 0.5;
+  
+  /* Terminal text */
+  .terminal-text {
+    @apply text-gray-100 font-mono;
   }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Achievement notification animations */
-@keyframes slideInRight {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
+  
+  /* Terminal label */
+  .terminal-label {
+    @apply text-xs font-medium text-gray-400 uppercase tracking-wider;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  
+  /* Terminal metric */
+  .terminal-metric {
+    @apply text-3xl font-bold text-gray-100 font-mono;
+  }
+  
+  /* Terminal list item */
+  .terminal-list-item {
+    @apply flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 transition-all;
+  }
+  
+  /* Status indicator */
+  .status-live {
+    @apply w-2 h-2 rounded-full bg-green-500 animate-pulse;
+  }
+  
+  /* Premium badge */
+  .premium-badge {
+    @apply text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full font-semibold;
   }
 }
 
-@keyframes progressBar {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
-}
-
-.animate-slideInRight {
-  animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.animate-progressBar {
-  animation: progressBar 5s linear forwards;
-}
-
-/* Confirm dialog animations */
+/* Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.animate-slideUp {
-  animation: slideUp 0.3s ease-out;
+/* Chart container dark theme */
+.chart-container {
+  @apply bg-gray-900 border border-gray-800 rounded-lg p-4;
+}
+
+/* Input dark theme */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+  @apply bg-gray-900 border-gray-800 text-gray-100;
+  @apply focus:border-indigo-500 focus:ring-indigo-500;
+}
+
+input::placeholder,
+textarea::placeholder {
+  @apply text-gray-500;
+}
+
+/* Button dark theme overrides */
+button:not(.btn-light) {
+  @apply transition-all;
+}
+
+/* Table dark theme */
+table {
+  @apply bg-gray-900;
+}
+
+thead {
+  @apply bg-gray-800 border-b border-gray-700;
+}
+
+th {
+  @apply text-gray-400 font-semibold uppercase tracking-wider text-xs;
+}
+
+td {
+  @apply text-gray-300 border-b border-gray-800;
+}
+
+tr:hover {
+  @apply bg-gray-800/50;
+}
+
+/* Modal dark theme */
+.modal-overlay {
+  @apply bg-black/70 backdrop-blur-sm;
+}
+
+.modal-content {
+  @apply bg-gray-900 border border-gray-800 text-gray-100;
 }
