@@ -55,6 +55,9 @@ const DataManagement: React.FC = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(6);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'grid' | 'organize'>('grid');
 
   // Memoize expensive calculations
   const totalPages = useMemo(() => 
@@ -304,27 +307,57 @@ const DataManagement: React.FC = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-3">
-        <Button
-          onClick={() => setShowUploader(true)}
-          icon={<Upload className="w-4 h-4" />}
-        >
-          Upload Dataset
-        </Button>
-        <Button
-          onClick={() => setShowConnector(true)}
-          variant="outline"
-          icon={<Database className="w-4 h-4" />}
-        >
-          Connect Data Source
-        </Button>
-        <Button
-          onClick={() => setShowGeneratorModal(true)}
-          variant="outline"
-          icon={<Sparkles className="w-4 h-4" />}
-        >
-          Generate Sample Data
-        </Button>
+      <div className="flex flex-wrap gap-3 items-center justify-between">
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => setShowUploader(true)}
+            icon={<Upload className="w-4 h-4" />}
+          >
+            Upload Dataset
+          </Button>
+          <Button
+            onClick={() => setShowConnector(true)}
+            variant="outline"
+            icon={<Database className="w-4 h-4" />}
+          >
+            Connect Data Source
+          </Button>
+          <Button
+            onClick={() => setShowGeneratorModal(true)}
+            variant="outline"
+            icon={<Sparkles className="w-4 h-4" />}
+          >
+            Generate Sample Data
+          </Button>
+        </div>
+
+        {/* View Mode Toggle */}
+        {datasets.length > 0 && (
+          <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="text-sm">Grid</span>
+            </button>
+            <button
+              onClick={() => setViewMode('organize')}
+              className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
+                viewMode === 'organize'
+                  ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Folders className="w-4 h-4" />
+              <span className="text-sm">Organize</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Uploader Modal */}
@@ -453,7 +486,7 @@ const DataManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Datasets Grid with Pagination */}
+      {/* Datasets Grid with Pagination OR Organize View */}
       <div>
         {datasets.length === 0 ? (
           <Card>
@@ -465,7 +498,19 @@ const DataManagement: React.FC = () => {
               </p>
             </div>
           </Card>
+        ) : viewMode === 'organize' ? (
+          // ORGANIZE VIEW - Drag and Drop Buckets
+          <DatasetOrganizer
+            datasets={datasets}
+            onPreview={handlePreview}
+            onDelete={(dataset) => {
+              if (confirm(`Delete "${dataset.name}"?`)) {
+                handleDelete(dataset);
+              }
+            }}
+          />
         ) : (
+          // GRID VIEW - Original Layout
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedDatasets.map((dataset) => (
