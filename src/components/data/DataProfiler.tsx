@@ -20,7 +20,7 @@ import {
 import Button from '../common/Button';
 import { Dataset } from '../../types';
 import { 
-  generateDataProfile, 
+  profileDataset, 
   DataProfile, 
   ColumnProfile, 
   DataQualityIssue,
@@ -75,7 +75,8 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
       // This allows the UI to stay responsive during heavy computation
       await new Promise(resolve => setTimeout(resolve, 0));
       
-      const dataProfile = generateDataProfile({ columns, rows });
+      // FIXED: Pass correct argument format
+      const dataProfile = profileDataset({ columns, rows });
       setProfile(dataProfile);
       setIsLoading(false);
       
