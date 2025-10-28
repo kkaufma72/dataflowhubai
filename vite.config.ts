@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
     setupFiles: ['src/setupTests.ts']
   },
   server: {
-    port: 3003,  // Changed port to force fresh cache
+    port: 5173,  // Changed port to force fresh cache
     strictPort: true,
     host: true,
     watch: {
@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       timeout: 120000,
       protocol: 'ws',
       host: 'localhost',
-      port: 3003,  // Changed HMR port
-      clientPort: 3003,
+      port: 5173,  // Changed HMR port
+      clientPort: 5173,
       overlay: true
     },
     fs: {
@@ -114,7 +114,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   preview: {
-    port: 3003,  // Changed preview port
+    port: 5173,  // Changed preview port
     strictPort: true,
     host: true
   },
