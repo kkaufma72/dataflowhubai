@@ -1,0 +1,28 @@
+"""
+API routers for DataFlowHub AI.
+"""
+
+from routers import (
+    analytics_routes,
+    auth_routes,
+    data_routes,
+    deployment_routes,
+    health_routes,
+    knowledge_graph_routes,
+    ml_routes,
+    monitoring_routes,
+    pipeline_routes,
+)
+
+__all__ = [
+    "analytics_routes",
+    "auth_routes",
+    "data_routes",
+    "deployment_routes",
+    "health_routes",
+    "knowledge_graph_routes",
+    "ml_routes",
+    "monitoring_routes",
+    "pipeline_routes",
+]
+
