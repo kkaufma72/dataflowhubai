@@ -1,9 +1,9 @@
+/* Import design system - MUST be first */
+@import './styles/designSystem.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import design system */
-@import './styles/designSystem.css';
 
 /* Clean Light Theme - Better Readability */
 @layer base {
