@@ -6,6 +6,7 @@ import { Sparkles, Zap, TrendingUp, X, CreditCard } from 'lucide-react';
 import Button from './Button';
 import Card from './Card';
 import { useStripeCheckout } from '../../hooks/useStripeCheckout';
+import toast from 'react-hot-toast';
 
 interface UpgradePromptProps {
   feature: string;
@@ -145,13 +146,16 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       {/* CTA Buttons */}
       <div className="flex flex-col gap-3">
         <Button
-          onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
+          onClick={() => {
+            toast.loading('Redirecting to checkout...', { id: 'checkout' });
+            startCheckout({ tier: 'professional', billing: 'monthly' });
+          }}
           variant="primary"
           className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg py-4"
           icon={loading ? undefined : <CreditCard className="w-5 h-5" />}
           disabled={loading}
         >
-          {loading ? 'Starting Checkout...' : 'Start 14-Day Free Trial'}
+          {loading ? 'Redirecting to Stripe...' : 'Start 14-Day Free Trial'}
         </Button>
         
         <div className="flex gap-3">

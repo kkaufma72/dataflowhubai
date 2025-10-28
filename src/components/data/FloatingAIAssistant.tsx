@@ -152,16 +152,25 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
             Quick Actions:
           </p>
           
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              onClick={() => handleAction(action.id)}
-              className="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 group"
-            >
-              <div className="flex items-start space-x-3">
-                <div className={`w-10 h-10 bg-${action.color}-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                  <action.icon className={`w-5 h-5 text-${action.color}-600`} />
-                </div>
+          {quickActions.map((action) => {
+            // Fixed: Direct color classes (Tailwind can't process dynamic classes)
+            const colorClasses = {
+              blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
+              green: { bg: 'bg-green-100', text: 'text-green-600' },
+              purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
+              indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600' }
+            }[action.color] || { bg: 'bg-gray-100', text: 'text-gray-600' };
+
+            return (
+              <button
+                key={action.id}
+                onClick={() => handleAction(action.id)}
+                className="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 group"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className={`w-10 h-10 ${colorClasses.bg} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                    <action.icon className={`w-5 h-5 ${colorClasses.text}`} />
+                  </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
                     {action.label}
@@ -172,7 +181,8 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
                 </div>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* Tips */}

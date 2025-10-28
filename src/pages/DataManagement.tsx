@@ -6,7 +6,7 @@ import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
 import { Dataset, Project } from '../types';
-import { Database, Upload, X, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Folders, LayoutGrid } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
@@ -14,6 +14,9 @@ import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import { supabase } from '../lib/supabase';
+import CRMDatabaseHeader from '../components/data/CRMDatabaseHeader';
+import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
+import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
