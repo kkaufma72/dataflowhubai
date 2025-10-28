@@ -182,8 +182,7 @@ class Neo4jClient {
       console.log('📊 No user datasets found, showing all datasets for demo');
       query = `
         MATCH (d:Dataset)
-        OPTIONAL MATCH (d)-[r:SIMILAR_TO|RELATED_TO|FEEDS_INTO]-(other:Dataset)
-        RETURN d, collect(distinct r) as relationships, collect(distinct other) as related
+        RETURN d
       `;
       results = await this.runQuery(query);
     }
@@ -195,6 +194,7 @@ class Neo4jClient {
     const nodes = new Map();
     const edges = [];
 
+    // Add all dataset nodes
     results.forEach(record => {
       console.log('Processing record:', record);
       const dataset = record.d?.properties || record.d;
@@ -209,26 +209,22 @@ class Neo4jClient {
         size: dataset.rows || 100,
         group: dataset.file_type || 'csv'
       });
+    });
 
-      record.related?.forEach((related: any) => {
-        if (related && related.properties) {
-          nodes.set(related.properties.id, {
-            id: related.properties.id,
-            label: related.properties.name,
-            size: related.properties.rows || 100,
-            group: related.properties.file_type || 'csv'
-          });
-        }
-      });
-
-      record.relationships?.forEach((rel: any) => {
-        if (rel && rel.start && rel.end) {
-          edges.push({
-            from: rel.start,
-            to: rel.end,
-            label: rel.type
-          });
-        }
+    // Now query for all relationships separately
+    const relsQuery = `
+      MATCH (d1:Dataset)-[r]->(d2:Dataset)
+      RETURN d1.id as from_id, d2.id as to_id, type(r) as rel_type
+    `;
+    
+    const relationships = await this.runQuery(relsQuery);
+    console.log('🔗 Found', relationships.length, 'relationships');
+    
+    relationships.forEach(rel => {
+      edges.push({
+        from: rel.from_id,
+        to: rel.to_id,
+        label: rel.rel_type
       });
     });
 
