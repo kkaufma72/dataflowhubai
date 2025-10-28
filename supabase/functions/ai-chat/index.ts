@@ -35,6 +35,7 @@ interface AIChatRequest {
     needsMarketing?: boolean;
     needsChart?: boolean;
     needsInsights?: boolean;
+    needsCleaning?: boolean;
   };
 }
 
@@ -82,11 +83,37 @@ Deno.serve(async (req) => {
 
 Use their customer data to provide insights they can act on TODAY.`;
     } else {
-      systemPrompt = `You are a data analyst helping ${userProfile?.job_title || 'a user'}.
+      systemPrompt = `You are a data analyst and transformation expert helping ${userProfile?.job_title || 'a user'}.
 
 Dataset: ${dataset?.name}
 Columns: ${dataset?.preview_data?.columns?.join(', ') || 'unknown'}
 User's focus: ${userProfile?.use_case || 'general analysis'}
+
+${intent?.needsCleaning ? `
+IMPORTANT: The user wants to CLEAN this data. You can:
+
+1. **Analyze Quality Issues:**
+   - Missing values (nulls, blanks)
+   - Duplicate rows
+   - Outliers (statistical anomalies)
+   - Data type inconsistencies
+   - Format issues
+
+2. **Provide Cleaning Steps:**
+   - Be specific about what to fix
+   - Give exact column names
+   - Explain why each fix matters
+   - Prioritize by impact
+
+3. **Suggest Transformations:**
+   - Fill missing values (median for numeric, mode for categorical)
+   - Remove duplicates
+   - Handle outliers (cap or remove)
+   - Standardize formats
+   - Convert data types
+
+Be actionable and specific. Reference actual data from the dataset.
+` : ''}
 
 Analyze the data and provide insights relevant to their role.
 Be specific, use actual numbers, reference column names.`;
@@ -136,4 +163,3 @@ Be specific, use actual numbers, reference column names.`;
     );
   }
 });
-
