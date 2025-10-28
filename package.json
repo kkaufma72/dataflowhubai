@@ -27,6 +27,8 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.76.1",
+    "@tensorflow/tfjs": "^4.15.0",
+    "@tensorflow/tfjs-vis": "^1.5.1",
     "@tremor/react": "^3.14.1",
     "ai": "^5.0.80",
     "chart.js": "^4.4.1",
@@ -37,6 +39,8 @@
     "langchain": "^1.0.1",
     "lucide-react": "^0.344.0",
     "mathjs": "^15.0.0",
+    "neo4j-driver": "^6.0.0",
+    "neovis.js": "^2.1.0",
     "openai": "^6.5.0",
     "papaparse": "^5.5.3",
     "react": "^18.2.0",
@@ -53,9 +57,7 @@
     "simple-statistics": "^7.8.8",
     "stripe": "^19.1.0",
     "swagger-ui-react": "^5.12.0",
-    "zod": "^3.25.76",
-    "@tensorflow/tfjs": "^4.15.0",
-    "@tensorflow/tfjs-vis": "^1.5.1"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

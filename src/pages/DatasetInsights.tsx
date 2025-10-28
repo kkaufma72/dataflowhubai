@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
-import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart } from 'lucide-react';
+import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Share2 } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useNavigate } from 'react-router-dom';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
+
+// Lazy load Neo4j graph visualization
+const DatasetGraphVisualization = lazy(() => import('../components/graphs/DatasetGraphVisualization'));
 
 // Dynamic import for Chart.js
 let ChartComponents: any = null;
@@ -25,7 +28,7 @@ const loadCharts = async () => {
 const DatasetInsights: React.FC = () => {
   const { datasets } = useMLContext();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'visualizations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'visualizations' | 'graph'>('overview');
   const [filterType, setFilterType] = useState<string>('all');
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComp, setChartComp] = useState<any>(null);
@@ -366,6 +369,17 @@ const DatasetInsights: React.FC = () => {
             <PieChart className="w-5 h-5 mr-2" />
             Detailed Visualizations
           </button>
+          <button
+            onClick={() => setActiveTab('graph')}
+            className={`${
+              activeTab === 'graph'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <Share2 className="w-5 h-5 mr-2" />
+            Knowledge Graph
+          </button>
         </nav>
       </div>
 
@@ -659,6 +673,63 @@ const DatasetInsights: React.FC = () => {
               </div>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Knowledge Graph Tab - Neo4j Integration */}
+      {activeTab === 'graph' && (
+        <div className="space-y-6">
+          <Suspense fallback={
+            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+              <Loader className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading knowledge graph...</p>
+            </div>
+          }>
+            <DatasetGraphVisualization height="600px" />
+          </Suspense>
+
+          {/* Graph Insights */}
+          <Card className="p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              About Knowledge Graphs
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">What You See:</h4>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-indigo-600 mr-2">•</span>
+                    <span><strong>Nodes:</strong> Your uploaded datasets</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-indigo-600 mr-2">•</span>
+                    <span><strong>Edges:</strong> Relationships between datasets</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-indigo-600 mr-2">•</span>
+                    <span><strong>Size:</strong> Node size = number of rows</span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Use Cases:</h4>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-purple-600 mr-2">•</span>
+                    <span>Find similar datasets automatically</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-600 mr-2">•</span>
+                    <span>Track data lineage and transformations</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-purple-600 mr-2">•</span>
+                    <span>Discover hidden connections in your data</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </div>
