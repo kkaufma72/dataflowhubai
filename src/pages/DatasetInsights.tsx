@@ -381,6 +381,7 @@ const DatasetInsights: React.FC = () => {
             <Share2 className="w-5 h-5 mr-2" />
             Knowledge Graph
           </button>
+          {/* Warehouse tab commented out - requires PostgreSQL setup
           <button
             onClick={() => setActiveTab('warehouse')}
             className={`${
@@ -392,6 +393,7 @@ const DatasetInsights: React.FC = () => {
             <Warehouse className="w-5 h-5 mr-2" />
             Analytics Warehouse
           </button>
+          */}
         </nav>
       </div>
 
