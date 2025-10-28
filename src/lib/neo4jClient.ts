@@ -168,13 +168,25 @@ class Neo4jClient {
    * Find dataset relationships for graph visualization
    */
   async getDatasetGraph(userId: string): Promise<any> {
-    const query = `
+    // Try user-specific datasets first
+    let query = `
       MATCH (u:User {id: $userId})-[:OWNS]->(d:Dataset)
-      OPTIONAL MATCH (d)-[r:SIMILAR_TO|RELATED_TO]-(other:Dataset)
+      OPTIONAL MATCH (d)-[r:SIMILAR_TO|RELATED_TO|FEEDS_INTO]-(other:Dataset)
       RETURN d, collect(distinct r) as relationships, collect(distinct other) as related
     `;
 
-    const results = await this.runQuery(query, { userId });
+    let results = await this.runQuery(query, { userId });
+
+    // If no user-specific datasets, get ALL datasets (for demo/testing)
+    if (results.length === 0) {
+      console.log('📊 No user datasets found, showing all datasets for demo');
+      query = `
+        MATCH (d:Dataset)
+        OPTIONAL MATCH (d)-[r:SIMILAR_TO|RELATED_TO|FEEDS_INTO]-(other:Dataset)
+        RETURN d, collect(distinct r) as relationships, collect(distinct other) as related
+      `;
+      results = await this.runQuery(query);
+    }
     
     // Transform for visualization
     const nodes = new Map();
