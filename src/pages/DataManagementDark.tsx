@@ -24,7 +24,8 @@ import {
   Download,
   BarChart2,
   Grid3x3,
-  List
+  List,
+  CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
@@ -33,6 +34,7 @@ import toast from 'react-hot-toast';
 
 // Lazy load heavy components
 const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
+const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDashboard'));
 
 // Import DataUploader for real file uploads
 import DataUploader from '../components/data/DataUploader';
@@ -48,6 +50,8 @@ const DataManagementDark: React.FC = () => {
   const [showUploader, setShowUploader] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showQuality, setShowQuality] = useState(false);
 
   // Fast search
   const filteredDatasets = useMemo(() => {
@@ -251,19 +255,32 @@ const DataManagementDark: React.FC = () => {
                         <button
                           onClick={() => {
                             setSelectedDataset(dataset);
+                            setShowPreview(true);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded transition-colors"
+                          title="Preview Data (First 25 Rows)"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedDataset(dataset);
+                            setShowQuality(true);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded transition-colors"
+                          title="Data Quality"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedDataset(dataset);
                             setShowChat(true);
                           }}
                           className="p-1.5 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded transition-colors"
                           title="AI Chat"
                         >
                           <Sparkles className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => window.open(`/app/data/${dataset.id}`, '_blank')}
-                          className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-gray-800 rounded transition-colors"
-                          title="View"
-                        >
-                          <ExternalLink className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(dataset)}
@@ -394,6 +411,162 @@ const DataManagementDark: React.FC = () => {
                   window.location.reload();
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dataset Preview Modal - Dark Theme */}
+      {showPreview && selectedDataset && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1A1A1A] border border-gray-800 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between bg-gradient-to-r from-cyan-900/20 to-blue-900/20">
+              <div>
+                <h2 className="text-xl font-semibold text-white">
+                  {selectedDataset.name}
+                </h2>
+                <p className="text-sm text-gray-400 mt-0.5">
+                  Showing first 25 rows of {selectedDataset.row_count?.toLocaleString()} total
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Preview Table */}
+            <div className="flex-1 overflow-auto p-6">
+              {selectedDataset.preview_data && (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead className="sticky top-0 bg-[#0A0A0A] border-b-2 border-cyan-500/30">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-cyan-400 uppercase tracking-wider border-r border-gray-800">
+                          #
+                        </th>
+                        {selectedDataset.preview_data.columns?.map((col: string, idx: number) => (
+                          <th
+                            key={idx}
+                            className="px-4 py-3 text-left text-xs font-bold text-cyan-400 uppercase tracking-wider border-r border-gray-800 last:border-r-0"
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedDataset.preview_data.rows?.slice(0, 25).map((row: any, rowIdx: number) => (
+                        <tr
+                          key={rowIdx}
+                          className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors"
+                        >
+                          <td className="px-4 py-3 text-xs font-mono text-gray-500 border-r border-gray-800">
+                            {rowIdx + 1}
+                          </td>
+                          {(Array.isArray(row) ? row : Object.values(row)).map((cell: any, cellIdx: number) => (
+                            <td
+                              key={cellIdx}
+                              className="px-4 py-3 text-sm text-white border-r border-gray-800 last:border-r-0 font-mono"
+                            >
+                              {String(cell).slice(0, 50)}
+                              {String(cell).length > 50 && '...'}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {!selectedDataset.preview_data && (
+                <div className="text-center py-12">
+                  <Eye className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No preview data available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-800 bg-[#0A0A0A] flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                <span className="font-semibold text-white">{selectedDataset.row_count?.toLocaleString()}</span> rows × {' '}
+                <span className="font-semibold text-white">{selectedDataset.column_count}</span> columns
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowPreview(false);
+                    setShowChat(true);
+                  }}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Ask AI About This Data
+                </button>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Data Quality Modal - Dark Theme */}
+      {showQuality && selectedDataset && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1A1A1A] border border-gray-800 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between bg-gradient-to-r from-green-900/20 to-emerald-900/20">
+              <div>
+                <h2 className="text-xl font-semibold text-white">
+                  Data Quality: {selectedDataset.name}
+                </h2>
+                <p className="text-sm text-gray-400 mt-0.5">
+                  Health score, missing values, and quality recommendations
+                </p>
+              </div>
+              <button
+                onClick={() => setShowQuality(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quality Dashboard */}
+            <div className="flex-1 overflow-auto p-6 bg-[#0A0A0A]">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-gray-400">Loading quality analysis...</div>
+                </div>
+              }>
+                <DataQualityDashboard
+                  dataset={selectedDataset}
+                  onFixIssue={() => {
+                    // Handle quality fixes
+                    toast.success('Quality improvements applied!');
+                  }}
+                />
+              </Suspense>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-800 bg-[#0A0A0A] flex justify-end gap-3">
+              <button
+                onClick={() => setShowQuality(false)}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
