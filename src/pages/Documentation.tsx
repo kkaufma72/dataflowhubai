@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, Code, FileText, PieChart, Rocket, Zap } from 'lucide-react';
+import { Book, Code, FileText, PieChart, Rocket, Zap, ArrowRight } from 'lucide-react';
 import Card from '../components/common/Card';
 import PitchDeck from '../components/marketing/PitchDeck';
 import { useState } from 'react';
@@ -9,708 +9,238 @@ const Documentation: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'guides' | 'api' | 'help'>('guides');
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-purple-600">Documentation</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Learn how to use and integrate with our AutoML platform
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('guides')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'guides'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              User Guides
-            </button>
-            <button
-              onClick={() => setActiveTab('api')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'api'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              API Documentation
-            </button>
-            <button
-              onClick={() => setActiveTab('help')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'help'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Help Center
-            </button>
-          </nav>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header Section with High Contrast */}
+      <div className="bg-white border-b-2 border-indigo-200 shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+              <Book className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900">Documentation & Guides</h1>
+          </div>
+          <p className="text-lg text-gray-700 ml-11">
+            Everything you need to master DataFlowHub AI
+          </p>
         </div>
       </div>
 
-      {activeTab === 'guides' && (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-              <Book className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">Getting Started</h2>
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-8">
+        {/* Tab Navigation with Better Contrast */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+          <div className="flex gap-0 border-b-2 border-gray-200">
+            {[
+              { id: 'guides', label: 'Learning Guides', icon: Book },
+              { id: 'api', label: 'API Reference', icon: Code },
+              { id: 'help', label: 'Help Center', icon: Zap }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 px-6 py-4 font-semibold text-lg flex items-center justify-center gap-2 transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-b-4 border-indigo-700'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <tab.icon className="w-5 h-5" />
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <p className="text-sm text-gray-500">
-            Learn the basics of our AutoML platform and how to train your first model.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Platform Overview</li>
-            <li>• Quick Start Guide</li>
-            <li>• Basic Concepts</li>
-          </ul>
-        </Card>
 
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-emerald-100 rounded-lg">
-              <Code className="w-6 h-6 text-emerald-600" />
+          {/* GUIDES TAB */}
+          {activeTab === 'guides' && (
+            <div className="p-8">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[
+                  {
+                    icon: Book,
+                    color: 'indigo',
+                    title: 'Getting Started',
+                    description: 'Learn the basics of our AutoML platform and how to train your first model.',
+                    items: ['Platform Overview', 'Quick Start Guide', 'Basic Concepts']
+                  },
+                  {
+                    icon: Code,
+                    color: 'emerald',
+                    title: 'API Reference',
+                    description: 'Detailed documentation for our REST API endpoints and SDKs.',
+                    items: ['Authentication', 'Endpoints', 'Code Examples']
+                  },
+                  {
+                    icon: PieChart,
+                    color: 'purple',
+                    title: 'Model Training',
+                    description: 'Learn about model training, optimization, and best practices.',
+                    items: ['Training Process', 'Model Types', 'Hyperparameters']
+                  },
+                  {
+                    icon: Rocket,
+                    color: 'amber',
+                    title: 'Deployment',
+                    description: 'Guide to deploying and managing models in production.',
+                    items: ['Deployment Options', 'Scaling', 'Monitoring']
+                  },
+                  {
+                    icon: FileText,
+                    color: 'rose',
+                    title: 'Tutorials',
+                    description: 'Step-by-step guides and examples for common use cases.',
+                    items: ['Classification', 'Regression', 'Time Series']
+                  },
+                  {
+                    icon: Zap,
+                    color: 'blue',
+                    title: 'Integration',
+                    description: 'Learn how to integrate our platform with your existing systems.',
+                    items: ['Data Sources', 'Webhooks', 'Security']
+                  }
+                ].map((guide, idx) => (
+                  <div key={idx} className="p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-indigo-400 shadow-sm hover:shadow-lg transition-all cursor-pointer">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`p-3 bg-${guide.color}-100 rounded-lg`}>
+                        <guide.icon className={`w-6 h-6 text-${guide.color}-600`} />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900">{guide.title}</h3>
+                    </div>
+                    <p className="text-gray-700 font-medium mb-4 leading-relaxed">
+                      {guide.description}
+                    </p>
+                    <ul className="space-y-2">
+                      {guide.items.map((item, i) => (
+                        <li key={i} className="flex items-center gap-2 text-gray-700">
+                          <ArrowRight className="w-4 h-4 text-indigo-600" />
+                          <span className="font-medium">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">API Reference</h2>
-          </div>
-          <p className="text-sm text-gray-500">
-            Detailed documentation for our REST API endpoints and SDKs.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Authentication</li>
-            <li>• Endpoints</li>
-            <li>• Code Examples</li>
-          </ul>
-        </Card>
+          )}
 
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
-              <PieChart className="w-6 h-6 text-purple-600" />
-            </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">Model Training</h2>
-          </div>
-          <p className="text-sm text-gray-500">
-            Learn about model training, optimization, and best practices.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Training Process</li>
-            <li>• Model Types</li>
-            <li>• Hyperparameters</li>
-          </ul>
-        </Card>
-
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-amber-100 rounded-lg">
-              <Rocket className="w-6 h-6 text-amber-600" />
-            </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">Deployment</h2>
-          </div>
-          <p className="text-sm text-gray-500">
-            Guide to deploying and managing models in production.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Deployment Options</li>
-            <li>• Scaling</li>
-            <li>• Monitoring</li>
-          </ul>
-        </Card>
-
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-rose-100 rounded-lg">
-              <FileText className="w-6 h-6 text-rose-600" />
-            </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">Tutorials</h2>
-          </div>
-          <p className="text-sm text-gray-500">
-            Step-by-step guides and examples for common use cases.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Classification</li>
-            <li>• Regression</li>
-            <li>• Time Series</li>
-          </ul>
-        </Card>
-
-        <Card className="transition-all hover:shadow-md">
-          <div className="flex items-center mb-4">
-            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-              <Zap className="w-6 h-6 text-blue-600" />
-            </div>
-            <h2 className="ml-3 text-lg font-medium text-gray-900">Integration</h2>
-          </div>
-          <p className="text-sm text-gray-500">
-            Learn how to integrate our platform with your existing systems.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-gray-600">
-            <li>• Data Sources</li>
-            <li>• Webhooks</li>
-            <li>• Security</li>
-          </ul>
-        </Card>
-      </div>
-      )}
-
-      {activeTab === 'api' && (
-        <div className="space-y-6">
-          <Card>
-            <h2 className="text-lg font-medium text-gray-900 mb-4">API Reference</h2>
-            <p className="text-gray-600 mb-6">
-              Our RESTful API allows you to programmatically access and control all aspects of the DataFlowHub AI platform.
-            </p>
-            
-            <div className="space-y-6">
+          {/* API TAB */}
+          {activeTab === 'api' && (
+            <div className="p-8 space-y-8">
               <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Authentication</h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <p className="text-sm text-gray-700 mb-2">All API requests require authentication using an API key in the Authorization header:</p>
-                  <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
-                    Authorization: Bearer YOUR_API_KEY
-                  </pre>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">REST API Documentation</h2>
+                <p className="text-lg text-gray-700 mb-6">
+                  Our RESTful API allows you to programmatically access and control all aspects of DataFlowHub AI.
+                </p>
+              </div>
+
+              {/* Authentication Section */}
+              <div className="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-lg">
+                <h3 className="text-xl font-bold text-indigo-900 mb-3">🔐 Authentication</h3>
+                <p className="text-indigo-800 font-medium mb-3">All API requests require authentication using an API key:</p>
+                <pre className="bg-gray-800 text-green-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+Authorization: Bearer YOUR_API_KEY
+                </pre>
+              </div>
+
+              {/* Endpoints */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">📍 Key Endpoints</h3>
+                <div className="space-y-4">
+                  {[
+                    { method: 'GET', endpoint: '/v1/models', desc: 'List all models', color: 'green' },
+                    { method: 'POST', endpoint: '/v1/models/predict', desc: 'Make predictions', color: 'blue' },
+                    { method: 'POST', endpoint: '/v1/datasets', desc: 'Upload dataset', color: 'purple' }
+                  ].map((ep, idx) => (
+                    <div key={idx} className="border-2 border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="bg-gray-50 px-6 py-3 border-b-2 border-gray-200 flex items-center gap-3">
+                        <span className={`px-3 py-1 text-xs font-bold rounded-md bg-${ep.color}-100 text-${ep.color}-800`}>
+                          {ep.method}
+                        </span>
+                        <span className="font-mono font-bold text-gray-900">{ep.endpoint}</span>
+                      </div>
+                      <div className="p-6">
+                        <p className="text-gray-700 font-medium">{ep.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              
+
+              {/* Code Examples */}
               <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Endpoints</h3>
-                <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                      <div className="flex items-center">
-                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-md mr-2">GET</span>
-                        <span className="font-mono text-sm">/v1/models</span>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">💻 Code Examples</h3>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {[
+                    { lang: 'Python', code: `import requests\nAPI_KEY = "your_api_key"\nresponse = requests.get(\n  "https://api.dataflowhub.ai/v1/models",\n  headers={"Authorization": f"Bearer {API_KEY}"}\n)\nprint(response.json())` },
+                    { lang: 'JavaScript', code: `const API_KEY = "your_api_key";\nfetch("https://api.dataflowhub.ai/v1/models", {\n  headers: {\n    "Authorization": \`Bearer \${API_KEY}\`\n  }\n})\n.then(r => r.json())\n.then(data => console.log(data));` }
+                  ].map((ex, idx) => (
+                    <div key={idx} className="border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <div className="bg-gray-800 px-4 py-2">
+                        <p className="font-bold text-white">{ex.lang}</p>
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-gray-700 mb-2">List all models</p>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Parameters</h4>
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          <tr>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">status</td>
-                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">string</td>
-                            <td className="px-3 py-2 text-sm text-gray-500">Filter models by status (trained, deployed, all)</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                      <div className="flex items-center">
-                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-md mr-2">POST</span>
-                        <span className="font-mono text-sm">/v1/models/predict</span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-gray-700 mb-2">Make predictions using a deployed model</p>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Request Body</h4>
-                      <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
-{`{
-  "model_id": "model_123456",
-  "data": {
-    "feature1": 0.5,
-    "feature2": "category",
-    "feature3": 42
-  }
-}`}
+                      <pre className="bg-gray-900 text-green-300 p-4 font-mono text-sm overflow-x-auto">
+{ex.code}
                       </pre>
                     </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md">
-                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                      <div className="flex items-center">
-                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-md mr-2">POST</span>
-                        <span className="font-mono text-sm">/v1/datasets</span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-gray-700 mb-2">Upload a new dataset</p>
-                      <h4 className="text-xs font-medium text-gray-500 uppercase mt-4 mb-2">Request Body</h4>
-                      <p className="text-sm text-gray-600 mb-2">Multipart form data with:</p>
-                      <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                        <li>file: The dataset file (CSV, JSON, etc.)</li>
-                        <li>name: Dataset name</li>
-                        <li>description: (Optional) Dataset description</li>
-                      </ul>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-              
+            </div>
+          )}
+
+          {/* HELP CENTER TAB */}
+          {activeTab === 'help' && (
+            <div className="p-8 space-y-8">
               <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Code Examples</h3>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">❓ Frequently Asked Questions</h2>
                 <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Python</h4>
-                    <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
-{`import requests
-
-API_KEY = "your_api_key_here"
-API_URL = "https://api.dataflowhub.ai/v1"
-
-# Make a prediction
-def predict(model_id, data):
-    url = f"{API_URL}/models/predict"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model_id": model_id,
-        "data": data
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
-
-# Example usage
-result = predict("model_123456", {
-    "feature1": 0.5,
-    "feature2": "category",
-    "feature3": 42
-})
-print(result)`}
-                    </pre>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">JavaScript</h4>
-                    <pre className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto text-sm">
-{`const API_KEY = "your_api_key_here";
-const API_URL = "https://api.dataflowhub.ai/v1";
-
-// Make a prediction
-async function predict(modelId, data) {
-  const response = await fetch(\`\${API_URL}/models/predict\`, {
-    method: "POST",
-    headers: {
-      "Authorization": \`Bearer \${API_KEY}\`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model_id: modelId,
-      data: data
-    })
-  });
-  return response.json();
-}
-
-// Example usage
-predict("model_123456", {
-  feature1: 0.5,
-  feature2: "category",
-  feature3: 42
-}).then(result => console.log(result))
-  .catch(error => console.error(error));`}
-                    </pre>
-                  </div>
+                  {[
+                    {
+                      q: 'How do I upload a dataset?',
+                      a: 'Navigate to Data Management, click "Upload Dataset", drag & drop your file. Supported: CSV, Excel, JSON. Your data will be automatically analyzed.'
+                    },
+                    {
+                      q: 'How do I train a model?',
+                      a: 'Go to Model Training, select a dataset, choose your target variable, configure settings, and click "Start Training". The platform will find the best model.'
+                    },
+                    {
+                      q: 'How do I deploy a model?',
+                      a: 'After training, go to Deployment, select your model, configure settings, and click "Deploy". You\'ll get an API endpoint URL immediately.'
+                    },
+                    {
+                      q: 'How do I monitor deployed models?',
+                      a: 'Use the Model Monitoring page to track performance metrics, detect drift, set alerts, and retrain models as needed.'
+                    }
+                  ].map((faq, idx) => (
+                    <div key={idx} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b-2 border-gray-200">
+                        <p className="font-bold text-lg text-gray-900">{faq.q}</p>
+                      </div>
+                      <div className="px-6 py-4">
+                        <p className="text-gray-700 font-medium leading-relaxed">{faq.a}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => window.open('/api-reference', '_blank')}
-                >
-                  View Full API Documentation
-                </Button>
+
+              {/* Support CTA */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-8 text-white text-center">
+                <h3 className="text-2xl font-bold mb-3">Still need help?</h3>
+                <p className="text-lg mb-6 text-indigo-100">
+                  Our support team is available 24/7 to assist you
+                </p>
+                <div className="flex gap-4 justify-center flex-wrap">
+                  <button className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+                    Contact Support
+                  </button>
+                  <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-indigo-600 transition">
+                    Schedule Demo
+                  </button>
+                </div>
               </div>
             </div>
-          </Card>
+          )}
         </div>
-      )}
-
-      {activeTab === 'help' && (
-        <div className="space-y-6">
-          <Card>
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Help Center</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Frequently Asked Questions</h3>
-                <div className="space-y-4 mt-4">
-                  <div className="border border-gray-200 rounded-md">
-                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">How do I upload a dataset?</span>
-                        <span className="text-indigo-600">+</span>
-                      </div>
-                    </button>
-                    <div className="px-4 py-3 border-t border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        To upload a dataset, navigate to the Data Management page and click the "Upload Dataset" button. 
-                        You can drag and drop your file or click to browse your files. Supported formats include CSV, 
-                        Excel, JSON, and more. After uploading, your dataset will be automatically processed and analyzed.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md">
-                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">How do I train a model?</span>
-                        <span className="text-indigo-600">+</span>
-                      </div>
-                    </button>
-                    <div className="px-4 py-3 border-t border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        To train a model, go to the Model Training page, select a dataset, and choose your target variable. 
-                        Configure your model settings including the type of model (classification or regression) and select 
-                        the algorithms you want to use. Click "Start Training" and the platform will automatically find the 
-                        best model for your data.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md">
-                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">How do I deploy a model?</span>
-                        <span className="text-indigo-600">+</span>
-                      </div>
-                    </button>
-                    <div className="px-4 py-3 border-t border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        After training a model, navigate to the Deployment page, select your trained model, and configure 
-                        deployment settings like scaling options and authentication method. Click "Deploy Model" to make 
-                        your model available as an API endpoint. Once deployed, you'll receive an API endpoint URL and 
-                        example code to integrate with your applications.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md">
-                    <button className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 focus:outline-none">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">How do I monitor my deployed models?</span>
-                        <span className="text-indigo-600">+</span>
-                      </div>
-                    </button>
-                    <div className="px-4 py-3 border-t border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        The Model Monitoring page provides real-time insights into your deployed models. You can track 
-                        performance metrics, detect data drift, and set up alerts for critical issues. The dashboard 
-                        shows accuracy, latency, and request volume over time. If performance degrades, you can retrain 
-                        your model directly from the monitoring interface.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Video Tutorials</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
-                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                      <div className="text-gray-400">Video: Getting Started with DataFlowHub AI</div>
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-gray-900">Getting Started</h4>
-                      <p className="text-sm text-gray-600 mt-1">Learn the basics of the platform in 5 minutes</p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
-                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                      <div className="text-gray-400">Video: Data Preprocessing Tutorial</div>
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-gray-900">Data Preprocessing</h4>
-                      <p className="text-sm text-gray-600 mt-1">Learn how to clean and prepare your data</p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
-                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                      <div className="text-gray-400">Video: Model Training Deep Dive</div>
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-gray-900">Model Training</h4>
-                      <p className="text-sm text-gray-600 mt-1">Advanced techniques for model optimization</p>
-                    </div>
-                  </div>
-                  
-                  <div className="border border-gray-200 rounded-md overflow-hidden">
-                    <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                      <div className="text-gray-400">Video: Deployment Best Practices</div>
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-gray-900">Deployment</h4>
-                      <p className="text-sm text-gray-600 mt-1">Securely deploy and scale your models</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-2">Contact Support</h3>
-                <div className="bg-indigo-50 p-4 rounded-md mt-4">
-                  <p className="text-sm text-indigo-700 mb-4">
-                    Need additional help? Our support team is available 24/7 to assist you with any questions or issues.
-                  </p>
-                  <div className="flex space-x-4">
-                    <Button>
-                      Contact Support
-                    </Button>
-                    <Button variant="outline">
-                      Schedule a Demo
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      <Card>
-        <h2 className="text-lg font-medium text-gray-900">Investment Overview</h2>
-        <p className="mt-1 mb-6 text-sm text-gray-500">
-          Learn about our business model, market opportunity, and growth trajectory
-        </p>
-        <PitchDeck />
-      </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <h2 className="text-lg font-medium text-gray-900">Latest Updates</h2>
-          <div className="mt-4 space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-900">New Feature: AutoML Pipeline</p>
-              <p className="mt-1 text-sm text-gray-500">
-                Automated end-to-end machine learning pipeline with advanced feature engineering
-              </p>
-              <p className="mt-2 text-xs text-gray-400">Released on April 15, 2024</p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-900">Enhanced Model Monitoring</p>
-              <p className="mt-1 text-sm text-gray-500">
-                Real-time monitoring and drift detection for deployed models
-              </p>
-              <p className="mt-2 text-xs text-gray-400">Released on April 1, 2024</p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-900">New Integration: Snowflake</p>
-              <p className="mt-1 text-sm text-gray-500">
-                Direct connection to Snowflake data warehouse for model training
-              </p>
-              <p className="mt-2 text-xs text-gray-400">Released on March 15, 2024</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-medium text-gray-900">Support Resources</h2>
-          <div className="mt-4 space-y-4">
-            <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-lg">
-                  <Book className="w-5 h-5 text-indigo-600" />
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-900">Documentation</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Comprehensive guides and API reference
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
-                  <Code className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-900">Code Examples</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Sample code and integration examples
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-900">Tutorials</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Step-by-step implementation guides
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
       </div>
-
-      <Card>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Use Cases</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <PieChart className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Customer Churn Prediction</h3>
-            <p className="text-gray-600 mb-4">
-              Identify customers at risk of leaving and take proactive measures to retain them.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Predict churn probability for each customer</li>
-              <li>• Identify key factors contributing to churn</li>
-              <li>• Segment customers by risk level</li>
-              <li>• Automate intervention campaigns</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <Rocket className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Fraud Detection</h3>
-            <p className="text-gray-600 mb-4">
-              Identify suspicious transactions and activities in real-time to prevent fraud.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Real-time transaction scoring</li>
-              <li>• Anomaly detection in user behavior</li>
-              <li>• Adaptive learning from new patterns</li>
-              <li>• Reduce false positives with ensemble models</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <Zap className="w-6 h-6 text-purple-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Demand Forecasting</h3>
-            <p className="text-gray-600 mb-4">
-              Predict future demand for products and services to optimize inventory and staffing.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Multi-variable time series forecasting</li>
-              <li>• Seasonal pattern recognition</li>
-              <li>• External factor integration (weather, events)</li>
-              <li>• Confidence intervals for planning</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
-              <FileText className="w-6 h-6 text-amber-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Document Classification</h3>
-            <p className="text-gray-600 mb-4">
-              Automatically categorize and route documents based on their content.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Multi-label document classification</li>
-              <li>• Extract key information from documents</li>
-              <li>• Process multiple document formats</li>
-              <li>• Integrate with existing document workflows</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-              <Code className="w-6 h-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Predictive Maintenance</h3>
-            <p className="text-gray-600 mb-4">
-              Predict equipment failures before they happen to reduce downtime and maintenance costs.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Sensor data analysis for failure prediction</li>
-              <li>• Maintenance schedule optimization</li>
-              <li>• Component lifetime estimation</li>
-              <li>• Anomaly detection in equipment behavior</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <Book className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Recommendation Systems</h3>
-            <p className="text-gray-600 mb-4">
-              Personalize user experiences with tailored product and content recommendations.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Collaborative filtering algorithms</li>
-              <li>• Content-based recommendation</li>
-              <li>• Real-time personalization</li>
-              <li>• A/B testing framework for recommendations</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Industry Solutions</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="p-6 bg-blue-50 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-900 mb-3">Financial Services</h3>
-            <ul className="space-y-2 text-blue-800">
-              <li>• Credit risk assessment and scoring</li>
-              <li>• Fraud detection and prevention</li>
-              <li>• Customer segmentation and targeting</li>
-              <li>• Portfolio optimization and management</li>
-              <li>• Algorithmic trading strategies</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-green-50 rounded-lg">
-            <h3 className="text-lg font-medium text-green-900 mb-3">Healthcare</h3>
-            <ul className="space-y-2 text-green-800">
-              <li>• Disease prediction and risk assessment</li>
-              <li>• Medical image analysis and diagnosis</li>
-              <li>• Patient readmission prediction</li>
-              <li>• Treatment effectiveness analysis</li>
-              <li>• Healthcare resource optimization</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-purple-50 rounded-lg">
-            <h3 className="text-lg font-medium text-purple-900 mb-3">Retail</h3>
-            <ul className="space-y-2 text-purple-800">
-              <li>• Demand forecasting and inventory management</li>
-              <li>• Customer lifetime value prediction</li>
-              <li>• Personalized marketing and recommendations</li>
-              <li>• Price optimization strategies</li>
-              <li>• Store layout and product placement analysis</li>
-            </ul>
-          </div>
-
-          <div className="p-6 bg-amber-50 rounded-lg">
-            <h3 className="text-lg font-medium text-amber-900 mb-3">Manufacturing</h3>
-            <ul className="space-y-2 text-amber-800">
-              <li>• Predictive maintenance and equipment monitoring</li>
-              <li>• Quality control and defect detection</li>
-              <li>• Supply chain optimization</li>
-              <li>• Production planning and scheduling</li>
-              <li>• Energy consumption optimization</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };

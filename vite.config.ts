@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: false,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['pg', 'neo4j-driver'], // Exclude server-side libraries
+      external: ['swagger-ui-react', 'pg', 'neo4j-driver'], // Exclude server-side libraries
       output: {
         manualChunks: (id) => {
           // Split vendor into smaller chunks for better caching
@@ -89,7 +89,6 @@ export default defineConfig(({ mode }) => ({
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js'
       },
-      external: ['swagger-ui-react', 'pg', 'neo4j-driver'], // Exclude server-side libraries
       onwarn(warning, warn) {
         // Suppress LangChain circular dependency warnings
         if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('@langchain')) {

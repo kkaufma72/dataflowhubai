@@ -1,0 +1,211 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Primary data warehouse
+  postgres:
+    image: postgres:16-alpine
+    container_name: dataflow_postgres
+    environment:
+      POSTGRES_USER: dataflow_user
+      POSTGRES_PASSWORD: dataflow_secure_password
+      POSTGRES_DB: dataflow_hub
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=en_US.UTF-8
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./warehouse-init.sql:/docker-entrypoint-initdb.d/01-warehouse.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataflow_user -d dataflow_hub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+    command: 
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+
+  # Redis - Caching and Real-time Data
+  redis:
+    image: redis:7-alpine
+    container_name: dataflow_redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # Neo4j - Knowledge Graph and Entity Relationships
+  neo4j:
+    image: neo4j:5-community
+    container_name: dataflow_neo4j
+    environment:
+      NEO4J_AUTH: neo4j/dataflow_secure_password
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_heap_max__size: 2G
+      NEO4J_dbms_memory_pagecache_size: 512M
+    ports:
+      - "7687:7687"  # Bolt protocol
+      - "7474:7474"  # HTTP
+      - "7473:7473"  # HTTPS
+    volumes:
+      - neo4j_data:/var/lib/neo4j/data
+      - neo4j_logs:/var/lib/neo4j/logs
+      - ./NEO4J_TEST_DATA.cypher:/var/lib/neo4j/import/test_data.cypher
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-a", "neo4j+s://neo4j@neo4j:7687", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # MinIO - S3-compatible Object Storage for datasets
+  minio:
+    image: minio/minio:latest
+    container_name: dataflow_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin_secure_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"  # Console
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # TimescaleDB (PostgreSQL extension) - Time-series data
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: dataflow_timescaledb
+    environment:
+      POSTGRES_USER: tsdata_user
+      POSTGRES_PASSWORD: timescale_secure_password
+      POSTGRES_DB: timeseries_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tsdata_user -d timeseries_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # Apache Kafka - Event streaming and data pipelines
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: dataflow_kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    ports:
+      - "9092:9092"
+    networks:
+      - dataflow_network
+    healthcheck:
+      test: kafka-broker-api-versions.sh --bootstrap-server kafka:9092
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Zookeeper - Kafka coordination
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: dataflow_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - dataflow_network
+    healthcheck:
+      test: echo ruok | nc localhost 2181
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dataflow_prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # Grafana - Visualization and dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dataflow_grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  neo4j_data:
+  neo4j_logs:
+  minio_data:
+  timescaledb_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  dataflow_network:
+    driver: bridge
