@@ -20,7 +20,7 @@ import { isSupabaseConfigured } from './lib/supabase.ts';
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
 const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Koyfin-style terminal dashboard
-const DataManagement = lazy(() => import('./pages/DataManagementExcel.tsx')); // Excel-style tabbed spreadsheet view
+const DataManagement = lazy(() => import('./pages/DataManagementHybrid.tsx')); // Hybrid: Excel tabs + Quality cards + AI helper
 const DatasetInsights = lazy(() => import('./pages/DatasetInsights.tsx'));
 const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
 const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
