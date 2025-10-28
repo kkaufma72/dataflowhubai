@@ -304,8 +304,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       console.log('✅ Upload complete!');
 
       // Sync to Neo4j knowledge graph (async, don't wait)
-      if (savedDataset && user?.id) {
-        syncDatasetToNeo4j(savedDataset, user.id)
+      if (datasetForContext && user?.id) {
+        syncDatasetToNeo4j(datasetForContext as any, user.id)
           .then(() => {
             console.log('🔵 Dataset synced to Neo4j knowledge graph');
             toast.success('Synced to knowledge graph! 🔵', { duration: 2000 });
