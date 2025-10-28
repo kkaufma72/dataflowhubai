@@ -188,12 +188,21 @@ class Neo4jClient {
       results = await this.runQuery(query);
     }
     
+    console.log('📊 Neo4j query returned', results.length, 'results');
+    console.log('Raw results:', results);
+
     // Transform for visualization
     const nodes = new Map();
     const edges = [];
 
     results.forEach(record => {
-      const dataset = record.d.properties;
+      console.log('Processing record:', record);
+      const dataset = record.d?.properties || record.d;
+      if (!dataset) {
+        console.warn('No dataset in record:', record);
+        return;
+      }
+      
       nodes.set(dataset.id, {
         id: dataset.id,
         label: dataset.name,
@@ -223,10 +232,15 @@ class Neo4jClient {
       });
     });
 
-    return {
+    const graphData = {
       nodes: Array.from(nodes.values()),
       edges
     };
+
+    console.log('🔵 Graph data to return:', graphData);
+    console.log('Nodes:', graphData.nodes.length, 'Edges:', graphData.edges.length);
+
+    return graphData;
   }
 
   /**
