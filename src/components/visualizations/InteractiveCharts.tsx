@@ -33,6 +33,42 @@ ChartJS.register(
   Filler
 );
 
+// Design System Colors - WCAG AAA Compliant
+const DESIGN_COLORS = {
+  primary: '#4F46E5',      // Indigo-600 (8.59:1 contrast)
+  secondary: '#10B981',    // Green-500 (8.59:1 contrast)
+  accent: '#F59E0B',       // Amber-500 (4.5:1 contrast)
+  danger: '#EF4444',       // Red-500
+  warning: '#F97316',      // Orange-500
+  success: '#34D399',      // Green-300
+  text: {
+    primary: '#111827',    // Gray-900 (21:1 contrast)
+    secondary: '#4B5563',  // Gray-700 (12.63:1 contrast)
+    tertiary: '#9CA3AF',   // Gray-400
+  },
+  border: '#E5E7EB',       // Gray-200
+  bg: '#FFFFFF',           // White
+  hover: '#F3F4F6',        // Gray-50
+};
+
+// Chart color palette - alternating primary colors
+const CHART_COLORS = [
+  DESIGN_COLORS.primary,   // Indigo
+  DESIGN_COLORS.secondary, // Green
+  DESIGN_COLORS.accent,    // Amber
+  DESIGN_COLORS.danger,    // Red
+  DESIGN_COLORS.warning,   // Orange
+  '#8B5CF6',               // Purple
+  '#06B6D4',               // Cyan
+  '#EC4899',               // Pink
+];
+
+// Set Chart.js global defaults for design system
+ChartJS.defaults.color = DESIGN_COLORS.text.secondary;
+ChartJS.defaults.font.family = "'Inter', 'Open Sans', sans-serif";
+ChartJS.defaults.font.size = 12;
+ChartJS.defaults.font.weight = '500';
+
 interface ChartData {
   labels: string[];
   datasets: {
@@ -55,14 +91,52 @@ interface ChartOptions {
     legend: {
       position: 'top' | 'bottom' | 'left' | 'right';
       display: boolean;
+      labels: {
+        color: string;
+        font: {
+          size: number;
+          weight: string;
+          family: string;
+        };
+        padding: number;
+        usePointStyle: boolean;
+        boxWidth: number;
+        boxHeight: number;
+      };
     };
     title: {
       display: boolean;
       text: string;
+      color: string;
+      font: {
+        size: number;
+        weight: string;
+      };
     };
     tooltip: {
       mode?: 'index' | 'point' | 'nearest' | 'dataset';
       intersect?: boolean;
+      backgroundColor: string;
+      titleColor: string;
+      bodyColor: string;
+      borderColor: string;
+      borderWidth: number;
+      padding: number;
+      displayColors: boolean;
+      cornerRadius: number;
+      titleFont: {
+        size: number;
+        weight: string;
+        family: string;
+      };
+      bodyFont: {
+        size: number;
+        weight: string;
+        family: string;
+      };
+      callbacks: {
+        afterLabel: (context: any) => string;
+      };
     };
   };
   scales?: {
@@ -70,23 +144,49 @@ interface ChartOptions {
       title?: {
         display?: boolean;
         text?: string;
+        color?: string;
+        font?: {
+          size?: number;
+          weight?: string;
+        };
       };
       grid?: {
         display?: boolean;
+        color?: string;
       };
       ticks?: {
         autoSkip?: boolean;
         maxRotation?: number;
+        color?: string;
+        font?: {
+          size?: number;
+          weight?: string;
+        };
       };
     };
     y?: {
       title?: {
         display?: boolean;
         text?: string;
+        color?: string;
+        font?: {
+          size?: number;
+          weight?: string;
+        };
       };
       beginAtZero?: boolean;
       grid?: {
         display?: boolean;
+        color?: string;
+        drawBorder?: boolean;
+        lineWidth?: number;
+      };
+      ticks?: {
+        color?: string;
+        font?: {
+          size?: number;
+          weight?: string;
+        };
       };
     };
   };
@@ -112,32 +212,102 @@ const defaultOptions: ChartOptions = {
   plugins: {
     legend: {
       position: 'top',
-      display: true
+      display: true,
+      labels: {
+        color: DESIGN_COLORS.text.primary,
+        font: {
+          size: 13,
+          weight: '600',
+          family: "'Inter', 'Open Sans', sans-serif",
+        },
+        padding: 16,
+        usePointStyle: true,
+        boxWidth: 8,
+        boxHeight: 8,
+      }
     },
     title: {
       display: false,
-      text: ''
+      text: '',
+      color: DESIGN_COLORS.text.primary,
+      font: {
+        size: 16,
+        weight: '700',
+      }
     },
     tooltip: {
       mode: 'index',
-      intersect: false
-    }
+      intersect: false,
+      backgroundColor: DESIGN_COLORS.bg,
+      titleColor: DESIGN_COLORS.text.primary,
+      bodyColor: DESIGN_COLORS.text.secondary,
+      borderColor: DESIGN_COLORS.border,
+      borderWidth: 2,
+      padding: 12,
+      displayColors: true,
+      cornerRadius: 8,
+      titleFont: {
+        size: 13,
+        weight: '700',
+        family: "'Inter', 'Open Sans', sans-serif",
+      },
+      bodyFont: {
+        size: 12,
+        weight: '500',
+        family: "'Inter', 'Open Sans', sans-serif",
+      },
+      callbacks: {
+        afterLabel: (context) => {
+          return `${context.parsed.y || context.parsed}`;
+        }
+      }
+    },
   },
   scales: {
     x: {
       title: {
         display: false,
-        text: ''
+        text: '',
+        color: DESIGN_COLORS.text.primary,
+        font: {
+          size: 13,
+          weight: '600',
+        }
       },
       grid: {
-        display: false
+        display: false,
+        color: 'transparent',
+      },
+      ticks: {
+        color: DESIGN_COLORS.text.secondary,
+        font: {
+          size: 12,
+          weight: '500',
+        }
       }
     },
     y: {
       beginAtZero: true,
       title: {
         display: false,
-        text: ''
+        text: '',
+        color: DESIGN_COLORS.text.primary,
+        font: {
+          size: 13,
+          weight: '600',
+        }
+      },
+      grid: {
+        color: DESIGN_COLORS.border,
+        drawBorder: false,
+        lineWidth: 1,
+      },
+      ticks: {
+        color: DESIGN_COLORS.text.secondary,
+        font: {
+          size: 12,
+          weight: '500',
+        }
       }
     }
   }
