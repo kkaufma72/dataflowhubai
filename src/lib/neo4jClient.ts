@@ -15,22 +15,31 @@ class Neo4jClient {
    */
   async connect(): Promise<boolean> {
     try {
-      const uri = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:55002'; // Custom port 55002
+      const uri = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:55002';
       const user = import.meta.env.VITE_NEO4J_USER || 'neo4j';
       const password = import.meta.env.VITE_NEO4J_PASSWORD || 'dataflowhub2024';
 
+      console.log('🔵 Connecting to Neo4j:', uri);
+
       this.driver = neo4j.driver(
         uri,
-        neo4j.auth.basic(user, password)
+        neo4j.auth.basic(user, password),
+        {
+          // For Neo4j Aura (cloud), need to handle SSL
+          encrypted: uri.includes('+s'),
+          trust: 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES',
+          maxConnectionPoolSize: 50,
+          connectionAcquisitionTimeout: 60000
+        }
       );
 
       // Test connection
       await this.driver.verifyConnectivity();
       this.isConnected = true;
-      console.log('✅ Neo4j connected');
+      console.log('✅ Neo4j connected to:', uri);
       return true;
-    } catch (error) {
-      console.warn('⚠️ Neo4j not available:', error);
+    } catch (error: any) {
+      console.error('❌ Neo4j connection failed:', error.message);
       this.isConnected = false;
       return false;
     }

@@ -40,7 +40,12 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
       setIsConnected(connected);
 
       if (!connected) {
-        setError('Neo4j not available. Make sure your Neo4j Docker container is running on ports 55001 (HTTP) and 55002 (Bolt)');
+        const uri = import.meta.env.VITE_NEO4J_URI;
+        if (uri && uri.includes('neo4j.io')) {
+          setError('Cannot connect to Neo4j Aura. Please check your password in .env.local or reset it at: https://console.neo4j.io');
+        } else {
+          setError('Neo4j not configured. Add Neo4j Aura credentials to .env.local or set up local Docker.');
+        }
         setIsLoading(false);
         return;
       }
