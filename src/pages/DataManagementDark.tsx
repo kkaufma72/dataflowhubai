@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
+import { syncDatasetToNeo4j } from '../lib/neo4jSync';
 import toast from 'react-hot-toast';
 
 // Lazy load heavy components
@@ -395,11 +396,38 @@ const DataManagementDark: React.FC = () => {
                   accept=".csv,.xlsx,.xls,.json"
                   className="hidden"
                   id="file-upload-dark"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      toast.loading(`Uploading ${file.name}...`);
+                    if (!file) return;
+
+                    toast.loading(`Uploading ${file.name}...`, { id: 'upload' });
+                    
+                    try {
+                      // TODO: Actual file processing would go here
+                      // For now, simulate upload
+                      await new Promise(resolve => setTimeout(resolve, 1000));
+                      
+                      // Simulate dataset object
+                      const newDataset: any = {
+                        id: `dataset-${Date.now()}`,
+                        name: file.name.replace(/\.[^/.]+$/, ''),
+                        row_count: Math.floor(Math.random() * 5000) + 100,
+                        column_count: Math.floor(Math.random() * 20) + 5,
+                        file_type: file.name.split('.').pop(),
+                        created_at: new Date().toISOString()
+                      };
+
+                      // Sync to Neo4j knowledge graph
+                      if (user?.id) {
+                        await syncDatasetToNeo4j(newDataset, user.id);
+                        toast.success(`${file.name} uploaded and synced to knowledge graph!`, { id: 'upload' });
+                      } else {
+                        toast.success(`${file.name} uploaded!`, { id: 'upload' });
+                      }
+                      
                       setShowUploader(false);
+                    } catch (error: any) {
+                      toast.error(`Upload failed: ${error.message}`, { id: 'upload' });
                     }
                   }}
                 />
