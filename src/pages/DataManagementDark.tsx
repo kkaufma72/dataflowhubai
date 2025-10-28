@@ -34,8 +34,12 @@ import toast from 'react-hot-toast';
 // Lazy load heavy components
 const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
 
+// Import DataUploader for real file uploads
+import DataUploader from '../components/data/DataUploader';
+import { useMLContext } from '../context/MLContext';
+
 const DataManagementDark: React.FC = () => {
-  const { datasets } = useMLContext();
+  const { datasets, currentProject, addDataset } = useMLContext();
   const { user } = useAuth();
   const { deleteDataset } = useDatasetActions();
   
@@ -359,7 +363,7 @@ const DataManagementDark: React.FC = () => {
         )}
       </div>
 
-      {/* Upload Modal - Dark Theme */}
+      {/* Upload Modal - Dark Theme with Real Uploader */}
       {showUploader && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#1A1A1A] border border-gray-800 rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden">
@@ -370,7 +374,7 @@ const DataManagementDark: React.FC = () => {
                   Upload Dataset
                 </h2>
                 <p className="text-sm text-gray-400 mt-0.5">
-                  CSV, Excel, or JSON files supported
+                  Saves to Supabase & syncs to Knowledge Graph
                 </p>
               </div>
               <button
@@ -381,63 +385,15 @@ const DataManagementDark: React.FC = () => {
               </button>
             </div>
 
-            {/* Upload Area */}
+            {/* Real DataUploader Component */}
             <div className="p-6">
-              <div className="border-2 border-dashed border-gray-700 rounded-lg p-12 text-center hover:border-gray-600 hover:bg-gray-900/50 transition-all">
-                <Upload className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-base font-semibold text-white mb-2">
-                  Drop file here or click to browse
-                </h3>
-                <p className="text-sm text-gray-400 mb-6">
-                  Maximum file size: 50MB
-                </p>
-                <input
-                  type="file"
-                  accept=".csv,.xlsx,.xls,.json"
-                  className="hidden"
-                  id="file-upload-dark"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    toast.loading(`Uploading ${file.name}...`, { id: 'upload' });
-                    
-                    try {
-                      // TODO: Actual file processing would go here
-                      // For now, simulate upload
-                      await new Promise(resolve => setTimeout(resolve, 1000));
-                      
-                      // Simulate dataset object
-                      const newDataset: any = {
-                        id: `dataset-${Date.now()}`,
-                        name: file.name.replace(/\.[^/.]+$/, ''),
-                        row_count: Math.floor(Math.random() * 5000) + 100,
-                        column_count: Math.floor(Math.random() * 20) + 5,
-                        file_type: file.name.split('.').pop(),
-                        created_at: new Date().toISOString()
-                      };
-
-                      // Sync to Neo4j knowledge graph
-                      if (user?.id) {
-                        await syncDatasetToNeo4j(newDataset, user.id);
-                        toast.success(`${file.name} uploaded and synced to knowledge graph!`, { id: 'upload' });
-                      } else {
-                        toast.success(`${file.name} uploaded!`, { id: 'upload' });
-                      }
-                      
-                      setShowUploader(false);
-                    } catch (error: any) {
-                      toast.error(`Upload failed: ${error.message}`, { id: 'upload' });
-                    }
-                  }}
-                />
-                <label
-                  htmlFor="file-upload-dark"
-                  className="inline-block px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors"
-                >
-                  Choose File
-                </label>
-              </div>
+              <DataUploader
+                onClose={() => {
+                  setShowUploader(false);
+                  // Refresh to show new dataset
+                  window.location.reload();
+                }}
+              />
             </div>
           </div>
         </div>

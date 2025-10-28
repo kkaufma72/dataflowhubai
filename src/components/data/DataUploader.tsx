@@ -4,6 +4,7 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
+import { syncDatasetToNeo4j } from '../../lib/neo4jSync';
 import toast from 'react-hot-toast';
 import Papa from 'papaparse';
 
@@ -301,6 +302,19 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       console.log('🔄 Setting upload progress to 100...');
       setUploadProgress(100);
       console.log('✅ Upload complete!');
+
+      // Sync to Neo4j knowledge graph (async, don't wait)
+      if (savedDataset && user?.id) {
+        syncDatasetToNeo4j(savedDataset, user.id)
+          .then(() => {
+            console.log('🔵 Dataset synced to Neo4j knowledge graph');
+            toast.success('Synced to knowledge graph! 🔵', { duration: 2000 });
+          })
+          .catch((error) => {
+            console.warn('Neo4j sync failed (optional):', error);
+            // Don't show error to user - Neo4j sync is optional
+          });
+      }
       
       toast.success(`Dataset "${file.name}" uploaded successfully!`, {
         duration: 4000,
