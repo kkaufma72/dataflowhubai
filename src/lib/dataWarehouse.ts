@@ -3,9 +3,27 @@
  * 
  * Analytics database for BI queries and historical data
  * Separate from operational Supabase database
+ * 
+ * NOTE: Only works in development (requires local PostgreSQL)
+ * Disabled in production build
  */
 
-import { Pool } from 'pg';
+let Pool: any = null;
+
+// Dynamic import for development only
+const loadPg = async () => {
+  if (typeof window === 'undefined') return null;
+  if (Pool) return Pool;
+  
+  try {
+    const pg = await import('pg');
+    Pool = pg.Pool;
+    return Pool;
+  } catch (error) {
+    console.warn('PostgreSQL client not available in this environment');
+    return null;
+  }
+};
 
 class DataWarehouse {
   private pool: Pool | null = null;
@@ -16,6 +34,13 @@ class DataWarehouse {
    */
   async connect(): Promise<boolean> {
     try {
+      // Load PostgreSQL client dynamically
+      const PgPool = await loadPg();
+      if (!PgPool) {
+        console.log('⚠️ PostgreSQL client not available (production)');
+        return false;
+      }
+
       const config = {
         host: import.meta.env.VITE_WAREHOUSE_HOST || 'localhost',
         port: parseInt(import.meta.env.VITE_WAREHOUSE_PORT || '5433'),
@@ -27,7 +52,7 @@ class DataWarehouse {
         connectionTimeoutMillis: 5000,
       };
 
-      this.pool = new Pool(config);
+      this.pool = new PgPool(config);
 
       // Test connection
       const client = await this.pool.connect();

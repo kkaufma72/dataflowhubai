@@ -2,9 +2,28 @@
  * Neo4j Graph Database Client
  * 
  * For knowledge graphs, relationship analysis, and graph-based insights
+ * 
+ * NOTE: Only works in development (requires Neo4j Desktop)
+ * Disabled in production build
  */
 
-import neo4j, { Driver, Session } from 'neo4j-driver';
+let neo4j: any = null;
+type Driver = any;
+type Session = any;
+
+// Dynamic import for development only
+const loadNeo4j = async () => {
+  if (typeof window === 'undefined') return null;
+  if (neo4j) return neo4j;
+  
+  try {
+    neo4j = await import('neo4j-driver');
+    return neo4j.default || neo4j;
+  } catch (error) {
+    console.warn('Neo4j not available in this environment');
+    return null;
+  }
+};
 
 class Neo4jClient {
   private driver: Driver | null = null;
@@ -15,15 +34,22 @@ class Neo4jClient {
    */
   async connect(): Promise<boolean> {
     try {
+      // Load Neo4j dynamically (only available in development)
+      const neo4jModule = await loadNeo4j();
+      if (!neo4jModule) {
+        console.log('⚠️ Neo4j not available (production or not installed)');
+        return false;
+      }
+
       const uri = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:55002';
       const user = import.meta.env.VITE_NEO4J_USER || 'neo4j';
       const password = import.meta.env.VITE_NEO4J_PASSWORD || 'dataflowhub2024';
 
       console.log('🔵 Connecting to Neo4j:', uri);
 
-      this.driver = neo4j.driver(
+      this.driver = neo4jModule.driver(
         uri,
-        neo4j.auth.basic(user, password),
+        neo4jModule.auth.basic(user, password),
         {
           // For Neo4j Aura (cloud), need to handle SSL
           encrypted: uri.includes('+s'),
