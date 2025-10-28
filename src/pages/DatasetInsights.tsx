@@ -370,17 +370,20 @@ const DatasetInsights: React.FC = () => {
             <PieChart className="w-5 h-5 mr-2" />
             Detailed Visualizations
           </button>
-          <button
-            onClick={() => setActiveTab('graph')}
-            className={`${
-              activeTab === 'graph'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-          >
-            <Share2 className="w-5 h-5 mr-2" />
-            Knowledge Graph
-          </button>
+          {/* Knowledge Graph - Only show in development (Neo4j Desktop) */}
+          {import.meta.env.DEV && (
+            <button
+              onClick={() => setActiveTab('graph')}
+              className={`${
+                activeTab === 'graph'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+            >
+              <Share2 className="w-5 h-5 mr-2" />
+              Knowledge Graph
+            </button>
+          )}
           {/* Warehouse tab commented out - requires PostgreSQL setup
           <button
             onClick={() => setActiveTab('warehouse')}
