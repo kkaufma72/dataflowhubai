@@ -67,35 +67,70 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
   };
 
   const renderGraph = (data: any) => {
+    console.log('🎨 Rendering graph with', data.nodes?.length || 0, 'nodes');
+    
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('Canvas not found');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn('Canvas context not available');
+      return;
+    }
 
-    // Simple force-directed layout visualization
+    // Set canvas size to actual display size
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
     const width = canvas.width;
     const height = canvas.height;
 
+    console.log('Canvas size:', width, 'x', height);
+
+    // Clear canvas
     ctx.clearRect(0, 0, width, height);
+
+    if (!data.nodes || data.nodes.length === 0) {
+      console.warn('No nodes to render');
+      return;
+    }
 
     // Draw nodes
     data.nodes.forEach((node: any, idx: number) => {
       const x = (width / (data.nodes.length + 1)) * (idx + 1);
       const y = height / 2;
-      const radius = Math.min(30, Math.max(15, Math.sqrt(node.size) / 10));
+      const radius = 25;
 
-      // Draw node circle
-      ctx.fillStyle = '#6366F1'; // Indigo
+      console.log(`Drawing node ${idx}:`, node.label, 'at', x, y);
+
+      // Draw node circle with gradient
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      gradient.addColorStop(0, '#818CF8');
+      gradient.addColorStop(1, '#6366F1');
+      ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Draw label
+      // Draw border
+      ctx.strokeStyle = '#4F46E5';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Draw label (white text)
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '12px sans-serif';
+      ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(node.label.slice(0, 20), x, y - radius - 10);
+      ctx.fillText(node.label.slice(0, 20), x, y + 4);
+
+      // Draw row count below
+      ctx.fillStyle = '#E0E7FF';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(`${node.size} rows`, x, y - radius - 8);
 
       // Store position for edges
       node._x = x;
@@ -103,19 +138,24 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
     });
 
     // Draw edges
-    ctx.strokeStyle = '#9CA3AF';
-    ctx.lineWidth = 2;
-    data.edges.forEach((edge: any) => {
-      const from = data.nodes.find((n: any) => n.id === edge.from);
-      const to = data.nodes.find((n: any) => n.id === edge.to);
+    if (data.edges && data.edges.length > 0) {
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 2;
+      data.edges.forEach((edge: any) => {
+        const from = data.nodes.find((n: any) => n.id === edge.from);
+        const to = data.nodes.find((n: any) => n.id === edge.to);
 
-      if (from && to) {
-        ctx.beginPath();
-        ctx.moveTo(from._x, from._y);
-        ctx.lineTo(to._x, to._y);
-        ctx.stroke();
-      }
-    });
+        if (from && to) {
+          console.log('Drawing edge:', from.label, '→', to.label);
+          ctx.beginPath();
+          ctx.moveTo(from._x, from._y);
+          ctx.lineTo(to._x, to._y);
+          ctx.stroke();
+        }
+      });
+    }
+
+    console.log('✅ Graph rendered!');
   };
 
   const handleRefresh = () => {
