@@ -329,7 +329,7 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions */}
       <div className="quick-actions bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             type="button"
             onClick={() => navigate('/app/data')}
@@ -353,8 +353,52 @@ const Dashboard: React.FC = () => {
               <Brain className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
-              <p className="font-medium text-gray-900">Train Model</p>
+              <p className="font-medium text-gray-900">Train Models</p>
               <p className="text-sm text-gray-600">Start AutoML training</p>
+            </div>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/app/evaluate')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg hover:from-amber-100 hover:to-orange-100 transition-all border-2 border-transparent hover:border-amber-300"
+          >
+            <div className="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center">
+              <BarChart2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Evaluate</p>
+              <p className="text-sm text-gray-600">Test model performance</p>
+            </div>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => navigate('/app/deploy')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg hover:from-emerald-100 hover:to-teal-100 transition-all border-2 border-transparent hover:border-emerald-300"
+          >
+            <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Deploy</p>
+              <p className="text-sm text-gray-600">Publish to production</p>
+            </div>
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <button
+            type="button"
+            onClick={() => navigate('/app/monitoring')}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg hover:from-cyan-100 hover:to-blue-100 transition-all border-2 border-transparent hover:border-cyan-300"
+          >
+            <div className="w-12 h-12 bg-cyan-500 rounded-lg flex items-center justify-center">
+              <Activity className="w-6 h-6 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="font-medium text-gray-900">Monitor</p>
+              <p className="text-sm text-gray-600">Track model performance</p>
             </div>
           </button>
           
