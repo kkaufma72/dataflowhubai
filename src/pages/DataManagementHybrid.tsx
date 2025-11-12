@@ -298,48 +298,53 @@ const DataManagementHybrid: React.FC = () => {
       {/* Excel-Style Dataset Tabs at Bottom */}
       <div className="bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
         <div className="flex items-center gap-2 overflow-x-auto">
-          {datasets.map((dataset) => {
+            {datasets.map((dataset) => {
             const health = calculateDatasetHealth(dataset);
             const badge = getHealthBadgeProps(health.score);
             
             return (
-              <button
+                <div
                 key={dataset.id}
-                onClick={() => setActiveDatasetId(dataset.id)}
-                className={`
-                  group relative px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 flex-shrink-0 border-2
-                  ${activeDatasetId === dataset.id
-                    ? 'bg-white text-indigo-600 border-indigo-500 border-b-white -mb-0.5 shadow-md'
-                    : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
-                  }
-                `}
-              >
-                <Database className="w-4 h-4" />
-                <span className="text-sm font-semibold">
-                  {dataset.name}
-                </span>
-                <span className="text-xs text-gray-500">
-                  ({dataset.row_count?.toLocaleString()})
-                </span>
-                
-                {/* Health indicator */}
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: badge.color }}
-                  title={`Health: ${health.score}/100`}
-                ></div>
-
-                {/* Close button */}
+                  className="relative flex-shrink-0 group"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveDatasetId(dataset.id)}
+                    className={`
+                      px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 border-2
+                      ${activeDatasetId === dataset.id
+                        ? 'bg-white text-indigo-600 border-indigo-500 border-b-white -mb-0.5 shadow-md'
+                        : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
+                      }
+                    `}
+                  >
+                    <Database className="w-4 h-4" />
+                    <span className="text-sm font-semibold">
+                      {dataset.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      ({dataset.row_count?.toLocaleString()})
+                    </span>
+                    
+                    {/* Health indicator */}
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: badge.color }}
+                      title={`Health: ${health.score}/100`}
+                    ></div>
+                  </button>
                 <button
+                    type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(dataset);
                   }}
-                  className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 hover:bg-red-100 rounded transition-opacity"
+                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 rounded-full border border-transparent bg-white/80 p-0.5 text-red-600 shadow transition hover:border-red-200 hover:bg-red-50"
+                    aria-label={`Remove ${dataset.name}`}
                 >
                   <X className="w-3 h-3 text-red-600" />
                 </button>
-              </button>
+                </div>
             );
           })}
 

@@ -1,9 +1,16 @@
-import { useMemo } from 'react';
-import { ChevronRight, ExternalLink, ShieldCheck, Users, TrendingUp } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ChevronRight, ExternalLink, ShieldCheck, Users, TrendingUp, Clock3, Sparkles, Wand2, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Button from '../../../components/common/Button';
-import { projectSummaries } from '../../data/mockPlatformData';
+import { projectSummaries, pipelineTemplates, type PipelineTemplate } from '../../data/mockPlatformData';
 import { useMLContext } from '../../../context/MLContext';
 
+const templateTone: Record<PipelineTemplate['automationLevel'], string> = {
+  automated: 'bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/30',
+  guided: 'bg-indigo-500/15 text-indigo-200 ring-1 ring-indigo-500/30',
+  custom: 'bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30',
+};
 const statusStyles: Record<string, string> = {
   excellent: 'bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-400/20',
   good: 'bg-indigo-500/10 text-indigo-200 ring-1 ring-indigo-400/20',
@@ -23,7 +30,31 @@ const formatRelative = (dateIso: string) => {
 };
 
 const ProjectsOverview = () => {
-  const { datasets, models } = useMLContext();
+  const navigate = useNavigate();
+  const { datasets, models, setCurrentProject } = useMLContext();
+  const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
+
+  const handleLaunchTemplate = async (template: PipelineTemplate) => {
+    try {
+      setIsLaunching(true);
+      const projectId = `template-${template.id}-${Date.now()}`;
+      setCurrentProject({
+        id: projectId,
+        name: template.name,
+        description: template.description,
+        createdAt: new Date().toISOString(),
+      });
+      toast.success(`Project "${template.name}" ready to configure`, { duration: 3500 });
+      setTemplateModalOpen(false);
+      navigate('/app/pipelines');
+    } catch (error) {
+      console.error('Failed to launch template project', error);
+      toast.error('Could not start project. Please try again.');
+    } finally {
+      setIsLaunching(false);
+    }
+  };
 
   const platformSnapshot = useMemo(() => {
     const totalDatasets = datasets.length;
@@ -52,7 +83,11 @@ const ProjectsOverview = () => {
           <Button variant="secondary" size="sm" className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80">
             Launch guided onboarding
           </Button>
-          <Button size="sm" className="bg-indigo-500/90 hover:bg-indigo-500">
+            <Button
+              size="sm"
+              onClick={() => setTemplateModalOpen(true)}
+              className="bg-indigo-500/90 hover:bg-indigo-500"
+            >
             Start project from template
           </Button>
         </div>
@@ -160,6 +195,78 @@ const ProjectsOverview = () => {
           ))}
         </div>
       </div>
+      {isTemplateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur">
+          <div className="relative w-full max-w-5xl rounded-3xl border border-slate-800/70 bg-slate-950/95 shadow-2xl shadow-black/30">
+            <div className="flex items-center justify-between border-b border-slate-800/80 px-6 py-5">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-100">Choose a launch template</h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Each template configures datasets, pipelines, and guardrails for a targeted use case.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTemplateModalOpen(false)}
+                className="rounded-full border border-slate-800/80 p-2 text-slate-400 transition hover:text-white"
+                aria-label="Close template selection"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {pipelineTemplates.map(template => (
+                  <div
+                    key={template.id}
+                    className="flex h-full flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/60 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+                            {template.problemType.toUpperCase()}
+                          </p>
+                          <h3 className="mt-1 text-lg font-semibold text-slate-100">{template.name}</h3>
+                        </div>
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ${templateTone[template.automationLevel]}`}>
+                          {template.automationLevel === 'automated' && 'Hands-off'}
+                          {template.automationLevel === 'guided' && 'Guided'}
+                          {template.automationLevel === 'custom' && 'Configurable'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-300">{template.description}</p>
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock3 className="h-4 w-4 text-indigo-300" />
+                          {template.durationMinutes} min build
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Sparkles className="h-4 w-4 text-emerald-300" />
+                          {(template.successRate * 100).toFixed(0)}% success
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Wand2 className="h-4 w-4 text-amber-300" />
+                          {template.version}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="mt-4 inline-flex items-center justify-center bg-indigo-500/90 hover:bg-indigo-500"
+                      onClick={() => handleLaunchTemplate(template)}
+                      isLoading={isLaunching}
+                      disabled={isLaunching}
+                    >
+                      Use template
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
