@@ -1,15 +1,17 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo, useEffect, useState, useCallback } from 'react';
 import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import CommandPalette from '../../components/CommandPalette/CommandPalette';
 import { primaryNav, secondaryNav, type NavItem } from '../navigation/navConfig';
 import Button from '../../components/common/Button';
-import { Bell, HelpCircle, PlusCircle } from 'lucide-react';
+import { Bell, HelpCircle, PlusCircle, Command } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(' ');
 
-const badgeToneStyles: Record<NonNullable<NavItem['badge']>['tone'] | 'info', string> = {
+type BadgeTone = Exclude<NonNullable<NavItem['badge']>['tone'], undefined>;
+
+const badgeToneStyles: Record<BadgeTone | 'info', string> = {
   info: 'bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-indigo-500/30',
   success: 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-500/30',
   warning: 'bg-amber-500/15 text-amber-200 ring-1 ring-inset ring-amber-500/30',
@@ -68,7 +70,7 @@ const NavLink = ({ item, isActive }: { item: NavItem; isActive: boolean }) => {
   );
 };
 
-const WorkspaceHeader = () => {
+const WorkspaceHeader = ({ onOpenCommandPalette }: { onOpenCommandPalette: () => void }) => {
   const navigate = useNavigate();
   const { currentProject, models } = useMLContext();
 
@@ -108,6 +110,13 @@ const WorkspaceHeader = () => {
           New pipeline
         </Button>
         <button
+          onClick={onOpenCommandPalette}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-800/80 bg-slate-900/70 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/80"
+          aria-label="Open command palette"
+        >
+          <Command className="h-4 w-4" />
+        </button>
+        <button
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-800/80 bg-slate-900/70 text-slate-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/80"
           aria-label="Open help center"
         >
@@ -126,6 +135,25 @@ const WorkspaceHeader = () => {
 
 export const AppShell = () => {
   const location = useLocation();
+  const [isPaletteOpen, setPaletteOpen] = useState(false);
+
+  const handleKey = useCallback((event: KeyboardEvent) => {
+    const isOpenShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+    if (isOpenShortcut) {
+      event.preventDefault();
+      setPaletteOpen(true);
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      setPaletteOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [handleKey]);
 
   const renderNavGroup = (groupItems: NavItem[]) =>
     groupItems.map(item => {
@@ -166,14 +194,14 @@ export const AppShell = () => {
         </div>
       </aside>
       <div className="flex flex-1 flex-col">
-        <WorkspaceHeader />
+        <WorkspaceHeader onOpenCommandPalette={() => setPaletteOpen(true)} />
         <div className="relative flex flex-1 flex-col">
           <main className="flex-1 overflow-y-auto bg-slate-950 px-6 py-6">
             <div className="mx-auto max-w-6xl space-y-6">
               <Outlet />
             </div>
           </main>
-          <CommandPalette />
+          <CommandPalette isOpen={isPaletteOpen} onClose={() => setPaletteOpen(false)} />
         </div>
       </div>
     </div>
