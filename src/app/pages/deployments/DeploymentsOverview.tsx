@@ -1,6 +1,9 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { deploymentRecords } from '../../data/mockPlatformData';
 import Button from '../../../components/common/Button';
-import { CloudLightning, PlugZap, Server, ShieldAlert } from 'lucide-react';
+import { CloudLightning, PlugZap, Server, ShieldAlert, Rocket, CheckCircle2 } from 'lucide-react';
 
 const statusTone: Record<string, string> = {
   online: 'bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-500/20',
@@ -18,7 +21,24 @@ const environmentTone: Record<string, string> = {
 const formatNumber = (value: number, unit: string) => `${value}${unit}`;
 
 const DeploymentsOverview = () => {
+  const navigate = useNavigate();
+  const [isLaunching, setLaunching] = useState(false);
+  const [showLaunchSummary, setShowLaunchSummary] = useState(false);
   const activeIncidents = deploymentRecords.filter(deploy => deploy.status !== 'online').length;
+
+  const handleLaunchDeployment = () => {
+    if (isLaunching) return;
+
+    setLaunching(true);
+    toast.loading('Preparing deployment...', { id: 'deployment-launch' });
+
+    setTimeout(() => {
+      toast.success('Deployment pipeline queued', { id: 'deployment-launch', duration: 3500 });
+      setLaunching(false);
+      setShowLaunchSummary(true);
+      navigate('/app/deploy');
+    }, 1200);
+  };
 
   return (
     <section className="space-y-6">
@@ -36,7 +56,13 @@ const DeploymentsOverview = () => {
             <Button variant="secondary" size="sm" className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80">
               View release calendar
             </Button>
-            <Button size="sm" className="bg-emerald-500/90 hover:bg-emerald-500">
+            <Button
+              size="sm"
+              className="inline-flex items-center gap-2 bg-emerald-500/90 hover:bg-emerald-500"
+              onClick={handleLaunchDeployment}
+              isLoading={isLaunching}
+            >
+              <Rocket className="h-4 w-4" />
               Launch deployment
             </Button>
           </div>
@@ -155,6 +181,22 @@ const DeploymentsOverview = () => {
           </table>
         </div>
       </div>
+      {showLaunchSummary && (
+        <div className="rounded-2xl border border-emerald-600/40 bg-emerald-500/5 p-5 text-sm text-emerald-100">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20">
+              <CheckCircle2 className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-emerald-200 font-semibold">Deployment workflow queued</p>
+              <p className="mt-1 text-emerald-100/80">
+                We routed you to the deployment runbook so you can monitor rollout progress, configure canary thresholds,
+                and promote to production when validation passes.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
