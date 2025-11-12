@@ -8,7 +8,6 @@ import { MLProvider } from './context/MLContext.tsx';
 import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
 import PrivateRoute from './components/auth/PrivateRoute.tsx';
-import AppLayout from './components/layout/AppLayoutKoyfin.tsx'; // Koyfin dark theme
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
@@ -16,6 +15,7 @@ import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
 import SupabaseConfigError from './components/common/SupabaseConfigError.tsx';
 import { isSupabaseConfigured } from './lib/supabase.ts';
+import { AppShell } from './app/layout/AppShell.tsx';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
@@ -41,6 +41,12 @@ const ProductTourDemo = lazy(() => import('./pages/ProductTourDemo.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
 const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
+const ProjectsOverview = lazy(() => import('./app/pages/projects/ProjectsOverview.tsx'));
+const PipelineWorkspace = lazy(() => import('./app/pages/pipelines/PipelineWorkspace.tsx'));
+const DeploymentsOverview = lazy(() => import('./app/pages/deployments/DeploymentsOverview.tsx'));
+const MonitoringOverview = lazy(() => import('./app/pages/monitoring/MonitoringOverview.tsx'));
+const AutomationHub = lazy(() => import('./app/pages/automations/AutomationHub.tsx'));
+const CopilotWorkspace = lazy(() => import('./app/pages/copilot/CopilotWorkspace.tsx'));
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
@@ -152,25 +158,31 @@ if (!isSupabaseConfigured) {
                             <Route path="/product-tour" element={<ProductTourDemo />} />
                             <Route path="/signup-complete" element={<SignupComplete />} />
 
-                            {/* Authenticated routes with layout */}
-                            <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-                              <Route index element={<Dashboard />} />
-                              <Route path="data" element={<DataManagement />} />
-                              <Route path="insights" element={<DatasetInsights />} />
-                              <Route path="dataset-overview" element={<DatasetInsights />} />
-                              <Route path="visualizations" element={<DatasetInsights />} />
-                              <Route path="feature-engineering" element={<FeatureEngineering />} />
-                              <Route path="train" element={<ModelTraining />} />
-                              <Route path="evaluate" element={<ModelEvaluation />} />
-                              <Route path="deploy" element={<Deployment />} />
-                              <Route path="monitoring" element={<ModelMonitoring />} />
-                              <Route path="profile" element={<UserProfile />} />
-                              <Route path="settings" element={<AccountSettings />} />
-                              <Route path="documentation" element={<Documentation />} />
-                              <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
-                              <Route path="usage" element={<UsageDashboard />} />
-                              <Route path="trash" element={<TrashBin />} />
-                            </Route>
+                              {/* Authenticated routes with layout */}
+                              <Route path="/app" element={<PrivateRoute><AppShell /></PrivateRoute>}>
+                                <Route index element={<Dashboard />} />
+                                <Route path="projects" element={<ProjectsOverview />} />
+                                <Route path="pipelines" element={<PipelineWorkspace />} />
+                                <Route path="deployments" element={<DeploymentsOverview />} />
+                                <Route path="monitoring" element={<MonitoringOverview />} />
+                                <Route path="automations" element={<AutomationHub />} />
+                                <Route path="copilot" element={<CopilotWorkspace />} />
+                                <Route path="data" element={<DataManagement />} />
+                                <Route path="insights" element={<DatasetInsights />} />
+                                <Route path="dataset-overview" element={<DatasetInsights />} />
+                                <Route path="visualizations" element={<DatasetInsights />} />
+                                <Route path="feature-engineering" element={<FeatureEngineering />} />
+                                <Route path="train" element={<ModelTraining />} />
+                                <Route path="evaluate" element={<ModelEvaluation />} />
+                                <Route path="deploy" element={<Deployment />} />
+                                <Route path="monitoring/legacy" element={<ModelMonitoring />} />
+                                <Route path="profile" element={<UserProfile />} />
+                                <Route path="settings" element={<AccountSettings />} />
+                                <Route path="documentation" element={<Documentation />} />
+                                <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
+                                <Route path="usage" element={<UsageDashboard />} />
+                                <Route path="trash" element={<TrashBin />} />
+                              </Route>
 
                             <Route path="*" element={<Navigate to="/" replace />} />
                           </Routes>
