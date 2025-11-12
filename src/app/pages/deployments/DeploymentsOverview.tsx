@@ -53,7 +53,12 @@ const DeploymentsOverview = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" size="sm" className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80"
+              onClick={() => navigate('/app/deploy?view=calendar')}
+            >
               View release calendar
             </Button>
             <Button
@@ -167,13 +172,14 @@ const DeploymentsOverview = () => {
                     })}
                   </td>
                   <td className="px-6 py-4">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80"
-                    >
-                      View runbook
-                    </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80"
+                    onClick={() => navigate(`/app/deploy?deployment=${record.id}`)}
+                  >
+                    View runbook
+                  </Button>
                   </td>
                 </tr>
               ))}

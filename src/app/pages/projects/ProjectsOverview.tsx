@@ -80,14 +80,22 @@ const ProjectsOverview = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" size="sm" className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-slate-900/80 text-slate-200 hover:bg-slate-800/80"
+            onClick={() => {
+              toast.success('Launching guided onboarding');
+              navigate('/app/product-tour');
+            }}
+          >
             Launch guided onboarding
           </Button>
-            <Button
-              size="sm"
-              onClick={() => setTemplateModalOpen(true)}
-              className="bg-indigo-500/90 hover:bg-indigo-500"
-            >
+          <Button
+            size="sm"
+            onClick={() => setTemplateModalOpen(true)}
+            className="bg-indigo-500/90 hover:bg-indigo-500"
+          >
             Start project from template
           </Button>
         </div>
@@ -142,7 +150,14 @@ const ProjectsOverview = () => {
               Each project ships with curated notebook examples, recommended datasets, and automated QA.
             </p>
           </div>
-          <Button variant="outline" className="border-slate-700 bg-transparent text-slate-200 hover:bg-slate-900/60">
+          <Button
+            variant="outline"
+            className="border-slate-700 bg-transparent text-slate-200 hover:bg-slate-900/60"
+            onClick={() => {
+              toast('Backlog view coming next — opening pipeline workspace for now.', { icon: '🗂️' });
+              navigate('/app/pipelines');
+            }}
+          >
             View project backlog
           </Button>
         </div>
@@ -180,17 +195,27 @@ const ProjectsOverview = () => {
                 <span className="h-1 w-1 rounded-full bg-slate-600" />
                 <span>Updated {formatRelative(project.lastUpdated)}</span>
               </div>
-              <div className="mt-auto flex items-center justify-between">
-                <div className="text-xs text-slate-400">Owner · {project.owner}</div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="inline-flex items-center gap-2 bg-slate-900/80 text-slate-200 transition-colors hover:bg-slate-800/80"
-                >
-                  Open workspace
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="text-xs text-slate-400">Owner · {project.owner}</div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="inline-flex items-center gap-2 bg-slate-900/80 text-slate-200 transition-colors hover:bg-slate-800/80"
+                    onClick={() => {
+                      setCurrentProject({
+                        id: project.id,
+                        name: project.name,
+                        description: project.description,
+                        createdAt: project.lastUpdated,
+                      });
+                      toast.success(`Opening ${project.name}`);
+                      navigate('/app/data');
+                    }}
+                  >
+                    Open workspace
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
             </article>
           ))}
         </div>
