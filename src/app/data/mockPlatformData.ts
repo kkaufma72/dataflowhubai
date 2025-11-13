@@ -3,6 +3,7 @@ export type HealthStatus = 'excellent' | 'good' | 'watch' | 'at-risk';
 export interface ProjectSummary {
   id: string;
   name: string;
+  description: string;
   industry: string;
   owner: string;
   lastUpdated: string;
@@ -58,6 +59,7 @@ export const projectSummaries: ProjectSummary[] = [
   {
     id: 'proj-retail-forecast',
     name: 'Retail Demand Forecasting',
+    description: 'ML-powered demand forecasting system for retail store clusters with promotion and seasonal pattern analysis',
     industry: 'Retail',
     owner: 'Alex Johnson',
     lastUpdated: '2025-01-20T14:10:00Z',
@@ -70,6 +72,7 @@ export const projectSummaries: ProjectSummary[] = [
   {
     id: 'proj-finance-risk',
     name: 'SMB Credit Risk Insights',
+    description: 'Automated credit risk assessment and score recalibration for small and medium business loan renewals',
     industry: 'Financial Services',
     owner: 'Priya Patel',
     lastUpdated: '2025-01-22T09:45:00Z',
@@ -81,6 +84,7 @@ export const projectSummaries: ProjectSummary[] = [
   {
     id: 'proj-saas-churn',
     name: 'SaaS Churn Prediction',
+    description: 'Predictive churn analytics for SaaS customers with feature tier optimization recommendations',
     industry: 'Software',
     owner: 'Daniel Lee',
     lastUpdated: '2025-01-18T17:30:00Z',
