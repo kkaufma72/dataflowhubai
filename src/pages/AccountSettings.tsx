@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import { Bell, Moon, Sun, Lock, Shield, LogOut, Save, Loader2, Mail, AlertCircle } from 'lucide-react';
-import Card from '../components/common/Card';
+import { Moon, Sun, Lock, Shield, LogOut, Save, Loader2, Mail, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 
@@ -43,13 +42,13 @@ const AccountSettings: React.FC = () => {
   
   // Preferences form
   const [preferences, setPreferences] = useState({
-    theme: userProfile?.preferences?.theme || 'light',
+    theme: userProfile?.preferences?.theme || 'system',
     emailNotifications: userProfile?.preferences?.emailNotifications || true,
     twoFactorAuth: userProfile?.preferences?.twoFactorAuth || false
   });
 
   // Handle preference changes
-  const handlePreferenceChange = (name: string, value: any) => {
+  const handlePreferenceChange = (name: string, value: boolean | string) => {
     setPreferences(prev => ({
       ...prev,
       [name]: value
@@ -563,16 +562,7 @@ const AccountSettings: React.FC = () => {
                     <Switch
                       checked={preferences.twoFactorAuth}
                       onChange={(checked) => handlePreferenceChange('twoFactorAuth', checked)}
-                      className={`${
-                        preferences.twoFactorAuth ? 'bg-indigo-600' : 'bg-gray-200'
-                      } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
-                    >
-                      <span
-                        className={`${
-                          preferences.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
-                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                      />
-                    </Switch>
+                    />
                     <span className="ml-3 text-sm font-medium text-gray-900">
                       {preferences.twoFactorAuth ? 'Enabled' : 'Disabled'}
                     </span>
