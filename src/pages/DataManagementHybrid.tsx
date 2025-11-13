@@ -49,7 +49,7 @@ const DataManagementHybrid: React.FC = () => {
   const [showAIHelper, setShowAIHelper] = useState(false);
 
   const activeDataset = useMemo(() => 
-    datasets.find(d => d.id === activeDatasetId),
+    datasets.find((d: Dataset) => d.id === activeDatasetId),
     [datasets, activeDatasetId]
   );
 
@@ -67,7 +67,7 @@ const DataManagementHybrid: React.FC = () => {
     const result = await deleteDataset(dataset, user?.id || '');
     if (result.success) {
       if (activeDatasetId === dataset.id && datasets.length > 1) {
-        setActiveDatasetId(datasets.find(d => d.id !== dataset.id)?.id || null);
+        setActiveDatasetId(datasets.find((d: Dataset) => d.id !== dataset.id)?.id || null);
       }
       toast.success('Dataset deleted');
     }
@@ -178,7 +178,7 @@ const DataManagementHybrid: React.FC = () => {
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="text-3xl font-bold text-green-900">
-                        {health.completeness}%
+                        {Math.round((health.checks.completeness.score / 25) * 100)}%
                       </div>
                     </div>
 
@@ -188,7 +188,7 @@ const DataManagementHybrid: React.FC = () => {
                         <Sparkles className="w-5 h-5 text-orange-600" />
                       </div>
                       <div className="text-3xl font-bold text-orange-900">
-                        {health.uniqueness}%
+                        {Math.round((health.checks.uniqueness.score / 25) * 100)}%
                       </div>
                     </div>
                   </div>
@@ -298,7 +298,7 @@ const DataManagementHybrid: React.FC = () => {
       {/* Excel-Style Dataset Tabs at Bottom */}
       <div className="bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
         <div className="flex items-center gap-2 overflow-x-auto">
-            {datasets.map((dataset) => {
+            {datasets.map((dataset: Dataset) => {
             const health = calculateDatasetHealth(dataset);
             const badge = getHealthBadgeProps(health.score);
             
