@@ -166,10 +166,10 @@ if (!isSupabaseConfigured) {
                                 <Route path="pipelines" element={<PipelineWorkspace />} />
                                 <Route path="deployments" element={<DeploymentsOverview />} />
                                 <Route path="monitoring" element={<MonitoringOverview />} />
-                                  <Route path="automations" element={<AutomationHub />} />
-                                  <Route path="copilot" element={<CopilotWorkspace />} />
-                                  <Route path="data" element={<DataManagement />} />
-                                  <Route path="talk-to-data" element={<TalkToYourData />} />
+                                <Route path="automations" element={<AutomationHub />} />
+                                <Route path="copilot" element={<CopilotWorkspace />} />
+                                <Route path="data" element={<DataManagement />} />
+                                <Route path="talk-to-data" element={<TalkToYourData />} />
                                 <Route path="insights" element={<DatasetInsights />} />
                                 <Route path="dataset-overview" element={<DatasetInsights />} />
                                 <Route path="visualizations" element={<DatasetInsights />} />
