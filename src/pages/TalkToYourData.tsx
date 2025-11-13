@@ -77,28 +77,12 @@ const TalkToYourData: React.FC = () => {
     return datasets.filter(d => selectedDatasetIds.includes(d.id));
   }, [datasets, selectedDatasetIds]);
 
-  // Auto-generate insights when datasets are selected
-  useEffect(() => {
-    if (selectedDatasets.length > 0 && generatedInsights.length === 0) {
-      const insightTimer = setTimeout(() => {
-        generateAutoInsights();
-      }, INSIGHT_GENERATION_DELAY);
-
-      return () => clearTimeout(insightTimer);
-    }
-  }, [selectedDatasets.length]);
-
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
   /**
    * Generates automatic insights for selected datasets.
    * Analyzes data patterns, correlations, and anomalies.
    * @returns {Promise<void>}
    */
-  const generateAutoInsights = async () => {
+  const generateAutoInsights = useCallback(async () => {
     if (selectedDatasets.length === 0) return;
 
     setIsGeneratingInsights(true);
@@ -136,6 +120,9 @@ Generate insights in JSON format:
   ]
 }`;
 
+      console.log('🤖 Calling secureAIChat for auto-insights...');
+      console.log('📊 Selected datasets:', selectedDatasets.map(d => d.name));
+      
       const response = await secureAIChat({
         question: systemPrompt,
         dataset: selectedDatasets[0], // Use first dataset as primary context
@@ -146,13 +133,41 @@ Generate insights in JSON format:
         conversationHistory: []
       });
 
+      console.log('✅ Received AI response:', {
+        hasText: !!response?.text,
+        textLength: response?.text?.length || 0,
+        textPreview: response?.text?.substring(0, 100) || 'No text',
+        fullResponse: response
+      });
+
+      // Validate response
+      if (!response || !response.text || response.text.trim() === '' || response.text === 'No response generated') {
+        console.warn('⚠️ Empty or invalid AI response, using fallback insights');
+        throw new Error('Empty response from AI service');
+      }
+
       // Handle response - check if it's already parsed or needs parsing
       let parsed;
       try {
         // Try parsing as JSON first
-        parsed = typeof response.text === 'string' ? JSON.parse(response.text) : response.text;
+        const responseText = response.text.trim();
+        // Check if response looks like JSON (starts with { or [)
+        if (responseText.startsWith('{') || responseText.startsWith('[')) {
+          parsed = JSON.parse(responseText);
+        } else {
+          // Not JSON, create a single insight from the text
+          parsed = {
+            insights: [{
+              type: 'statistical',
+              title: 'Dataset Analysis',
+              description: responseText,
+              confidence: 0.7,
+              datasets: selectedDatasets.map(d => d.name)
+            }]
+          };
+        }
       } catch (parseError) {
-        console.warn('Response is not JSON, using fallback insights:', parseError);
+        console.warn('⚠️ Response is not valid JSON, creating fallback insights:', parseError);
         // If parsing fails, create fallback insights from the text response
         parsed = {
           insights: [{
@@ -164,6 +179,13 @@ Generate insights in JSON format:
           }]
         };
       }
+
+      // Validate parsed structure
+      if (!parsed || !parsed.insights || !Array.isArray(parsed.insights) || parsed.insights.length === 0) {
+        console.warn('⚠️ Invalid insights structure, using fallback');
+        throw new Error('Invalid insights structure');
+      }
+
       const insights: GeneratedInsight[] = parsed.insights.map((insight: any, idx: number) => ({
         id: `insight-${Date.now()}-${idx}`,
         type: insight.type || 'statistical',
@@ -187,7 +209,7 @@ Generate insights in JSON format:
       toast.success(`Generated ${insights.length} insights`);
 
     } catch (error: any) {
-      console.error('Error generating insights:', error);
+      console.error('❌ Error generating insights:', error);
       
       // Provide fallback insights if AI fails
       const fallbackInsights: GeneratedInsight[] = selectedDatasets.map((ds, idx) => ({
@@ -203,7 +225,7 @@ Generate insights in JSON format:
       
       const fallbackMessage: Message = {
         role: 'assistant',
-        content: `I've prepared basic insights for your ${selectedDatasets.length} dataset${selectedDatasets.length > 1 ? 's' : ''}. Advanced AI analysis is temporarily unavailable.`,
+        content: `I've prepared basic insights for your ${selectedDatasets.length} dataset${selectedDatasets.length > 1 ? 's' : ''}. ${error?.message?.includes('Edge Function') ? 'The AI service may not be deployed.' : 'Advanced AI analysis is temporarily unavailable.'}`,
         timestamp: new Date(),
         insights: fallbackInsights.map(i => `${i.title}: ${i.description}`)
       };
@@ -213,7 +235,23 @@ Generate insights in JSON format:
     } finally {
       setIsGeneratingInsights(false);
     }
-  };
+  }, [selectedDatasets, user]);
+
+  // Auto-generate insights when datasets are selected
+  useEffect(() => {
+    if (selectedDatasets.length > 0 && generatedInsights.length === 0) {
+      const insightTimer = setTimeout(() => {
+        generateAutoInsights();
+      }, INSIGHT_GENERATION_DELAY);
+
+      return () => clearTimeout(insightTimer);
+    }
+  }, [selectedDatasets.length, generatedInsights.length, generateAutoInsights]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   /**
    * Handles natural language transformation requests.
@@ -259,6 +297,7 @@ Parse this command and return JSON:
   "estimatedRowsAffected": number
 }`;
 
+      console.log('🤖 Calling secureAIChat for transformation...');
       const response = await secureAIChat({
         question: `${systemPrompt}\n\nCommand: ${userInput}`,
         dataset: selectedDatasets[0],
@@ -269,13 +308,36 @@ Parse this command and return JSON:
         conversationHistory: []
       });
 
+      console.log('✅ Received AI response:', {
+        hasText: !!response?.text,
+        textLength: response?.text?.length || 0,
+        textPreview: response?.text?.substring(0, 100) || 'No text'
+      });
+
+      // Validate response
+      if (!response || !response.text || response.text.trim() === '' || response.text === 'No response generated') {
+        console.warn('⚠️ Empty or invalid AI response for transformation');
+        throw new Error('Empty response from AI service');
+      }
+
       // Handle response - check if it's already parsed or needs parsing
       let parsed;
       try {
         // Try parsing as JSON first
-        parsed = typeof response.text === 'string' ? JSON.parse(response.text) : response.text;
+        const responseText = response.text.trim();
+        // Check if response looks like JSON (starts with { or [)
+        if (responseText.startsWith('{') || responseText.startsWith('[')) {
+          parsed = JSON.parse(responseText);
+        } else {
+          // Not JSON, create a basic transformation from the text
+          parsed = {
+            operation: 'UNKNOWN',
+            description: responseText,
+            parameters: {}
+          };
+        }
       } catch (parseError) {
-        console.warn('Response is not JSON, creating fallback transformation:', parseError);
+        console.warn('⚠️ Response is not valid JSON, creating fallback transformation:', parseError);
         // If parsing fails, create a basic transformation from the text
         parsed = {
           operation: 'UNKNOWN',
@@ -370,6 +432,7 @@ User question: ${text}
 
 Provide helpful insights, answer questions, and suggest analyses.`;
 
+        console.log('🤖 Calling secureAIChat for general chat...');
         const response = await secureAIChat({
           question: contextPrompt,
           dataset: selectedDatasets[0] || datasets[0],
@@ -380,8 +443,20 @@ Provide helpful insights, answer questions, and suggest analyses.`;
           conversationHistory: messages.map(m => ({ role: m.role, content: m.content }))
         });
 
+        console.log('✅ Received AI response:', {
+          hasText: !!response?.text,
+          textLength: response?.text?.length || 0,
+          textPreview: response?.text?.substring(0, 100) || 'No text'
+        });
+
         // Ensure we have a valid response
-        const responseText = response?.text || response?.content || 'I apologize, but I couldn\'t generate a response.';
+        let responseText = response?.text || '';
+        
+        // Check if response is empty or indicates failure
+        if (!responseText || responseText.trim() === '' || responseText === 'No response generated') {
+          console.warn('⚠️ Empty AI response, providing fallback message');
+          responseText = 'I apologize, but I couldn\'t generate a response. This might be due to:\n\n• The AI Edge Function not being deployed\n• Network connectivity issues\n• Service temporarily unavailable\n\nPlease try again in a moment.';
+        }
         
         const assistantMessage: Message = {
           role: 'assistant',

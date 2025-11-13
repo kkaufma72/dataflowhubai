@@ -9,18 +9,19 @@ import { useMLContext } from '../context/MLContext';
 import { Dataset } from '../types';
 import { 
   Database, 
+  Upload, 
   X,
   Plus,
   Bot,
   Sparkles,
   Eye,
   CheckCircle,
-  BarChart3
+  BarChart3,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
-import Button from '../components/common/Button';
 import DataUploader from '../components/data/DataUploader';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
 import { useDefaultProjectSetup } from '../hooks/useDefaultProjectSetup';
@@ -48,7 +49,7 @@ const DataManagementHybrid: React.FC = () => {
   const [showAIHelper, setShowAIHelper] = useState(false);
 
   const activeDataset = useMemo(() => 
-    datasets.find(d => d.id === activeDatasetId),
+    datasets.find((d: Dataset) => d.id === activeDatasetId),
     [datasets, activeDatasetId]
   );
 
@@ -56,13 +57,8 @@ const DataManagementHybrid: React.FC = () => {
   useEffect(() => {
     const hasSeenHelper = sessionStorage.getItem('hasSeenDataHelper');
     if (!hasSeenHelper && datasets.length > 0) {
-      const timer = setTimeout(() => {
-        setShowAIHelper(true);
-        sessionStorage.setItem('hasSeenDataHelper', 'true');
-      }, 2000);
-      
-      // Cleanup timer on unmount or dependency change
-      return () => clearTimeout(timer);
+      setTimeout(() => setShowAIHelper(true), 2000);
+      sessionStorage.setItem('hasSeenDataHelper', 'true');
     }
   }, [datasets.length]);
 
@@ -71,44 +67,43 @@ const DataManagementHybrid: React.FC = () => {
     const result = await deleteDataset(dataset, user?.id || '');
     if (result.success) {
       if (activeDatasetId === dataset.id && datasets.length > 1) {
-        setActiveDatasetId(datasets.find(d => d.id !== dataset.id)?.id || null);
+        setActiveDatasetId(datasets.find((d: Dataset) => d.id !== dataset.id)?.id || null);
       }
       toast.success('Dataset deleted');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="space-y-6 p-6">
-        {/* Page Header - Matching Dashboard style */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Database className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-                  Browse & Upload
-                </h1>
-                <p className="mt-2 text-lg text-gray-600 font-medium">
-                  {currentProject?.name || 'My Datasets'} • {datasets.length} {datasets.length === 1 ? 'dataset' : 'datasets'}
-                </p>
-              </div>
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Top Bar with Project Info */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Database className="w-5 h-5 text-white" />
             </div>
             <div>
-              <Button
-                variant="primary"
-                onClick={() => setShowUploader(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Upload Dataset
-              </Button>
+              <h1 className="text-xl font-bold text-gray-900">
+                {currentProject?.name || 'My Datasets'}
+              </h1>
+              <p className="text-sm text-gray-600">
+                {datasets.length} {datasets.length === 1 ? 'dataset' : 'datasets'}
+              </p>
             </div>
           </div>
+          
+          <button
+            onClick={() => setShowUploader(true)}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Upload Dataset
+          </button>
         </div>
+      </div>
 
-        {/* Main Content Area - Dataset Cards */}
+      {/* Main Content Area - Dataset Cards */}
+      <div className="flex-1 overflow-auto px-6 py-6">
         {activeDataset ? (
           <div className="space-y-6">
             {/* Dataset Overview Card with Quality Score */}
@@ -163,7 +158,7 @@ const DataManagementHybrid: React.FC = () => {
                         <BarChart3 className="w-5 h-5 text-blue-600" />
                       </div>
                       <div className="text-3xl font-bold text-blue-900">
-                        {activeDataset.rows?.toLocaleString() || 0}
+                        {activeDataset.row_count?.toLocaleString() || 0}
                       </div>
                     </div>
 
@@ -173,7 +168,7 @@ const DataManagementHybrid: React.FC = () => {
                         <Database className="w-5 h-5 text-purple-600" />
                       </div>
                       <div className="text-3xl font-bold text-purple-900">
-                        {activeDataset.columns || 0}
+                        {activeDataset.column_count || 0}
                       </div>
                     </div>
 
@@ -183,7 +178,7 @@ const DataManagementHybrid: React.FC = () => {
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="text-3xl font-bold text-green-900">
-                        {health.checks.completeness.score}%
+                        {Math.round((health.checks.completeness.score / 25) * 100)}%
                       </div>
                     </div>
 
@@ -193,7 +188,7 @@ const DataManagementHybrid: React.FC = () => {
                         <Sparkles className="w-5 h-5 text-orange-600" />
                       </div>
                       <div className="text-3xl font-bold text-orange-900">
-                        {health.checks.uniqueness.score}%
+                        {Math.round((health.checks.uniqueness.score / 25) * 100)}%
                       </div>
                     </div>
                   </div>
@@ -202,10 +197,8 @@ const DataManagementHybrid: React.FC = () => {
                   <div className="px-6 pb-6 flex gap-3">
                     <button
                       onClick={() => {
-                        if (activeDataset) {
-                          setSelectedDataset(activeDataset);
-                          setShowPreview(true);
-                        }
+                        setSelectedDataset(activeDataset);
+                        setShowPreview(true);
                       }}
                       className="flex-1 px-4 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -214,10 +207,8 @@ const DataManagementHybrid: React.FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        if (activeDataset) {
-                          setSelectedDataset(activeDataset);
-                          setShowQuality(true);
-                        }
+                        setSelectedDataset(activeDataset);
+                        setShowQuality(true);
                       }}
                       className="flex-1 px-4 py-3 bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -226,10 +217,8 @@ const DataManagementHybrid: React.FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        if (activeDataset) {
-                          setSelectedDataset(activeDataset);
-                          setShowChat(true);
-                        }
+                        setSelectedDataset(activeDataset);
+                        setShowChat(true);
                       }}
                       className="flex-1 px-4 py-3 bg-purple-50 border-2 border-purple-200 text-purple-700 hover:bg-purple-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -241,94 +230,121 @@ const DataManagementHybrid: React.FC = () => {
               );
             })()}
 
-            {/* Data Profiling Cards (like before!) */}
-            <div className="grid grid-cols-3 gap-4">
-              {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
-                const values = activeDataset.preview_data?.rows?.map((r: any) => 
-                  Array.isArray(r) ? r[idx] : r[col]
-                );
-                const uniqueCount = new Set(values).size;
-                
-                return (
-                  <div key={col} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-bold text-gray-900 truncate">
-                        {col}
-                      </h4>
-                      <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold">
-                        Column {idx + 1}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Type:</span>
-                        <span className="font-semibold text-gray-900">
-                          {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Unique:</span>
-                        <span className="font-semibold text-gray-900">
-                          {uniqueCount}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sample:</span>
-                        <span className="font-semibold text-gray-900 truncate max-w-[100px]">
-                          {String(values?.[0])}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+              {/* Data Profiling Cards (like before!) */}
+              <div className="grid grid-cols-3 gap-4">
+                {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
+                  const values = activeDataset.preview_data?.rows?.map((r: any) =>
+                    Array.isArray(r) ? r[idx] : r[col]
+                  );
+                  const uniqueCount = new Set(values).size;
 
-            {/* Excel-Style Dataset Tabs at Bottom */}
+                  return (
+                    <div key={col} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-bold text-gray-900 truncate">
+                          {col}
+                        </h4>
+                        <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold">
+                          Column {idx + 1}
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-semibold text-gray-900">
+                            {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Unique:</span>
+                          <span className="font-semibold text-gray-900">
+                            {uniqueCount}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Sample:</span>
+                          <span className="font-semibold text-gray-900 truncate max-w-[100px]">
+                            {String(values?.[0])}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <Database className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                No Dataset Selected
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Click a dataset tab below or upload a new one
+              </p>
+              <button
+                onClick={() => setShowUploader(true)}
+                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                <Plus className="w-5 h-5 inline mr-2" />
+                Upload Your First Dataset
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Excel-Style Dataset Tabs at Bottom */}
       <div className="bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
         <div className="flex items-center gap-2 overflow-x-auto">
-          {datasets.map((dataset) => {
+            {datasets.map((dataset: Dataset) => {
             const health = calculateDatasetHealth(dataset);
             const badge = getHealthBadgeProps(health.score);
             
             return (
-              <button
+                <div
                 key={dataset.id}
-                onClick={() => setActiveDatasetId(dataset.id)}
-                className={`
-                  group relative px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 flex-shrink-0 border-2
-                  ${activeDatasetId === dataset.id
-                    ? 'bg-white text-indigo-600 border-indigo-500 border-b-white -mb-0.5 shadow-md'
-                    : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
-                  }
-                `}
-              >
-                <Database className="w-4 h-4" />
-                <span className="text-sm font-semibold">
-                  {dataset.name}
-                </span>
-                <span className="text-xs text-gray-500">
-                  ({dataset.rows?.toLocaleString()})
-                </span>
-                
-                {/* Health indicator */}
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: badge.color }}
-                  title={`Health: ${health.score}/100`}
-                ></div>
-
-                {/* Close button */}
+                  className="relative flex-shrink-0 group"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveDatasetId(dataset.id)}
+                    className={`
+                      px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 border-2
+                      ${activeDatasetId === dataset.id
+                        ? 'bg-white text-indigo-600 border-indigo-500 border-b-white -mb-0.5 shadow-md'
+                        : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
+                      }
+                    `}
+                  >
+                    <Database className="w-4 h-4" />
+                    <span className="text-sm font-semibold">
+                      {dataset.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      ({dataset.row_count?.toLocaleString()})
+                    </span>
+                    
+                    {/* Health indicator */}
+                    <div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: badge.color }}
+                      title={`Health: ${health.score}/100`}
+                    ></div>
+                  </button>
                 <button
+                    type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(dataset);
                   }}
-                  className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 hover:bg-red-100 rounded transition-opacity"
+                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 rounded-full border border-transparent bg-white/80 p-0.5 text-red-600 shadow transition hover:border-red-200 hover:bg-red-50"
+                    aria-label={`Remove ${dataset.name}`}
                 >
                   <X className="w-3 h-3 text-red-600" />
                 </button>
-              </button>
+                </div>
             );
           })}
 
@@ -342,160 +358,136 @@ const DataManagementHybrid: React.FC = () => {
           </button>
         </div>
       </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mb-6">
-                <Database className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">No datasets available</h2>
-              <p className="text-lg text-gray-600 mb-6">
-                Upload your first dataset to get started
-              </p>
-              <Button variant="primary" onClick={() => setShowUploader(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Upload Dataset
-              </Button>
-            </div>
-          </div>
-        )}
 
-        {/* Friendly AI Helper Bot */}
-        {showAIHelper && (
-          <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 z-50 animate-bounce-in">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Bot className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold">Data Assistant</h3>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <p className="text-white/90 text-sm">Ready to help!</p>
-                    </div>
-                  </div>
+      {/* Friendly AI Helper Bot */}
+      {showAIHelper && (
+        <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 z-50 animate-bounce-in">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <Bot className="w-6 h-6 text-white" />
                 </div>
-                <button onClick={() => setShowAIHelper(false)}>
-                  <X className="w-5 h-5 text-white/80 hover:text-white" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 mb-4">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-gray-900 font-semibold mb-1">
-                      👋 Hi {user?.user_metadata?.full_name?.split(' ')[0] || 'there'}!
-                    </p>
-                    <p className="text-gray-700">
-                      How can I help you transform your data today?
-                    </p>
+                <div>
+                  <h3 className="text-white font-bold">Data Assistant</h3>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <p className="text-white/90 text-sm">Ready to help!</p>
                   </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    if (activeDataset) {
-                      setSelectedDataset(activeDataset);
-                      setShowPreview(true);
-                    }
-                    setShowAIHelper(false);
-                  }}
-                  className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-cyan-400 hover:bg-cyan-50 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <Eye className="w-5 h-5 text-cyan-600" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 group-hover:text-cyan-600">
-                        Preview First 25 Rows
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        See your data to plan transformations
-                      </p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (activeDataset) {
-                      setSelectedDataset(activeDataset);
-                      setShowQuality(true);
-                    }
-                    setShowAIHelper(false);
-                  }}
-                  className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 group-hover:text-green-600">
-                        Check Data Quality
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Find issues, get recommendations
-                      </p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (activeDataset) {
-                      setSelectedDataset(activeDataset);
-                      setShowChat(true);
-                    }
-                    setShowAIHelper(false);
-                  }}
-                  className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 rounded-xl transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 group-hover:text-purple-600">
-                        Ask AI Questions
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Get insights and transformation ideas
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div className="px-6 pb-4 flex justify-between text-sm text-gray-500">
-              <button onClick={() => setShowAIHelper(false)}>Minimize</button>
-              <button onClick={() => {
-                setShowAIHelper(false);
-                sessionStorage.setItem('dismissedDataHelper', 'true');
-              }}>
-                Don't show again
+              <button onClick={() => setShowAIHelper(false)}>
+                <X className="w-5 h-5 text-white/80 hover:text-white" />
               </button>
             </div>
           </div>
-        )}
 
-        {/* Minimized AI Helper */}
-        {!showAIHelper && (
-          <button
-            onClick={() => setShowAIHelper(true)}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110 z-40"
-          >
-            <Bot className="w-6 h-6 text-white" />
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-          </button>
-        )}
+          <div className="p-6">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 mb-4">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-semibold mb-1">
+                    👋 Hi {user?.user_metadata?.full_name?.split(' ')[0] || 'there'}!
+                  </p>
+                  <p className="text-gray-700">
+                    How can I help you transform your data today?
+                  </p>
+                </div>
+              </div>
+            </div>
 
-        {/* Upload Modal */}
-        {showUploader && (
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setSelectedDataset(activeDataset);
+                  setShowPreview(true);
+                  setShowAIHelper(false);
+                }}
+                className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-cyan-400 hover:bg-cyan-50 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <Eye className="w-5 h-5 text-cyan-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-cyan-600">
+                      Preview First 25 Rows
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      See your data to plan transformations
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedDataset(activeDataset);
+                  setShowQuality(true);
+                  setShowAIHelper(false);
+                }}
+                className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-green-600">
+                      Check Data Quality
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Find issues, get recommendations
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedDataset(activeDataset);
+                  setShowChat(true);
+                  setShowAIHelper(false);
+                }}
+                className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 rounded-xl transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-purple-600">
+                      Ask AI Questions
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Get insights and transformation ideas
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="px-6 pb-4 flex justify-between text-sm text-gray-500">
+            <button onClick={() => setShowAIHelper(false)}>Minimize</button>
+            <button onClick={() => {
+              setShowAIHelper(false);
+              sessionStorage.setItem('dismissedDataHelper', 'true');
+            }}>
+              Don't show again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Minimized AI Helper */}
+      {!showAIHelper && (
+        <button
+          onClick={() => setShowAIHelper(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110 z-40"
+        >
+          <Bot className="w-6 h-6 text-white" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+        </button>
+      )}
+
+      {/* Upload Modal */}
+      {showUploader && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -523,7 +515,7 @@ const DataManagementHybrid: React.FC = () => {
             <div className="px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
               <h2 className="text-xl font-bold">{selectedDataset.name}</h2>
               <p className="text-sm opacity-90 mt-1">
-                First 25 rows of {selectedDataset.rows?.toLocaleString()}
+                First 25 rows of {selectedDataset.row_count?.toLocaleString()}
               </p>
             </div>
             <div className="flex-1 overflow-auto p-6">
@@ -616,8 +608,7 @@ const DataManagementHybrid: React.FC = () => {
             </Suspense>
           </div>
         </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

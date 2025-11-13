@@ -101,7 +101,7 @@ export interface MLModel {
   id: string;
   name: string;
   description: string;
-  status: 'training' | 'trained' | 'failed' | 'deployed';
+  status: 'training' | 'trained' | 'failed' | 'deployed' | 'production' | 'staging';
   datasetId: string;
   projectId: string;
   createdAt: string;
