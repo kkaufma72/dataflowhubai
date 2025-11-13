@@ -523,7 +523,7 @@ const DataManagementHybrid: React.FC = () => {
                 <thead className="sticky top-0 bg-gray-50 border-b-2 border-cyan-500">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">#</th>
-                    {selectedDataset.preview_data.columns?.map((col: string) => (
+                    {selectedDataset.preview_data?.columns?.map((col: string) => (
                       <th key={col} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
                         {col}
                       </th>
@@ -531,7 +531,7 @@ const DataManagementHybrid: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedDataset.preview_data.rows?.slice(0, 25).map((row: any, idx: number) => (
+                  {selectedDataset.preview_data?.rows?.slice(0, 25).map((row: any, idx: number) => (
                     <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                       <td className="px-4 py-2 text-xs font-mono text-gray-500">{idx + 1}</td>
                       {(Array.isArray(row) ? row : Object.values(row)).map((cell: any, cellIdx: number) => (
