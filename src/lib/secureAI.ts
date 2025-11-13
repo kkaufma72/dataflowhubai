@@ -75,6 +75,12 @@ export const secureAIChat = async (
       throw new Error(error.message || 'Failed to get AI response');
     }
 
+    // Check if data contains an error (Edge Function returned error response)
+    if (data && (data as any).error) {
+      console.error('❌ Edge Function returned error:', (data as any).error);
+      throw new Error((data as any).error || 'Failed to get AI response');
+    }
+
     if (!data) {
       console.error('❌ No data returned from Edge Function');
       throw new Error('No response from AI service');
@@ -94,10 +100,28 @@ export const secureAIChat = async (
     return response;
   } catch (error: any) {
     console.error('❌ Secure AI chat error:', error);
+    console.error('❌ Error details:', {
+      message: error?.message,
+      name: error?.name,
+      stack: error?.stack?.substring(0, 200)
+    });
+    
     const errorMessage = error?.message || 'Failed to connect to AI service';
 
-    if (errorMessage.includes('Edge Function') || errorMessage.includes('functions.invoke')) {
-      throw new Error('Edge Function not available. Please ensure the ai-chat Edge Function is deployed.');
+    // Check for specific error types
+    if (errorMessage.includes('Edge Function') || 
+        errorMessage.includes('functions.invoke') ||
+        errorMessage.includes('Function not found') ||
+        errorMessage.includes('404')) {
+      throw new Error('AI Edge Function not available. Please ensure the ai-chat Edge Function is deployed to Supabase.');
+    }
+
+    if (errorMessage.includes('OpenAI API key') || errorMessage.includes('not configured')) {
+      throw new Error('AI service configuration error. Please check your Supabase Edge Function configuration.');
+    }
+
+    if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      throw new Error('Network error. Please check your internet connection and try again.');
     }
 
     throw new Error(errorMessage);

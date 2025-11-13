@@ -121,6 +121,8 @@ Generate insights in JSON format:
 }`;
 
       console.log('🤖 Calling secureAIChat for auto-insights...');
+      console.log('📊 Selected datasets:', selectedDatasets.map(d => d.name));
+      
       const response = await secureAIChat({
         question: systemPrompt,
         dataset: selectedDatasets[0], // Use first dataset as primary context
@@ -134,7 +136,8 @@ Generate insights in JSON format:
       console.log('✅ Received AI response:', {
         hasText: !!response?.text,
         textLength: response?.text?.length || 0,
-        textPreview: response?.text?.substring(0, 100) || 'No text'
+        textPreview: response?.text?.substring(0, 100) || 'No text',
+        fullResponse: response
       });
 
       // Validate response

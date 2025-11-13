@@ -32,7 +32,7 @@ const FeatureEngineering: React.FC = () => {
         setSelectedDataset(dataset);
         // Initialize with all non-ID columns
         if (dataset.preview_data?.columns) {
-          const initialFeatures = dataset.preview_data.columns.filter(col => 
+          const initialFeatures = dataset.preview_data?.columns.filter(col => 
             !col.toLowerCase().includes('id') && 
             !col.toLowerCase().includes('_id')
           );
@@ -42,7 +42,7 @@ const FeatureEngineering: React.FC = () => {
     } else if (datasets.length > 0) {
       setSelectedDataset(datasets[0]);
       if (datasets[0].preview_data?.columns) {
-        const initialFeatures = datasets[0].preview_data.columns.filter(col => 
+        const initialFeatures = datasets[0].preview_data?.columns.filter(col => 
           !col.toLowerCase().includes('id') && 
           !col.toLowerCase().includes('_id')
         );

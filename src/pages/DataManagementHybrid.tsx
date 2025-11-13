@@ -308,7 +308,7 @@ const DataManagementHybrid: React.FC = () => {
             
             return (
                 <div
-                key={dataset.id}
+                  key={dataset.id}
                   className="relative flex-shrink-0 group"
                 >
                   <button
@@ -337,17 +337,17 @@ const DataManagementHybrid: React.FC = () => {
                       title={`Health: ${health.score}/100`}
                     ></div>
                   </button>
-                <button
+                  <button
                     type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(dataset);
-                  }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(dataset);
+                    }}
                     className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 rounded-full border border-transparent bg-white/80 p-0.5 text-red-600 shadow transition hover:border-red-200 hover:bg-red-50"
                     aria-label={`Remove ${dataset.name}`}
-                >
-                  <X className="w-3 h-3 text-red-600" />
-                </button>
+                  >
+                    <X className="w-3 h-3 text-red-600" />
+                  </button>
                 </div>
             );
           })}
@@ -533,7 +533,7 @@ const DataManagementHybrid: React.FC = () => {
                 <thead className="sticky top-0 bg-gray-50 border-b-2 border-cyan-500">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">#</th>
-                    {selectedDataset.preview_data.columns?.map((col: string) => (
+                    {selectedDataset.preview_data?.columns?.map((col: string) => (
                       <th key={col} className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
                         {col}
                       </th>
@@ -541,7 +541,7 @@ const DataManagementHybrid: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedDataset.preview_data.rows?.slice(0, 25).map((row: any, idx: number) => (
+                  {selectedDataset.preview_data?.rows?.slice(0, 25).map((row: any, idx: number) => (
                     <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                       <td className="px-4 py-2 text-xs font-mono text-gray-500">{idx + 1}</td>
                       {(Array.isArray(row) ? row : Object.values(row)).map((cell: any, cellIdx: number) => (
