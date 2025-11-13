@@ -9,15 +9,13 @@ import { useMLContext } from '../context/MLContext';
 import { Dataset } from '../types';
 import { 
   Database, 
-  Upload, 
   X,
   Plus,
   Bot,
   Sparkles,
   Eye,
   CheckCircle,
-  BarChart3,
-  Trash2
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
@@ -158,7 +156,7 @@ const DataManagementHybrid: React.FC = () => {
                         <BarChart3 className="w-5 h-5 text-blue-600" />
                       </div>
                       <div className="text-3xl font-bold text-blue-900">
-                        {activeDataset.row_count?.toLocaleString() || 0}
+                        {activeDataset.rows?.toLocaleString() || 0}
                       </div>
                     </div>
 
@@ -168,7 +166,7 @@ const DataManagementHybrid: React.FC = () => {
                         <Database className="w-5 h-5 text-purple-600" />
                       </div>
                       <div className="text-3xl font-bold text-purple-900">
-                        {activeDataset.column_count || 0}
+                        {activeDataset.columns || 0}
                       </div>
                     </div>
 
@@ -178,7 +176,7 @@ const DataManagementHybrid: React.FC = () => {
                         <CheckCircle className="w-5 h-5 text-green-600" />
                       </div>
                       <div className="text-3xl font-bold text-green-900">
-                        {health.completeness}%
+                        {health.checks.completeness.score}%
                       </div>
                     </div>
 
@@ -188,7 +186,7 @@ const DataManagementHybrid: React.FC = () => {
                         <Sparkles className="w-5 h-5 text-orange-600" />
                       </div>
                       <div className="text-3xl font-bold text-orange-900">
-                        {health.uniqueness}%
+                        {health.checks.uniqueness.score}%
                       </div>
                     </div>
                   </div>
@@ -197,8 +195,10 @@ const DataManagementHybrid: React.FC = () => {
                   <div className="px-6 pb-6 flex gap-3">
                     <button
                       onClick={() => {
-                        setSelectedDataset(activeDataset);
-                        setShowPreview(true);
+                        if (activeDataset) {
+                          setSelectedDataset(activeDataset);
+                          setShowPreview(true);
+                        }
                       }}
                       className="flex-1 px-4 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -207,8 +207,10 @@ const DataManagementHybrid: React.FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        setSelectedDataset(activeDataset);
-                        setShowQuality(true);
+                        if (activeDataset) {
+                          setSelectedDataset(activeDataset);
+                          setShowQuality(true);
+                        }
                       }}
                       className="flex-1 px-4 py-3 bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -217,8 +219,10 @@ const DataManagementHybrid: React.FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        setSelectedDataset(activeDataset);
-                        setShowChat(true);
+                        if (activeDataset) {
+                          setSelectedDataset(activeDataset);
+                          setShowChat(true);
+                        }
                       }}
                       className="flex-1 px-4 py-3 bg-purple-50 border-2 border-purple-200 text-purple-700 hover:bg-purple-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
@@ -233,7 +237,7 @@ const DataManagementHybrid: React.FC = () => {
             {/* Data Profiling Cards (like before!) */}
             <div className="grid grid-cols-3 gap-4">
               {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
-                const values = activeDataset.preview_data.rows?.map((r: any) => 
+                const values = activeDataset.preview_data?.rows?.map((r: any) => 
                   Array.isArray(r) ? r[idx] : r[col]
                 );
                 const uniqueCount = new Set(values).size;
@@ -323,7 +327,7 @@ const DataManagementHybrid: React.FC = () => {
                       {dataset.name}
                     </span>
                     <span className="text-xs text-gray-500">
-                      ({dataset.row_count?.toLocaleString()})
+                      ({dataset.rows?.toLocaleString()})
                     </span>
                     
                     {/* Health indicator */}
@@ -400,9 +404,11 @@ const DataManagementHybrid: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={() => {
-                  setSelectedDataset(activeDataset);
-                  setShowPreview(true);
-                  setShowAIHelper(false);
+                  if (activeDataset) {
+                    setSelectedDataset(activeDataset);
+                    setShowPreview(true);
+                    setShowAIHelper(false);
+                  }
                 }}
                 className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-cyan-400 hover:bg-cyan-50 rounded-xl transition-all group"
               >
@@ -421,9 +427,11 @@ const DataManagementHybrid: React.FC = () => {
 
               <button
                 onClick={() => {
-                  setSelectedDataset(activeDataset);
-                  setShowQuality(true);
-                  setShowAIHelper(false);
+                  if (activeDataset) {
+                    setSelectedDataset(activeDataset);
+                    setShowQuality(true);
+                    setShowAIHelper(false);
+                  }
                 }}
                 className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-green-400 hover:bg-green-50 rounded-xl transition-all group"
               >
@@ -442,9 +450,11 @@ const DataManagementHybrid: React.FC = () => {
 
               <button
                 onClick={() => {
-                  setSelectedDataset(activeDataset);
-                  setShowChat(true);
-                  setShowAIHelper(false);
+                  if (activeDataset) {
+                    setSelectedDataset(activeDataset);
+                    setShowChat(true);
+                    setShowAIHelper(false);
+                  }
                 }}
                 className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 rounded-xl transition-all group"
               >
@@ -515,7 +525,7 @@ const DataManagementHybrid: React.FC = () => {
             <div className="px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
               <h2 className="text-xl font-bold">{selectedDataset.name}</h2>
               <p className="text-sm opacity-90 mt-1">
-                First 25 rows of {selectedDataset.row_count?.toLocaleString()}
+                First 25 rows of {selectedDataset.rows?.toLocaleString()}
               </p>
             </div>
             <div className="flex-1 overflow-auto p-6">
