@@ -24,7 +24,7 @@ import {
   TableBody,
   TableCell,
 } from '@tremor/react';
-import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart2, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/common/Button';
 import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 
@@ -46,20 +46,22 @@ const ModelEvaluationContent = () => {
 
   if (!selectedModel) {
     return (
-      <div className="p-4 md:p-10 mx-auto max-w-7xl">
-        <Card>
-          <div className="flex flex-col items-center justify-center p-8">
-            <Layers className="w-12 h-12 text-gray-400 mb-4" />
-            <Text className="text-lg font-medium text-gray-900">No Model Selected</Text>
-            <Text className="text-gray-500 mt-2">Please select a model to evaluate</Text>
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex flex-col items-center justify-center p-12">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg mb-6">
+              <Layers className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No Model Selected</h2>
+            <p className="text-lg text-gray-600 mb-6">Please select a model to evaluate</p>
             <Button 
-              className="mt-4"
+              variant="primary"
               onClick={() => navigate('/app/train')}
             >
               Go to Model Training
             </Button>
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -83,14 +85,14 @@ const ModelEvaluationContent = () => {
   };
 
   return (
-    <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      {/* Page Header - Improved visibility */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Database className="w-7 h-7 text-white" />
+    <div className="space-y-6">
+      {/* Page Header - Matching Dashboard style */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+            <BarChart2 className="w-7 h-7 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
               {selectedModel.name}
             </h1>
@@ -108,35 +110,31 @@ const ModelEvaluationContent = () => {
               )}
             </p>
           </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleModelChange('prev')}
+              disabled={trainedModels.length <= 1}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleModelChange('next')}
+              disabled={trainedModels.length <= 1}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="hidden"></div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('prev')}
-            disabled={trainedModels.length <= 1}
-            icon={<ChevronLeft className="w-4 h-4" />}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('next')}
-            disabled={trainedModels.length <= 1}
-            icon={<ChevronRight className="w-4 h-4 ml-1" />}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      <TabGroup>
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <TabGroup>
         <TabList>
           <Tab>Overview</Tab>
           <Tab>Performance</Tab>
@@ -146,13 +144,17 @@ const ModelEvaluationContent = () => {
 
         <TabPanels>
           <TabPanel>
-            <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6 mt-6">
+            <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6">
               {Object.entries(selectedModel.metrics || {}).map(([key, value]) => (
-                <Card key={key}>
-                  <Text>{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</Text>
-                  <Metric>{formatMetric(value)}</Metric>
+                <Card key={key} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                  <Text className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                  </Text>
+                  <Metric className="text-3xl font-bold text-gray-900 mt-2">
+                    {formatMetric(value)}
+                  </Metric>
                   <Flex className="mt-4">
-                    <Text>Previous Version</Text>
+                    <Text className="text-sm text-gray-600">Previous Version</Text>
                     <BadgeDelta deltaType="increase">
                       {(Math.random() * 5).toFixed(1)}%
                     </BadgeDelta>
@@ -162,8 +164,8 @@ const ModelEvaluationContent = () => {
             </Grid>
 
             <div className="mt-6">
-              <Card>
-                <Title>Performance Over Time</Title>
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <Title className="text-xl font-bold text-gray-900 mb-4">Performance Over Time</Title>
                 <AreaChart
                   className="h-72 mt-4"
                   data={[
@@ -195,9 +197,9 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
-            <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
-              <Card>
-                <Title>Confusion Matrix</Title>
+            <Grid numItems={1} numItemsSm={2} className="gap-6">
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <Title className="text-xl font-bold text-gray-900 mb-4">Confusion Matrix</Title>
                 <Table className="mt-4">
                   <TableHead>
                     <TableRow>
@@ -223,9 +225,9 @@ const ModelEvaluationContent = () => {
                 </Table>
               </Card>
 
-              <Card>
-                <Title>ROC Curve</Title>
-                <Text>Area Under Curve (AUC): {selectedModel.metrics?.auc?.toFixed(3) || 'N/A'}</Text>
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <Title className="text-xl font-bold text-gray-900 mb-4">ROC Curve</Title>
+                <Text className="text-base text-gray-700 mb-4">Area Under Curve (AUC): {selectedModel.metrics?.auc?.toFixed(3) || 'N/A'}</Text>
                 <div className="h-64 mt-4 flex items-center justify-center text-gray-500">
                   ROC curve visualization coming soon
                 </div>
@@ -234,8 +236,8 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
-            <Card className="mt-6">
-              <Title>Feature Importance</Title>
+            <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mt-6">
+              <Title className="text-xl font-bold text-gray-900 mb-4">Feature Importance</Title>
               {selectedDataset?.preview_data?.columns.map((feature, idx) => {
                 const importance = 1 - (idx / (selectedDataset.preview_data?.columns.length || 1));
                 return (
@@ -252,8 +254,8 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
-            <Card className="mt-6">
-              <Title>Sample Predictions</Title>
+            <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 mt-6">
+              <Title className="text-xl font-bold text-gray-900 mb-4">Sample Predictions</Title>
               <Table className="mt-4">
                 <TableHead>
                   <TableRow>
@@ -280,7 +282,8 @@ const ModelEvaluationContent = () => {
           </TabPanel>
         </TabPanels>
       </TabGroup>
-    </main>
+      </div>
+    </div>
   );
 };
 

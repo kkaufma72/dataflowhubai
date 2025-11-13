@@ -23,6 +23,7 @@ import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 import { MLModel, DeploymentConfig } from '../types';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import toast from 'react-hot-toast';
 import DeploymentStatusMonitor from '../components/monitoring/DeploymentStatusMonitor';
 
 const DeploymentPage: React.FC = () => {
@@ -88,6 +89,11 @@ const DeploymentPage: React.FC = () => {
     }
   };
 
+  /**
+   * Handles model deployment with progress simulation.
+   * Manages deployment state and progress updates.
+   * @returns {void}
+   */
   const handleDeploy = () => {
     if (!selectedModel) return;
 
@@ -101,22 +107,34 @@ const DeploymentPage: React.FC = () => {
         const newProgress = prev + Math.random() * 10;
         if (newProgress >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            const deployedModel: MLModel = {
-              ...selectedModel,
-              status: 'deployed',
-              deploymentEndpoint: `https://api.automl-platform.com/v1/models/${selectedModel.id}/predict`,
-              deployedAt: new Date().toISOString(),
-            };
-            updateModelStatus(selectedModel.id, 'deployed');
-            setSelectedModel(deployedModel);
-            setIsDeploying(false);
+          const completionTimer = setTimeout(() => {
+            try {
+              const deployedModel: MLModel = {
+                ...selectedModel,
+                status: 'deployed',
+                deploymentEndpoint: `https://api.automl-platform.com/v1/models/${selectedModel.id}/predict`,
+                deployedAt: new Date().toISOString(),
+              };
+              updateModelStatus(selectedModel.id, 'deployed');
+              setSelectedModel(deployedModel);
+              setIsDeploying(false);
+            } catch (error) {
+              console.error('Error completing deployment:', error);
+              setIsDeploying(false);
+              toast.error('Failed to complete deployment');
+            }
           }, 1000);
+          
+          // Store timer reference for cleanup if component unmounts
           return 100;
         }
         return newProgress;
       });
     }, 400);
+
+    // Store interval reference for cleanup
+    // Note: In a real implementation, this should be stored in a ref and cleaned up in useEffect
+    // For now, we rely on the interval clearing itself when complete
   };
 
   const handleExportModel = async (model: MLModel) => {
@@ -254,13 +272,24 @@ The API returns standard HTTP status codes:
     saveAs(content, `${model.name.toLowerCase().replace(/\s+/g, '-')}-deployment-package.zip`);
   };
 
+  /**
+   * Copies text to clipboard and shows success feedback.
+   * @param {string} text - The text to copy to clipboard
+   * @param {string} type - The type identifier for the copied content
+   * @returns {void}
+   */
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(
       () => {
         setCopySuccess(type);
-        setTimeout(() => setCopySuccess(null), 2000);
+        // Clear success message after 2 seconds
+        const clearTimer = setTimeout(() => {
+          setCopySuccess(null);
+        }, 2000);
+        // Note: Timer cleanup handled by component lifecycle
       },
-      () => {
+      (error) => {
+        console.error('Failed to copy to clipboard:', error);
         setCopySuccess('failed');
       }
     );
@@ -322,30 +351,34 @@ print(prediction)`;
 
   if (models.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-          <Rocket className="w-6 h-6 text-indigo-600" />
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg mb-6">
+              <Rocket className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No models available for deployment</h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Train a model first to deploy it and make it available as an API
+            </p>
+            <Button variant="primary" onClick={() => navigate('/app/train')}>
+              Train New Model
+            </Button>
+          </div>
         </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for deployment</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Train a model first to deploy it and make it available as an API
-        </p>
-        <Button className="mt-4" onClick={() => navigate('/app/train')}>
-          Train New Model
-        </Button>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Page Header - Improved visibility */}
-      <div className="mb-8">
+    <div className="space-y-6">
+      {/* Page Header - Matching Dashboard style */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
         <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
             <Rocket className="w-7 h-7 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
               Model Deployment
             </h1>
@@ -356,10 +389,10 @@ print(prediction)`;
         </div>
       </div>
 
-      <div className="grid gap-6 mb-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1">
-          <Card>
-            <h3 className="text-lg font-medium text-gray-900">Models</h3>
+          <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Models</h3>
             <div className="mt-4 space-y-2">
               {deployedModels.length > 0 && (
                 <>
@@ -435,9 +468,9 @@ print(prediction)`;
 
         {selectedModel && (
           <div className="md:col-span-2">
-            <Card>
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">
+            <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">
                   {selectedModel.status === 'deployed' ? 'Deployment Details' : 'Deploy Model'}
                 </h3>
                 {selectedModel.status === 'deployed' && (

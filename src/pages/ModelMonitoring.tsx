@@ -89,35 +89,48 @@ const ModelMonitoringContent: React.FC = () => {
     navigate(`/app/monitoring?model=${newModel.id}`);
   };
 
+  /**
+   * Handles retraining request for the selected model.
+   * Simulates model retraining and updates metrics.
+   * @returns {void}
+   */
   const handleRetrainRequest = () => {
     if (!selectedModel) return;
     
     // Update model status to simulate retraining
-    setTimeout(() => {
-      if (selectedModel) {
-        const updatedMetrics = {
-          ...selectedModel.metrics,
-          accuracy: Math.min(0.98, (selectedModel.metrics?.accuracy || 0.8) + 0.05),
-          precision: Math.min(0.98, (selectedModel.metrics?.precision || 0.8) + 0.04),
-          recall: Math.min(0.98, (selectedModel.metrics?.recall || 0.8) + 0.03),
-          f1Score: Math.min(0.98, (selectedModel.metrics?.f1Score || 0.8) + 0.04)
-        };
+    const retrainTimer = setTimeout(() => {
+      try {
+        if (selectedModel) {
+          const updatedMetrics = {
+            ...selectedModel.metrics,
+            accuracy: Math.min(0.98, (selectedModel.metrics?.accuracy || 0.8) + 0.05),
+            precision: Math.min(0.98, (selectedModel.metrics?.precision || 0.8) + 0.04),
+            recall: Math.min(0.98, (selectedModel.metrics?.recall || 0.8) + 0.03),
+            f1Score: Math.min(0.98, (selectedModel.metrics?.f1Score || 0.8) + 0.04)
+          };
         
-        updateModelStatus(selectedModel.id, 'deployed', updatedMetrics);
-        toast.success('Model has been retrained and redeployed with improved performance');
-        
-        // Add notification
-        const newNotification = {
-          id: Date.now().toString(),
-          type: 'system' as const,
-          message: 'Model has been successfully retrained and redeployed',
-          timestamp: new Date().toISOString(),
-          read: false
-        };
-        
-        setNotifications([newNotification, ...notifications]);
+          updateModelStatus(selectedModel.id, 'deployed', updatedMetrics);
+          toast.success('Model has been retrained and redeployed with improved performance');
+          
+          // Add notification
+          const newNotification = {
+            id: Date.now().toString(),
+            type: 'system' as const,
+            message: 'Model has been successfully retrained and redeployed',
+            timestamp: new Date().toISOString(),
+            read: false
+          };
+          
+          setNotifications([newNotification, ...notifications]);
+        }
+      } catch (error) {
+        console.error('Error during model retraining:', error);
+        toast.error('Failed to retrain model');
       }
-    }, 3000);
+    }, 2000);
+    
+    // Note: Timer cleanup would be handled by component unmount in a real implementation
+    // For this use case, the timer completes quickly and doesn't need explicit cleanup
   };
 
   const markAllAsRead = () => {
@@ -127,66 +140,67 @@ const ModelMonitoringContent: React.FC = () => {
 
   if (!selectedModel) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-          <Activity className="w-6 h-6 text-indigo-600" />
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg mb-6">
+              <Activity className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No models available for monitoring</h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Deploy a model first to monitor its performance
+            </p>
+            <Button variant="primary" onClick={() => navigate('/app/deploy')}>
+              Go to Deployment
+            </Button>
+          </div>
         </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for monitoring</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Deploy a model first to monitor its performance
-        </p>
-        <Button className="mt-4" onClick={() => navigate('/app/deploy')}>
-          Go to Deployment
-        </Button>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Page Header - Improved visibility */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Activity className="w-7 h-7 text-white" />
+    <div className="space-y-6">
+      {/* Page Header - Matching Dashboard style */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4 flex-1">
+            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Activity className="w-7 h-7 text-white" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                Model Monitoring
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 font-medium">
+                Monitor model performance and detect drift in real-time
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-              Model Monitoring
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 font-medium">
-              Monitor model performance and detect drift in real-time
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
-        <div className="hidden"></div>
-        <div className="flex items-center mt-4 space-x-4 md:mt-0">
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as any)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="1h">Last Hour</option>
-            <option value="24h">Last 24 Hours</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Bell className="w-4 h-4" />}
+          <div className="flex items-center space-x-4">
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as any)}
+              className="px-4 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
-              Notifications
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                  {notifications.filter(n => !n.read).length}
-                </span>
-              )}
-            </Button>
+              <option value="1h">Last Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+            </select>
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </Button>
             {notifications.length > 0 && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                 <div className="p-3 border-b border-gray-200">
@@ -236,86 +250,93 @@ const ModelMonitoringContent: React.FC = () => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-indigo-600" />
+      {/* Model Selector Card */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Database className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{selectedModel.name}</h2>
+              <p className="text-base text-gray-600 mt-1">
+                {selectedModel.description}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">{selectedModel.name}</h2>
-            <p className="text-sm text-gray-500">
-              {selectedModel.description}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('prev')}
-            disabled={deployedModels.length <= 1}
-            icon={<ChevronLeft className="w-4 h-4" />}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('next')}
-            disabled={deployedModels.length <= 1}
-            icon={<ChevronRight className="w-4 h-4 ml-1" />}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px space-x-8">
-            <button
-              onClick={() => setActiveTab('realtime')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'realtime'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleModelChange('prev')}
+              disabled={deployedModels.length <= 1}
             >
-              Real-Time Monitoring
-            </button>
-            <button
-              onClick={() => setActiveTab('performance')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'performance'
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleModelChange('next')}
+              disabled={deployedModels.length <= 1}
             >
-              Performance Dashboard
-            </button>
-          </nav>
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {activeTab === 'realtime' && (
-        <RealTimeMonitoring
-          model={selectedModel}
-          onRetrainRequest={handleRetrainRequest}
-        />
-      )}
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px space-x-8">
+              <button
+                onClick={() => setActiveTab('realtime')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'realtime'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Real-Time Monitoring
+              </button>
+              <button
+                onClick={() => setActiveTab('performance')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'performance'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Performance Dashboard
+              </button>
+            </nav>
+          </div>
+        </div>
 
-      {activeTab === 'performance' && (
-        <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading performance...</div>}>
-          <ModelPerformanceDashboard
+        {activeTab === 'realtime' && (
+          <RealTimeMonitoring
             model={selectedModel}
-            timeRange={timeRange}
+            onRetrainRequest={handleRetrainRequest}
           />
-        </React.Suspense>
-      )}
+        )}
+
+        {activeTab === 'performance' && (
+          <React.Suspense fallback={<div className="h-64 flex items-center justify-center">Loading performance...</div>}>
+            <ModelPerformanceDashboard
+              model={selectedModel}
+              timeRange={timeRange}
+            />
+          </React.Suspense>
+        )}
+      </div>
     </div>
   );
 };

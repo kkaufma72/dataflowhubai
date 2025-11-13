@@ -319,34 +319,52 @@ const DatasetInsights: React.FC = () => {
 
   if (datasets.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Database className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-purple-600 mb-2">No Datasets Available</h2>
-        <p className="text-gray-600 mb-4">Upload datasets to view insights and visualizations.</p>
-        <Button onClick={() => navigate('/app/data')}>
-          Go to Data Management
-        </Button>
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mb-6">
+              <BarChart2 className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No Datasets Available</h2>
+            <p className="text-lg text-gray-600 mb-6">Upload datasets to view insights and visualizations.</p>
+            <Button variant="primary" onClick={() => navigate('/app/data')}>
+              Go to Data Management
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-purple-600">Dataset Insights</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Comprehensive analytics and visualizations for your datasets
-          </p>
+      {/* Page Header - Matching Dashboard style */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4 flex-1">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <BarChart2 className="w-7 h-7 text-white" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                Dataset Insights
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 font-medium">
+                Comprehensive analytics and visualizations for your datasets
+              </p>
+            </div>
+          </div>
+          <div>
+            <Button variant="outline" onClick={() => navigate('/app/data')}>
+              Manage Datasets
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => navigate('/app/data')}>
-          Manage Datasets
-        </Button>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+        <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('overview')}
@@ -398,66 +416,66 @@ const DatasetInsights: React.FC = () => {
           </button>
           */}
         </nav>
-      </div>
+        </div>
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-                  <Database className="w-6 h-6 text-indigo-600" />
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                    <Database className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Datasets</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">{datasets.length}</p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Datasets</p>
-                  <p className="text-2xl font-bold text-purple-600">{datasets.length}</p>
-                </div>
-              </div>
-            </Card>
+              </Card>
 
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                  <FileText className="w-6 h-6 text-green-600" />
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Rows</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {stats.totalRows.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Rows</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {stats.totalRows.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </Card>
+              </Card>
 
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-                  <BarChart2 className="w-6 h-6 text-purple-600" />
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                    <BarChart2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Columns</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {stats.totalColumns.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Columns</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {stats.totalColumns.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </Card>
+              </Card>
 
-            <Card className="p-6">
-              <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-amber-600" />
+              <Card className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Avg Rows/Dataset</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {stats.avgRows.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Avg Rows/Dataset</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {stats.avgRows.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </Card>
+              </Card>
           </div>
 
           {/* Charts Grid */}
@@ -762,7 +780,8 @@ const DatasetInsights: React.FC = () => {
             <WarehouseAnalyticsDashboard />
           </Suspense>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

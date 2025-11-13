@@ -83,10 +83,11 @@
     "jsdom": "^27.0.1",
     "msw": "^2.2.3",
     "postcss": "^8.4.35",
+    "prettier": "^3.0.0-alpha.6",
     "supabase": "^2.53.6",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
-    "vite": "^5.1.4",
+    "vite": "^5.4.21",
     "vitest": "^1.6.1"
   },
   "overrides": {

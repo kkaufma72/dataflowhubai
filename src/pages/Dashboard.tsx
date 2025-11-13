@@ -61,9 +61,12 @@ const Dashboard: React.FC = () => {
     // Show if: first time, no datasets, and hasn't seen/skipped before
     if (!hasSeenMagicMoment && !hasSkipped && datasets.length === 0 && !isLoading && user) {
       // Small delay for smooth transition
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowMagicMoment(true);
       }, 1000);
+      
+      // Cleanup timer on unmount or dependency change
+      return () => clearTimeout(timer);
     }
   }, [datasets.length, isLoading, user]);
 
@@ -267,9 +270,14 @@ const Dashboard: React.FC = () => {
     const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
     if (!hasVisitedBefore && !isLoading) {
       const timer = setTimeout(() => {
-        startTour('dashboard');
+        try {
+          startTour('dashboard');
+        } catch (error) {
+          console.error('Error starting dashboard tour:', error);
+        }
       }, 1000);
       
+      // Cleanup timer on unmount or dependency change
       return () => clearTimeout(timer);
     }
   }, [isLoading, startTour]);
