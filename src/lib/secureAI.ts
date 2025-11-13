@@ -86,9 +86,8 @@ export const secureAIChat = async (
       hasUsage: !!data.usage
     });
 
-    // Ensure response has the expected structure
     const response: SecureAIChatResponse = {
-      text: data.text || data.content || 'No response generated',
+      text: data.text || (data as any).content || 'No response generated',
       usage: data.usage
     };
 
@@ -96,12 +95,11 @@ export const secureAIChat = async (
   } catch (error: any) {
     console.error('❌ Secure AI chat error:', error);
     const errorMessage = error?.message || 'Failed to connect to AI service';
-    
-    // Provide more context about the error
+
     if (errorMessage.includes('Edge Function') || errorMessage.includes('functions.invoke')) {
       throw new Error('Edge Function not available. Please ensure the ai-chat Edge Function is deployed.');
     }
-    
+
     throw new Error(errorMessage);
   }
 };

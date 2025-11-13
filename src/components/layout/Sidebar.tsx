@@ -16,7 +16,8 @@ import {
   LineChart,
   ChevronDown,
   Plus,
-  Check
+  Check,
+  MessageSquare
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
@@ -127,6 +128,12 @@ const Sidebar: React.FC = () => {
           href: '/app/feature-engineering',
           icon: Sparkles,
           description: 'Transform and enhance data'
+        },
+        {
+          name: 'Talk to Your Data',
+          href: '/app/talk-to-data',
+          icon: MessageSquare,
+          description: 'AI-powered insights and transformations'
         }
       ]
     },
