@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
 import { Dataset } from '../types';
@@ -24,6 +24,7 @@ const FeatureEngineering: React.FC = () => {
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [engineeredFeatures, setEngineeredFeatures] = useState<string[]>([]);
   const [isApplying, setIsApplying] = useState(false);
+  const applyTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (datasetId) {
@@ -81,8 +82,13 @@ const FeatureEngineering: React.FC = () => {
     
     setIsApplying(true);
     
+    // Clear any existing timer
+    if (applyTimerRef.current) {
+      clearTimeout(applyTimerRef.current);
+    }
+    
     // Simulate applying feature engineering
-    const applyTimer = setTimeout(() => {
+    applyTimerRef.current = setTimeout(() => {
       try {
         setIsApplying(false);
         toast.success('Feature engineering applied successfully');
@@ -93,12 +99,21 @@ const FeatureEngineering: React.FC = () => {
         console.error('Error applying feature engineering:', error);
         setIsApplying(false);
         toast.error('Failed to apply feature engineering');
+      } finally {
+        applyTimerRef.current = null;
       }
     }, 1500);
-    
-    // Note: Timer cleanup would be handled by component unmount
-    // For this use case, navigation occurs quickly and doesn't need explicit cleanup
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (applyTimerRef.current) {
+        clearTimeout(applyTimerRef.current);
+        applyTimerRef.current = null;
+      }
+    };
+  }, []);
 
   if (!selectedDataset) {
     return (

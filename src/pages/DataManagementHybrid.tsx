@@ -55,8 +55,10 @@ const DataManagementHybrid: React.FC = () => {
   useEffect(() => {
     const hasSeenHelper = sessionStorage.getItem('hasSeenDataHelper');
     if (!hasSeenHelper && datasets.length > 0) {
-      setTimeout(() => setShowAIHelper(true), 2000);
+      const timer = setTimeout(() => setShowAIHelper(true), 2000);
       sessionStorage.setItem('hasSeenDataHelper', 'true');
+      
+      return () => clearTimeout(timer);
     }
   }, [datasets.length]);
 

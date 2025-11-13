@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { deploymentRecords } from '../../data/mockPlatformData';
@@ -25,6 +25,7 @@ const DeploymentsOverview = () => {
   const [isLaunching, setLaunching] = useState(false);
   const [showLaunchSummary, setShowLaunchSummary] = useState(false);
   const activeIncidents = deploymentRecords.filter(deploy => deploy.status !== 'online').length;
+  const launchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLaunchDeployment = () => {
     if (isLaunching) return;
@@ -32,13 +33,29 @@ const DeploymentsOverview = () => {
     setLaunching(true);
     toast.loading('Preparing deployment...', { id: 'deployment-launch' });
 
-    setTimeout(() => {
+    // Clear any existing timer
+    if (launchTimerRef.current) {
+      clearTimeout(launchTimerRef.current);
+    }
+
+    launchTimerRef.current = setTimeout(() => {
       toast.success('Deployment pipeline queued', { id: 'deployment-launch', duration: 3500 });
       setLaunching(false);
       setShowLaunchSummary(true);
       navigate('/app/deploy');
+      launchTimerRef.current = null;
     }, 1200);
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (launchTimerRef.current) {
+        clearTimeout(launchTimerRef.current);
+        launchTimerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <section className="space-y-6">
