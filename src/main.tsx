@@ -19,6 +19,7 @@ import { AppShell } from './app/layout/AppShell.tsx';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
+const TalkToYourData = lazy(() => import('./pages/TalkToYourData.tsx'));
 const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Koyfin-style terminal dashboard
 const DataManagement = lazy(() => import('./pages/DataManagementHybrid.tsx')); // Hybrid: Excel tabs + Quality cards + AI helper
 const DatasetInsights = lazy(() => import('./pages/DatasetInsights.tsx'));
@@ -165,9 +166,10 @@ if (!isSupabaseConfigured) {
                                 <Route path="pipelines" element={<PipelineWorkspace />} />
                                 <Route path="deployments" element={<DeploymentsOverview />} />
                                 <Route path="monitoring" element={<MonitoringOverview />} />
-                                <Route path="automations" element={<AutomationHub />} />
-                                <Route path="copilot" element={<CopilotWorkspace />} />
-                                <Route path="data" element={<DataManagement />} />
+                                  <Route path="automations" element={<AutomationHub />} />
+                                  <Route path="copilot" element={<CopilotWorkspace />} />
+                                  <Route path="data" element={<DataManagement />} />
+                                  <Route path="talk-to-data" element={<TalkToYourData />} />
                                 <Route path="insights" element={<DatasetInsights />} />
                                 <Route path="dataset-overview" element={<DatasetInsights />} />
                                 <Route path="visualizations" element={<DatasetInsights />} />
