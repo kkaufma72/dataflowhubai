@@ -230,7 +230,7 @@ const DataManagementHybrid: React.FC = () => {
               );
             })()}
 
-            {/* Data Profiling Cards (like before!) */}
+              {/* Data Profiling Cards (like before!) */}
               <div className="grid grid-cols-3 gap-4">
                 {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
                   const values = activeDataset.preview_data?.rows?.map((r: any) =>
@@ -268,10 +268,10 @@ const DataManagementHybrid: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
