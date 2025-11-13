@@ -231,43 +231,43 @@ const DataManagementHybrid: React.FC = () => {
             })()}
 
             {/* Data Profiling Cards (like before!) */}
-            <div className="grid grid-cols-3 gap-4">
-              {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
-                const values = activeDataset.preview_data.rows?.map((r: any) => 
-                  Array.isArray(r) ? r[idx] : r[col]
-                );
-                const uniqueCount = new Set(values).size;
-                
-                return (
-                  <div key={col} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-bold text-gray-900 truncate">
-                        {col}
-                      </h4>
-                      <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold">
-                        Column {idx + 1}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Type:</span>
-                        <span className="font-semibold text-gray-900">
-                          {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
+              <div className="grid grid-cols-3 gap-4">
+                {activeDataset.preview_data?.columns?.slice(0, 6).map((col: string, idx: number) => {
+                  const values = activeDataset.preview_data?.rows?.map((r: any) =>
+                    Array.isArray(r) ? r[idx] : r[col]
+                  );
+                  const uniqueCount = new Set(values).size;
+
+                  return (
+                    <div key={col} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-bold text-gray-900 truncate">
+                          {col}
+                        </h4>
+                        <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold">
+                          Column {idx + 1}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Unique:</span>
-                        <span className="font-semibold text-gray-900">
-                          {uniqueCount}
-                        </span>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-semibold text-gray-900">
+                            {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Unique:</span>
+                          <span className="font-semibold text-gray-900">
+                            {uniqueCount}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Sample:</span>
+                          <span className="font-semibold text-gray-900 truncate max-w-[100px]">
+                            {String(values?.[0])}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sample:</span>
-                        <span className="font-semibold text-gray-900 truncate max-w-[100px]">
-                          {String(values?.[0])}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 );
               })}
