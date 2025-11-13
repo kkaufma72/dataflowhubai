@@ -1,4 +1,4 @@
-import { type LucideIcon, LayoutDashboard, FolderKanban, GitBranch, Rocket, ActivitySquare, Database, LineChart, Workflow, Sparkles, Settings } from 'lucide-react';
+import { type LucideIcon, LayoutDashboard, GitBranch, Rocket, ActivitySquare, Database, LineChart, Workflow, Sparkles, Settings } from 'lucide-react';
 
 export type NavItem = {
   id: string;
@@ -29,14 +29,6 @@ export const primaryNav: NavGroup[] = [
         description: 'Business health snapshot',
         icon: LayoutDashboard,
         path: '/app',
-      },
-      {
-        id: 'projects',
-        label: 'Projects',
-        description: 'Use cases & datasets',
-        icon: FolderKanban,
-        path: '/app/projects',
-        badge: { label: 'New', tone: 'info' },
       },
       {
         id: 'pipelines',

@@ -72,7 +72,7 @@ const NavLink = ({ item, isActive }: { item: NavItem; isActive: boolean }) => {
 
 const WorkspaceHeader = ({ onOpenCommandPalette }: { onOpenCommandPalette: () => void }) => {
   const navigate = useNavigate();
-  const { currentProject, models } = useMLContext();
+  const { models } = useMLContext();
 
   const activeModelCount = useMemo(
     () => models.filter(model => ['production', 'staging'].includes(model.status ?? '')).length,
@@ -83,9 +83,9 @@ const WorkspaceHeader = ({ onOpenCommandPalette }: { onOpenCommandPalette: () =>
     <header className="flex h-16 items-center justify-between border-b border-slate-800/80 bg-slate-950/70 px-6 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
       <div className="flex items-center gap-6">
         <div>
-          <p className="text-xs uppercase tracking-widest text-slate-500">Active project</p>
+          <p className="text-xs uppercase tracking-widest text-slate-500">Workspace</p>
           <p className="text-base font-semibold text-slate-100">
-            {currentProject?.name ?? 'Onboarding Workspace'}
+            DataFlowHub AI
           </p>
         </div>
         <div className="hidden md:flex items-center gap-4 text-sm">
