@@ -14,7 +14,7 @@ export interface Dataset {
   dateUploaded: string;
   fileType: string;
   fileSize: string;
-  projectId: string;
+  projectId?: string; // Optional - datasets can exist without a project
   preview_data?: {  // Changed from previewData
     columns: string[];
     rows: string[][];
@@ -103,7 +103,7 @@ export interface MLModel {
   description: string;
   status: 'training' | 'trained' | 'failed' | 'deployed' | 'production' | 'staging';
   datasetId: string;
-  projectId: string;
+  projectId?: string; // Optional - models can exist without a project
   createdAt: string;
   metrics?: Record<string, number>;
   hyperparameters?: Record<string, number | string | boolean>;

@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import toast from 'react-hot-toast';
 
-export const seedEnhancedDatasets = async (userId: string, projectId: string) => {
+export const seedEnhancedDatasets = async (userId: string, projectId?: string) => {
   try {
     const datasets = generateEnhancedSampleDatasets();
     
@@ -20,11 +20,11 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string) =>
       console.warn('Could not delete existing samples:', deleteError);
     }
     
-    // Insert all datasets
+    // Insert all datasets - project_id is now optional
     const datasetsToInsert = datasets.map(dataset => ({
       ...dataset,
       user_id: userId,
-      project_id: projectId,
+      project_id: projectId || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));
@@ -51,12 +51,12 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string) =>
 };
 
 // Function to check if sample datasets exist
-export const hasSampleDatasets = async (projectId: string) => {
+export const hasSampleDatasets = async (userId: string) => {
   try {
     const { data, error } = await supabase
       .from('datasets')
       .select('id')
-      .eq('project_id', projectId)
+      .eq('user_id', userId)
       .like('id', 'sample-%');
     
     if (error) throw error;

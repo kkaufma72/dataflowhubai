@@ -17,7 +17,7 @@ interface Dataset {
   row_count: number;
   column_count: number;
   preview_data: any;
-  project_id: string;
+  project_id?: string | null;
   user_id: string;
   created_at: string;
 }
@@ -27,7 +27,7 @@ interface DataUploaderProps {
 }
 
 const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
-  const { currentProject, addDataset } = useMLContext();
+  const { addDataset } = useMLContext();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -161,9 +161,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   const handleUpload = async () => {
     console.log('🎯 handleUpload called');
     
-    if (!file || !currentProject || !user) {
-      console.log('❌ Missing requirements:', { file: !!file, currentProject: !!currentProject, user: !!user });
-      setError('Missing file, project, or user authentication');
+    if (!file || !user) {
+      console.log('❌ Missing requirements:', { file: !!file, user: !!user });
+      setError('Missing file or user authentication');
       return;
     }
 
@@ -227,7 +227,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         row_count: rows.length,
         column_count: columns.length,
         preview_data: previewData,
-        project_id: currentProject.id,
+        project_id: null,
         user_id: user.id
       };
 
@@ -272,7 +272,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         file_type: newDataset.file_type,
         fileSize: newDataset.file_size,
         file_size: newDataset.file_size,
-        projectId: newDataset.project_id,
+        projectId: undefined,
         project_id: newDataset.project_id,
         preview_data: newDataset.preview_data
       };
@@ -401,17 +401,6 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         )}
       </div>
 
-      {!currentProject && (
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 mr-2" />
-            <p className="text-sm text-yellow-800">
-              Please select a project before uploading datasets.
-            </p>
-          </div>
-        </div>
-      )}
-
       {uploading && (
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
@@ -462,7 +451,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
             e.stopPropagation();
             handleUpload();
           }}
-          disabled={!file || uploading || !currentProject}
+          disabled={!file || uploading}
           className="flex-1"
         >
           {uploading ? 'Uploading...' : 'Upload'}
