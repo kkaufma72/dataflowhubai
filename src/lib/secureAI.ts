@@ -60,18 +60,47 @@ export const secureAIChat = async (
   request: SecureAIChatRequest
 ): Promise<SecureAIChatResponse> => {
   try {
+    console.log('🔵 Calling secureAIChat with request:', {
+      question: request.question.substring(0, 100) + '...',
+      dataset: request.dataset.name,
+      hasHistory: !!request.conversationHistory?.length
+    });
+
     const { data, error } = await supabase.functions.invoke('ai-chat', {
       body: request
     });
 
     if (error) {
+      console.error('❌ Supabase Edge Function error:', error);
       throw new Error(error.message || 'Failed to get AI response');
     }
 
-    return data as SecureAIChatResponse;
+    if (!data) {
+      console.error('❌ No data returned from Edge Function');
+      throw new Error('No response from AI service');
+    }
+
+    console.log('✅ Secure AI chat response received:', {
+      hasText: !!data.text,
+      textLength: data.text?.length || 0,
+      hasUsage: !!data.usage
+    });
+
+    const response: SecureAIChatResponse = {
+      text: data.text || (data as any).content || 'No response generated',
+      usage: data.usage
+    };
+
+    return response;
   } catch (error: any) {
-    console.error('Secure AI chat error:', error);
-    throw new Error(error.message || 'Failed to connect to AI service');
+    console.error('❌ Secure AI chat error:', error);
+    const errorMessage = error?.message || 'Failed to connect to AI service';
+
+    if (errorMessage.includes('Edge Function') || errorMessage.includes('functions.invoke')) {
+      throw new Error('Edge Function not available. Please ensure the ai-chat Edge Function is deployed.');
+    }
+
+    throw new Error(errorMessage);
   }
 };
 
