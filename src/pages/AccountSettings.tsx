@@ -258,8 +258,8 @@ const AccountSettings: React.FC = () => {
     try {
       await signOut();
       toast.success('Signed out successfully');
-      // Navigate to sign in page after successful sign out
-      window.location.href = '/signin';
+      // Navigate to landing page after successful sign out
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');
