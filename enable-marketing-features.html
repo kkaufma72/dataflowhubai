@@ -5,100 +5,281 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enable Marketing Features - DataFlow Hub AI</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --card: rgba(255, 255, 255, 0.96);
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e2e8f0;
         }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 {
-            color: #667eea;
-            margin-top: 0;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        select, input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
+
+        *, *::before, *::after {
             box-sizing: border-box;
         }
-        select:focus, input:focus {
-            outline: none;
-            border-color: #667eea;
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 16px;
+            background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.45), transparent 55%),
+                        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.35), transparent 50%),
+                        linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #312e81 100%);
+            color: var(--text);
         }
-        button {
+
+        .card {
+            width: min(860px, 100%);
+            background: var(--card);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(79, 70, 229, 0.08), transparent 55%);
+            pointer-events: none;
+        }
+
+        .card-header {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 36px);
+            color: var(--text);
+            margin: 0;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .info-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .info-block {
+            background: linear-gradient(145deg, #eef2ff, #e0f7f1);
+            border-radius: 18px;
+            padding: 20px 24px;
+            border: 1px solid rgba(79, 70, 229, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        form {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        select,
+        input {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8fafc;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        }
+
+        .helper-text {
+            margin: 0;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .form-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 16px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.35);
         }
-        button:hover {
+
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
+            box-shadow: 0 20px 35px rgba(79, 70, 229, 0.4);
         }
+
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            box-shadow: none;
         }
+
+        button:focus-visible {
+            outline: 3px solid rgba(79, 70, 229, 0.35);
+            outline-offset: 4px;
+        }
+
         .status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            font-weight: 500;
             display: none;
         }
+
         .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #def7ec;
+            color: #03543f;
+            border-color: #84e1bc;
         }
+
         .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #fde8e8;
+            color: #981b1c;
+            border-color: #f98080;
         }
-        .info {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #667eea;
-        }
-        .info p {
-            margin: 0;
-            color: #333;
+
+        @media (min-width: 640px) {
+            .form-footer {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            button {
+                width: auto;
+                min-width: 260px;
+            }
+
+            .status {
+                flex: 1;
+            }
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>🎯 Enable Marketing Features</h1>
-        
-        <div class="info">
-            <p><strong>Current User:</strong> kkaufma72@gmail.com</p>
-            <p style="margin-top: 8px; font-size: 14px;">This will enable AI marketing features including campaign generation, customer personas, and copywriting assistance.</p>
+        <div class="card-header">
+            <span class="eyebrow">Workspace setup</span>
+            <h1>🎯 Enable Marketing Features</h1>
+            <p class="subtitle">Unlock AI campaign generation, persona insights, and tailored copywriting flows across your DataFlow Hub workspace.</p>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-block">
+                <div class="info-title">Current user</div>
+                <p class="info-value">kkaufma72@gmail.com</p>
+                <p class="helper-text">We'll personalize recommendations and retention nudges using this profile.</p>
+            </div>
+            <div class="info-block">
+                <div class="info-title">You'll instantly unlock</div>
+                <ul class="feature-list">
+                    <li>Guided AI campaign builder flows</li>
+                    <li>Customer persona + journey insights</li>
+                    <li>On-brand marketing copy assists</li>
+                </ul>
+            </div>
         </div>
 
         <form id="profileForm">
@@ -115,22 +296,27 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="jobTitle">Job Title (Optional)</label>
-                <input type="text" id="jobTitle" placeholder="e.g., Marketing Manager">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="jobTitle">Job Title (Optional)</label>
+                    <input type="text" id="jobTitle" placeholder="e.g., Marketing Manager">
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Company (Optional)</label>
+                    <input type="text" id="company" placeholder="e.g., Acme Corp">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="company">Company (Optional)</label>
-                <input type="text" id="company" placeholder="e.g., Acme Corp">
-            </div>
+            <p class="helper-text">You can always update these details later from your account settings.</p>
 
-            <button type="submit" id="submitBtn">
-                🚀 Enable Marketing Features
-            </button>
+            <div class="form-footer">
+                <div id="status" class="status" aria-live="polite"></div>
+                <button type="submit" id="submitBtn">
+                    🚀 Enable Marketing Features
+                </button>
+            </div>
         </form>
-
-        <div id="status" class="status"></div>
     </div>
 
     <script type="module">
