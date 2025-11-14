@@ -105,7 +105,7 @@ export const useSubscription = (): SubscriptionStatus => {
 
 // Feature access by tier
 const getFreeFeatures = () => ({
-  canTrainModels: false,      // 🔒 Premium only
+  canTrainModels: true,       // ✅ Unlocked for all users
   canDeploy: false,           // 🔒 Premium only
   canMonitor: false,          // 🔒 Premium only
   canEvaluate: false,         // 🔒 Premium only

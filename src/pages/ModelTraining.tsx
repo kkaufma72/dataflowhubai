@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package, Crown } from 'lucide-react';
+import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package } from 'lucide-react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
-import { useSubscription } from '../hooks/useSubscription';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import ModelCard from '../components/models/ModelCard';
@@ -16,14 +15,12 @@ import ModelComparison from '../components/models/ModelComparison';
 import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import CrossValidation from '../components/models/CrossValidation';
-import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import toast from 'react-hot-toast';
 
 const ModelTraining: React.FC = () => {
   const { datasets, models, addModel, updateModelStatus } = useMLContext();
-  const subscription = useSubscription();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [isTraining, setIsTraining] = useState(false);
   const [currentTraining, setCurrentTraining] = useState<MLModel | null>(null);
@@ -253,7 +250,6 @@ const ModelTraining: React.FC = () => {
   };
 
   return (
-    <PremiumFeatureGate feature="train_models">
       <DndProvider backend={HTML5Backend}>
       <div>
         {/* Page Header - Improved visibility */}
@@ -397,24 +393,15 @@ const ModelTraining: React.FC = () => {
                   Export/Import
                 </button>
                 <button
-                  onClick={() => {
-                    if (!subscription.features.canTrainModels) {
-                      toast.error('TensorFlow training requires Pro subscription');
-                      return;
-                    }
-                    setActiveTab('tensorflow');
-                  }}
+                  onClick={() => setActiveTab('tensorflow')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                     activeTab === 'tensorflow'
                       ? 'border-indigo-500 text-indigo-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } ${!subscription.features.canTrainModels ? 'opacity-50' : ''}`}
+                  }`}
                 >
                   <Package className="w-4 h-4" />
                   <span>TensorFlow</span>
-                  {!subscription.features.canTrainModels && (
-                    <Crown className="w-4 h-4 text-yellow-500" />
-                  )}
                 </button>
               </nav>
             </div>
@@ -727,7 +714,6 @@ const ModelTraining: React.FC = () => {
         )}
       </div>
     </DndProvider>
-    </PremiumFeatureGate>
   );
 };
 
