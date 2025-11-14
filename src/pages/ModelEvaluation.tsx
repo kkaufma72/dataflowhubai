@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
 import {
@@ -11,7 +11,6 @@ import {
   TabPanel,
   TabPanels,
   Grid,
-  Col,
   Metric,
   AreaChart,
   BadgeDelta,
@@ -27,6 +26,14 @@ import {
 import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/common/Button';
 import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
+import {
+  insightPanelClass,
+  insightHeadingClass,
+  insightHelperClass,
+  chipButtonClass,
+  insightAnswerClass,
+  subtleListBulletClass,
+} from '../styles/insightPanels';
 
 const ModelEvaluationContent = () => {
   const [searchParams] = useSearchParams();
@@ -35,6 +42,16 @@ const ModelEvaluationContent = () => {
   const modelId = searchParams.get('model');
   const [selectedModel, setSelectedModel] = useState(models.find(m => m.id === modelId));
   const [selectedDataset, setSelectedDataset] = useState(datasets.find(d => d.id === selectedModel?.datasetId));
+  const [confusionQuestion, setConfusionQuestion] = useState('');
+  const [confusionAnswer, setConfusionAnswer] = useState<string | null>(null);
+  const [rocQuestion, setRocQuestion] = useState('');
+  const [rocAnswer, setRocAnswer] = useState<string | null>(null);
+  const [featureQuestion, setFeatureQuestion] = useState('');
+  const [featureAnswer, setFeatureAnswer] = useState<string | null>(null);
+  const [performanceQuestion, setPerformanceQuestion] = useState('');
+  const [performanceAnswer, setPerformanceAnswer] = useState<string | null>(null);
+  const [predictionQuestion, setPredictionQuestion] = useState('');
+  const [predictionAnswer, setPredictionAnswer] = useState<string | null>(null);
 
   useEffect(() => {
     const model = models.find(m => m.id === modelId);
@@ -80,6 +97,443 @@ const ModelEvaluationContent = () => {
   // Helper function to safely format metric values
   const formatMetric = (value: number | undefined): string => {
     return value !== undefined ? `${(value * 100).toFixed(1)}%` : 'N/A';
+  };
+
+  const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
+
+  const performanceData = useMemo(() => {
+    const accuracy = selectedModel.metrics?.accuracy ?? 0.78;
+    const precision = selectedModel.metrics?.precision ?? 0.75;
+    const recall = selectedModel.metrics?.recall ?? 0.73;
+
+    return [
+      {
+        date: '2024-01',
+        accuracy: accuracy * 0.95,
+        precision: precision * 0.94,
+        recall: recall * 0.93
+      },
+      {
+        date: '2024-02',
+        accuracy: accuracy * 0.97,
+        precision: precision * 0.96,
+        recall: recall * 0.95
+      },
+      {
+        date: '2024-03',
+        accuracy,
+        precision,
+        recall
+      }
+    ];
+  }, [selectedModel.metrics]);
+
+  const describeDelta = (label: string, start: number, end: number) => {
+    const delta = (end - start) * 100;
+    if (Math.abs(delta) < 0.5) {
+      return `${label} held steady around ${formatPercent(end)}.`;
+    }
+    const direction = delta > 0 ? 'increased' : 'decreased';
+    return `${label} ${direction} ${Math.abs(delta).toFixed(1)} pts to ${formatPercent(end)}.`;
+  };
+
+  const performanceNarrative = useMemo(() => {
+    if (!performanceData.length) return null;
+    const first = performanceData[0];
+    const last = performanceData[performanceData.length - 1];
+
+    const accuracyMsg = describeDelta('Accuracy', first.accuracy, last.accuracy);
+    const precisionMsg = describeDelta('Precision', first.precision, last.precision);
+    const recallMsg = describeDelta('Recall', first.recall, last.recall);
+
+    const swings = [first.accuracy, first.precision, first.recall, last.accuracy, last.precision, last.recall];
+    const maxSwing = Math.max(...swings) - Math.min(...swings);
+    const stability = maxSwing < 0.05
+      ? 'Metrics are stable within ±5 pts, signaling consistent performance.'
+      : 'Metrics fluctuate more than ±5 pts—keep monitoring for drift or seasonal effects.';
+
+    return {
+      accuracyMsg,
+      precisionMsg,
+      recallMsg,
+      stability,
+    };
+  }, [performanceData]);
+
+  const performanceQuestionSuggestions = [
+    'Are metrics trending up?',
+    'Is recall stable over time?',
+    'Do I need to worry about drift?'
+  ];
+
+  const answerPerformanceQuestion = (prompt: string) => {
+    if (!prompt.trim()) return;
+    if (!performanceNarrative) {
+      setPerformanceAnswer('Train the model to generate trend data first.');
+      return;
+    }
+
+    const q = prompt.toLowerCase();
+    if (q.includes('accur')) {
+      setPerformanceAnswer(performanceNarrative.accuracyMsg);
+      return;
+    }
+    if (q.includes('precis')) {
+      setPerformanceAnswer(performanceNarrative.precisionMsg);
+      return;
+    }
+    if (q.includes('recall')) {
+      setPerformanceAnswer(performanceNarrative.recallMsg);
+      return;
+    }
+    if (q.includes('drift') || q.includes('stable') || q.includes('trend')) {
+      setPerformanceAnswer(performanceNarrative.stability);
+      return;
+    }
+
+    setPerformanceAnswer(`${performanceNarrative.accuracyMsg} ${performanceNarrative.precisionMsg}`);
+  };
+
+  const handlePerformanceSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!performanceQuestion.trim()) return;
+    answerPerformanceQuestion(performanceQuestion);
+    setPerformanceQuestion('');
+  };
+
+  const handlePerformanceSuggestion = (suggestion: string) => {
+    answerPerformanceQuestion(suggestion);
+  };
+
+  const confusionMatrix = useMemo(() => {
+    const accuracy = Math.min(Math.max(selectedModel.metrics?.accuracy ?? 0.82, 0), 0.999);
+    const precision = Math.min(Math.max(selectedModel.metrics?.precision ?? 0.8, 0.01), 0.999);
+    const recall = Math.min(Math.max(selectedModel.metrics?.recall ?? 0.78, 0.01), 0.999);
+    const totalSamples = Math.max(selectedDataset?.rows ?? 1200, 400);
+    const positiveShare = 0.4;
+    const totalPositives = Math.round(totalSamples * positiveShare);
+    const totalNegatives = totalSamples - totalPositives;
+
+    const truePositives = Math.round(recall * totalPositives);
+    const falseNegatives = Math.max(0, totalPositives - truePositives);
+    const predictedPositives = truePositives / precision;
+    const falsePositives = Math.max(0, Math.round(predictedPositives - truePositives));
+    const trueNegatives = Math.max(0, totalNegatives - falsePositives);
+
+    const specificity = trueNegatives / Math.max(totalNegatives, 1);
+    const falsePositiveRate = 1 - specificity;
+    const falseNegativeRate = falseNegatives / Math.max(totalPositives, 1);
+    const balancedAccuracy = (recall + specificity) / 2;
+
+    return {
+      rows: [
+        { actual: 'Positive', predicted: 'Positive', count: truePositives },
+        { actual: 'Positive', predicted: 'Negative', count: falseNegatives },
+        { actual: 'Negative', predicted: 'Positive', count: falsePositives },
+        { actual: 'Negative', predicted: 'Negative', count: trueNegatives },
+      ],
+      totals: {
+        truePositives,
+        falseNegatives,
+        falsePositives,
+        trueNegatives,
+        totalSamples,
+        accuracy,
+        precision,
+        recall,
+        specificity,
+        falsePositiveRate,
+        falseNegativeRate,
+        balancedAccuracy,
+      },
+    };
+  }, [selectedModel.metrics, selectedDataset?.rows]);
+
+  const confusionNarrative = useMemo(() => {
+    if (!confusionMatrix) return null;
+    const { totals } = confusionMatrix;
+    const intro = `Across ~${totals.totalSamples.toLocaleString()} evaluation records, precision lands at ${formatPercent(totals.precision)} while recall is ${formatPercent(totals.recall)}.`;
+
+    let errorFocus = 'False positives and false negatives are balanced, so the model makes similar trade-offs when flagging or missing positives.';
+    if (totals.falsePositiveRate > totals.falseNegativeRate + 0.02) {
+      errorFocus = `False positives occur slightly more often (${formatPercent(totals.falsePositiveRate)} of negatives), suggesting the model is eager to flag positives.`;
+    } else if (totals.falseNegativeRate > totals.falsePositiveRate + 0.02) {
+      errorFocus = `False negatives dominate (${formatPercent(totals.falseNegativeRate)} of positives), meaning the model is conservative and might miss opportunities.`;
+    }
+
+    const stability = totals.balancedAccuracy > 0.85
+      ? 'Balanced accuracy stays high, so the model treats both classes reliably.'
+      : 'Balanced accuracy dips below the ideal 85% mark; monitor whether one class consistently underperforms.';
+
+    return {
+      intro,
+      errorFocus,
+      stability,
+      bullets: [
+        `True positives: ${totals.truePositives.toLocaleString()} • True negatives: ${totals.trueNegatives.toLocaleString()}.`,
+        `False positives: ${totals.falsePositives.toLocaleString()} • False negatives: ${totals.falseNegatives.toLocaleString()}.`,
+        `Specificity holds at ${formatPercent(totals.specificity)}, giving a false-positive rate of ${formatPercent(totals.falsePositiveRate)}.`,
+      ],
+    };
+  }, [confusionMatrix]);
+
+  const confusionQuestionSuggestions = [
+    'Where do most errors happen?',
+    'How balanced is precision vs recall?',
+    'What should I do about false positives?'
+  ];
+
+  const answerConfusionQuestion = (prompt: string) => {
+    if (!prompt.trim()) return;
+    if (!confusionMatrix || !confusionNarrative) {
+      setConfusionAnswer('Evaluate the model first to generate a confusion matrix.');
+      return;
+    }
+
+    const q = prompt.toLowerCase();
+    const { totals } = confusionMatrix;
+    let response = '';
+
+    if (q.includes('precision')) {
+      response = `Precision is ${formatPercent(totals.precision)}, meaning ${totals.truePositives.toLocaleString()} of the predicted positives were correct.`;
+    } else if (q.includes('recall') || q.includes('sensitivity')) {
+      response = `Recall sits at ${formatPercent(totals.recall)}, so the model captures that share of actual positives, leaving ${totals.falseNegatives.toLocaleString()} missed.`;
+    } else if (q.includes('false positive') || q.includes('fp')) {
+      response = `${totals.falsePositives.toLocaleString()} negatives were incorrectly flagged, equating to a ${formatPercent(totals.falsePositiveRate)} false-positive rate.`;
+    } else if (q.includes('false negative') || q.includes('fn')) {
+      response = `${totals.falseNegatives.toLocaleString()} positives slipped through (${formatPercent(totals.falseNegativeRate)} of positives). Consider lowering the threshold or adding recall-focused regularization.`;
+    } else if (q.includes('balanced') || q.includes('fair')) {
+      response = `Balanced accuracy is ${formatPercent(totals.balancedAccuracy)}, combining ${formatPercent(totals.recall)} recall with ${formatPercent(totals.specificity)} specificity.`;
+    } else if (q.includes('overall') || q.includes('summary') || q.includes('mean')) {
+      response = `${confusionNarrative.intro} ${confusionNarrative.errorFocus}`;
+    } else {
+      response = `${confusionNarrative.intro} ${confusionNarrative.stability}`;
+    }
+
+    setConfusionAnswer(response);
+  };
+
+  const handleConfusionQuestionSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!confusionQuestion.trim()) return;
+    answerConfusionQuestion(confusionQuestion);
+    setConfusionQuestion('');
+  };
+
+  const handleConfusionSuggestion = (suggestion: string) => {
+    answerConfusionQuestion(suggestion);
+  };
+
+  const rocNarrative = useMemo(() => {
+  const auc = selectedModel.metrics?.auc ?? 0.83;
+    const accuracy = selectedModel.metrics?.accuracy ?? 0.8;
+    const precision = selectedModel.metrics?.precision ?? 0.78;
+    const recall = selectedModel.metrics?.recall ?? 0.76;
+
+    const aucDescriptor = auc >= 0.9
+      ? 'AUC above 0.90 signals excellent separation between positive and negative classes.'
+      : auc >= 0.8
+        ? 'AUC in the mid-0.8s reflects strong discrimination with room to harden the decision threshold.'
+        : 'AUC below 0.8 suggests overlap between the classes; consider more features or regularization.';
+
+    let thresholdHint = 'Precision and recall are balanced, so your current threshold is well calibrated.';
+    if (precision - recall > 0.07) {
+      thresholdHint = 'Precision is higher than recall, implying the current threshold is conservative—good for safety-critical predictions but it may miss positives.';
+    } else if (recall - precision > 0.07) {
+      thresholdHint = 'Recall leads precision, so the threshold is generous and may introduce more false alarms.';
+    }
+
+    return {
+      summary: `AUC is ${auc.toFixed(3)}, accuracy ${formatPercent(accuracy)}, precision ${formatPercent(precision)}, recall ${formatPercent(recall)}.`,
+      descriptor: aucDescriptor,
+      thresholdHint,
+    };
+  }, [selectedModel.metrics]);
+
+  const rocQuestionSuggestions = [
+    'What does my AUC indicate?',
+    'Should I adjust the threshold?',
+    'How balanced are precision and recall?'
+  ];
+
+  const answerRocQuestion = (prompt: string) => {
+    if (!prompt.trim()) return;
+    if (!rocNarrative) {
+      setRocAnswer('Train a model with ROC metrics to unlock this explanation.');
+      return;
+    }
+
+    const q = prompt.toLowerCase();
+    const auc = selectedModel.metrics?.auc ?? 0.83;
+    const precision = selectedModel.metrics?.precision ?? 0.78;
+    const recall = selectedModel.metrics?.recall ?? 0.76;
+    let response = '';
+
+    if (q.includes('auc') || q.includes('curve')) {
+      response = rocNarrative.descriptor;
+    } else if (q.includes('threshold')) {
+      response = rocNarrative.thresholdHint;
+    } else if (q.includes('precision')) {
+      response = `Precision is ${formatPercent(precision)}, so ${formatPercent(precision)} of predicted positives are correct.`;
+    } else if (q.includes('recall')) {
+      response = `Recall is ${formatPercent(recall)}, capturing that share of actual positives.`;
+    } else if (q.includes('balance')) {
+      response = rocNarrative.thresholdHint;
+    } else if (q.includes('overall') || q.includes('summary') || q.includes('mean')) {
+      response = `AUC is ${auc.toFixed(3)}. ${rocNarrative.descriptor}`;
+    } else {
+      response = `${rocNarrative.summary} ${rocNarrative.descriptor}`;
+    }
+
+    setRocAnswer(response);
+  };
+
+  const handleRocSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!rocQuestion.trim()) return;
+    answerRocQuestion(rocQuestion);
+    setRocQuestion('');
+  };
+
+  const handleRocSuggestion = (suggestion: string) => {
+    answerRocQuestion(suggestion);
+  };
+
+  const featureImportanceData = useMemo(() => {
+    if (!selectedDataset?.preview_data?.columns?.length) {
+      return [] as { feature: string; importance: number }[];
+    }
+    const columns = selectedDataset.preview_data.columns;
+    const total = columns.length;
+    return columns.map((feature, idx) => ({
+      feature,
+      importance: 1 - idx / Math.max(total, 1)
+    }));
+  }, [selectedDataset]);
+
+  const featureNarrative = useMemo(() => {
+    if (!featureImportanceData.length) return null;
+    const topFeature = featureImportanceData[0];
+    const topThree = featureImportanceData.slice(0, 3);
+    const tailFeature = featureImportanceData[featureImportanceData.length - 1];
+
+    const spread = (topFeature.importance - tailFeature.importance) * 100;
+    const spreadDescriptor = spread > 40
+      ? 'Importance drops sharply after the first few features, so keep the focus on the leaders for simpler, faster models.'
+      : 'Importance declines gradually, meaning the model draws signal from a wide set of features.';
+
+    return {
+      intro: `${topFeature.feature} contributes the most (~${formatPercent(topFeature.importance)} of relative importance).`,
+      supporting: `Next up: ${topThree.map((item) => item.feature).join(', ')}.`,
+      spreadDescriptor,
+    };
+  }, [featureImportanceData]);
+
+  const featureQuestionSuggestions = [
+    'Which features matter the most?',
+    'Can I drop any columns?',
+    'How evenly distributed is importance?'
+  ];
+
+  const answerFeatureQuestion = (prompt: string) => {
+    if (!prompt.trim()) return;
+    if (!featureNarrative) {
+      setFeatureAnswer('Load dataset preview data to calculate feature importance.');
+      return;
+    }
+
+    const q = prompt.toLowerCase();
+    if (q.includes('which') || q.includes('top')) {
+      setFeatureAnswer(`${featureNarrative.intro} ${featureNarrative.supporting}`);
+    } else if (q.includes('drop') || q.includes('remove')) {
+      setFeatureAnswer(featureNarrative.spreadDescriptor);
+    } else if (q.includes('even') || q.includes('balance') || q.includes('distribution')) {
+      setFeatureAnswer(featureNarrative.spreadDescriptor);
+    } else {
+      setFeatureAnswer(`${featureNarrative.intro} ${featureNarrative.supporting}`);
+    }
+  };
+
+  const handleFeatureSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!featureQuestion.trim()) return;
+    answerFeatureQuestion(featureQuestion);
+    setFeatureQuestion('');
+  };
+
+  const handleFeatureSuggestion = (suggestion: string) => {
+    answerFeatureQuestion(suggestion);
+  };
+
+  const predictionSamples = useMemo(() => {
+    if (!selectedDataset?.preview_data?.rows?.length) return [] as { row: string[]; prediction: string; confidence: number; id: string }[];
+    return selectedDataset.preview_data.rows.slice(0, 5).map((row, idx) => {
+      const prediction = Math.random() > 0.5 ? 'Positive' : 'Negative';
+      const confidence = 0.7 + Math.random() * 0.3;
+      return {
+        row,
+        prediction,
+        confidence,
+        id: `prediction-${idx}`
+      };
+    });
+  }, [selectedDataset?.preview_data?.rows]);
+
+  const predictionNarrative = useMemo(() => {
+    if (!predictionSamples.length) return null;
+    const positives = predictionSamples.filter((sample) => sample.prediction === 'Positive').length;
+    const negatives = predictionSamples.length - positives;
+    const avgConfidence = predictionSamples.reduce((acc, sample) => acc + sample.confidence, 0) / predictionSamples.length;
+    const spread = Math.max(...predictionSamples.map((s) => s.confidence)) - Math.min(...predictionSamples.map((s) => s.confidence));
+
+    return {
+      distribution: `Predictions skew ${positives >= negatives ? 'positive' : 'negative'} (${positives} vs ${negatives}).`,
+      confidence: `Average confidence is ${(avgConfidence * 100).toFixed(1)}% with a ${ (spread * 100).toFixed(1)} pt spread.`,
+      action: positives === negatives
+        ? 'Balance looks even—use business context to set the decision threshold.'
+        : 'Consider adjusting the threshold or class weights if this skew doesn’t match your domain.',
+    };
+  }, [predictionSamples]);
+
+  const predictionQuestionSuggestions = [
+    'Are predictions confident enough?',
+    'Do results skew positive or negative?',
+    'Should I adjust the threshold?'
+  ];
+
+  const answerPredictionQuestion = (prompt: string) => {
+    if (!prompt.trim()) return;
+    if (!predictionNarrative) {
+      setPredictionAnswer('Load sample predictions to unlock these insights.');
+      return;
+    }
+
+    const q = prompt.toLowerCase();
+    if (q.includes('confident')) {
+      setPredictionAnswer(predictionNarrative.confidence);
+      return;
+    }
+    if (q.includes('skew') || q.includes('balance') || q.includes('positive') || q.includes('negative')) {
+      setPredictionAnswer(predictionNarrative.distribution);
+      return;
+    }
+    if (q.includes('threshold')) {
+      setPredictionAnswer(predictionNarrative.action);
+      return;
+    }
+
+    setPredictionAnswer(`${predictionNarrative.distribution} ${predictionNarrative.confidence}`);
+  };
+
+  const handlePredictionSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!predictionQuestion.trim()) return;
+    answerPredictionQuestion(predictionQuestion);
+    setPredictionQuestion('');
+  };
+
+  const handlePredictionSuggestion = (suggestion: string) => {
+    answerPredictionQuestion(suggestion);
   };
 
   return (
@@ -166,30 +620,65 @@ const ModelEvaluationContent = () => {
                 <Title>Performance Over Time</Title>
                 <AreaChart
                   className="h-72 mt-4"
-                  data={[
-                    {
-                      date: '2024-01',
-                      accuracy: selectedModel.metrics?.accuracy ? selectedModel.metrics.accuracy * 0.95 : 0,
-                      precision: selectedModel.metrics?.precision ? selectedModel.metrics.precision * 0.94 : 0,
-                      recall: selectedModel.metrics?.recall ? selectedModel.metrics.recall * 0.93 : 0
-                    },
-                    {
-                      date: '2024-02',
-                      accuracy: selectedModel.metrics?.accuracy ? selectedModel.metrics.accuracy * 0.97 : 0,
-                      precision: selectedModel.metrics?.precision ? selectedModel.metrics.precision * 0.96 : 0,
-                      recall: selectedModel.metrics?.recall ? selectedModel.metrics.recall * 0.95 : 0
-                    },
-                    {
-                      date: '2024-03',
-                      accuracy: selectedModel.metrics?.accuracy || 0,
-                      precision: selectedModel.metrics?.precision || 0,
-                      recall: selectedModel.metrics?.recall || 0
-                    }
-                  ]}
+                  data={performanceData}
                   index="date"
                   categories={['accuracy', 'precision', 'recall']}
                   colors={['blue', 'cyan', 'indigo']}
                 />
+
+                {performanceNarrative && (
+                  <div className={`mt-6 ${insightPanelClass} p-4 text-sm text-slate-700 space-y-2`}>
+                    <p>{performanceNarrative.accuracyMsg}</p>
+                    <p>{performanceNarrative.precisionMsg}</p>
+                    <p>{performanceNarrative.recallMsg}</p>
+                    <p>{performanceNarrative.stability}</p>
+                  </div>
+                )}
+
+                <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                  <div>
+                    <Text className={insightHeadingClass}>Ask about performance trends</Text>
+                    <Text className={insightHelperClass}>Use plain English to interpret accuracy, precision, and recall trajectories.</Text>
+                  </div>
+                  <form onSubmit={handlePerformanceSubmit} className="space-y-2">
+                    <input
+                      type="text"
+                      value={performanceQuestion}
+                      onChange={(e) => setPerformanceQuestion(e.target.value)}
+                      placeholder="e.g., Are metrics trending up?"
+                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button type="submit" size="sm" disabled={!performanceQuestion.trim()}>
+                        Ask
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => setPerformanceAnswer(null)}
+                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                      >
+                        Clear answer
+                      </button>
+                    </div>
+                  </form>
+                  {performanceAnswer && (
+                    <div className={insightAnswerClass} aria-live="polite">
+                      {performanceAnswer}
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {performanceQuestionSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => handlePerformanceSuggestion(suggestion)}
+                        className={chipButtonClass}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </Card>
             </div>
           </TabPanel>
@@ -207,20 +696,76 @@ const ModelEvaluationContent = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {[
-                      { actual: 'Positive', predicted: 'Positive', count: Math.floor((selectedModel.metrics?.accuracy || 0) * 1000) },
-                      { actual: 'Positive', predicted: 'Negative', count: Math.floor((1 - (selectedModel.metrics?.precision || 0)) * 200) },
-                      { actual: 'Negative', predicted: 'Positive', count: Math.floor((1 - (selectedModel.metrics?.recall || 0)) * 200) },
-                      { actual: 'Negative', predicted: 'Negative', count: Math.floor((selectedModel.metrics?.accuracy || 0) * 800) }
-                    ].map((row, idx) => (
-                      <TableRow key={idx}>
+                    {confusionMatrix.rows.map((row, idx) => (
+                      <TableRow key={`${row.actual}-${row.predicted}-${idx}`}>
                         <TableCell>{row.actual}</TableCell>
                         <TableCell>{row.predicted}</TableCell>
-                        <TableCell>{row.count}</TableCell>
+                        <TableCell>{row.count.toLocaleString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
+
+                {confusionNarrative && (
+                  <div className={`mt-6 ${insightPanelClass} p-4 space-y-3 text-sm text-slate-700`}>
+                    <p>{confusionNarrative.intro}</p>
+                    <p>{confusionNarrative.errorFocus}</p>
+                    <p>{confusionNarrative.stability}</p>
+                    <ul className="mt-2 space-y-1">
+                      {confusionNarrative.bullets.map((bullet) => (
+                        <li key={bullet} className="flex items-start gap-2">
+                          <span className={subtleListBulletClass} aria-hidden="true"></span>
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                  <div>
+                    <Text className={insightHeadingClass}>Ask about these errors</Text>
+                    <Text className={insightHelperClass}>Get quick explanations for precision, recall, or class imbalance.</Text>
+                  </div>
+                  <form onSubmit={handleConfusionQuestionSubmit} className="space-y-2">
+                    <input
+                      type="text"
+                      value={confusionQuestion}
+                      onChange={(e) => setConfusionQuestion(e.target.value)}
+                      placeholder="e.g., Where do most errors happen?"
+                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button type="submit" size="sm" disabled={!confusionQuestion.trim()}>
+                        Ask
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => setConfusionAnswer(null)}
+                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                      >
+                        Clear answer
+                      </button>
+                    </div>
+                  </form>
+                  {confusionAnswer && (
+                    <div className={insightAnswerClass} aria-live="polite">
+                      {confusionAnswer}
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {confusionQuestionSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => handleConfusionSuggestion(suggestion)}
+                        className={chipButtonClass}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </Card>
 
               <Card>
@@ -229,6 +774,59 @@ const ModelEvaluationContent = () => {
                 <div className="h-64 mt-4 flex items-center justify-center text-gray-500">
                   ROC curve visualization coming soon
                 </div>
+
+                {rocNarrative && (
+                  <div className={`mt-6 ${insightPanelClass} p-4 space-y-2 text-sm text-slate-700`}>
+                    <p>{rocNarrative.summary}</p>
+                    <p>{rocNarrative.descriptor}</p>
+                    <p>{rocNarrative.thresholdHint}</p>
+                  </div>
+                )}
+
+                <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                  <div>
+                    <Text className={insightHeadingClass}>Ask about ROC/AUC</Text>
+                    <Text className={insightHelperClass}>Understand what the curve says about thresholds and trade-offs.</Text>
+                  </div>
+                    <form onSubmit={handleRocSubmit} className="space-y-2">
+                      <input
+                        type="text"
+                        value={rocQuestion}
+                        onChange={(e) => setRocQuestion(e.target.value)}
+                        placeholder="e.g., Should I adjust the threshold?"
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button type="submit" size="sm" disabled={!rocQuestion.trim()}>
+                          Ask
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => setRocAnswer(null)}
+                          className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                        >
+                          Clear answer
+                        </button>
+                      </div>
+                    </form>
+                    {rocAnswer && (
+                      <div className={insightAnswerClass} aria-live="polite">
+                        {rocAnswer}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {rocQuestionSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => handleRocSuggestion(suggestion)}
+                          className={chipButtonClass}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                </div>
               </Card>
             </Grid>
           </TabPanel>
@@ -236,18 +834,74 @@ const ModelEvaluationContent = () => {
           <TabPanel>
             <Card className="mt-6">
               <Title>Feature Importance</Title>
-              {selectedDataset?.preview_data?.columns.map((feature, idx) => {
-                const importance = 1 - (idx / (selectedDataset.preview_data?.columns.length || 1));
-                return (
-                  <div key={idx} className="mt-4">
+              {featureImportanceData.length > 0 ? (
+                featureImportanceData.map(({ feature, importance }) => (
+                  <div key={feature} className="mt-4">
                     <Flex>
                       <Text>{feature}</Text>
                       <Text>{(importance * 100).toFixed(1)}%</Text>
                     </Flex>
                     <ProgressBar value={importance * 100} className="mt-2" />
                   </div>
-                );
-              })}
+                ))
+              ) : (
+                <Text className="mt-4 text-gray-500">
+                  Feature importance data becomes available once the dataset preview loads.
+                </Text>
+              )}
+
+              {featureNarrative && (
+                <div className={`mt-6 ${insightPanelClass} p-4 space-y-2 text-sm text-slate-700`}>
+                  <p>{featureNarrative.intro}</p>
+                  <p>{featureNarrative.supporting}</p>
+                  <p>{featureNarrative.spreadDescriptor}</p>
+                </div>
+              )}
+
+              <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                <div>
+                  <Text className={insightHeadingClass}>Ask about feature importance</Text>
+                  <Text className={insightHelperClass}>Use natural language to understand which columns matter.</Text>
+                </div>
+                <form onSubmit={handleFeatureSubmit} className="space-y-2">
+                  <input
+                    type="text"
+                    value={featureQuestion}
+                    onChange={(e) => setFeatureQuestion(e.target.value)}
+                    placeholder="e.g., Can I drop any columns?"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button type="submit" size="sm" disabled={!featureQuestion.trim()}>
+                      Ask
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setFeatureAnswer(null)}
+                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                    >
+                      Clear answer
+                    </button>
+                  </div>
+                </form>
+                {featureAnswer && (
+                  <div className={insightAnswerClass} aria-live="polite">
+                    {featureAnswer}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {featureQuestionSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => handleFeatureSuggestion(suggestion)}
+                      className={chipButtonClass}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </Card>
           </TabPanel>
 
@@ -263,19 +917,80 @@ const ModelEvaluationContent = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {selectedDataset?.preview_data?.rows.slice(0, 5).map((row, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>
-                        <div className="max-w-xs truncate">
-                          {row.join(', ')}
-                        </div>
+                  {predictionSamples.length > 0 ? (
+                    predictionSamples.map((sample) => (
+                      <TableRow key={sample.id}>
+                        <TableCell>
+                          <div className="max-w-xs truncate">
+                            {sample.row.join(', ')}
+                          </div>
+                        </TableCell>
+                        <TableCell>{sample.prediction}</TableCell>
+                        <TableCell>{sample.confidence.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3}>
+                        <Text className="text-sm text-gray-500">Load a dataset preview to see sample predictions.</Text>
                       </TableCell>
-                      <TableCell>{Math.random() > 0.5 ? 'Positive' : 'Negative'}</TableCell>
-                      <TableCell>{(0.7 + Math.random() * 0.3).toFixed(2)}</TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
+
+              {predictionNarrative && (
+                <div className={`mt-6 ${insightPanelClass} p-4 space-y-2 text-sm text-slate-700`}>
+                  <p>{predictionNarrative.distribution}</p>
+                  <p>{predictionNarrative.confidence}</p>
+                  <p>{predictionNarrative.action}</p>
+                </div>
+              )}
+
+              <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                <div>
+                  <Text className={insightHeadingClass}>Ask about predictions</Text>
+                  <Text className={insightHelperClass}>Understand class skew, confidence, and threshold guidance.</Text>
+                </div>
+                <form onSubmit={handlePredictionSubmit} className="space-y-2">
+                  <input
+                    type="text"
+                    value={predictionQuestion}
+                    onChange={(e) => setPredictionQuestion(e.target.value)}
+                    placeholder="e.g., Are predictions confident enough?"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button type="submit" size="sm" disabled={!predictionQuestion.trim()}>
+                      Ask
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setPredictionAnswer(null)}
+                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                    >
+                      Clear answer
+                    </button>
+                  </div>
+                </form>
+                {predictionAnswer && (
+                  <div className={insightAnswerClass} aria-live="polite">
+                    {predictionAnswer}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {predictionQuestionSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => handlePredictionSuggestion(suggestion)}
+                      className={chipButtonClass}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </Card>
           </TabPanel>
         </TabPanels>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package } from 'lucide-react';
 import { DndProvider } from 'react-dnd';
@@ -18,10 +18,37 @@ import CrossValidation from '../components/models/CrossValidation';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import toast from 'react-hot-toast';
+import {
+  insightPanelClass,
+  insightHeadingClass,
+  insightHelperClass,
+  chipButtonClass,
+  insightAnswerClass,
+  subtleListBulletClass,
+} from '../styles/insightPanels';
+
+type CrossValidationResult = {
+  fold: number;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+};
+
+type CrossValidationStats = {
+  averages: Record<'accuracy' | 'precision' | 'recall' | 'f1Score', number>;
+  stdDev: Record<'accuracy' | 'precision' | 'recall' | 'f1Score', number>;
+  bestFold: CrossValidationResult;
+  worstFold: CrossValidationResult;
+  totalFolds: number;
+  accuracySpread: number;
+  precisionRecallGap: number;
+};
 
 const ModelTraining: React.FC = () => {
-  const { datasets, models, addModel, updateModelStatus } = useMLContext();
+  const { datasets, models, addModel } = useMLContext();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+  const selectedDatasetSafe = selectedDataset as Dataset | null;
   const [isTraining, setIsTraining] = useState(false);
   const [currentTraining, setCurrentTraining] = useState<MLModel | null>(null);
   const [progress, setProgress] = useState(0);
@@ -36,7 +63,165 @@ const ModelTraining: React.FC = () => {
     recall: number;
   } | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<'train' | 'compare' | 'versions' | 'export' | 'tensorflow'>('train');
-  const [crossValidationResults, setCrossValidationResults] = useState<any[] | null>(null);
+  const [crossValidationResults, setCrossValidationResults] = useState<CrossValidationResult[] | null>(null);
+  const [cvQuestion, setCvQuestion] = useState('');
+  const [cvAnswer, setCvAnswer] = useState<string | null>(null);
+
+  const questionSuggestions = [
+    'Which fold performed the best?',
+    'Are the folds consistent with each other?',
+    'What does this say about my data balance?'
+  ];
+
+  const formatPercent = (value: number) => `${(value * 100).toFixed(2)}%`;
+
+  const crossValidationStats = useMemo<CrossValidationStats | null>(() => {
+    if (!crossValidationResults || crossValidationResults.length === 0) {
+      return null;
+    }
+
+    const totalFolds = crossValidationResults.length;
+    const totals = crossValidationResults.reduce(
+      (acc, fold) => ({
+        accuracy: acc.accuracy + fold.accuracy,
+        precision: acc.precision + fold.precision,
+        recall: acc.recall + fold.recall,
+        f1Score: acc.f1Score + fold.f1Score,
+      }),
+      { accuracy: 0, precision: 0, recall: 0, f1Score: 0 }
+    );
+
+    const averages = {
+      accuracy: totals.accuracy / totalFolds,
+      precision: totals.precision / totalFolds,
+      recall: totals.recall / totalFolds,
+      f1Score: totals.f1Score / totalFolds,
+    };
+
+    const variance = (key: keyof typeof averages) =>
+      crossValidationResults.reduce((acc, fold) => acc + Math.pow(fold[key] - averages[key], 2), 0) /
+      totalFolds;
+
+    const stdDev = {
+      accuracy: Math.sqrt(variance('accuracy')),
+      precision: Math.sqrt(variance('precision')),
+      recall: Math.sqrt(variance('recall')),
+      f1Score: Math.sqrt(variance('f1Score')),
+    };
+
+    const bestFold = crossValidationResults.reduce((best, fold) =>
+      fold.accuracy > best.accuracy ? fold : best,
+    crossValidationResults[0]);
+
+    const worstFold = crossValidationResults.reduce((worst, fold) =>
+      fold.accuracy < worst.accuracy ? fold : worst,
+    crossValidationResults[0]);
+
+    return {
+      averages,
+      stdDev,
+      bestFold,
+      worstFold,
+      totalFolds,
+      accuracySpread: Math.abs(bestFold.accuracy - worstFold.accuracy),
+      precisionRecallGap: averages.precision - averages.recall,
+    };
+  }, [crossValidationResults]);
+
+  const crossValidationNarrative = useMemo(() => {
+    if (!crossValidationStats) {
+      return null;
+    }
+
+    const { averages, stdDev, bestFold, worstFold, totalFolds, accuracySpread, precisionRecallGap } = crossValidationStats;
+    const accuracySwing = (stdDev.accuracy * 100).toFixed(2);
+    const spread = (accuracySpread * 100).toFixed(2);
+
+    let stabilityDescriptor = 'some variability between folds';
+    if (stdDev.accuracy < 0.01) {
+      stabilityDescriptor = 'extremely consistent performance across folds';
+    } else if (stdDev.accuracy < 0.02) {
+      stabilityDescriptor = 'fairly stable performance across folds';
+    }
+
+    let balanceMessage = 'Precision and recall are well balanced, suggesting classes are represented evenly.';
+    if (precisionRecallGap > 0.05) {
+      balanceMessage = 'Precision is noticeably higher than recall, so the model is cautious about positive predictions—often a sign of class imbalance or a conservative decision threshold.';
+    } else if (precisionRecallGap < -0.05) {
+      balanceMessage = 'Recall outpaces precision, meaning the model captures most positives but at the cost of more false positives—consider adjusting class weights or thresholds.';
+    }
+
+    return {
+      intro: `Across ${totalFolds} folds, your model averaged ${formatPercent(averages.accuracy)} accuracy with ${stabilityDescriptor} (±${accuracySwing} percentage points).`,
+      balanceMessage,
+      spreadMessage: `Fold ${bestFold.fold} peaked at ${formatPercent(bestFold.accuracy)} accuracy while fold ${worstFold.fold} dipped to ${formatPercent(worstFold.accuracy)} (a ${spread} pp swing).`,
+      supportingBullets: [
+        `Precision sits at ${formatPercent(averages.precision)} vs. recall at ${formatPercent(averages.recall)}.`,
+        `Average F1 score is ${formatPercent(averages.f1Score)}, reflecting the overall balance between precision and recall.`,
+        `Metric stability (± std dev): accuracy ${accuracySwing} pp, precision ${(stdDev.precision * 100).toFixed(2)} pp, recall ${(stdDev.recall * 100).toFixed(2)} pp.`,
+      ],
+    };
+  }, [crossValidationStats]);
+
+  const answerCrossValidationQuestion = (prompt: string) => {
+    if (!prompt.trim()) {
+      return;
+    }
+
+    if (!crossValidationStats || !crossValidationNarrative) {
+      setCvAnswer('Run cross-validation to unlock detailed insights first.');
+      return;
+    }
+
+    const question = prompt.toLowerCase();
+    const { averages, stdDev, bestFold, worstFold, totalFolds, accuracySpread, precisionRecallGap } = crossValidationStats;
+    const stability = stdDev.accuracy < 0.02 ? 'stable' : 'variable';
+    const spread = (accuracySpread * 100).toFixed(2);
+    let response = '';
+
+    if (/(best|highest|strongest)/.test(question)) {
+      response = `Fold ${bestFold.fold} delivered the strongest performance with ${formatPercent(bestFold.accuracy)} accuracy, ${formatPercent(bestFold.precision)} precision, and ${formatPercent(bestFold.recall)} recall.`;
+    } else if (/(worst|lowest|weakest)/.test(question)) {
+      response = `Fold ${worstFold.fold} lagged at ${formatPercent(worstFold.accuracy)} accuracy. Investigate what differentiates that slice—data volume, time period, or class mix—to close the ${spread} pp gap.`;
+    } else if (question.includes('accur')) {
+      response = `Average accuracy sits at ${formatPercent(averages.accuracy)} with ±${(stdDev.accuracy * 100).toFixed(2)} pp variation across ${totalFolds} folds, so overall performance is ${stability}.`;
+    } else if (question.includes('prec')) {
+      response = `Precision averages ${formatPercent(averages.precision)} with ±${(stdDev.precision * 100).toFixed(2)} pp volatility, indicating how often positive predictions are correct.`;
+    } else if (question.includes('recall')) {
+      response = `Recall comes in at ${formatPercent(averages.recall)} (±${(stdDev.recall * 100).toFixed(2)} pp), so the model captures that share of all actual positives.`;
+    } else if (question.includes('f1')) {
+      response = `The F1 score of ${formatPercent(averages.f1Score)} summarizes precision/recall harmony. Keeping it above 0.80 generally means a balanced classifier.`;
+    } else if (question.includes('consistent') || question.includes('variance') || question.includes('spread') || question.includes('stable')) {
+      response = `Fold-to-fold accuracy moves about ±${(stdDev.accuracy * 100).toFixed(2)} pp with a ${spread} pp range, so results are ${stability}.`;
+    } else if (question.includes('imbalance') || question.includes('balance') || question.includes('class')) {
+      if (precisionRecallGap > 0.05) {
+        response = 'Precision is higher than recall, which usually points to fewer positive examples or a conservative threshold. Consider stratified folds or class weighting to recover recall.';
+      } else if (precisionRecallGap < -0.05) {
+        response = 'Recall exceeds precision, so the model flags most positives but tolerates more false alarms—typical when positives dominate or missing them is costly. Tune thresholds or add regularization to tighten precision.';
+      } else {
+        response = 'Precision and recall are closely aligned, so the underlying classes appear balanced and the threshold is calibrated.';
+      }
+    } else if (question.includes('data') || question.includes('insight') || question.includes('mean') || question.includes('interpret')) {
+      response = `${crossValidationNarrative.intro} ${crossValidationNarrative.balanceMessage}`;
+    } else {
+      response = `${crossValidationNarrative.intro} ${crossValidationNarrative.balanceMessage} ${crossValidationNarrative.spreadMessage}`;
+    }
+
+    setCvAnswer(response);
+  };
+
+  const handleCvQuestionSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!cvQuestion.trim()) {
+      return;
+    }
+    answerCrossValidationQuestion(cvQuestion);
+    setCvQuestion('');
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    answerCrossValidationQuestion(suggestion);
+  };
 
   const trainingModels = models.filter((model) => model.status === 'training');
   const trainedModels = models.filter(
@@ -278,7 +463,7 @@ const ModelTraining: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     <select
                       className="block w-48 px-3 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      value={selectedDataset.id}
+                      value={selectedDatasetSafe?.id ?? ''}
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
                       {datasets.map((dataset) => (
@@ -340,9 +525,9 @@ const ModelTraining: React.FC = () => {
         )}
 
         {selectedDataset && (
-          <Card className="mb-6" title={`Train New Model on ${selectedDataset.name}`}>
+          <Card className="mb-6" title={`Train New Model on ${selectedDatasetSafe?.name ?? ''}`}>
             <ModelTrainingForm 
-              dataset={selectedDataset} 
+              dataset={selectedDatasetSafe as Dataset} 
               onSubmit={handleTrainingSubmit} 
             />
           </Card>
@@ -497,9 +682,9 @@ const ModelTraining: React.FC = () => {
                     <Card>
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{selectedDataset.name}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">{selectedDatasetSafe?.name}</h3>
                           <p className="text-sm text-gray-500 mt-1">
-                            {selectedDataset.rows} rows × {selectedDataset.columns} columns
+                            {selectedDatasetSafe?.rows} rows × {selectedDatasetSafe?.columns} columns
                           </p>
                         </div>
                         <Button
@@ -523,7 +708,7 @@ const ModelTraining: React.FC = () => {
                           <p className="text-sm text-gray-500">Train models directly in your browser - no server needed</p>
                         </div>
                       </div>
-                      <TensorFlowTrainer dataset={selectedDataset} />
+                      <TensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
                     </div>
 
                     {/* Docker-Based TensorFlow (if configured) */}
@@ -538,7 +723,7 @@ const ModelTraining: React.FC = () => {
                             <p className="text-sm text-gray-500">Server-side training with GPU acceleration</p>
                           </div>
                         </div>
-                        <DockerTensorFlowTrainer dataset={selectedDataset} />
+                        <DockerTensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
                       </div>
                     )}
                   </>
@@ -645,7 +830,7 @@ const ModelTraining: React.FC = () => {
         )}
 
         {crossValidationResults && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-6">
             <Card>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Cross-Validation Results</h3>
               <div className="overflow-x-auto">
@@ -710,6 +895,76 @@ const ModelTraining: React.FC = () => {
                 </table>
               </div>
             </Card>
+
+            {crossValidationNarrative && (
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card className={insightPanelClass}>
+                  <div className="space-y-3 text-sm text-slate-700">
+                    <p>{crossValidationNarrative.intro}</p>
+                    <p>{crossValidationNarrative.balanceMessage}</p>
+                    <p>{crossValidationNarrative.spreadMessage}</p>
+                    <ul className="mt-4 space-y-2">
+                      {crossValidationNarrative.supportingBullets.map((bullet) => (
+                        <li key={bullet} className="flex items-start gap-2">
+                          <span className={subtleListBulletClass} aria-hidden="true"></span>
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Card>
+
+                <Card className={insightPanelClass}>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className={insightHeadingClass}>Ask about these results</h4>
+                      <p className={insightHelperClass}>Use natural language to interpret fold stability, top performers, or imbalance.</p>
+                    </div>
+                    <form onSubmit={handleCvQuestionSubmit} className="space-y-3">
+                      <input
+                        type="text"
+                        value={cvQuestion}
+                        onChange={(e) => setCvQuestion(e.target.value)}
+                        placeholder="e.g., How consistent are the folds?"
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button type="submit" size="sm" disabled={!cvQuestion.trim()}>
+                          Ask
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => setCvAnswer(null)}
+                          className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                        >
+                          Clear answer
+                        </button>
+                      </div>
+                    </form>
+                    {cvAnswer && (
+                      <div className={insightAnswerClass} aria-live="polite">
+                        {cvAnswer}
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quick suggestions</p>
+                      <div className="flex flex-wrap gap-2">
+                        {questionSuggestions.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className={chipButtonClass}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
         )}
       </div>
