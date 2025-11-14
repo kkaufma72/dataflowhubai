@@ -39,6 +39,7 @@ const SAMPLE_DATA = {
 
 const EXAMPLE_COMMANDS = [
   "Sort by revenue (highest first)",
+  "Sort by age (oldest first)",
   "Remove items where revenue < $50",
   "Filter by Electronics category",
   "Remove Discontinued status",
@@ -65,7 +66,13 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
     // SORT operation
     if (lower.includes('sort')) {
       const column = columns.find(col => lower.includes(col.toLowerCase()));
-      const descending = lower.includes('highest') || lower.includes('descending') || lower.includes('desc');
+      // For descending: highest, oldest, largest, descending, desc
+      // For ascending: lowest, youngest, smallest, ascending, asc
+      const descending = lower.includes('highest') || 
+                        lower.includes('oldest') || 
+                        lower.includes('largest') ||
+                        lower.includes('descending') || 
+                        lower.includes('desc');
       
       return {
         operation: 'SORT',
