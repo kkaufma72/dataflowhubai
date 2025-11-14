@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight, CheckCircle, Menu, X } from 'lucide-react';
 import InteractiveLiveDemo from '../components/landing/InteractiveLiveDemo';
-import LiveDataTransformDemo from '../components/landing/LiveDataTransformDemo';
+import LiveTransformationDemo from '../components/data/LiveTransformationDemo';
 
 const LandingPageLinear: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -426,7 +426,7 @@ const LandingPageLinear: React.FC = () => {
               Watch how easy it is to clean and manipulate data - no coding required
             </p>
           </div>
-          <LiveDataTransformDemo />
+          <LiveTransformationDemo />
         </div>
       </section>
 

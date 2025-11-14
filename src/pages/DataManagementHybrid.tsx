@@ -30,6 +30,7 @@ import { useDefaultProjectSetup } from '../hooks/useDefaultProjectSetup';
 // Lazy load heavy components
 const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
 const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDashboard'));
+const LiveTransformationDemo = lazy(() => import('../components/data/LiveTransformationDemo'));
 
 const DataManagementHybrid: React.FC = () => {
   const { datasets, currentProject } = useMLContext();
@@ -46,6 +47,7 @@ const DataManagementHybrid: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [showQuality, setShowQuality] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showTransform, setShowTransform] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showAIHelper, setShowAIHelper] = useState(false);
 
@@ -223,30 +225,40 @@ const DataManagementHybrid: React.FC = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="px-6 pb-6 flex gap-3">
+                  <div className="px-6 pb-6 grid grid-cols-2 lg:grid-cols-5 gap-3">
                     <button
                       onClick={() => {
                         setSelectedDataset(activeDataset);
                         setShowPreview(true);
                       }}
-                      className="flex-1 px-4 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <Eye className="w-5 h-5" />
-                      Preview Data (25 Rows)
+                      Preview Data
                     </button>
                     <button
                       onClick={() => {
                         setSelectedDataset(activeDataset);
                         setShowQuality(true);
                       }}
-                      className="flex-1 px-4 py-3 bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <CheckCircle className="w-5 h-5" />
-                      Data Quality Report
+                      Quality Report
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedDataset(activeDataset);
+                        setShowTransform(true);
+                      }}
+                      className="px-4 py-3 bg-purple-50 border-2 border-purple-200 text-purple-700 hover:bg-purple-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                    >
+                      <BarChart3 className="w-5 h-5" />
+                      Transform
                     </button>
                     <button
                       onClick={() => handleExport(activeDataset!)}
-                      className="flex-1 px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-5 h-5" />
                       Export CSV
@@ -256,7 +268,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowChat(true);
                       }}
-                      className="flex-1 px-4 py-3 bg-purple-50 border-2 border-purple-200 text-purple-700 hover:bg-purple-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-indigo-50 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <Sparkles className="w-5 h-5" />
                       Ask AI
@@ -649,6 +661,31 @@ const DataManagementHybrid: React.FC = () => {
                 isModal={true}
               />
             </Suspense>
+          </div>
+        </div>
+      )}
+
+      {/* Transform Modal */}
+      {showTransform && selectedDataset && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-auto">
+            <Suspense fallback={<div className="flex items-center justify-center py-12">Loading...</div>}>
+              <LiveTransformationDemo
+                initialData={selectedDataset.preview_data || { columns: [], rows: [] }}
+                onDataChange={(newData) => {
+                  toast.success('Transformation saved!');
+                  setShowTransform(false);
+                }}
+              />
+            </Suspense>
+            <div className="px-6 py-4 bg-gray-50 border-t flex justify-end">
+              <button
+                onClick={() => setShowTransform(false)}
+                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
