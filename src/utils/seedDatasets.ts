@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import toast from 'react-hot-toast';
 
-export const seedEnhancedDatasets = async (userId: string, projectId: string) => {
+export const seedEnhancedDatasets = async (userId: string, projectId: string | null = null) => {
   try {
     const datasets = generateEnhancedSampleDatasets();
     
@@ -24,7 +24,8 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string) =>
     const datasetsToInsert = datasets.map(dataset => ({
       ...dataset,
       user_id: userId,
-      project_id: projectId,
+      // Don't include project_id if it's null
+      ...(projectId && { project_id: projectId }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));
