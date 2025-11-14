@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
+import { useStripeCheckout } from '../hooks/useStripeCheckout';
 import { MLModel } from '../types';
 import { 
   Activity, 
@@ -24,6 +25,7 @@ const ModelMonitoringContent: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { models, datasets, updateModelStatus } = useMLContext();
+  const { startCheckout, loading: checkoutLoading } = useStripeCheckout();
   const modelId = searchParams.get('model');
   const [selectedModel, setSelectedModel] = useState<MLModel | null>(null);
   const [activeTab, setActiveTab] = useState<'realtime' | 'performance'>('realtime');
@@ -133,10 +135,14 @@ const ModelMonitoringContent: React.FC = () => {
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for monitoring</h3>
         <p className="mt-1 text-sm text-gray-500">
-          Deploy a model first to monitor its performance
+          Deploy a model first to monitor its performance (Pro feature)
         </p>
-        <Button className="mt-4" onClick={() => navigate('/app/deploy')}>
-          Go to Deployment
+        <Button 
+          className="mt-4" 
+          onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
+          disabled={checkoutLoading}
+        >
+          Upgrade to Pro
         </Button>
       </div>
     );

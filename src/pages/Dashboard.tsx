@@ -19,6 +19,7 @@ import { useNotifications } from '../components/common/NotificationSystem';
 import { useTour } from '../components/common/TourProvider';
 import { useAIChat } from '../components/ai/GlobalAIAssistant';
 import { useAuth } from '../components/auth/AuthProvider';
+import { useStripeCheckout } from '../hooks/useStripeCheckout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -46,6 +47,7 @@ const Dashboard: React.FC = () => {
   const { addNotification } = useNotifications();
   const { startTour } = useTour();
   const { user } = useAuth();
+  const { startCheckout, loading: checkoutLoading } = useStripeCheckout();
   const navigate = useNavigate();
   const { openChat } = useAIChat();
   const [searchParams] = useSearchParams();
@@ -360,29 +362,31 @@ const Dashboard: React.FC = () => {
           
           <button
             type="button"
-            onClick={() => navigate('/app/evaluate')}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg hover:from-amber-100 hover:to-orange-100 transition-all border-2 border-transparent hover:border-amber-300"
+            onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
+            disabled={checkoutLoading}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg hover:from-amber-100 hover:to-orange-100 transition-all border-2 border-transparent hover:border-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center">
               <BarChart2 className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900">Evaluate</p>
-              <p className="text-sm text-gray-600">Test model performance</p>
+              <p className="text-sm text-gray-600">Test model performance (Pro)</p>
             </div>
           </button>
           
           <button
             type="button"
-            onClick={() => navigate('/app/deploy')}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg hover:from-emerald-100 hover:to-teal-100 transition-all border-2 border-transparent hover:border-emerald-300"
+            onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
+            disabled={checkoutLoading}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg hover:from-emerald-100 hover:to-teal-100 transition-all border-2 border-transparent hover:border-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
               <Zap className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900">Deploy</p>
-              <p className="text-sm text-gray-600">Publish to production</p>
+              <p className="text-sm text-gray-600">Publish to production (Pro)</p>
             </div>
           </button>
         </div>
@@ -390,15 +394,16 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <button
             type="button"
-            onClick={() => navigate('/app/monitoring')}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg hover:from-cyan-100 hover:to-blue-100 transition-all border-2 border-transparent hover:border-cyan-300"
+            onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}
+            disabled={checkoutLoading}
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg hover:from-cyan-100 hover:to-blue-100 transition-all border-2 border-transparent hover:border-cyan-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="w-12 h-12 bg-cyan-500 rounded-lg flex items-center justify-center">
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
               <p className="font-medium text-gray-900">Monitor</p>
-              <p className="text-sm text-gray-600">Track model performance</p>
+              <p className="text-sm text-gray-600">Track model performance (Pro)</p>
             </div>
           </button>
           
