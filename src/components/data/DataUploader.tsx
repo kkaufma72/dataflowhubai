@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { useMLContext } from '../../context/MLContext';
@@ -367,7 +367,11 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         
         {!file ? (
           <>
-            <Upload className="w-12 h-12 text-gray-400 mb-4" />
+            <div className="w-12 h-12 text-gray-400 mb-4 flex items-center justify-center">
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
             <p className="text-sm text-gray-600 mb-2">
               <span className="font-semibold text-indigo-600">Click to upload</span> or drag and drop
             </p>
@@ -377,7 +381,11 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           </>
         ) : (
           <div className="flex items-center space-x-3">
-            <File className="w-8 h-8 text-indigo-600" />
+            <div className="w-8 h-8 text-indigo-600 flex items-center justify-center">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">{file.name}</p>
               <p className="text-xs text-gray-500">
@@ -392,7 +400,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
               }}
               className="text-gray-400 hover:text-gray-600"
             >
-              <X className="w-5 h-5" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         )}
@@ -435,7 +445,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
 
       {uploadProgress === 100 && (
         <div className="flex items-center mt-4 p-3 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200">
-          <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <span>Upload complete!</span>
         </div>
       )}
