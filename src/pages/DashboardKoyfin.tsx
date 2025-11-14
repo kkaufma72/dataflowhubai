@@ -17,9 +17,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Circle,
-  Sparkles
+  Sparkles,
+  Upload,
+  PlayCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { DashboardStatsSkeleton } from '../components/common/SkeletonLoader';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));

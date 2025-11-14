@@ -128,7 +128,7 @@ const LandingPageLinear: React.FC = () => {
       {/* Hero Section - Linear Style */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden">
         {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/30 via-purple-50/20 to-white pointer-events-none" />
         
         {/* Grid pattern (subtle) */}
         <div className="absolute inset-0 opacity-[0.02]" style={{
@@ -136,60 +136,69 @@ const LandingPageLinear: React.FC = () => {
           backgroundSize: '64px 64px'
         }} />
 
-        <div className="relative max-w-6xl mx-auto">
+        <div className="relative max-w-6xl mx-auto text-center">
           {/* Beta Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-full mb-8 hover:shadow-lg transition-shadow">
             <Sparkles className="w-4 h-4 text-indigo-600" />
-            <span className="text-sm font-medium text-indigo-700">Now in Beta</span>
-            <ChevronRight className="w-4 h-4 text-indigo-600" />
+            <span className="text-sm font-semibold text-indigo-700">Powered by Advanced AI • Enterprise Ready</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[1.1] tracking-tight text-gray-900 mb-6">
-            Talk to your data
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight text-gray-900 mb-8">
+            Build ML Models
             <br />
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Get AI insights
+              Without Code
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mb-10 leading-relaxed">
-            Transform, analyze, and understand your business data using natural language. 
-            No SQL. No formulas. Just ask.
+          <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
+            Enterprise AutoML platform that transforms how businesses build, deploy, and scale machine learning models. 
+            <span className="block mt-2 font-semibold text-gray-700">
+              Go from raw data to production in minutes, not months.
+            </span>
           </p>
 
-          {/* Main CTA - Product Tour Spotlight */}
-          <div className="mb-8">
-            <Link
-              to="/product-tour"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-2xl hover:shadow-3xl hover:scale-105 transform"
-            >
-              <Sparkles className="w-6 h-6" />
-              🚀 Interactive Product Tour - See All Features
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <p className="text-sm text-gray-500 mt-2 text-center">
-              ✨ No signup required • Full platform demo • Enterprise-scale data
-            </p>
+          {/* Social Proof Stats */}
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-gray-700">10K+ datasets processed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-gray-700">500+ models deployed</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-gray-700">95% faster than traditional ML</span>
+            </div>
           </div>
 
-          {/* Secondary CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 mb-12">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+            <Link
+              to="/product-tour"
+              className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-xl hover:shadow-2xl hover:scale-105 transform flex items-center justify-center gap-3"
+            >
+              <Sparkles className="w-5 h-5" />
+              See Interactive Demo
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
             <Link
               to="/signin"
-              className="group w-full sm:w-auto px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-all hover:shadow-xl flex items-center justify-center gap-2"
+              className="group w-full sm:w-auto px-8 py-4 bg-white border-2 border-gray-900 text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
-              Start for free
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/demo"
-              className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:border-gray-900 hover:bg-gray-50 transition-all text-center"
-            >
-              Watch demo
+              Start Free Trial
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
+
+          {/* Trust Signals */}
+          <p className="text-sm text-gray-500 mb-4">
+            ✓ No credit card required  •  ✓ Free 14-day trial  •  ✓ Cancel anytime
+          </p>
 
           {/* Social Proof */}
           <p className="text-sm text-gray-500">
