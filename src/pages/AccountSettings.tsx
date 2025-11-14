@@ -7,7 +7,7 @@ import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 
 const AccountSettings: React.FC = () => {
-  const { userProfile, updateUserProfile, isLoadingProfile } = useUser();
+  const { userProfile, updateUserProfile } = useUser();
   const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'general' | 'security' | 'notifications'>('general');
@@ -264,15 +264,7 @@ const AccountSettings: React.FC = () => {
     }
   };
 
-  if (isLoadingProfile) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!userProfile) {
+  if (!user) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-purple-600">Account Not Found</h2>
