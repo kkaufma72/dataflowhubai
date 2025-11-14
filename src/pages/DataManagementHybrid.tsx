@@ -33,7 +33,7 @@ const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDa
 const LiveTransformationDemo = lazy(() => import('../components/data/LiveTransformationDemo'));
 
 const DataManagementHybrid: React.FC = () => {
-  const { datasets, currentProject } = useMLContext();
+  const { datasets, currentProject, updateDataset } = useMLContext();
   const { user } = useAuth();
   const { deleteDataset } = useDatasetActions();
   
@@ -672,9 +672,29 @@ const DataManagementHybrid: React.FC = () => {
             <Suspense fallback={<div className="flex items-center justify-center py-12">Loading...</div>}>
               <LiveTransformationDemo
                 initialData={selectedDataset.preview_data || { columns: [], rows: [] }}
-                onDataChange={(newData) => {
-                  toast.success('Transformation saved!');
-                  setShowTransform(false);
+                onDataChange={async (newData) => {
+                  try {
+                    // Update the dataset with transformed data
+                    await updateDataset(selectedDataset.id, {
+                      preview_data: newData,
+                      rows: newData.rows.length,
+                      columns: newData.columns.length,
+                    });
+                    
+                    toast.success('✨ Transformation saved to dataset!');
+                    setShowTransform(false);
+                    
+                    // Update selected dataset to reflect changes
+                    setSelectedDataset(prev => prev ? {
+                      ...prev,
+                      preview_data: newData,
+                      rows: newData.rows.length,
+                      columns: newData.columns.length,
+                    } : null);
+                  } catch (error) {
+                    console.error('Error saving transformation:', error);
+                    toast.error('Failed to save transformation');
+                  }
                 }}
               />
             </Suspense>

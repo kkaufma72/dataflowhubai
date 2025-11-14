@@ -453,11 +453,22 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
               Updates in real-time as you command
             </div>
           </div>
-          {history.length > 0 && (
-            <div className="text-xs text-purple-600 font-medium">
-              {history.length} transformation{history.length !== 1 ? 's' : ''} applied
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {history.length > 0 && (
+              <div className="text-xs text-purple-600 font-medium">
+                {history.length} transformation{history.length !== 1 ? 's' : ''} applied
+              </div>
+            )}
+            {onDataChange && history.length > 0 && (
+              <button
+                onClick={() => onDataChange({ columns, rows })}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Save Changes
+              </button>
+            )}
+          </div>
         </div>
 
         {/* History */}

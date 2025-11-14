@@ -11,6 +11,7 @@ interface MLContextType {
   isLoading: boolean;
   error: string | null;
   addDataset: (dataset: Dataset) => Promise<Dataset>;
+  updateDataset: (id: string, updates: Partial<Dataset>) => Promise<void>;
   addModel: (model: MLModel) => void;
   updateModelStatus: (id: string, status: string, metrics?: Record<string, number>) => void;
 }
@@ -206,6 +207,48 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     return dataset;
   }, []);
 
+  const updateDataset = useCallback(async (id: string, updates: Partial<Dataset>): Promise<void> => {
+    try {
+      // Find the dataset to update
+      const datasetToUpdate = datasets.find(d => d.id === id);
+      if (!datasetToUpdate) {
+        throw new Error('Dataset not found');
+      }
+
+      const updatedDataset = { ...datasetToUpdate, ...updates };
+
+      // Update in Supabase if user is authenticated
+      if (user) {
+        const { error } = await supabase
+          .from('datasets')
+          .update({
+            preview_data: updatedDataset.preview_data,
+            row_count: updatedDataset.rows,
+            column_count: updatedDataset.columns,
+          })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error updating dataset in Supabase:', error);
+          throw error;
+        }
+      }
+
+      // Update in IndexedDB
+      try {
+        await storage.saveDataset(updatedDataset);
+      } catch (error) {
+        console.warn('⚠️ IndexedDB update failed, continuing anyway:', error);
+      }
+
+      // Update state
+      setDatasets(prev => prev.map(d => d.id === id ? updatedDataset : d));
+    } catch (error) {
+      console.error('Error updating dataset:', error);
+      throw error;
+    }
+  }, [datasets, user]);
+
   const addModel = useCallback((model: MLModel) => {
     setModels(prev => [model, ...prev]);
   }, []);
@@ -227,9 +270,10 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     isLoading,
     error,
     addDataset,
+    updateDataset,
     addModel,
     updateModelStatus,
-  }), [datasets, models, isLoading, error, addDataset, addModel, updateModelStatus]);
+  }), [datasets, models, isLoading, error, addDataset, updateDataset, addModel, updateModelStatus]);
 
   return <MLContext.Provider value={value}>{children}</MLContext.Provider>;
 };
