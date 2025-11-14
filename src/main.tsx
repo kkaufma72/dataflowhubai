@@ -45,10 +45,24 @@ const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-indigo-50/20">
       <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        <p className="mt-4 text-gray-600">Loading...</p>
+        <div className="relative">
+          {/* Outer spinning circle */}
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-indigo-600"></div>
+          
+          {/* Inner pulsing circle */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-8 w-8 bg-indigo-600/20 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+        
+        <p className="mt-6 text-gray-600 font-medium">Loading amazing features...</p>
+        <div className="mt-3 flex items-center justify-center gap-1">
+          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+        </div>
       </div>
     </div>
   );
@@ -110,20 +124,26 @@ if (!isSupabaseConfigured) {
                         <Toaster
                           position="top-right"
                           toastOptions={{
-                            duration: 3000,
+                            duration: 3500,
                             style: {
                               background: '#FFFFFF',
                               color: '#1F2937',
-                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                              borderRadius: '0.375rem',
-                              padding: '0.75rem 1rem',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                              borderRadius: '0.75rem',
+                              padding: '1rem 1.25rem',
+                              fontSize: '0.9375rem',
+                              fontWeight: '500',
+                              maxWidth: '420px',
                             },
                             success: {
                               iconTheme: {
                                 primary: '#10B981',
                                 secondary: '#FFFFFF',
                               },
-                              duration: 3000,
+                              duration: 3500,
+                              style: {
+                                border: '2px solid #10B981',
+                              },
                             },
                             error: {
                               iconTheme: {
