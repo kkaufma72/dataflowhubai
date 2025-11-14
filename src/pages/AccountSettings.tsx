@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const AccountSettings: React.FC = () => {
   const { userProfile, updateUserProfile } = useUser();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'general' | 'security' | 'notifications'>('general');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -256,8 +256,10 @@ const AccountSettings: React.FC = () => {
   // Sign out
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       toast.success('Signed out successfully');
+      // Navigate to sign in page after successful sign out
+      window.location.href = '/signin';
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');
