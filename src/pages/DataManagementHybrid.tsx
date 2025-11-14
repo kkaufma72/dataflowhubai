@@ -17,7 +17,8 @@ import {
   Eye,
   CheckCircle,
   BarChart3,
-  Trash2
+  Trash2,
+  Download
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
@@ -70,6 +71,34 @@ const DataManagementHybrid: React.FC = () => {
         setActiveDatasetId(datasets.find(d => d.id !== dataset.id)?.id || null);
       }
       toast.success('Dataset deleted');
+    }
+  };
+
+  const handleExport = (dataset: Dataset) => {
+    try {
+      if (dataset.preview_data && dataset.preview_data.columns && dataset.preview_data.rows) {
+        // Create CSV content
+        const csv = [
+          dataset.preview_data.columns.join(','),
+          ...dataset.preview_data.rows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${dataset.name}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        toast.success(`Exported ${dataset.name}`);
+      } else {
+        toast.error('No data available to export');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export dataset');
     }
   };
 
@@ -216,6 +245,13 @@ const DataManagementHybrid: React.FC = () => {
                       Data Quality Report
                     </button>
                     <button
+                      onClick={() => handleExport(activeDataset!)}
+                      className="flex-1 px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-5 h-5" />
+                      Export CSV
+                    </button>
+                    <button
                       onClick={() => {
                         setSelectedDataset(activeDataset);
                         setShowChat(true);
@@ -328,6 +364,18 @@ const DataManagementHybrid: React.FC = () => {
                   style={{ backgroundColor: badge.color }}
                   title={`Health: ${health.score}/100`}
                 ></div>
+
+                {/* Export button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleExport(dataset);
+                  }}
+                  className="p-1 rounded hover:bg-indigo-100 opacity-70 hover:opacity-100 transition-all"
+                  title="Export CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
 
                 {/* Close button */}
                 <button

@@ -143,8 +143,7 @@ const Sidebar: React.FC = () => {
           href: '/app/train',
           icon: Brain,
           description: 'Create new models',
-          dataTour: 'train-models',
-          premium: true
+          dataTour: 'train-models'
         },
         {
           name: 'Evaluate',
