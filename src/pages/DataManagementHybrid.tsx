@@ -56,6 +56,11 @@ const DataManagementHybrid: React.FC = () => {
     [datasets, activeDatasetId]
   );
 
+  // Handle upload click
+  const handleUploadClick = () => {
+    setShowUploader(true);
+  };
+
   // Show AI helper on first visit
   useEffect(() => {
     const hasSeenHelper = sessionStorage.getItem('hasSeenDataHelper');
