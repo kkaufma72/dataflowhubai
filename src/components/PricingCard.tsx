@@ -118,7 +118,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           <span className={isPopular ? 'text-white' : 'text-gray-900'}>
             ${monthlyEquivalent}
           </span>
-          <span className={`text-sm ml-2 ${isPopular ? 'text-primary/20' : 'text-gray-500'}`}>
+          <span className={`text-sm ml-2 ${isPopular ? 'text-gray-200' : 'text-gray-500'}`}>
             (${annualPrice}/year)
           </span>
         </div>
@@ -134,9 +134,9 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
   const titleClasses = isPopular ? 'text-white' : 'text-gray-900';
   const priceClasses = isPopular ? 'text-white' : 'text-gray-900';
-  const periodClasses = isPopular ? 'text-primary/20' : 'text-gray-600';
+  const periodClasses = isPopular ? 'text-gray-200' : 'text-gray-600';
   const featureClasses = isPopular ? 'text-white' : 'text-gray-600';
-  const iconClasses = isPopular ? 'text-indigo-300' : 'text-green-500';
+  const iconClasses = isPopular ? 'text-green-400' : 'text-green-500';
 
   return (
     <div className={cardClasses}>

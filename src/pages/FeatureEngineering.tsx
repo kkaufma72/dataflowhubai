@@ -89,8 +89,8 @@ const FeatureEngineering: React.FC = () => {
   if (!selectedDataset) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
-          <Database className="w-6 h-6 text-indigo-600" />
+        <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-lg">
+          <Database className="w-6 h-6 text-blue-600" />
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No datasets available</h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -125,8 +125,8 @@ const FeatureEngineering: React.FC = () => {
 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-50 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-lg mr-4">
+            <Database className="w-6 h-6 text-blue-600" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">{selectedDataset.name}</h2>
