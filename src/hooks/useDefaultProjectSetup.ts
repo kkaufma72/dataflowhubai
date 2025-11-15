@@ -8,11 +8,10 @@ import { useEffect, useState } from 'react';
 import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import toast from 'react-hot-toast';
 
 export const useDefaultProjectSetup = () => {
   const { user } = useAuth();
-  const { datasets, projects, currentProject } = useMLContext();
+  const { datasets } = useMLContext();
   const [isSetupComplete, setIsSetupComplete] = useState(false);
 
   useEffect(() => {
@@ -145,10 +144,7 @@ export const useDefaultProjectSetup = () => {
 
       console.log('✅ Sample datasets created:', createdDatasets?.length);
 
-      // Show welcome message
-      toast.success('🎉 Welcome! Your project is ready with sample data!', {
-        duration: 5000
-      });
+      // Welcome notification removed per user request
 
       setIsSetupComplete(true);
 

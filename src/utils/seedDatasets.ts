@@ -2,7 +2,6 @@
 
 import { supabase } from '../lib/supabase';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
-import toast from 'react-hot-toast';
 
 export const seedEnhancedDatasets = async (userId: string, projectId: string | null = null) => {
   try {
@@ -41,12 +40,12 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
     }
     
     console.log(`Successfully seeded ${data?.length || 0} datasets`);
-    toast.success(`Added ${data?.length || 0} sample datasets with working previews!`);
+    // Toast notification removed per user request
     
     return data;
   } catch (error) {
     console.error('Error in seedEnhancedDatasets:', error);
-    toast.error('Failed to seed sample datasets');
+    // Toast notification removed per user request
     throw error;
   }
 };

@@ -38,10 +38,9 @@ const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDa
 
 // Import DataUploader for real file uploads
 import DataUploader from '../components/data/DataUploader';
-import { useMLContext } from '../context/MLContext';
 
 const DataManagementDark: React.FC = () => {
-  const { datasets, currentProject, addDataset } = useMLContext();
+  const { datasets } = useMLContext();
   const { user } = useAuth();
   const { deleteDataset } = useDatasetActions();
   
@@ -88,10 +87,10 @@ const DataManagementDark: React.FC = () => {
           <div className="flex items-center justify-between">
             {/* Title */}
             <div>
-              <h1 className="text-2xl font-semibold text-white">
+              <h1 className="page-title text-white">
                 Datasets
               </h1>
-              <p className="text-sm text-gray-400 mt-0.5">
+              <p className="section-subtitle text-gray-400 mt-0.5">
                 {filteredDatasets.length} {filteredDatasets.length === 1 ? 'dataset' : 'datasets'}
               </p>
             </div>
@@ -99,7 +98,7 @@ const DataManagementDark: React.FC = () => {
             {/* New Dataset Button - Purple like the reference */}
             <button
               onClick={() => setShowUploader(true)}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="btn-primary-improved"
             >
               <Plus className="w-4 h-4" />
               New Dataset
@@ -122,7 +121,7 @@ const DataManagementDark: React.FC = () => {
             </button>
           </div>
 
-          {/* Search & View Toggle */}
+            {/* Search & View Toggle */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -131,11 +130,9 @@ const DataManagementDark: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="pl-10 pr-4 py-2 bg-[#1A1A1A] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:border-gray-700 focus:outline-none w-64 text-sm"
+                className="form-input-improved bg-[#1A1A1A] border-gray-800 text-white placeholder-gray-500 focus:border-primary-500 w-64"
               />
-            </div>
-
-            {/* View Toggle */}
+            </div>            {/* View Toggle */}
             <div className="flex items-center bg-[#1A1A1A] border border-gray-800 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('table')}
@@ -163,19 +160,19 @@ const DataManagementDark: React.FC = () => {
 
         {/* Empty State */}
         {datasets.length === 0 && (
-          <div className="bg-[#1A1A1A] border border-gray-800 rounded-lg p-16 text-center">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Database className="w-8 h-8 text-gray-500" />
+          <div className="card-improved bg-[#1A1A1A] border-gray-800 p-16 text-center">
+            <div className="icon-container-primary w-20 h-20 mx-auto mb-4">
+              <Database className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="section-title text-white mb-2">
               No datasets yet
             </h3>
-            <p className="text-gray-400 mb-6">
+            <p className="body-text text-gray-400 mb-6">
               Upload your first dataset to get started
             </p>
             <button
               onClick={() => setShowUploader(true)}
-              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-2"
+              className="btn-primary-improved"
             >
               <Upload className="w-4 h-4" />
               Upload Dataset

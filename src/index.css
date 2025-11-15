@@ -1,6 +1,9 @@
 /* Import design system - MUST be first */
 @import './styles/designSystem.css';
 
+/* Import UI improvements */
+@import './styles/uiImprovements.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -73,20 +73,20 @@ const PricingPage: React.FC = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary-600 to-primary-600">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-4">
-            <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded-full font-semibold text-sm shadow-md">
+            <span className="badge-pro shadow-md">
               🎯 BETA PRICING - Early Adopter Benefits
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h1 className="page-title text-white mb-6">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-xl text-primary/10 mb-4">
+          <p className="page-subtitle text-primary-100 mb-4">
             Start free forever, upgrade when you need more
           </p>
-          <p className="text-primary/20">
+          <p className="body-text text-primary-200">
             No credit card required • Free tier always available
           </p>
-          <p className="text-sm text-primary/20 mt-3">
+          <p className="section-subtitle text-primary-200 mt-3">
             Beta users get grandfathered into special lifetime pricing
           </p>
         </div>

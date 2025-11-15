@@ -206,11 +206,34 @@ const Sidebar: React.FC = () => {
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
         {!isCollapsed && (
           <Link to="/app" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">DF</span>
-            </div>
+            <svg viewBox="0 0 800 800" className="w-8 h-8">
+              <defs>
+                <linearGradient id="sidebar-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#5B21B6', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
+              <path d="M 100 200 L 100 650 L 350 650 C 500 650 600 550 600 425 C 600 300 500 200 350 200 Z M 200 300 L 350 300 C 430 300 480 350 480 425 C 480 500 430 550 350 550 L 200 550 Z" 
+                    fill="url(#sidebar-logo-gradient)"/>
+              <line x1="500" y1="250" x2="650" y2="250" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="300" x2="650" y2="300" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="350" x2="650" y2="350" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="400" x2="650" y2="400" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="450" x2="650" y2="450" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="500" x2="650" y2="500" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="550" x2="650" y2="550" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <line x1="500" y1="600" x2="650" y2="600" stroke="url(#sidebar-logo-gradient)" strokeWidth="8"/>
+              <circle cx="650" cy="250" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="300" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="350" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="400" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="450" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="500" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="550" r="15" fill="url(#sidebar-logo-gradient)"/>
+              <circle cx="650" cy="600" r="15" fill="url(#sidebar-logo-gradient)"/>
+            </svg>
             <span className="text-lg font-bold text-white">
-              DataFlowHub
+              DataFlowHub.AI
             </span>
           </Link>
         )}

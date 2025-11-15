@@ -29,10 +29,33 @@ const LandingPageLinear: React.FC = () => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">DF</span>
-              </div>
-              <span className="text-xl font-semibold text-gray-900">DataFlowHub</span>
+              <svg viewBox="0 0 800 800" className="w-8 h-8">
+                <defs>
+                  <linearGradient id="landing-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#5B21B6', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#7C3AED', stopOpacity: 1 }} />
+                  </linearGradient>
+                </defs>
+                <path d="M 100 200 L 100 650 L 350 650 C 500 650 600 550 600 425 C 600 300 500 200 350 200 Z M 200 300 L 350 300 C 430 300 480 350 480 425 C 480 500 430 550 350 550 L 200 550 Z" 
+                      fill="url(#landing-logo-gradient)"/>
+                <line x1="500" y1="250" x2="650" y2="250" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="300" x2="650" y2="300" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="350" x2="650" y2="350" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="400" x2="650" y2="400" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="450" x2="650" y2="450" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="500" x2="650" y2="500" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="550" x2="650" y2="550" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <line x1="500" y1="600" x2="650" y2="600" stroke="url(#landing-logo-gradient)" strokeWidth="8"/>
+                <circle cx="650" cy="250" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="300" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="350" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="400" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="450" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="500" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="550" r="15" fill="url(#landing-logo-gradient)"/>
+                <circle cx="650" cy="600" r="15" fill="url(#landing-logo-gradient)"/>
+              </svg>
+              <span className="text-xl font-semibold text-gray-900">DataFlowHub.AI</span>
             </div>
 
             {/* Navigation Links - Desktop */}
@@ -138,13 +161,13 @@ const LandingPageLinear: React.FC = () => {
 
         <div className="relative max-w-6xl mx-auto text-center">
           {/* Beta Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-full mb-8 hover:shadow-lg transition-shadow">
+          <div className="badge-premium inline-flex items-center gap-2 mb-8 hover:shadow-lg transition-shadow">
             <Sparkles className="w-4 h-4 text-indigo-600" />
-            <span className="text-sm font-semibold text-indigo-700">Powered by Advanced AI • Enterprise Ready</span>
+            <span className="text-sm font-semibold">Powered by Advanced AI • Enterprise Ready</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight text-gray-900 mb-8">
+          <h1 className="page-title text-5xl sm:text-6xl lg:text-7xl leading-[1.08]">
             Build ML Models
             <br />
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -153,7 +176,7 @@ const LandingPageLinear: React.FC = () => {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto mb-12 leading-relaxed">
+          <p className="page-subtitle text-xl sm:text-2xl max-w-3xl mx-auto mb-12">
             Enterprise AutoML platform that transforms how businesses build, deploy, and scale machine learning models. 
             <span className="block mt-2 font-semibold text-gray-700">
               Go from raw data to production in minutes, not months.
@@ -164,15 +187,15 @@ const LandingPageLinear: React.FC = () => {
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-700">10K+ datasets processed</span>
+              <span className="label-text text-gray-700">10K+ datasets processed</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-700">500+ models deployed</span>
+              <span className="label-text text-gray-700">500+ models deployed</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-700">95% faster than traditional ML</span>
+              <span className="label-text text-gray-700">95% faster than traditional ML</span>
             </div>
           </div>
 
@@ -180,7 +203,7 @@ const LandingPageLinear: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <Link
               to="/product-tour"
-              className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-lg rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all shadow-xl hover:shadow-2xl hover:scale-105 transform flex items-center justify-center gap-3"
+              className="btn-primary-improved w-full sm:w-auto text-lg flex items-center justify-center gap-3"
             >
               <Sparkles className="w-5 h-5" />
               See Interactive Demo
@@ -188,7 +211,7 @@ const LandingPageLinear: React.FC = () => {
             </Link>
             <Link
               to="/signin"
-              className="group w-full sm:w-auto px-8 py-4 bg-white border-2 border-gray-900 text-gray-900 font-bold text-lg rounded-xl hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              className="btn-secondary-improved w-full sm:w-auto text-lg flex items-center justify-center gap-2"
             >
               Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -217,10 +240,10 @@ const LandingPageLinear: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="section-title mb-4">
               Built for modern teams
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="page-subtitle max-w-2xl mx-auto">
               Everything you need to understand your data and make better decisions
             </p>
           </div>
@@ -228,79 +251,79 @@ const LandingPageLinear: React.FC = () => {
           {/* Feature Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <MessageSquare className="w-6 h-6 text-indigo-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-info mb-4 group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 Natural language queries
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Ask questions in plain English. No SQL, Python, or formulas required.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-6 h-6 text-purple-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-primary mb-4 group-hover:scale-110 transition-transform">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 AI-powered transformations
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Clean and transform data with simple commands. Undo/redo at any time.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-6 h-6 text-pink-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-warning mb-4 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 Instant visualizations
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Beautiful charts generated automatically. Interactive and exportable.
               </p>
             </div>
 
             {/* Feature 4 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Shield className="w-6 h-6 text-green-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-success mb-4 group-hover:scale-110 transition-transform">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 Data quality scoring
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Instant 0-100 score tells you if your data is ready to use.
               </p>
             </div>
 
             {/* Feature 5 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Zap className="w-6 h-6 text-amber-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-warning mb-4 group-hover:scale-110 transition-transform">
+                <Zap className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 One-click ML models
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Train machine learning models without writing code. Just select your target.
               </p>
             </div>
 
             {/* Feature 6 */}
-            <div className="group p-8 bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <MessageSquare className="w-6 h-6 text-blue-600" />
+            <div className="card-improved group hover:shadow-lg">
+              <div className="icon-container-info mb-4 group-hover:scale-110 transition-transform">
+                <MessageSquare className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="card-title mb-2">
                 Industry-specific AI
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="body-text text-sm">
                 Personalized for your role. Accountant, marketer, or CEO - AI adapts to you.
               </p>
             </div>
@@ -312,10 +335,10 @@ const LandingPageLinear: React.FC = () => {
       <section className="py-20 px-6 bg-gradient-to-b from-white to-gray-50/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="section-title mb-4">
               Connect your entire data stack
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="page-subtitle max-w-2xl mx-auto">
               Seamlessly integrate with cloud platforms and databases you're already using
             </p>
           </div>

@@ -25,7 +25,7 @@ import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import DataUploader from '../components/data/DataUploader';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
-import { useDefaultProjectSetup } from '../hooks/useDefaultProjectSetup';
+// Removed useDefaultProjectSetup - notification disabled per user request
 
 // Lazy load heavy components
 const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
@@ -37,8 +37,7 @@ const DataManagementHybrid: React.FC = () => {
   const { user } = useAuth();
   const { deleteDataset } = useDatasetActions();
   
-  // Auto-setup default project with sample datasets for new users
-  useDefaultProjectSetup();
+  // Auto-setup disabled - notification removed per user request
   
   const [activeDatasetId, setActiveDatasetId] = useState<string | null>(
     datasets.length > 0 ? datasets[0].id : null

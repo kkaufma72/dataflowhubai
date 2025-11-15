@@ -138,31 +138,7 @@ const Dashboard: React.FC = () => {
     setWorkflowSteps(steps);
   }, [datasets, models]);
   
-  // Show welcome notification on first load
-  useEffect(() => {
-    if (!isLoading && currentProject) {
-      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
-      if (!hasVisitedBefore) {
-        // Show contextual welcome based on whether user has data
-        if (datasets.length > 0) {
-          addNotification({
-            type: 'success',
-            title: '🎉 Welcome! Sample data loaded',
-            message: 'We\'ve loaded sample datasets to help you get started. Click on a dataset to explore or upload your own!',
-            duration: 8000
-          });
-        } else {
-          addNotification({
-            type: 'info',
-            title: 'Welcome to DataFlowHub AI',
-            message: 'Get started by uploading a dataset or use the "Add Sample Data" button to explore features.',
-            duration: 6000
-          });
-        }
-        localStorage.setItem('hasVisitedDashboard', 'true');
-      }
-    }
-  }, [isLoading, currentProject, datasets.length, addNotification]);
+  // Welcome notification removed per user request
   
   // Determine the next recommended step
   const getNextStep = () => {
