@@ -200,10 +200,10 @@ const DataManagementHybrid: React.FC = () => {
 
                     <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-primary-700 uppercase">Columns</span>
-                        <Database className="w-5 h-5 text-primary-600" />
+                        <span className="text-sm font-semibold text-indigo-700 uppercase">Columns</span>
+                        <Database className="w-5 h-5 text-indigo-600" />
                       </div>
-                      <div className="text-3xl font-bold text-primary-900">
+                      <div className="text-3xl font-bold text-indigo-900">
                         {activeDataset.column_count || activeDataset.preview_data?.columns?.length || 12}
                       </div>
                     </div>
@@ -256,7 +256,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowTransform(true);
                       }}
-                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-primary-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-indigo-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <BarChart3 className="w-5 h-5" />
                       Transform
@@ -272,7 +272,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowChat(true);
                       }}
-                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-primary-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-indigo-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <Sparkles className="w-5 h-5" />
                       Ask AI
@@ -296,7 +296,7 @@ const DataManagementHybrid: React.FC = () => {
                       <h4 className="text-sm font-bold text-gray-900 truncate">
                         {col}
                       </h4>
-                      <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary-700 rounded-full font-semibold">
+                      <span className="text-xs px-2 py-0.5 bg-primary/10 text-indigo-700 rounded-full font-semibold">
                         Column {idx + 1}
                       </span>
                     </div>
