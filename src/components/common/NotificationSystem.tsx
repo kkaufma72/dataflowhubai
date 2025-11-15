@@ -307,7 +307,7 @@ export const NotificationCenter: React.FC = () => {
   return (
     <div className="relative" aria-live="polite">
       <button
-        className="relative p-1 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="relative p-1 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={unreadCount > 0 ? `View notifications (${unreadCount} unread)` : "View notifications"}
         aria-haspopup="true"
@@ -335,7 +335,7 @@ export const NotificationCenter: React.FC = () => {
               {notifications.length > 0 && (
                 <button
                   onClick={unreadCount > 0 ? markAllAsRead : clearAll}
-                  className="text-xs text-indigo-600 hover:text-indigo-500 px-2 py-1 rounded hover:bg-indigo-50"
+                  className="text-xs text-primary-600 hover:text-primary px-2 py-1 rounded hover:bg-primary/5"
                   aria-label={unreadCount > 0 ? "Mark all notifications as read" : "Clear all notifications"}
                 >
                   {unreadCount > 0 ? 'Mark all as read' : 'Clear all'}

@@ -44,7 +44,7 @@ const DraggableDatasetCard: React.FC<DraggableDatasetCardProps> = ({
       className={`
         group relative bg-white border-2 border-gray-200 rounded-lg p-3 
         transition-all duration-200 cursor-move
-        hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5
+        hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5
         ${isDragging ? 'opacity-50 rotate-2 scale-95' : 'opacity-100'}
       `}
     >
@@ -72,11 +72,11 @@ const DraggableDatasetCard: React.FC<DraggableDatasetCardProps> = ({
       <div className="pl-6">
         {/* Icon & Title */}
         <div className="flex items-center space-x-2 mb-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
             <Database className="w-4 h-4 text-blue-600" />
           </div>
           <h4 
-            className="text-sm font-semibold text-gray-900 line-clamp-1 cursor-pointer hover:text-indigo-600"
+            className="text-sm font-semibold text-gray-900 line-clamp-1 cursor-pointer hover:text-primary-600"
             onClick={() => onPreview?.(dataset)}
           >
             {dataset.name}

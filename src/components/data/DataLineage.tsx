@@ -491,8 +491,8 @@ const DataLineage: React.FC<DataLineageProps> = ({
       <Card className={isFullscreen ? 'h-full' : ''}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-              <GitBranch className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+              <GitBranch className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-900">Data Lineage</h3>
@@ -556,7 +556,7 @@ const DataLineage: React.FC<DataLineageProps> = ({
           <div className="absolute bottom-4 left-4 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-indigo-500 mr-1"></div>
+                <div className="w-3 h-3 rounded-full bg-primary mr-1"></div>
                 <span className="text-xs text-gray-600">Dataset</span>
               </div>
               <div className="flex items-center">
@@ -638,7 +638,7 @@ const DataLineage: React.FC<DataLineageProps> = ({
                       const sourceNode = nodes.find(n => n.id === edge.source);
                       return (
                         <div key={edge.id} className="flex items-center p-2 bg-white rounded border border-gray-200">
-                          <div className="w-2 h-2 rounded-full bg-indigo-500 mr-2"></div>
+                          <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
                           <span className="text-sm text-gray-900">{sourceNode?.name || edge.source}</span>
                           {edge.label && (
                             <span className="ml-2 text-xs text-gray-500">({edge.label})</span>

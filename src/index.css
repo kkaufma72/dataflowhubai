@@ -148,8 +148,9 @@ button {
 }
 
 /* Primary buttons */
-.bg-indigo-600 {
-  @apply text-white;
+/* Primary button gradient - enterprise indigo */
+.bg-primary-600 {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
 }
 
 /* Secondary buttons */
@@ -162,8 +163,9 @@ button {
   @apply text-base leading-relaxed text-gray-800;
 }
 
-.readable-heading {
-  @apply text-2xl font-bold text-purple-600 mb-4;
+/* Error Pages */
+.error-title {
+  @apply text-2xl font-bold text-primary mb-4;
 }
 
 .readable-card {

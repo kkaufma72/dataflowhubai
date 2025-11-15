@@ -157,7 +157,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
       <div className="border-b border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -174,7 +174,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
             <select
               value={selectedDataset}
               onChange={(e) => setSelectedDataset(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white"
             >
               <option value="">All Datasets ({datasets.length})</option>
               {datasets.map((dataset) => (
@@ -198,8 +198,8 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full space-y-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center">
-              <BarChart3 className="w-10 h-10 text-indigo-600" />
+            <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/10 rounded-2xl flex items-center justify-center">
+              <BarChart3 className="w-10 h-10 text-primary-600" />
             </div>
             <div className="text-center max-w-md">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -213,7 +213,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
             {/* Sample Questions */}
             <div className="w-full max-w-2xl">
               <p className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                <Sparkles className="w-4 h-4 mr-2 text-indigo-500" />
+                <Sparkles className="w-4 h-4 mr-2 text-primary" />
                 Try asking:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -221,9 +221,9 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
                   <button
                     key={idx}
                     onClick={() => handleQuickQuestion(question)}
-                    className="text-left px-4 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all text-sm text-gray-700 hover:text-indigo-700 group"
+                    className="text-left px-4 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-sm text-gray-700 hover:text-primary-700 group"
                   >
-                    <TrendingUp className="w-4 h-4 inline mr-2 text-gray-400 group-hover:text-indigo-500" />
+                    <TrendingUp className="w-4 h-4 inline mr-2 text-gray-400 group-hover:text-primary" />
                     {question}
                   </button>
                 ))}
@@ -236,7 +236,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] px-4 py-3 rounded-2xl shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white'
+                    ? 'bg-gradient-to-br from-primary-600 to-primary-600 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
                 }`}>
                   <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -247,7 +247,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
               <div className="flex justify-start">
                 <div className="max-w-[80%] px-4 py-3 rounded-2xl bg-white border border-gray-200">
                   <div className="flex items-center space-x-2">
-                    <Loader className="w-4 h-4 animate-spin text-indigo-600" />
+                    <Loader className="w-4 h-4 animate-spin text-primary-600" />
                     <span className="text-sm text-gray-600">Analyzing your data...</span>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
               <button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 rounded-full transition-colors"
+                className="px-3 py-1 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary-700 rounded-full transition-colors"
               >
                 {question}
               </button>
@@ -283,12 +283,12 @@ Provide clear, actionable insights tailored to the user's use case. When suggest
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder={selectedDataset ? "Ask about this dataset..." : "Ask about your data..."}
             disabled={loading}
-            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
           />
           <button
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl disabled:hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
+            className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-xl hover:from-primary-700 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl disabled:hover:shadow-lg transform hover:scale-105 disabled:hover:scale-100"
           >
             {loading ? (
               <Loader className="w-5 h-5 animate-spin" />

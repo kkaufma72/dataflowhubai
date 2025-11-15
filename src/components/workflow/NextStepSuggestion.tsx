@@ -20,8 +20,8 @@ const NextStepSuggestion: React.FC<NextStepSuggestionProps> = ({
     <Card className="transition-all hover:shadow-md">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Icon className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Icon className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">{title}</h3>
@@ -30,7 +30,7 @@ const NextStepSuggestion: React.FC<NextStepSuggestionProps> = ({
         </div>
         <Link
           to={href}
-          className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
+          className="flex items-center text-sm font-medium text-primary-600 hover:text-primary"
         >
           Continue <ArrowRight className="w-4 h-4 ml-1" />
         </Link>

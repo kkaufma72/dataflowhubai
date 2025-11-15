@@ -99,7 +99,7 @@ const DataManagementDark: React.FC = () => {
             {/* New Dataset Button - Purple like the reference */}
             <button
               onClick={() => setShowUploader(true)}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               New Dataset
@@ -175,7 +175,7 @@ const DataManagementDark: React.FC = () => {
             </p>
             <button
               onClick={() => setShowUploader(true)}
-              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-2"
+              className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
               Upload Dataset
@@ -277,7 +277,7 @@ const DataManagementDark: React.FC = () => {
                             setSelectedDataset(dataset);
                             setShowChat(true);
                           }}
-                          className="p-1.5 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-primary-400 hover:bg-primary/10 rounded transition-colors"
                           title="AI Chat"
                         >
                           <Sparkles className="w-4 h-4" />
@@ -343,7 +343,7 @@ const DataManagementDark: React.FC = () => {
                       setSelectedDataset(dataset);
                       setShowChat(true);
                     }}
-                    className="flex-1 px-3 py-2 bg-purple-600/10 border border-purple-500/20 text-purple-400 hover:bg-purple-600/20 hover:border-purple-500/40 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-3 py-2 bg-primary-600/10 border border-primary/20 text-primary-400 hover:bg-primary-600/20 hover:border-primary/40 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4" />
                     AI Chat
@@ -503,7 +503,7 @@ const DataManagementDark: React.FC = () => {
                     setShowPreview(false);
                     setShowChat(true);
                   }}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   Ask AI About This Data

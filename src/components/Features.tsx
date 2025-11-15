@@ -84,7 +84,7 @@ const Features = () => {
               <div className="feature-icon-wrapper" aria-hidden="true">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-indigo-600 transition-colors duration-300">
+              <h3 className="text-xl font-semibold mb-2 group-hover:text-primary-600 transition-colors duration-300">
                 {feature.title}
               </h3>
               <p className="text-gray-600">
@@ -109,7 +109,7 @@ const Features = () => {
               <div className="bg-white rounded-xl shadow-md p-4 aspect-video flex items-center justify-center">
                 <div className="relative w-full h-full bg-gray-200 rounded-lg overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center cursor-pointer">
+                    <div className="w-16 h-16 rounded-full bg-primary-600 flex items-center justify-center cursor-pointer">
                       <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                       </svg>

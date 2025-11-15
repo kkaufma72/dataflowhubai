@@ -63,7 +63,7 @@ const DatasetOrganizer: React.FC<DatasetOrganizerProps> = ({
     <DndProvider backend={HTML5Backend}>
       <div className="space-y-6">
         {/* Header */}
-        <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/5 border-primary/20">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-gray-900">
@@ -80,7 +80,7 @@ const DatasetOrganizer: React.FC<DatasetOrganizerProps> = ({
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded transition-colors ${
                     viewMode === 'grid'
-                      ? 'bg-indigo-100 text-indigo-600'
+                      ? 'bg-primary/10 text-primary-600'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -90,7 +90,7 @@ const DatasetOrganizer: React.FC<DatasetOrganizerProps> = ({
                   onClick={() => setViewMode('list')}
                   className={`p-2 rounded transition-colors ${
                     viewMode === 'list'
-                      ? 'bg-indigo-100 text-indigo-600'
+                      ? 'bg-primary/10 text-primary-600'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -119,7 +119,7 @@ const DatasetOrganizer: React.FC<DatasetOrganizerProps> = ({
                   value={newBucketName}
                   onChange={(e) => setNewBucketName(e.target.value)}
                   placeholder="Bucket name..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && handleCreateBucket()}
                 />
                 <Button onClick={handleCreateBucket} size="sm">

@@ -225,22 +225,22 @@ const DataQualityDashboard: React.FC<DataQualityDashboardProps> = ({ dataset, on
       case 'text':
         return <Type className="w-4 h-4 text-gray-600" />;
       case 'date':
-        return <Calendar className="w-4 h-4 text-purple-600" />;
+        return <Calendar className="w-4 h-4 text-primary-600" />;
       case 'categorical':
         return <BarChart3 className="w-4 h-4 text-green-600" />;
       case 'boolean':
-        return <CheckCircle className="w-4 h-4 text-indigo-600" />;
+        return <CheckCircle className="w-4 h-4 text-primary-600" />;
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Overall Score */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 border border-indigo-100">
+      <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-lg p-6 border border-primary/10">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2 mb-2">
-              <Sparkles className="w-6 h-6 text-indigo-600" />
+              <Sparkles className="w-6 h-6 text-primary-600" />
               <h3 className="text-lg font-semibold text-gray-900">Data Quality Score</h3>
             </div>
             <p className="text-sm text-gray-600">

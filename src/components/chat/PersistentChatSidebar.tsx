@@ -165,11 +165,11 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-indigo-50 to-purple-50">
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-primary/5">
           {!isMinimized && (
             <>
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-indigo-600" />
+                <Sparkles className="w-5 h-5 text-primary-600" />
                 <div>
                   <h3 className="font-semibold text-gray-900">AI Assistant</h3>
                   {dataset && (
@@ -209,7 +209,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
           {isMinimized && (
             <button
               onClick={() => setIsMinimized(false)}
-              className="w-full p-3 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="w-full p-3 text-primary-600 hover:bg-primary/5 rounded-lg transition-colors"
               title="Open chat"
             >
               <Sparkles className="w-6 h-6 mx-auto" />
@@ -241,7 +241,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
                         <button
                           key={idx}
                           onClick={() => handleSendMessage(question)}
-                          className="w-full text-left px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-gray-700"
+                          className="w-full text-left px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-colors text-gray-700"
                         >
                           {question}
                         </button>
@@ -258,7 +258,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
                     <div
                       className={`max-w-[85%] rounded-lg px-4 py-3 relative group ${
                         message.role === 'user'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-primary-600 text-white'
                           : 'bg-white border border-gray-200 text-gray-900'
                       }`}
                     >
@@ -321,7 +321,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
                       onChange={(e) => setCurrentQuestion(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Ask a question about your data..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                       rows={1}
                       style={{ minHeight: '44px', maxHeight: '120px' }}
                       disabled={isLoading}
@@ -335,7 +335,7 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
                   <button
                     onClick={() => handleSendMessage()}
                     disabled={isLoading || !currentQuestion.trim()}
-                    className="p-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                    className="p-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                     title="Send message"
                   >
                     <Send className="w-5 h-5" />

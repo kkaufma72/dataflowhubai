@@ -216,7 +216,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
               onClick={() => setActiveTab('profile')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'profile'
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-primary text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -226,7 +226,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
               onClick={() => setActiveTab('pipeline')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'pipeline'
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-primary text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -236,7 +236,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
               onClick={() => setActiveTab('batch')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'batch'
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-primary text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -246,7 +246,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
               onClick={() => setActiveTab('streaming')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'streaming'
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-primary text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -267,8 +267,8 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
         <Card>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                <Wand2 className="w-6 h-6 text-indigo-600" />
+              <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+                <Wand2 className="w-6 h-6 text-primary-600" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-900">Preprocessing Pipeline</h3>
@@ -325,7 +325,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-missing-values" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -348,7 +348,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             strategy: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="drop_rows">Drop Rows</option>
                         <option value="drop_columns">Drop Columns</option>
@@ -374,7 +374,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                               constantValue: e.target.value
                             }
                           })}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           placeholder="Value to use for imputation"
                         />
                       </div>
@@ -397,7 +397,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             threshold: parseFloat(e.target.value)
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       />
                       <p className="mt-1 text-xs text-gray-500">
                         Threshold for dropping columns (if strategy is 'drop_columns')
@@ -431,7 +431,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-outliers" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -454,7 +454,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             method: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="z_score">Z-Score</option>
                         <option value="iqr">IQR (Interquartile Range)</option>
@@ -475,7 +475,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             strategy: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="remove">Remove Outliers</option>
                         <option value="cap">Cap Outliers</option>
@@ -500,7 +500,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             threshold: parseFloat(e.target.value)
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       />
                       <p className="mt-1 text-xs text-gray-500">
                         {preprocessingOptions.outliers.method === 'z_score' 
@@ -537,7 +537,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-encoding" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -560,7 +560,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             strategy: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="one_hot">One-Hot Encoding</option>
                         <option value="label">Label Encoding</option>
@@ -581,7 +581,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             handleUnknown: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="error">Raise Error</option>
                         <option value="ignore">Ignore</option>
@@ -614,7 +614,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-scaling" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -636,7 +636,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           strategy: e.target.value as any
                         }
                       })}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     >
                       <option value="standard">Standard Scaling (Z-score)</option>
                       <option value="min_max">Min-Max Scaling</option>
@@ -682,7 +682,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-feature-selection" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -705,7 +705,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             strategy: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="variance">Variance Threshold</option>
                         <option value="k_best">Select K Best</option>
@@ -731,7 +731,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                               threshold: parseFloat(e.target.value)
                             }
                           })}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                         />
                       </div>
                     )}
@@ -753,7 +753,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                               k: parseInt(e.target.value)
                             }
                           })}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                         />
                       </div>
                     )}
@@ -776,7 +776,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                               threshold: parseFloat(e.target.value)
                             }
                           })}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                         />
                       </div>
                     )}
@@ -807,7 +807,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                           setPreprocessingOptions(rest);
                         }
                       }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     />
                     <label htmlFor="enable-dim-reduction" className="ml-2 block text-sm text-gray-900">
                       Enable
@@ -830,7 +830,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             strategy: e.target.value as any
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       >
                         <option value="pca">PCA</option>
                         <option value="tsne">t-SNE</option>
@@ -854,7 +854,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                             components: parseInt(e.target.value)
                           }
                         })}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       />
                     </div>
                   </div>
@@ -870,7 +870,7 @@ const PreprocessingPipeline: React.FC<PreprocessingPipelineProps> = ({
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full">
                   <div 
-                    className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                    className="h-full bg-primary-600 rounded-full transition-all duration-300"
                     style={{ width: `${processingProgress}%` }}
                   />
                 </div>

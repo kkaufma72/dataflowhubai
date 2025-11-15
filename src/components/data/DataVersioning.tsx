@@ -156,8 +156,8 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <GitBranch className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <GitBranch className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Data Versioning</h3>
@@ -197,7 +197,7 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
                 Description
               </label>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 rows={3}
                 value={versionDescription}
                 onChange={(e) => setVersionDescription(e.target.value)}
@@ -222,7 +222,7 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
           <div
             key={version.id}
             className={`p-4 border rounded-lg ${
-              selectedVersion === version.id ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200'
+              selectedVersion === version.id ? 'bg-primary/5 border-primary/20' : 'bg-white border-gray-200'
             } ${index === 0 ? 'bg-green-50 border-green-200' : ''}`}
           >
             <div className="flex items-center justify-between">
@@ -230,7 +230,7 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
                 {index === 0 ? (
                   <GitCommit className="w-5 h-5 text-green-600 mr-2" />
                 ) : (
-                  <GitMerge className="w-5 h-5 text-indigo-600 mr-2" />
+                  <GitMerge className="w-5 h-5 text-primary-600 mr-2" />
                 )}
                 <div>
                   <div className="flex items-center">
@@ -258,7 +258,7 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
                   type="checkbox"
                   checked={compareVersions.includes(version.id)}
                   onChange={() => handleCompareSelect(version.id)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                 />
                 {index !== 0 && (
                   <Button
@@ -370,7 +370,7 @@ const DataVersioning: React.FC<DataVersioningProps> = ({
               return (
                 <div key={versionId} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center mb-3">
-                    <GitCommit className="w-5 h-5 text-indigo-600 mr-2" />
+                    <GitCommit className="w-5 h-5 text-primary-600 mr-2" />
                     <h5 className="text-sm font-medium text-gray-900">Version {version.version}</h5>
                   </div>
                   

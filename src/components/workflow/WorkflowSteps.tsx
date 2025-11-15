@@ -39,7 +39,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
       case 'completed':
         return 'bg-green-500';
       case 'current':
-        return 'bg-indigo-600';
+        return 'bg-primary-600';
       case 'error':
         return 'bg-red-500';
       default:
@@ -52,7 +52,7 @@ const WorkflowSteps: React.FC<WorkflowStepsProps> = ({
       case 'completed':
         return 'text-green-600';
       case 'current':
-        return 'text-indigo-600';
+        return 'text-primary-600';
       case 'error':
         return 'text-red-600';
       default:

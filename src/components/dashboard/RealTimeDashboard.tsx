@@ -63,8 +63,8 @@ const RealTimeDashboard: React.FC = () => {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-              <BarChart2 className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+              <BarChart2 className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Active Models</p>
@@ -78,7 +78,7 @@ const RealTimeDashboard: React.FC = () => {
             </div>
             <div className="w-full h-2 mt-1 bg-gray-200 rounded-full">
               <div 
-                className="h-2 bg-indigo-600 rounded-full" 
+                className="h-2 bg-primary-600 rounded-full" 
                 style={{ width: `${metrics.modelAccuracy * 100}%` }}
               ></div>
             </div>
@@ -111,8 +111,8 @@ const RealTimeDashboard: React.FC = () => {
 
         <Card>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-              <Zap className="w-6 h-6 text-purple-600" />
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+              <Zap className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">API Calls (24h)</p>
@@ -130,7 +130,7 @@ const RealTimeDashboard: React.FC = () => {
             </div>
             <div className="w-full h-2 mt-1 bg-gray-200 rounded-full">
               <div 
-                className="h-2 bg-purple-600 rounded-full" 
+                className="h-2 bg-primary-600 rounded-full" 
                 style={{ width: `${Math.min(100, (metrics.responseTime / 200) * 100)}%` }}
               ></div>
             </div>
@@ -193,9 +193,9 @@ const RealTimeDashboard: React.FC = () => {
           <h3 className="text-sm font-medium text-gray-700 mb-4">Recent Activity</h3>
           <div className="space-y-4">
             {[
-              { time: '10 minutes ago', event: 'Model "Customer Churn Predictor" deployed', icon: Zap, color: 'text-indigo-500' },
+              { time: '10 minutes ago', event: 'Model "Customer Churn Predictor" deployed', icon: Zap, color: 'text-primary' },
               { time: '25 minutes ago', event: 'New dataset "Sales Q2 2025" uploaded', icon: Database, color: 'text-green-500' },
-              { time: '1 hour ago', event: 'Model training completed with 92% accuracy', icon: BarChart2, color: 'text-purple-500' },
+              { time: '1 hour ago', event: 'Model training completed with 92% accuracy', icon: BarChart2, color: 'text-primary' },
               { time: '2 hours ago', event: 'API rate limit increased to 10,000 req/min', icon: Activity, color: 'text-blue-500' },
               { time: '3 hours ago', event: 'System maintenance completed', icon: Server, color: 'text-amber-500' },
             ].map((activity, index) => {

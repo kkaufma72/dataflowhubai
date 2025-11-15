@@ -55,13 +55,13 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select project"
       >
         <div className="flex items-center">
-          <FolderOpen className="w-5 h-5 mr-2 text-indigo-500" />
+          <FolderOpen className="w-5 h-5 mr-2 text-primary" />
           <span className="truncate max-w-[200px]">{currentProject?.name || 'Select Project'}</span>
         </div>
         <ChevronDown className="w-5 h-5 ml-2 -mr-1 text-gray-400" aria-hidden="true" />
@@ -78,7 +78,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
               <button
                 key={project.id}
                 className={`block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${
-                  currentProject?.id === project.id ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700'
+                  currentProject?.id === project.id ? 'bg-primary/5 text-primary-700' : 'text-gray-700'
                 }`}
                 onClick={() => handleSelectProject(project)}
                 role="option"
@@ -86,7 +86,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
               >
                 <div className="flex items-center">
                   <FolderOpen className={`w-4 h-4 mr-2 ${
-                    currentProject?.id === project.id ? 'text-indigo-500' : 'text-gray-400'
+                    currentProject?.id === project.id ? 'text-primary' : 'text-gray-400'
                   }`} />
                   <div className="flex-1 truncate">
                     <div className="font-medium">{project.name}</div>
@@ -100,7 +100,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onNewProject }) => {
           </div>
           <div className="border-t border-gray-100">
             <button
-              className="flex items-center w-full px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50"
+              className="flex items-center w-full px-4 py-2 text-sm text-primary-600 hover:bg-primary/5"
               aria-label="Create new project"
               onClick={() => {
                 setIsOpen(false);

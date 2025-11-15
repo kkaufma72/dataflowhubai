@@ -180,7 +180,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
       case 'categorical':
         return 'bg-green-100 text-green-800';
       case 'datetime':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-primary/10 text-primary-800';
       case 'text':
         return 'bg-amber-100 text-amber-800';
       default:
@@ -203,7 +203,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
           <input
             type="text"
             placeholder="Search features..."
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -214,7 +214,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as any)}
-              className="pl-3 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+              className="pl-3 pr-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary appearance-none"
             >
               <option value="all">All Types</option>
               <option value="numeric">Numeric</option>
@@ -303,7 +303,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                     checked={selectedFeatures.includes(feature.name)}
                     onChange={() => onFeatureToggle(feature.name)}
                   />
@@ -320,7 +320,7 @@ const FeatureSelectionTable: React.FC<FeatureSelectionTableProps> = ({
                   <div className="flex items-center">
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div 
-                        className="bg-indigo-600 h-2.5 rounded-full" 
+                        className="bg-primary-600 h-2.5 rounded-full" 
                         style={{ width: `${getFeatureImportance(feature.name) * 100}%` }}
                       ></div>
                     </div>

@@ -43,8 +43,8 @@ const DraggableDataset: React.FC<DraggableDatasetProps> = ({
     >
       <Card className="hover:shadow-md">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Database className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Database className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">{dataset.name ?? 'Untitled Dataset'}</h3>

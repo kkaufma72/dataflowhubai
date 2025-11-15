@@ -57,7 +57,7 @@ const SAMPLE_DATASETS = [
   {
     id: 'magic-customer-data',
     icon: <Users className="w-8 h-8" />,
-    gradient: 'from-blue-400 to-indigo-600',
+    gradient: 'from-blue-400 to-primary-600',
     title: '👥 Customer Data',
     subtitle: 'CRM database',
     description: 'Discover segments, create personas, find patterns',
@@ -245,7 +245,7 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
     <div className="fixed inset-0 bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-pink-900/95 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="relative p-8 pb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white">
+        <div className="relative p-8 pb-6 bg-gradient-to-r from-primary-600 via-primary-600 to-pink-600 text-white">
           <button
             onClick={handleSkip}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -287,8 +287,8 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                 disabled={isLoading}
                 className={`group relative p-6 rounded-xl border-2 transition-all text-left ${
                   selectedSample === sample.id
-                    ? 'border-indigo-600 bg-indigo-50 shadow-lg scale-105'
-                    : 'border-gray-200 hover:border-indigo-400 hover:shadow-xl hover:scale-102'
+                    ? 'border-indigo-600 bg-primary/5 shadow-lg scale-105'
+                    : 'border-gray-200 hover:border-primary-400 hover:shadow-xl hover:scale-102'
                 } ${isLoading && selectedSample !== sample.id ? 'opacity-50' : ''}`}
               >
                 {/* Gradient accent */}
@@ -326,7 +326,7 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                   <ul className="text-xs text-gray-600 space-y-1">
                     {sample.magicQuestions.slice(0, 2).map((q, idx) => (
                       <li key={idx} className="flex items-start">
-                        <span className="text-indigo-500 mr-1">→</span>
+                        <span className="text-primary mr-1">→</span>
                         <span>{q}</span>
                       </li>
                     ))}
@@ -338,7 +338,7 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                   <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center">
                     <div className="text-center">
                       <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-4 border-indigo-600 mb-2"></div>
-                      <p className="text-sm font-semibold text-indigo-600">Loading...</p>
+                      <p className="text-sm font-semibold text-primary-600">Loading...</p>
                     </div>
                   </div>
                 )}
@@ -347,14 +347,14 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
           </div>
 
           {/* What happens next */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-6 border border-indigo-200">
+          <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-xl p-6 mb-6 border border-primary/20">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <Zap className="w-5 h-5 text-indigo-600 mr-2" />
+              <Zap className="w-5 h-5 text-primary-600 mr-2" />
               What happens in the next 60 seconds:
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
                   1
                 </div>
                 <div>
@@ -363,7 +363,7 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                 </div>
               </div>
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
                   2
                 </div>
                 <div>
@@ -372,7 +372,7 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                 </div>
               </div>
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm mr-3">
                   3
                 </div>
                 <div>

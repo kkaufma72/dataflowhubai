@@ -373,7 +373,7 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
     <div className="space-y-6">
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
         </div>
       ) : (
         <>
@@ -464,8 +464,8 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
                   <div className="mt-2">
                     <button
                       onClick={() => setFilters({ ...filters, showErrors: !filters.showErrors })}
-                      className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                        filters.showErrors ? 'bg-indigo-600' : 'bg-gray-200'
+                      className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                        filters.showErrors ? 'bg-primary-600' : 'bg-gray-200'
                       }`}
                     >
                       <span className="sr-only">Show errors</span>
@@ -483,7 +483,7 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
                     User Segment
                   </label>
                   <select
-                    className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={filters.userSegment}
                     onChange={(e) => setFilters({ ...filters, userSegment: e.target.value })}
                   >
@@ -500,8 +500,8 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-                  <BarChart2 className="w-6 h-6 text-indigo-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                  <BarChart2 className="w-6 h-6 text-primary-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Accuracy</p>
@@ -556,8 +556,8 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
             
             <Card>
               <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-                  <Users className="w-6 h-6 text-purple-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                  <Users className="w-6 h-6 text-primary-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Requests</p>

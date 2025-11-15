@@ -76,13 +76,13 @@ const DemoPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/5">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-indigo-600" />
+              <Sparkles className="h-6 w-6 text-primary-600" />
               <h1 className="text-xl font-bold text-gray-900">DataFlowHub AI Demo</h1>
             </div>
             <div className="flex items-center gap-4">
@@ -91,13 +91,13 @@ const DemoPage: React.FC = () => {
               </span>
               <a
                 href="/signin"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-primary-600 hover:text-primary-700 font-medium"
               >
                 Sign In
               </a>
               <a
                 href="/pricing"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
               >
                 View Plans
               </a>
@@ -109,14 +109,14 @@ const DemoPage: React.FC = () => {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary-700 rounded-full mb-6">
             <Play className="h-4 w-4" />
             <span className="text-sm font-medium">Interactive Demo - No Signup Required</span>
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Try DataFlowHub AI
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-primary-600">
               in 5 Minutes
             </span>
           </h1>
@@ -127,7 +127,7 @@ const DemoPage: React.FC = () => {
 
           <button
             onClick={handleStartDemo}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-lg font-semibold text-lg hover:from-primary-700 hover:to-primary-700 transition shadow-lg hover:shadow-xl"
           >
             <Play className="h-5 w-5" />
             Start Interactive Demo
@@ -151,13 +151,13 @@ const DemoPage: React.FC = () => {
             {demoSteps.slice(0, -1).map((step, index) => (
               <div
                 key={step.id}
-                className="relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border-2 border-gray-200 hover:border-indigo-300 transition-all hover:shadow-lg"
+                className="relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border-2 border-gray-200 hover:border-primary/30 transition-all hover:shadow-lg"
               >
-                <div className="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
+                <div className="absolute -top-3 -left-3 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold">
                   {index + 1}
                 </div>
 
-                <div className="p-3 bg-indigo-100 rounded-lg w-fit mb-4 text-indigo-600">
+                <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 text-primary-600">
                   {step.icon}
                 </div>
 
@@ -192,7 +192,7 @@ const DemoPage: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl mx-auto mb-4 flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-600 rounded-xl mx-auto mb-4 flex items-center justify-center text-white text-2xl">
                 🤖
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">AutoML Training</h3>
@@ -202,7 +202,7 @@ const DemoPage: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl mx-auto mb-4 flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-600 rounded-xl mx-auto mb-4 flex items-center justify-center text-white text-2xl">
                 🚀
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">One-Click Deploy</h3>
@@ -215,18 +215,18 @@ const DemoPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary-600 to-primary-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Build Real Models?
           </h2>
-          <p className="text-xl text-indigo-100 mb-8">
+          <p className="text-xl text-primary/10 mb-8">
             Sign up to save your work and unlock unlimited features
           </p>
           <div className="flex items-center justify-center gap-4">
             <button
               onClick={handleStartDemo}
-              className="px-8 py-4 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg"
+              className="px-8 py-4 bg-white text-primary-600 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg"
             >
               Try Demo First
             </button>
@@ -237,7 +237,7 @@ const DemoPage: React.FC = () => {
               Create Free Account
             </a>
           </div>
-          <p className="text-indigo-200 mt-4 text-sm">
+          <p className="text-primary/20 mt-4 text-sm">
             No credit card required • Free plan available
           </p>
         </div>

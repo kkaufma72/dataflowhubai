@@ -333,8 +333,8 @@ const DataQualityChecks: React.FC<DataQualityChecksProps> = ({
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => handleToggleRule(rule.id)}
-                    className={`relative inline-flex flex-shrink-0 h-6 transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer w-11 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                      rule.enabled ? 'bg-indigo-600' : 'bg-gray-200'
+                    className={`relative inline-flex flex-shrink-0 h-6 transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer w-11 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                      rule.enabled ? 'bg-primary-600' : 'bg-gray-200'
                     }`}
                   >
                     <span

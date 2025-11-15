@@ -310,7 +310,7 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
               <input
                 type="text"
                 id="test-name"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={newTest.name}
                 onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
                 placeholder="e.g., Production vs. New Model"
@@ -324,7 +324,7 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
               <textarea
                 id="test-description"
                 rows={2}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={newTest.description}
                 onChange={(e) => setNewTest({ ...newTest, description: e.target.value })}
                 placeholder="Describe the purpose of this test"
@@ -336,7 +336,7 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
                 Target Metric
               </label>
               <select
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                 value={newTest.targetMetric}
                 onChange={(e) => setNewTest({ ...newTest, targetMetric: e.target.value as any })}
               >
@@ -364,15 +364,15 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
                 </div>
                 
                 {/* Test Variant */}
-                <div className="p-4 bg-indigo-50 rounded-lg">
+                <div className="p-4 bg-primary/5 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-sm font-medium text-indigo-900">Variant (New Model)</h5>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    <h5 className="text-sm font-medium text-primary-900">Variant (New Model)</h5>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary-800">
                       50% Traffic
                     </span>
                   </div>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newTest.variants?.[1].modelId}
                     onChange={(e) => {
                       const variants = [...(newTest.variants || [])];
@@ -570,7 +570,7 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
                         <div key={variant.id} className="flex items-center justify-between">
                           <div className="flex items-center">
                             <div className={`w-3 h-3 rounded-full ${
-                              variant.id === 'a' ? 'bg-blue-500' : 'bg-indigo-500'
+                              variant.id === 'a' ? 'bg-blue-500' : 'bg-primary'
                             }`}></div>
                             <span className="ml-2 text-sm text-gray-900">{variant.name}</span>
                           </div>

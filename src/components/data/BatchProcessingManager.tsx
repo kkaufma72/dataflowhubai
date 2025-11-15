@@ -273,8 +273,8 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Layers className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Layers className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Batch Processing Manager</h3>
@@ -328,7 +328,7 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
               <select
                 value={batchSize}
                 onChange={(e) => setBatchSize(Number(e.target.value))}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               >
                 <option value={500}>500 rows</option>
                 <option value={1000}>1,000 rows</option>
@@ -397,7 +397,7 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
                 type="checkbox"
                 checked={useAsyncProcessing}
                 onChange={(e) => setUseAsyncProcessing(e.target.checked)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
               />
               <label htmlFor="use-async-processing" className="ml-2 block text-sm text-gray-900">
                 Use Async Workload API for processing (recommended for large datasets)
@@ -419,7 +419,7 @@ const BatchProcessingManager: React.FC<BatchProcessingManagerProps> = ({
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full">
               <div 
-                className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                className="h-full bg-primary-600 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>

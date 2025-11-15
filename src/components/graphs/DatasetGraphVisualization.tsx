@@ -236,7 +236,7 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+      <div className="bg-gradient-to-r from-primary to-primary-600 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Share2 className="w-6 h-6 text-white" />
@@ -244,7 +244,7 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
               <h3 className="text-lg font-bold text-white">
                 Dataset Knowledge Graph
               </h3>
-              <p className="text-sm text-indigo-100">
+              <p className="text-sm text-primary/10">
                 {graphData.nodes.length} datasets, {graphData.edges.length} relationships
               </p>
             </div>
@@ -274,7 +274,7 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
       <div className="px-6 pb-6">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-indigo-500 rounded-full"></div>
+            <div className="w-4 h-4 bg-primary rounded-full"></div>
             <span className="text-sm text-gray-600">Dataset</span>
           </div>
           <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ const DatasetGraphVisualization: React.FC<DatasetGraphVisualizationProps> = ({
             <span className="text-sm text-gray-600">Relationship</span>
           </div>
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-purple-500" />
+            <Zap className="w-4 h-4 text-primary" />
             <span className="text-sm text-gray-600">Powered by Neo4j</span>
           </div>
         </div>

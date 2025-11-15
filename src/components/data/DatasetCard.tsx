@@ -189,7 +189,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3 pr-16">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
               <span className="text-2xl">{getFileIcon((dataset as any).file_type || (dataset as any).fileType)}</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -307,7 +307,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
             variant="primary"
             size="sm"
             icon={<Sparkles className="w-4 h-4" />}
-            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+            className="w-full bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700"
             data-tour="transform-studio"
           >
             ✨ Transform with AI

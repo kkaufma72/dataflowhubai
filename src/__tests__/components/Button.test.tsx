@@ -10,7 +10,7 @@ describe('Button component', () => {
   it('renders correctly with default props', () => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole('button')).toHaveTextContent('Click me');
-    expect(screen.getByRole('button')).toHaveClass('bg-indigo-600');
+    expect(screen.getByRole('button')).toHaveClass('bg-primary-600');
   });
 
   it('calls onClick handler when clicked', () => {
@@ -33,7 +33,7 @@ describe('Button component', () => {
 
   it('renders with different variants', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-indigo-600');
+    expect(screen.getByRole('button')).toHaveClass('bg-primary-600');
     
     rerender(<Button variant="secondary">Secondary</Button>);
     expect(screen.getByRole('button')).toHaveClass('bg-gray-100');

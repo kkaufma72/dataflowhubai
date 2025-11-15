@@ -41,7 +41,7 @@ const TrashBin: React.FC = () => {
       case 'dataset':
         return <Database className="h-5 w-5 text-blue-600" />;
       case 'model':
-        return <Cpu className="h-5 w-5 text-purple-600" />;
+        return <Cpu className="h-5 w-5 text-primary-600" />;
       default:
         return <Trash2 className="h-5 w-5 text-gray-600" />;
     }
@@ -153,7 +153,7 @@ const TrashBin: React.FC = () => {
               placeholder="Search trash..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             />
             {searchTerm && (
               <button
@@ -171,7 +171,7 @@ const TrashBin: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Types</option>
               <option value="dataset">Datasets</option>

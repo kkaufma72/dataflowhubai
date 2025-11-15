@@ -167,8 +167,8 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Bell className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Bell className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Alert Configuration</h3>
@@ -210,7 +210,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     Alert Type
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newAlert.type}
                     onChange={(e) => setNewAlert({ ...newAlert, type: e.target.value as any })}
                   >
@@ -226,7 +226,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     Metric
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newAlert.metric}
                     onChange={(e) => setNewAlert({ ...newAlert, metric: e.target.value })}
                   >
@@ -267,7 +267,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     Condition
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newAlert.condition}
                     onChange={(e) => setNewAlert({ ...newAlert, condition: e.target.value as any })}
                   >
@@ -284,7 +284,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                   <input
                     type="number"
                     step="0.01"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newAlert.threshold}
                     onChange={(e) => setNewAlert({ ...newAlert, threshold: parseFloat(e.target.value) })}
                   />
@@ -295,7 +295,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     Severity
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newAlert.severity}
                     onChange={(e) => setNewAlert({ ...newAlert, severity: e.target.value as any })}
                   >
@@ -403,8 +403,8 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleToggleAlert(alert.id)}
-                        className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                          alert.enabled ? 'bg-indigo-600' : 'bg-gray-200'
+                        className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                          alert.enabled ? 'bg-primary-600' : 'bg-gray-200'
                         }`}
                       >
                         <span className="sr-only">Toggle alert</span>
@@ -450,7 +450,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     Channel Type
                   </label>
                   <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newChannel.type}
                     onChange={(e) => setNewChannel({ ...newChannel, type: e.target.value as any })}
                   >
@@ -470,7 +470,7 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                   </label>
                   <input
                     type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     value={newChannel.destination}
                     onChange={(e) => setNewChannel({ ...newChannel, destination: e.target.value })}
                     placeholder={
@@ -509,22 +509,22 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                 <div 
                   key={channel.id} 
                   className={`p-4 rounded-lg border ${
-                    channel.enabled ? 'border-indigo-200 bg-indigo-50' : 'border-gray-200 bg-gray-50'
+                    channel.enabled ? 'border-primary/20 bg-primary/5' : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Bell className={`w-5 h-5 mr-2 ${
-                        channel.enabled ? 'text-indigo-500' : 'text-gray-400'
+                        channel.enabled ? 'text-primary' : 'text-gray-400'
                       }`} />
                       <div>
                         <p className={`text-sm font-medium ${
-                          channel.enabled ? 'text-indigo-900' : 'text-gray-700'
+                          channel.enabled ? 'text-primary-900' : 'text-gray-700'
                         }`}>
                           {channel.type.charAt(0).toUpperCase() + channel.type.slice(1)}
                         </p>
                         <p className={`text-xs ${
-                          channel.enabled ? 'text-indigo-700' : 'text-gray-500'
+                          channel.enabled ? 'text-primary-700' : 'text-gray-500'
                         }`}>
                           {channel.destination}
                         </p>
@@ -533,8 +533,8 @@ const AlertsConfiguration: React.FC<AlertsConfigurationProps> = ({
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleToggleChannel(channel.id)}
-                        className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                          channel.enabled ? 'bg-indigo-600' : 'bg-gray-200'
+                        className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                          channel.enabled ? 'bg-primary-600' : 'bg-gray-200'
                         }`}
                       >
                         <span className="sr-only">Toggle channel</span>

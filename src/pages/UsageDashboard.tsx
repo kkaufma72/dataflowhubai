@@ -69,7 +69,7 @@ const UsageDashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Usage & Progress</h1>
           <a
             href="/pricing"
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
             <Crown className="h-4 w-4" />
             Upgrade Plan
@@ -81,16 +81,16 @@ const UsageDashboard: React.FC = () => {
       </div>
 
       {/* Level & XP */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-6 mb-6 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-lg p-6 mb-6 text-white">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold">Level {userLevel}</h2>
-            <p className="text-indigo-200">
+            <p className="text-primary/20">
               {userXP.toLocaleString()} XP • {xpToNextLevel.toLocaleString()} to next level
             </p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-indigo-200">Plan</div>
+            <div className="text-sm text-primary/20">Plan</div>
             <div className="text-xl font-semibold capitalize">{planTier}</div>
           </div>
         </div>
@@ -120,7 +120,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Storage Used</h3>
-          <p className="text-2xl font-bold text-purple-600 mb-2">
+          <p className="text-2xl font-bold text-primary-600 mb-2">
             {formatBytes(stats.storageUsed)}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
@@ -150,7 +150,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Datasets</h3>
-          <p className="text-2xl font-bold text-purple-600 mb-2">
+          <p className="text-2xl font-bold text-primary-600 mb-2">
             {stats.datasetsCount}
           </p>
           {stats.datasetsLimit !== Infinity ? (
@@ -173,15 +173,15 @@ const UsageDashboard: React.FC = () => {
         {/* Models */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Cpu className="h-6 w-6 text-purple-600" />
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Cpu className="h-6 w-6 text-primary-600" />
             </div>
-            <span className="px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium">
+            <span className="px-2 py-1 bg-primary/10 text-primary-600 rounded-full text-xs font-medium">
               {stats.modelsDeployed} deployed
             </span>
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">Models Trained</h3>
-          <p className="text-2xl font-bold text-purple-600 mb-2">
+          <p className="text-2xl font-bold text-primary-600 mb-2">
             {stats.modelsCreated}
           </p>
           <p className="text-xs text-gray-500">
@@ -205,7 +205,7 @@ const UsageDashboard: React.FC = () => {
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">API Calls</h3>
-          <p className="text-2xl font-bold text-purple-600 mb-2">
+          <p className="text-2xl font-bold text-primary-600 mb-2">
             {stats.apiCallsThisMonth.toLocaleString()}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
@@ -224,7 +224,7 @@ const UsageDashboard: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Award className="h-6 w-6 text-indigo-600" />
+            <Award className="h-6 w-6 text-primary-600" />
             <div>
               <h2 className="text-xl font-bold text-gray-900">Achievements</h2>
               <p className="text-sm text-gray-600">
@@ -233,14 +233,14 @@ const UsageDashboard: React.FC = () => {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-indigo-600">{unlockedCount}</div>
+            <div className="text-2xl font-bold text-primary-600">{unlockedCount}</div>
             <div className="text-xs text-gray-500">unlocked</div>
           </div>
         </div>
 
         <div className="w-full bg-gray-200 rounded-full h-3 mb-6">
           <div
-            className="bg-indigo-600 rounded-full h-3 transition-all duration-500"
+            className="bg-primary-600 rounded-full h-3 transition-all duration-500"
             style={{ width: `${completionPercentage}%` }}
           ></div>
         </div>
@@ -251,7 +251,7 @@ const UsageDashboard: React.FC = () => {
               key={achievement.id}
               className={`p-4 rounded-lg border-2 transition-all ${
                 achievement.unlocked
-                  ? 'bg-indigo-50 border-indigo-200'
+                  ? 'bg-primary/5 border-primary/20'
                   : 'bg-gray-50 border-gray-200 opacity-60'
               }`}
             >
@@ -276,7 +276,7 @@ const UsageDashboard: React.FC = () => {
                       {achievement.progress} / {achievement.requirement}
                     </span>
                     {achievement.reward && (
-                      <span className="text-indigo-600 font-medium">
+                      <span className="text-primary-600 font-medium">
                         {achievement.reward}
                       </span>
                     )}
@@ -284,7 +284,7 @@ const UsageDashboard: React.FC = () => {
                   {!achievement.unlocked && (
                     <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                       <div
-                        className="bg-indigo-600 rounded-full h-1.5 transition-all duration-500"
+                        className="bg-primary-600 rounded-full h-1.5 transition-all duration-500"
                         style={{
                           width: `${Math.min((achievement.progress / achievement.requirement) * 100, 100)}%`,
                         }}
@@ -304,14 +304,14 @@ const UsageDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <div className="text-sm text-gray-600 mb-1">Account Age</div>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-primary-600">
               {stats.accountAge} {stats.accountAge === 1 ? 'day' : 'days'}
             </div>
           </div>
           <div>
             <div className="text-sm text-gray-600 mb-1">Current Streak</div>
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-purple-600">{stats.streak}</div>
+              <div className="text-2xl font-bold text-primary-600">{stats.streak}</div>
               {stats.streak > 0 && <span className="text-2xl">🔥</span>}
             </div>
           </div>

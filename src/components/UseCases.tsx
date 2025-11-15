@@ -20,7 +20,7 @@ const UseCases = () => {
       icon: <Zap className="h-6 w-6" />,
       title: 'Demand Forecasting',
       description: 'Predict future demand for products and services to optimize inventory and staffing.',
-      color: 'bg-purple-100 text-purple-600'
+      color: 'bg-primary/10 text-primary-600'
     },
     {
       icon: <Users className="h-6 w-6" />,
@@ -38,7 +38,7 @@ const UseCases = () => {
       icon: <Database className="h-6 w-6" />,
       title: 'Recommendation Systems',
       description: 'Personalize user experiences with tailored product and content recommendations.',
-      color: 'bg-indigo-100 text-indigo-600'
+      color: 'bg-primary/10 text-primary-600'
     }
   ];
 
@@ -68,7 +68,7 @@ const UseCases = () => {
           ))}
         </div>
         
-        <div className="mt-16 bg-indigo-600 rounded-xl p-8 text-white">
+        <div className="mt-16 bg-primary-600 rounded-xl p-8 text-white">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold mb-4">Real-World Success Stories</h3>
@@ -93,7 +93,7 @@ const UseCases = () => {
             </div>
             <div className="hidden md:block">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-transparent"></div>
                 <img 
                   src="https://images.pexels.com/photos/7947541/pexels-photo-7947541.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                   alt="Data visualization" 

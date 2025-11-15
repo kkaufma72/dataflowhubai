@@ -23,10 +23,10 @@ const SignupComplete: React.FC = () => {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/5">
         <div className="text-center">
-          <Loader className="h-12 w-12 text-indigo-600 animate-spin mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-purple-600 mb-2">
+          <Loader className="h-12 w-12 text-primary-600 animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-primary-600 mb-2">
             Processing your payment...
           </h2>
           <p className="text-gray-600">Please wait while we set up your account.</p>
@@ -43,7 +43,7 @@ const SignupComplete: React.FC = () => {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className="text-2xl font-bold text-purple-600 mb-2">
+            <h2 className="text-2xl font-bold text-primary-600 mb-2">
               Something went wrong
             </h2>
             <p className="text-gray-600 mb-6">
@@ -52,7 +52,7 @@ const SignupComplete: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => navigate('/signin')}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
               >
                 Go to Sign Up
               </button>
@@ -84,22 +84,22 @@ const SignupComplete: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6 mb-6">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 mb-6">
           <div className="flex items-start gap-3">
-            <Mail className="h-6 w-6 text-indigo-600 mt-0.5" />
+            <Mail className="h-6 w-6 text-primary-600 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-indigo-900 mb-2">
+              <h3 className="font-semibold text-primary-900 mb-2">
                 Check your email
               </h3>
-              <p className="text-indigo-800 text-sm mb-4">
+              <p className="text-primary-800 text-sm mb-4">
                 We've sent you an email with a link to set up your password and complete your registration.
                 Click the link in the email to activate your account and start using DataFlowHub AI.
               </p>
-              <div className="bg-white rounded p-3 border border-indigo-200">
-                <p className="text-xs text-indigo-700 font-medium mb-1">
+              <div className="bg-white rounded p-3 border border-primary/20">
+                <p className="text-xs text-primary-700 font-medium mb-1">
                   IMPORTANT:
                 </p>
-                <p className="text-xs text-indigo-600">
+                <p className="text-xs text-primary-600">
                   The email link expires in 24 hours. If you don't see the email, check your spam folder.
                 </p>
               </div>
@@ -113,7 +113,7 @@ const SignupComplete: React.FC = () => {
           </h3>
           <ol className="space-y-3">
             <li className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+              <div className="w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
                 1
               </div>
               <div className="flex-1">
@@ -123,7 +123,7 @@ const SignupComplete: React.FC = () => {
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+              <div className="w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
                 2
               </div>
               <div className="flex-1">
@@ -133,7 +133,7 @@ const SignupComplete: React.FC = () => {
               </div>
             </li>
             <li className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
+              <div className="w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
                 3
               </div>
               <div className="flex-1">
@@ -161,14 +161,14 @@ const SignupComplete: React.FC = () => {
         <div className="mt-8 flex justify-center">
           <button
             onClick={() => navigate('/signin')}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg"
+            className="px-8 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition shadow-lg"
           >
             Continue to Sign In
           </button>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Need help? <a href="mailto:support@dataflowhubai.com" className="text-indigo-600 hover:text-indigo-700">Contact Support</a>
+          Need help? <a href="mailto:support@dataflowhubai.com" className="text-primary-600 hover:text-primary-700">Contact Support</a>
         </p>
       </div>
     </div>

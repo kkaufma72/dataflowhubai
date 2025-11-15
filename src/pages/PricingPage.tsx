@@ -70,7 +70,7 @@ const PricingPage: React.FC = () => {
 
   return (
     <>
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary-600 to-primary-600">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-4">
             <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded-full font-semibold text-sm shadow-md">
@@ -80,13 +80,13 @@ const PricingPage: React.FC = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-xl text-indigo-100 mb-4">
+          <p className="text-xl text-primary/10 mb-4">
             Start free forever, upgrade when you need more
           </p>
-          <p className="text-indigo-200">
+          <p className="text-primary/20">
             No credit card required • Free tier always available
           </p>
-          <p className="text-sm text-indigo-200 mt-3">
+          <p className="text-sm text-primary/20 mt-3">
             Beta users get grandfathered into special lifetime pricing
           </p>
         </div>
@@ -178,7 +178,7 @@ const PricingPage: React.FC = () => {
               </h3>
               <p className="text-gray-600">
                 For enterprise needs, custom integrations, or volume discounts, contact our sales team at{' '}
-                <a href="mailto:sales@dataflowhubai.com" className="text-indigo-600 hover:text-indigo-700">
+                <a href="mailto:sales@dataflowhubai.com" className="text-primary-600 hover:text-primary-700">
                   sales@dataflowhubai.com
                 </a>
               </p>
@@ -187,18 +187,18 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-indigo-600 to-purple-600">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary-600 to-primary-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-indigo-100 mb-8">
+          <p className="text-xl text-primary/10 mb-8">
             Join thousands of data teams building better models faster
           </p>
           
           <a
             href="/signin"
-            className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
+            className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl"
           >
             Get Started Free
           </a>

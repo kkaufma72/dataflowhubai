@@ -126,7 +126,7 @@ const DataConnector: React.FC<DataConnectorProps> = ({ onConnect }) => {
               return (
                 <button
                   key={platform.id}
-                  className="flex items-center p-4 text-left transition-colors border rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex items-center p-4 text-left transition-colors border rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
                   onClick={() => handlePlatformSelect(platform.id)}
                 >
                   <Icon className="w-6 h-6 text-gray-400" />
@@ -165,7 +165,7 @@ const DataConnector: React.FC<DataConnectorProps> = ({ onConnect }) => {
                   </label>
                   <input
                     type={field.toLowerCase().includes('password') || field.toLowerCase().includes('key') ? 'password' : 'text'}
-                    className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
                     value={connectionConfig[field] || ''}
                     onChange={(e) => handleInputChange(field, e.target.value)}
                   />

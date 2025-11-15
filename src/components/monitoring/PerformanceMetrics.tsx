@@ -194,11 +194,11 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
             <button
               onClick={() => setSelectedMetric('accuracy')}
               className={`p-2 rounded-md ${
-                selectedMetric === 'accuracy' ? 'bg-indigo-100' : 'hover:bg-gray-100'
+                selectedMetric === 'accuracy' ? 'bg-primary/10' : 'hover:bg-gray-100'
               }`}
             >
               <span className={`block w-2 h-2 rounded-full ${
-                selectedMetric === 'accuracy' ? 'bg-indigo-600' : 'bg-gray-300'
+                selectedMetric === 'accuracy' ? 'bg-primary-600' : 'bg-gray-300'
               }`}></span>
             </button>
           </div>
@@ -257,11 +257,11 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
             <button
               onClick={() => setSelectedMetric('volume')}
               className={`p-2 rounded-md ${
-                selectedMetric === 'volume' ? 'bg-purple-100' : 'hover:bg-gray-100'
+                selectedMetric === 'volume' ? 'bg-primary/10' : 'hover:bg-gray-100'
               }`}
             >
               <span className={`block w-2 h-2 rounded-full ${
-                selectedMetric === 'volume' ? 'bg-purple-600' : 'bg-gray-300'
+                selectedMetric === 'volume' ? 'bg-primary-600' : 'bg-gray-300'
               }`}></span>
             </button>
           </div>
@@ -319,7 +319,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-indigo-600 rounded-full"
+                  className="h-full bg-primary-600 rounded-full"
                   style={{ width: `${performanceStats.current * 100}%` }}
                 />
               </div>
@@ -345,7 +345,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-purple-600 rounded-full"
+                  className="h-full bg-primary-600 rounded-full"
                   style={{ width: `${performanceStats.current * 0.95 * 100}%` }}
                 />
               </div>
@@ -415,7 +415,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-purple-600 rounded-full"
+                  className="h-full bg-primary-600 rounded-full"
                   style={{ width: `${Math.min(100, (volumeStats.peak / 500) * 100)}%` }}
                 />
               </div>

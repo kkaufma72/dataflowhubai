@@ -403,7 +403,7 @@ export class EnhancedOrchestrator {
 /**
  * Create global enhanced orchestrator instance
  */
-let globalOrchestrator: EnhancedOrchestrator | null = null;
+const globalOrchestrator: EnhancedOrchestrator | null = null;
 
 /**
  * ⚠️ SECURITY WARNING: This orchestrator is temporarily disabled

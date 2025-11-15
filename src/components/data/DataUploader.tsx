@@ -349,8 +349,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       <div
         className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg ${
           isDragging
-            ? 'border-indigo-500 bg-indigo-50'
-            : 'border-gray-300 hover:border-indigo-400'
+            ? 'border-primary bg-primary/5'
+            : 'border-gray-300 hover:border-primary-400'
         } transition-colors cursor-pointer`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -373,7 +373,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
               </svg>
             </div>
             <p className="text-sm text-gray-600 mb-2">
-              <span className="font-semibold text-indigo-600">Click to upload</span> or drag and drop
+              <span className="font-semibold text-primary-600">Click to upload</span> or drag and drop
             </p>
             <p className="text-xs text-gray-500">
               CSV, JSON, Excel, or TXT (MAX. 50MB)
@@ -381,7 +381,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           </>
         ) : (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 text-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 text-primary-600 flex items-center justify-center">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
@@ -419,7 +419,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           </div>
           <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
             <div
-              className="h-2 bg-indigo-500 rounded-full transition-all duration-300"
+              className="h-2 bg-primary rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>

@@ -24,7 +24,7 @@ export const AchievementNotification: React.FC = () => {
       {displayedAchievements.map((achievement) => (
         <div
           key={achievement.id}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-2xl p-4 text-white animate-slideInRight"
+          className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-lg shadow-2xl p-4 text-white animate-slideInRight"
         >
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
@@ -39,7 +39,7 @@ export const AchievementNotification: React.FC = () => {
                 <span className="text-sm font-medium">Achievement Unlocked!</span>
               </div>
               <h3 className="font-bold text-lg mb-1">{achievement.title}</h3>
-              <p className="text-sm text-indigo-100 mb-2">{achievement.description}</p>
+              <p className="text-sm text-primary/10 mb-2">{achievement.description}</p>
               {achievement.reward && (
                 <div className="inline-block px-2 py-1 bg-white/20 rounded text-xs font-medium">
                   {achievement.reward}

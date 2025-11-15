@@ -116,7 +116,7 @@ const ResponsiveNavbar: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center h-16 px-6 border-b border-gray-200">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">DataFlowHub</span>
@@ -138,7 +138,7 @@ const ResponsiveNavbar: React.FC = () => {
                       onClick={() => toggleSection(item.name)}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                         hasActiveChild
-                          ? 'bg-indigo-50 text-indigo-600'
+                          ? 'bg-primary/5 text-primary-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -162,7 +162,7 @@ const ResponsiveNavbar: React.FC = () => {
                             className={({ isActive }) =>
                               `flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                                 isActive
-                                  ? 'bg-indigo-50 text-indigo-600 font-medium'
+                                  ? 'bg-primary/5 text-primary-600 font-medium'
                                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                               }`
                             }
@@ -186,8 +186,8 @@ const ResponsiveNavbar: React.FC = () => {
                     className={({ isActive }) =>
                       `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                          : 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 border-2 border-indigo-200'
+                          ? 'bg-gradient-to-r from-primary-600 to-primary-600 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-primary/5 to-primary/5 text-primary-700 hover:from-primary/10 hover:to-primary/10 border-2 border-primary/20'
                       }`
                     }
                   >
@@ -209,7 +209,7 @@ const ResponsiveNavbar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-600'
+                        ? 'bg-primary/5 text-primary-600'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`
                   }
@@ -230,7 +230,7 @@ const ResponsiveNavbar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-primary/5 text-primary-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }
@@ -247,7 +247,7 @@ const ResponsiveNavbar: React.FC = () => {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-600 rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold text-gray-900">DataFlowHub</span>
@@ -295,7 +295,7 @@ const ResponsiveNavbar: React.FC = () => {
                     onClick={() => toggleSection(item.name)}
                     className={`w-full flex items-center justify-between px-4 py-3 text-base font-medium rounded-lg transition-colors ${
                       hasActiveChild
-                        ? 'bg-indigo-50 text-indigo-600'
+                        ? 'bg-primary/5 text-primary-600'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -320,7 +320,7 @@ const ResponsiveNavbar: React.FC = () => {
                           className={({ isActive }) =>
                             `flex items-center space-x-3 px-4 py-2 text-sm rounded-lg transition-colors ${
                               isActive
-                                ? 'bg-indigo-50 text-indigo-600 font-medium'
+                                ? 'bg-primary/5 text-primary-600 font-medium'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                             }`
                           }
@@ -345,8 +345,8 @@ const ResponsiveNavbar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
-                        : 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 border-2 border-indigo-200'
+                        ? 'bg-gradient-to-r from-primary-600 to-primary-600 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-primary/5 to-primary/5 text-primary-700 hover:from-primary/10 hover:to-primary/10 border-2 border-primary/20'
                     }`
                   }
                 >
@@ -369,7 +369,7 @@ const ResponsiveNavbar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-primary/5 text-primary-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }
@@ -390,7 +390,7 @@ const ResponsiveNavbar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-3 text-base font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-primary/5 text-primary-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`
                 }

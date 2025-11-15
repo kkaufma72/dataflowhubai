@@ -270,13 +270,13 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/5 flex flex-col">
       {/* Header with Logo and Back Button */}
       <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors group"
+            className="flex items-center text-gray-600 hover:text-primary-600 transition-colors group"
           >
             <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
             <span className="font-medium">Back to Home</span>
@@ -385,7 +385,7 @@ const SignIn = () => {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                       placeholder="John Doe"
                     />
                   </div>
@@ -404,7 +404,7 @@ const SignIn = () => {
                     type="text"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                     placeholder="Acme Corp"
                   />
                 </div>
@@ -422,7 +422,7 @@ const SignIn = () => {
                     type="text"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                     placeholder="Data Scientist"
                   />
                 </div>
@@ -440,7 +440,7 @@ const SignIn = () => {
                     type="url"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                     placeholder="https://linkedin.com/in/yourprofile"
                   />
                   <p className="mt-2 text-xs text-gray-500">
@@ -461,7 +461,7 @@ const SignIn = () => {
                     required
                     value={useCase}
                     onChange={(e) => setUseCase(e.target.value)}
-                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                   >
                     <option value="">What will you use this app for?</option>
                     
@@ -527,7 +527,7 @@ const SignIn = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                     placeholder="you@company.com"
                   />
                 </div>
@@ -555,7 +555,7 @@ const SignIn = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-2 focus:ring-primary transition-colors"
                     placeholder={isSignUp ? "At least 8 characters" : "••••••••"}
                   />
                 </div>
@@ -573,7 +573,7 @@ const SignIn = () => {
                     Forgot password? Email{' '}
                     <a 
                       href="mailto:support@dataflowhub.ai" 
-                      className="text-indigo-600 hover:text-indigo-500 font-medium"
+                      className="text-primary-600 hover:text-primary font-medium"
                     >
                       support@dataflowhub.ai
                     </a>
@@ -611,7 +611,7 @@ const SignIn = () => {
                     setIsSignUp(!isSignUp);
                     setError('');
                   }}
-                  className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+                  className="font-semibold text-primary-600 hover:text-primary transition-colors"
                 >
                   {isSignUp ? 'Sign in' : 'Sign up'}
                 </button>
@@ -622,11 +622,11 @@ const SignIn = () => {
           {/* Terms and Privacy */}
           <p className="text-center text-xs text-gray-500">
             By {isSignUp ? 'creating an account' : 'signing in'}, you agree to our{' '}
-            <a href="#" className="text-indigo-600 hover:text-indigo-500">
+            <a href="#" className="text-primary-600 hover:text-primary">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="text-indigo-600 hover:text-indigo-500">
+            <a href="#" className="text-primary-600 hover:text-primary">
               Privacy Policy
             </a>
           </p>

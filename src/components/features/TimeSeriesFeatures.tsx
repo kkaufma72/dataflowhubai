@@ -418,8 +418,8 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
       <Card>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-              <Clock className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+              <Clock className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-900">Time Series Feature Engineering</h3>
@@ -448,7 +448,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                 Timestamp Column
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 value={config.timestampColumn}
                 onChange={(e) => onConfigUpdate({
                   ...config,
@@ -471,7 +471,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
               <input
                 type="checkbox"
                 id="seasonal-features"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                 checked={config.seasonalFeatures}
                 onChange={handleToggleSeasonalFeatures}
               />
@@ -510,7 +510,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                       Feature
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       value={newLagFeature.feature}
                       onChange={(e) => setNewLagFeature({
                         ...newLagFeature,
@@ -530,10 +530,10 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                     </label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {newLagFeature.lags.map(lag => (
-                        <div key={lag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        <div key={lag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-800">
                           t-{lag}
                           <button
-                            className="ml-1 text-indigo-600 hover:text-indigo-800"
+                            className="ml-1 text-primary-600 hover:text-primary-800"
                             onClick={() => handleRemoveLagValue(lag)}
                           >
                             <X className="w-3 h-3" />
@@ -546,7 +546,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                         <input
                           type="number"
                           min="1"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           value={newLag}
                           onChange={(e) => setNewLag(parseInt(e.target.value))}
                           placeholder="Lag value"
@@ -595,7 +595,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {feature.lags.map(lag => (
-                        <span key={lag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        <span key={lag} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-800">
                           t-{lag}
                         </span>
                       ))}
@@ -627,7 +627,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                       Feature
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                       value={newRollingFeature.feature}
                       onChange={(e) => setNewRollingFeature({
                         ...newRollingFeature,
@@ -663,7 +663,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                         <input
                           type="number"
                           min="2"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           value={newWindow}
                           onChange={(e) => setNewWindow(parseInt(e.target.value))}
                           placeholder="Window size"
@@ -684,10 +684,10 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                     </label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {newRollingFeature.operations.map(operation => (
-                        <div key={operation} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <div key={operation} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-800">
                           {operation}
                           <button
-                            className="ml-1 text-purple-600 hover:text-purple-800"
+                            className="ml-1 text-primary-600 hover:text-primary-800"
                             onClick={() => handleRemoveOperation(operation)}
                           >
                             <X className="w-3 h-3" />
@@ -697,7 +697,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                     </div>
                     <div className="flex">
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                         value={newOperation}
                         onChange={(e) => setNewOperation(e.target.value as any)}
                       >
@@ -764,7 +764,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
                       <div className="text-xs font-medium text-gray-500 mb-1">Operations:</div>
                       <div className="flex flex-wrap gap-2">
                         {feature.operations.map(operation => (
-                          <span key={operation} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          <span key={operation} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary-800">
                             {operation}
                           </span>
                         ))}

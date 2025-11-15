@@ -277,7 +277,7 @@ Parse this command and return JSON:
   };
 
   const reapplyTransformations = async (upToIndex: number) => {
-    let current = initialDataset;
+    const current = initialDataset;
     
     for (let i = 0; i <= upToIndex; i++) {
       const step = transformHistory[i];
@@ -356,7 +356,7 @@ Parse this command and return JSON:
   const StudioContent = () => (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-primary-600 text-white">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
             <Wand2 className="w-5 h-5" />
@@ -428,7 +428,7 @@ Parse this command and return JSON:
                 {dataset.preview_data?.rows.length || 0} rows
               </span>
               {transformHistory.length > 0 && (
-                <span className="flex items-center gap-1 text-indigo-600 font-medium">
+                <span className="flex items-center gap-1 text-primary-600 font-medium">
                   <Sparkles className="w-4 h-4" />
                   {transformHistory.length} transformations applied
                 </span>
@@ -458,12 +458,12 @@ Parse this command and return JSON:
                                   if (e.key === 'Enter') saveColumnRename();
                                   if (e.key === 'Escape') setEditingColumn(null);
                                 }}
-                                className="px-2 py-1 border border-indigo-500 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="px-2 py-1 border border-primary rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 autoFocus
                               />
                               <button
                                 onClick={saveColumnRename}
-                                className="p-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                                className="p-1 bg-primary-600 text-white rounded hover:bg-primary-700"
                               >
                                 <CheckCircle className="w-3 h-3" />
                               </button>
@@ -535,7 +535,7 @@ Parse this command and return JSON:
                 }}
                 placeholder="Remove low ROI categories..."
                 disabled={isProcessing}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               />
               <Button
                 onClick={() => handleNaturalLanguageCommand(command)}
@@ -557,7 +557,7 @@ Parse this command and return JSON:
                 <button
                   key={idx}
                   onClick={() => setCommand(example)}
-                  className="w-full text-left text-xs px-3 py-2 bg-gray-50 hover:bg-indigo-50 rounded border border-gray-200 hover:border-indigo-300 transition text-gray-700 hover:text-indigo-700"
+                  className="w-full text-left text-xs px-3 py-2 bg-gray-50 hover:bg-primary/5 rounded border border-gray-200 hover:border-primary/30 transition text-gray-700 hover:text-primary-700"
                 >
                   {example}
                 </button>
@@ -582,7 +582,7 @@ Parse this command and return JSON:
                     key={step.id}
                     className={`p-3 rounded-lg border ${
                       idx <= historyIndex
-                        ? 'bg-white border-indigo-200'
+                        ? 'bg-white border-primary/20'
                         : 'bg-gray-100 border-gray-200 opacity-50'
                     }`}
                   >
@@ -614,25 +614,25 @@ Parse this command and return JSON:
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleNaturalLanguageCommand("Remove all duplicate rows")}
-                className="text-xs px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition border border-purple-200"
+                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
               >
                 Remove Duplicates
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Remove columns with >30% missing values")}
-                className="text-xs px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition border border-purple-200"
+                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
               >
                 Clean Missing
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Sort by first numeric column descending")}
-                className="text-xs px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition border border-purple-200"
+                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
               >
                 Auto Sort
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Standardize all column names to Title Case")}
-                className="text-xs px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition border border-purple-200"
+                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
               >
                 Format Headers
               </button>

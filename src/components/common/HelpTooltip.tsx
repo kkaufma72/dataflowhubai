@@ -92,7 +92,7 @@ const HelpTooltip: React.FC<HelpTooltipProps> = ({
       <button
         ref={triggerRef}
         type="button"
-        className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full"
+        className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full"
         onClick={() => setIsVisible(!isVisible)}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}

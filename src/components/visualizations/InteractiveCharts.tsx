@@ -477,16 +477,16 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
   const getChartIcon = () => {
     switch (type) {
       case 'bar':
-        return <BarChart2 className="w-5 h-5 text-indigo-600" />;
+        return <BarChart2 className="w-5 h-5 text-primary-600" />;
       case 'line':
         return <LineChart className="w-5 h-5 text-green-600" />;
       case 'pie':
       case 'doughnut':
         return <PieChart className="w-5 h-5 text-amber-600" />;
       case 'scatter':
-        return <ScatterPlot className="w-5 h-5 text-purple-600" />;
+        return <ScatterPlot className="w-5 h-5 text-primary-600" />;
       default:
-        return <BarChart2 className="w-5 h-5 text-indigo-600" />;
+        return <BarChart2 className="w-5 h-5 text-primary-600" />;
     }
   };
 
@@ -589,7 +589,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   type="text"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="Enter chart title"
                 />
               </div>
@@ -601,7 +601,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                 <select
                   value={legendPosition}
                   onChange={(e) => setLegendPosition(e.target.value as any)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 >
                   <option value="top">Top</option>
                   <option value="bottom">Bottom</option>
@@ -618,7 +618,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   type="text"
                   value={xAxisTitle}
                   onChange={(e) => setXAxisTitle(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="X-Axis"
                 />
               </div>
@@ -631,7 +631,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   type="text"
                   value={yAxisTitle}
                   onChange={(e) => setYAxisTitle(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="Y-Axis"
                 />
               </div>
@@ -642,7 +642,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   type="checkbox"
                   checked={showLegend}
                   onChange={(e) => setShowLegend(e.target.checked)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                 />
                 <label htmlFor="show-legend" className="ml-2 block text-sm text-gray-900">
                   Show Legend
@@ -655,7 +655,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                   type="checkbox"
                   checked={showGridLines}
                   onChange={(e) => setShowGridLines(e.target.checked)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                 />
                 <label htmlFor="show-grid" className="ml-2 block text-sm text-gray-900">
                   Show Grid Lines
@@ -672,7 +672,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
                     onClick={() => toggleDataset(index)}
                     className={`inline-flex items-center px-2.5 py-1.5 border text-xs font-medium rounded ${
                       visibleDatasets.includes(index)
-                        ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
+                        ? 'bg-primary/10 text-primary-800 border-primary/20'
                         : 'bg-gray-100 text-gray-800 border-gray-200'
                     }`}
                   >
@@ -695,7 +695,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
         >
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
           )}
           {renderChart()}
@@ -1013,7 +1013,7 @@ export const D3Visualization: React.FC<D3VisualizationProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <BarChart2 className="w-5 h-5 text-indigo-600 mr-2" />
+          <BarChart2 className="w-5 h-5 text-primary-600 mr-2" />
           <div>
             <h3 className="text-sm font-medium text-gray-900">{title || 'D3 Visualization'}</h3>
             {description && <p className="mt-1 text-xs text-gray-500">{description}</p>}

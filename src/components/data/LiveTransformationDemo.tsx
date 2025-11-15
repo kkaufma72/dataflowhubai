@@ -158,7 +158,7 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
 
   // Execute transformation
   const executeTransform = async (parsedCmd: TransformCommand) => {
-    let newColumns = [...columns];
+    const newColumns = [...columns];
     let newRows = [...rows];
 
     switch (parsedCmd.operation) {
@@ -331,13 +331,13 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-primary-600 px-6 py-4 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Activity className="w-6 h-6" />
             <div>
               <h3 className="font-bold text-lg">Live Transformation Demo</h3>
-              <p className="text-sm text-purple-100">Transform data with natural language</p>
+              <p className="text-sm text-primary/10">Transform data with natural language</p>
             </div>
           </div>
           <button
@@ -352,11 +352,11 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
       </div>
 
       {/* Command Input */}
-      <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-purple-50 border-b border-gray-200">
+      <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-primary/5 border-b border-gray-200">
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <Sparkles className="w-5 h-5 text-purple-500" />
+              <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <input
               ref={inputRef}
@@ -366,13 +366,13 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
               onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
               placeholder="Sort by revenue (highest first)"
               disabled={isProcessing}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm font-mono disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-mono disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
           <button
             onClick={handleSubmit}
             disabled={!command.trim() || isProcessing}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
+            className="px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
           >
             {isProcessing ? (
               <>
@@ -395,7 +395,7 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
             <button
               key={idx}
               onClick={() => setCommand(example)}
-              className="text-xs px-3 py-1.5 bg-white border border-purple-200 text-purple-700 rounded-full hover:bg-purple-50 hover:border-purple-300 transition-all"
+              className="text-xs px-3 py-1.5 bg-white border border-primary/20 text-primary-700 rounded-full hover:bg-primary/5 hover:border-primary/30 transition-all"
             >
               {example}
             </button>
@@ -462,14 +462,14 @@ const LiveTransformationDemo: React.FC<LiveTransformationDemoProps> = ({
           </div>
           <div className="flex items-center gap-3">
             {history.length > 0 && (
-              <div className="text-xs text-purple-600 font-medium">
+              <div className="text-xs text-primary-600 font-medium">
                 {history.length} transformation{history.length !== 1 ? 's' : ''} applied
               </div>
             )}
             {onDataChange && history.length > 0 && (
               <button
                 onClick={() => onDataChange({ columns, rows })}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 Save Changes

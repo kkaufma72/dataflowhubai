@@ -276,7 +276,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
     
     try {
       // Get data - either from API or simulate
-      let batchData: any[][] = [];
+      const batchData: any[][] = [];
       let columns: string[] = [];
       
       if (configRef.current.simulateData && dataset?.preview_data) {
@@ -390,8 +390,8 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Activity className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Activity className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Streaming Data Processor</h3>
@@ -464,7 +464,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
                 type="text"
                 value={config.url}
                 onChange={(e) => setConfig({ ...config, url: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="https://api.example.com/stream"
                 disabled={isStreaming}
               />
@@ -479,7 +479,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
                 type="password"
                 value={config.apiKey}
                 onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="Your API key"
                 disabled={isStreaming}
               />
@@ -493,7 +493,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
                 type="number"
                 value={config.interval}
                 onChange={(e) => setConfig({ ...config, interval: Number(e.target.value) })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 min={1000}
                 step={1000}
                 disabled={isStreaming}
@@ -507,7 +507,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
               <select
                 value={config.format}
                 onChange={(e) => setConfig({ ...config, format: e.target.value as 'json' | 'csv' })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 disabled={isStreaming}
               >
                 <option value="json">JSON</option>
@@ -523,7 +523,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
                 type="number"
                 value={config.batchSize}
                 onChange={(e) => setConfig({ ...config, batchSize: Number(e.target.value) })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 min={10}
                 max={1000}
                 disabled={isStreaming}
@@ -538,7 +538,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
                 type="number"
                 value={config.maxBatches}
                 onChange={(e) => setConfig({ ...config, maxBatches: Number(e.target.value) })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 min={0}
                 disabled={isStreaming}
               />
@@ -551,7 +551,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
               id="simulate-data"
               checked={config.simulateData}
               onChange={(e) => setConfig({ ...config, simulateData: e.target.checked })}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
               disabled={isStreaming}
             />
             <label htmlFor="simulate-data" className="ml-2 block text-sm text-gray-900">
@@ -565,7 +565,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
               id="use-async-processing"
               checked={config.useAsyncProcessing}
               onChange={(e) => setConfig({ ...config, useAsyncProcessing: e.target.checked })}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
               disabled={isStreaming}
             />
             <label htmlFor="use-async-processing" className="ml-2 block text-sm text-gray-900">
@@ -579,7 +579,7 @@ const StreamingDataProcessor: React.FC<StreamingDataProcessorProps> = ({
         <div className="mb-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Activity className="w-5 h-5 text-indigo-500 mr-2 animate-pulse" />
+              <Activity className="w-5 h-5 text-primary mr-2 animate-pulse" />
               <span className="text-sm font-medium text-gray-900">
                 {isPaused ? 'Streaming Paused' : 'Streaming Active'}
               </span>

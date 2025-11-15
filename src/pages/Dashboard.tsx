@@ -210,7 +210,7 @@ const Dashboard: React.FC = () => {
     {
       title: 'Models',
       value: models.length,
-      icon: <Layers className="w-8 h-8 text-indigo-500" />,
+      icon: <Layers className="w-8 h-8 text-primary" />,
       description: 'Trained models',
       color: 'indigo',
       path: '/app/train',
@@ -279,7 +279,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* AI Assistant Spotlight Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+      <div className="bg-gradient-to-r from-primary-600 via-primary-600 to-pink-600 rounded-2xl p-8 text-white shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center space-x-3 mb-3">
@@ -288,7 +288,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-3xl font-bold mb-1">Ask Your AI Assistant</h2>
-                <p className="text-indigo-100 text-lg">
+                <p className="text-primary/10 text-lg">
                   Get instant insights from all your datasets using natural language
                 </p>
               </div>
@@ -314,14 +314,14 @@ const Dashboard: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenAIChat}
-              className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl flex items-center space-x-3 group"
+              className="px-8 py-4 bg-white text-primary-600 rounded-xl font-bold hover:bg-primary/5 transition-all shadow-lg hover:shadow-xl flex items-center space-x-3 group"
             >
               <MessageSquare className="w-6 h-6" />
               <span>Open AI Chat</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             
-            <div className="text-center text-indigo-100 text-sm">
+            <div className="text-center text-primary/10 text-sm">
               <kbd className="px-2 py-1 bg-white bg-opacity-20 rounded">⌘</kbd> + <kbd className="px-2 py-1 bg-white bg-opacity-20 rounded">K</kbd> to quick access
             </div>
           </div>
@@ -335,7 +335,7 @@ const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/app/data')}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all border-2 border-transparent hover:border-indigo-300"
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-blue-50 to-primary/5 rounded-lg hover:from-blue-100 hover:to-primary/10 transition-all border-2 border-transparent hover:border-primary/30"
           >
             <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
               <Upload className="w-6 h-6 text-white" />
@@ -349,9 +349,9 @@ const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/app/train')}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-transparent hover:border-purple-300"
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-primary/5 to-pink-50 rounded-lg hover:from-primary/10 hover:to-pink-100 transition-all border-2 border-transparent hover:border-primary/30"
           >
-            <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
               <Brain className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
@@ -410,9 +410,9 @@ const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenAIChat}
-            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg hover:from-indigo-100 hover:to-purple-100 transition-all border-2 border-transparent hover:border-indigo-300"
+            className="flex items-center space-x-4 p-4 bg-gradient-to-br from-primary/5 to-primary/5 rounded-lg hover:from-primary/10 hover:to-primary/10 transition-all border-2 border-transparent hover:border-primary/30"
           >
-            <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
               <MessageSquare className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
@@ -436,7 +436,7 @@ const Dashboard: React.FC = () => {
           <div className="relative">
             <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full">
               <div 
-                className="h-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full transition-all duration-500"
+                className="h-1 bg-gradient-to-r from-primary-600 to-primary-600 rounded-full transition-all duration-500"
                 style={{ 
                   width: `${(workflowSteps.filter(s => s.status === 'completed').length / workflowSteps.length) * 100}%` 
                 }}
@@ -454,9 +454,9 @@ const Dashboard: React.FC = () => {
                   >
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white shadow-md transition-all ${
                       step.status === 'completed' 
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                        ? 'bg-gradient-to-r from-primary-600 to-primary-600 text-white'
                         : step.status === 'current'
-                        ? 'bg-white text-indigo-600 ring-4 ring-indigo-100 ring-offset-2'
+                        ? 'bg-white text-primary-600 ring-4 ring-primary/10 ring-offset-2'
                         : 'bg-gray-100 text-gray-400'
                     }`}>
                       {step.status === 'completed' ? (
@@ -482,13 +482,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           {nextStep && nextStep.status === 'current' && (
-            <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+            <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <TrendingUp className="w-5 h-5 text-indigo-600" />
+                  <TrendingUp className="w-5 h-5 text-primary-600" />
                   <div>
-                    <p className="text-sm font-medium text-indigo-900">Next Step: {nextStep.name}</p>
-                    <p className="text-xs text-indigo-700">{nextStep.description}</p>
+                    <p className="text-sm font-medium text-primary-900">Next Step: {nextStep.name}</p>
+                    <p className="text-xs text-primary-700">{nextStep.description}</p>
                   </div>
                 </div>
                 <Button
@@ -514,7 +514,7 @@ const Dashboard: React.FC = () => {
         ) : (
           statsCards.map((card) => (
             <Link key={card.title} to={card.path} className="block group">
-              <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-indigo-200">
+              <Card className="overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-primary/20">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-500">{card.title}</p>
@@ -572,8 +572,8 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="mt-8 bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Database className="w-8 h-8 text-indigo-600" />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Database className="w-8 h-8 text-primary-600" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No Datasets Yet</h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -617,8 +617,8 @@ const Dashboard: React.FC = () => {
               <Card key={model.id} className="hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-purple-600" />
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Brain className="w-6 h-6 text-primary-600" />
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">{model.name}</h3>

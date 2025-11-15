@@ -45,7 +45,7 @@ const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-indigo-50/20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-primary/5/20">
       <div className="text-center">
         <div className="relative">
           {/* Outer spinning circle */}
@@ -53,15 +53,15 @@ function LoadingFallback() {
           
           {/* Inner pulsing circle */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-8 w-8 bg-indigo-600/20 rounded-full animate-pulse"></div>
+            <div className="h-8 w-8 bg-primary-600/20 rounded-full animate-pulse"></div>
           </div>
         </div>
         
         <p className="mt-6 text-gray-600 font-medium">Loading amazing features...</p>
         <div className="mt-3 flex items-center justify-center gap-1">
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
         </div>
       </div>
     </div>
@@ -89,7 +89,7 @@ function GlobalErrorFallback({ error }: { error: Error }) {
         </details>
         <button
           onClick={() => window.location.reload()}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition"
+          className="w-full bg-primary-600 text-white py-2 px-4 rounded hover:bg-primary-700 transition"
         >
           Reload Page
         </button>

@@ -168,7 +168,7 @@ const DataUploader: React.FC = () => {
     <Card className="h-full">
       <div
         className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg ${
-          isDragging ? 'border-indigo-300 bg-indigo-50' : 'border-gray-300'
+          isDragging ? 'border-primary/30 bg-primary/5' : 'border-gray-300'
         } transition-colors duration-200`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -232,7 +232,7 @@ const DataUploader: React.FC = () => {
         {uploading && (
           <div className="w-full">
             <div className="flex items-center">
-              <Loader2 className="w-5 h-5 mr-2 text-indigo-500 animate-spin" />
+              <Loader2 className="w-5 h-5 mr-2 text-primary animate-spin" />
               <span className="text-sm font-medium text-gray-900">
                 {uploadProgress < 100
                   ? `Uploading ${file?.name}...`
@@ -241,7 +241,7 @@ const DataUploader: React.FC = () => {
             </div>
             <div className="w-full h-2 mt-2 bg-gray-200 rounded-full">
               <div
-                className="h-2 bg-indigo-500 rounded-full transition-all duration-300"
+                className="h-2 bg-primary rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>

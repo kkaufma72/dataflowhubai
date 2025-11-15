@@ -40,8 +40,8 @@ const ModelComparison: React.FC<ModelComparisonProps> = ({ models, onSelectModel
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <BarChart2 className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <BarChart2 className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Model Comparison</h3>
@@ -54,7 +54,7 @@ const ModelComparison: React.FC<ModelComparisonProps> = ({ models, onSelectModel
           <select
             value={comparisonMetric}
             onChange={(e) => setComparisonMetric(e.target.value)}
-            className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
           >
             <option value="accuracy">Accuracy</option>
             <option value="precision">Precision</option>
@@ -136,7 +136,7 @@ const ModelComparison: React.FC<ModelComparisonProps> = ({ models, onSelectModel
                         type="checkbox"
                         checked={selectedModels.includes(model.id)}
                         onChange={() => toggleModelSelection(model.id)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </td>
                   </tr>

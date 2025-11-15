@@ -36,7 +36,7 @@ export const KnowledgeSearchPanel: React.FC<KnowledgeSearchPanelProps> = ({
   const documentTypes = {
     dataset: { icon: Database, label: 'Datasets', color: 'text-blue-600' },
     analysis: { icon: BarChart3, label: 'Analyses', color: 'text-green-600' },
-    documentation: { icon: Book, label: 'Documentation', color: 'text-purple-600' },
+    documentation: { icon: Book, label: 'Documentation', color: 'text-primary-600' },
     insight: { icon: Star, label: 'Insights', color: 'text-yellow-600' },
     model: { icon: Bot, label: 'Models', color: 'text-red-600' }
   };

@@ -11,10 +11,10 @@ const Documentation: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Section with High Contrast */}
-      <div className="bg-white border-b-2 border-indigo-200 shadow-sm sticky top-0 z-10">
+      <div className="bg-white border-b-2 border-primary/20 shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-primary to-primary-600 rounded-lg">
               <Book className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900">Documentation & Guides</h1>
@@ -39,7 +39,7 @@ const Documentation: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex-1 px-6 py-4 font-semibold text-lg flex items-center justify-center gap-2 transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-b-4 border-indigo-700'
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-600 text-white border-b-4 border-indigo-700'
                     : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -97,7 +97,7 @@ const Documentation: React.FC = () => {
                     items: ['Data Sources', 'Webhooks', 'Security']
                   }
                 ].map((guide, idx) => (
-                  <div key={idx} className="p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-indigo-400 shadow-sm hover:shadow-lg transition-all cursor-pointer">
+                  <div key={idx} className="p-6 bg-white rounded-lg border-2 border-gray-200 hover:border-primary-400 shadow-sm hover:shadow-lg transition-all cursor-pointer">
                     <div className="flex items-center gap-3 mb-4">
                       <div className={`p-3 bg-${guide.color}-100 rounded-lg`}>
                         <guide.icon className={`w-6 h-6 text-${guide.color}-600`} />
@@ -110,7 +110,7 @@ const Documentation: React.FC = () => {
                     <ul className="space-y-2">
                       {guide.items.map((item, i) => (
                         <li key={i} className="flex items-center gap-2 text-gray-700">
-                          <ArrowRight className="w-4 h-4 text-indigo-600" />
+                          <ArrowRight className="w-4 h-4 text-primary-600" />
                           <span className="font-medium">{item}</span>
                         </li>
                       ))}
@@ -132,9 +132,9 @@ const Documentation: React.FC = () => {
               </div>
 
               {/* Authentication Section */}
-              <div className="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-lg">
-                <h3 className="text-xl font-bold text-indigo-900 mb-3">🔐 Authentication</h3>
-                <p className="text-indigo-800 font-medium mb-3">All API requests require authentication using an API key:</p>
+              <div className="bg-primary/5 border-l-4 border-indigo-600 p-6 rounded-lg">
+                <h3 className="text-xl font-bold text-primary-900 mb-3">🔐 Authentication</h3>
+                <p className="text-primary-800 font-medium mb-3">All API requests require authentication using an API key:</p>
                 <pre className="bg-gray-800 text-green-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 Authorization: Bearer YOUR_API_KEY
                 </pre>
@@ -211,7 +211,7 @@ Authorization: Bearer YOUR_API_KEY
                     }
                   ].map((faq, idx) => (
                     <div key={idx} className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b-2 border-gray-200">
+                      <div className="bg-gradient-to-r from-primary/5 to-primary/5 px-6 py-4 border-b-2 border-gray-200">
                         <p className="font-bold text-lg text-gray-900">{faq.q}</p>
                       </div>
                       <div className="px-6 py-4">
@@ -223,16 +223,16 @@ Authorization: Bearer YOUR_API_KEY
               </div>
 
               {/* Support CTA */}
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-8 text-white text-center">
+              <div className="bg-gradient-to-r from-primary-600 to-primary-600 rounded-lg p-8 text-white text-center">
                 <h3 className="text-2xl font-bold mb-3">Still need help?</h3>
-                <p className="text-lg mb-6 text-indigo-100">
+                <p className="text-lg mb-6 text-primary/10">
                   Our support team is available 24/7 to assist you
                 </p>
                 <div className="flex gap-4 justify-center flex-wrap">
-                  <button className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+                  <button className="bg-white text-primary-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
                     Contact Support
                   </button>
-                  <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-indigo-600 transition">
+                  <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-primary-600 transition">
                     Schedule Demo
                   </button>
                 </div>

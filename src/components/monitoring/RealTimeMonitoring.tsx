@@ -383,8 +383,8 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-              <Activity className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+              <Activity className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Current Accuracy</p>
@@ -447,8 +447,8 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
 
         <Card>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-              <BarChart2 className="w-6 h-6 text-purple-600" />
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+              <BarChart2 className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Request Volume</p>
@@ -553,7 +553,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                        className="h-full bg-primary-600 rounded-full transition-all duration-300"
                         style={{ width: `${retrainingProgress}%` }}
                       />
                     </div>
@@ -581,7 +581,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             <input
               id="auto-refresh"
               type="checkbox"
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
               checked={isAutoRefresh}
               onChange={() => setIsAutoRefresh(!isAutoRefresh)}
             />
@@ -615,7 +615,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value as any)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="1h">Last Hour</option>
             <option value="24h">Last 24 Hours</option>
@@ -654,7 +654,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             onClick={() => setActiveTab('overview')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'overview'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -664,7 +664,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             onClick={() => setActiveTab('drift')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'drift'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -674,7 +674,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             onClick={() => setActiveTab('performance')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'performance'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -684,7 +684,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             onClick={() => setActiveTab('abtesting')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'abtesting'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >

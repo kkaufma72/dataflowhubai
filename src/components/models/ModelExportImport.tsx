@@ -282,8 +282,8 @@ main();
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Package2 className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Package2 className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Export & Import</h3>
@@ -300,12 +300,12 @@ main();
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div 
               className={`p-4 border rounded-lg cursor-pointer ${
-                exportFormat === 'zip' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                exportFormat === 'zip' ? 'border-primary bg-primary/5' : 'border-gray-200'
               }`}
               onClick={() => setExportFormat('zip')}
             >
               <div className="flex items-center">
-                <FileJson className="w-5 h-5 text-indigo-500 mr-2" />
+                <FileJson className="w-5 h-5 text-primary mr-2" />
                 <span className="text-sm font-medium text-gray-900">Complete Package (.zip)</span>
               </div>
               <p className="mt-2 text-xs text-gray-500">
@@ -315,12 +315,12 @@ main();
             
             <div 
               className={`p-4 border rounded-lg cursor-pointer ${
-                exportFormat === 'json' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                exportFormat === 'json' ? 'border-primary bg-primary/5' : 'border-gray-200'
               }`}
               onClick={() => setExportFormat('json')}
             >
               <div className="flex items-center">
-                <FileText className="w-5 h-5 text-indigo-500 mr-2" />
+                <FileText className="w-5 h-5 text-primary mr-2" />
                 <span className="text-sm font-medium text-gray-900">Model Config (.json)</span>
               </div>
               <p className="mt-2 text-xs text-gray-500">
@@ -330,12 +330,12 @@ main();
             
             <div 
               className={`p-4 border rounded-lg cursor-pointer ${
-                exportFormat === 'onnx' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                exportFormat === 'onnx' ? 'border-primary bg-primary/5' : 'border-gray-200'
               }`}
               onClick={() => setExportFormat('onnx')}
             >
               <div className="flex items-center">
-                <Package2 className="w-5 h-5 text-indigo-500 mr-2" />
+                <Package2 className="w-5 h-5 text-primary mr-2" />
                 <span className="text-sm font-medium text-gray-900">ONNX Format (.onnx)</span>
               </div>
               <p className="mt-2 text-xs text-gray-500">

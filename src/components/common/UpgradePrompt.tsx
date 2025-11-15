@@ -83,10 +83,10 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       )}
 
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary-600 rounded-2xl mb-4">
           <Sparkles className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-purple-600 mb-2">
+        <h2 className="text-2xl font-bold text-primary-600 mb-2">
           {featureInfo.title}
         </h2>
         <p className="text-gray-600">
@@ -95,7 +95,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       </div>
 
       {/* Feature Benefits */}
-      <Card className="mb-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
+      <Card className="mb-6 bg-gradient-to-br from-primary/5 to-primary/5 border-primary/20">
         <h3 className="font-semibold text-gray-900 mb-4">What you'll get:</h3>
         <ul className="space-y-3">
           {featureInfo.benefits.map((benefit, idx) => (
@@ -113,12 +113,12 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-sm text-gray-600 mb-1">Current Plan</p>
-          <p className="text-2xl font-bold text-purple-600">Free</p>
+          <p className="text-2xl font-bold text-primary-600">Free</p>
           <p className="text-xs text-gray-500 mt-2">
             3 datasets • 20 AI questions/month
           </p>
         </div>
-        <div className="p-4 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg shadow-md">
+        <div className="p-4 bg-gradient-to-br from-primary-600 to-primary-600 rounded-lg shadow-md">
           <p className="text-sm text-white/80 mb-1">Upgrade to</p>
           <p className="text-2xl font-bold text-white">Pro</p>
           <p className="text-xs text-white/80 mt-2">
@@ -151,7 +151,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
             startCheckout({ tier: 'professional', billing: 'monthly' });
           }}
           variant="primary"
-          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg py-4"
+          className="w-full bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-lg py-4"
           icon={loading ? undefined : <CreditCard className="w-5 h-5" />}
           disabled={loading}
         >

@@ -61,7 +61,7 @@ const DataManagementSimple: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search datasets..."
-            className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+            className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-primary focus:ring-4 focus:ring-primary/10"
           />
         </div>
         <Button
@@ -76,8 +76,8 @@ const DataManagementSimple: React.FC = () => {
       {/* Empty State */}
       {datasets.length === 0 && (
         <Card className="text-center py-16">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Database className="w-10 h-10 text-indigo-600" />
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Database className="w-10 h-10 text-primary-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             No datasets yet
@@ -180,7 +180,7 @@ const DataManagementSimple: React.FC = () => {
               </button>
             </div>
             
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-indigo-400 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-primary-400 transition-colors">
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-900 font-semibold mb-2">
                 Click or drag file to upload
@@ -204,7 +204,7 @@ const DataManagementSimple: React.FC = () => {
               />
               <label
                 htmlFor="file-upload"
-                className="inline-block mt-4 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 cursor-pointer"
+                className="inline-block mt-4 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 cursor-pointer"
               >
                 Choose File
               </label>

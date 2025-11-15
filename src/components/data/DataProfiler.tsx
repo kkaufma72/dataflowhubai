@@ -126,7 +126,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
       case 'categorical':
         return <PieChart className="w-4 h-4 text-green-500" />;
       case 'datetime':
-        return <Clock className="w-4 h-4 text-purple-500" />;
+        return <Clock className="w-4 h-4 text-primary" />;
       case 'boolean':
         return <Check className="w-4 h-4 text-amber-500" />;
       default:
@@ -141,7 +141,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
       case 'categorical':
         return 'bg-green-100 text-green-800';
       case 'datetime':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-primary/10 text-primary-800';
       case 'boolean':
         return 'bg-amber-100 text-amber-800';
       default:
@@ -293,8 +293,8 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <BarChart2 className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <BarChart2 className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Data Profile</h3>
@@ -337,7 +337,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-12">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin mb-4" />
+          <RefreshCw className="w-8 h-8 text-primary-600 animate-spin mb-4" />
           <p className="text-gray-700">Generating data profile...</p>
         </div>
       ) : !profile ? (
@@ -360,7 +360,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                   onClick={() => setActiveTab('overview')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'overview'
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-primary text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -370,7 +370,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                   onClick={() => setActiveTab('columns')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'columns'
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-primary text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -380,7 +380,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                   onClick={() => setActiveTab('issues')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'issues'
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-primary text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -397,7 +397,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                   onClick={() => setActiveTab('recommendations')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'recommendations'
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-primary text-primary-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -468,7 +468,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                       onClick={() => setSelectedColumn(column)}
                       className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                         selectedColumn === column
-                          ? 'border-indigo-500 bg-indigo-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
@@ -689,7 +689,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                         onClick={() => toggleRecommendation(rec)}
                         className={`p-4 rounded-lg border cursor-pointer transition-colors ${
                           isSelected
-                            ? 'border-indigo-500 bg-indigo-50'
+                            ? 'border-primary bg-primary/5'
                             : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                       >
@@ -697,7 +697,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                           <div className="flex-shrink-0 mt-0.5">
                             <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                               isSelected
-                                ? 'border-indigo-500 bg-indigo-500'
+                                ? 'border-primary bg-primary'
                                 : 'border-gray-300'
                             }`}>
                               {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -714,7 +714,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                               <p className="text-sm font-medium text-gray-700 mt-1">Column: {rec.column}</p>
                             )}
                             <p className="text-sm text-gray-600 mt-2">{rec.description}</p>
-                            <p className="text-sm font-medium text-indigo-600 mt-2">Method: {rec.suggestedMethod}</p>
+                            <p className="text-sm font-medium text-primary-600 mt-2">Method: {rec.suggestedMethod}</p>
                           </div>
                         </div>
                       </div>

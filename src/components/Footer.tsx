@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-2">
             <div className="flex items-center mb-6">
-              <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl mr-2">D</div>
+              <div className="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xl mr-2">D</div>
               <span className="text-xl font-bold">DataFlowHub AI</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
@@ -75,11 +75,11 @@ const Footer = () => {
                 <input 
                   type="email" 
                   placeholder="Your email" 
-                  className="px-4 py-2 rounded-l-lg bg-gray-800 text-white border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-grow dark:bg-gray-700"
+                  className="px-4 py-2 rounded-l-lg bg-gray-800 text-white border-0 focus:outline-none focus:ring-2 focus:ring-primary flex-grow dark:bg-gray-700"
                 />
                 <button 
                   type="submit" 
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-r-lg transition-colors dark:bg-indigo-700 dark:hover:bg-primary-600"
                 >
                   Subscribe
                 </button>

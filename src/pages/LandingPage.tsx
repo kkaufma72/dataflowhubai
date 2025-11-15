@@ -85,7 +85,7 @@ const LandingPage: React.FC = () => {
               </p>
             </div>
             <div className="p-8 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 text-purple-600">
+              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary-600">
                 <Rocket className="h-6 w-6" />
               </div>
               <h3 className="mt-6 text-xl font-semibold text-gray-900">Seamless Deployment</h3>

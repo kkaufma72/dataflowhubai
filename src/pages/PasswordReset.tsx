@@ -105,8 +105,8 @@ const PasswordReset: React.FC = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-            <Lock className="w-6 h-6 text-indigo-600" />
+          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Lock className="w-6 h-6 text-primary-600" />
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -171,7 +171,7 @@ const PasswordReset: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                   />
                 </div>
               ) : (
@@ -188,7 +188,7 @@ const PasswordReset: React.FC = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     />
                   </div>
                   
@@ -204,7 +204,7 @@ const PasswordReset: React.FC = () => {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     />
                   </div>
                 </>
@@ -229,7 +229,7 @@ const PasswordReset: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/signin')}
-                  className="text-sm text-indigo-600 hover:text-indigo-500"
+                  className="text-sm text-primary-600 hover:text-primary"
                 >
                   Back to Sign In
                 </button>

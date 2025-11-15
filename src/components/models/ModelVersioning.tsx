@@ -96,8 +96,8 @@ const ModelVersioning: React.FC<ModelVersioningProps> = ({
     <Card>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <GitBranch className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <GitBranch className="w-6 h-6 text-primary-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Version Control</h3>
@@ -138,13 +138,13 @@ const ModelVersioning: React.FC<ModelVersioningProps> = ({
           <div
             key={version.id}
             className={`p-4 border rounded-lg ${
-              index === 0 ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200'
+              index === 0 ? 'bg-primary/5 border-primary/20' : 'bg-white border-gray-200'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 {index === 0 ? (
-                  <GitCommit className="w-5 h-5 text-indigo-600 mr-2" />
+                  <GitCommit className="w-5 h-5 text-primary-600 mr-2" />
                 ) : (
                   <GitMerge className="w-5 h-5 text-gray-400 mr-2" />
                 )}
@@ -152,7 +152,7 @@ const ModelVersioning: React.FC<ModelVersioningProps> = ({
                   <h4 className="text-sm font-medium text-gray-900">
                     {version.version}
                     {index === 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">
+                      <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary-800 rounded-full">
                         Current
                       </span>
                     )}

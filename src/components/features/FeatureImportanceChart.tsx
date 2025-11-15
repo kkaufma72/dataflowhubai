@@ -146,8 +146,8 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
       <Card>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-              <BarChart2 className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+              <BarChart2 className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-900">Feature Importance Analysis</h3>
@@ -180,7 +180,7 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
           <div className="flex items-center space-x-4">
             <button
               onClick={() => handleSort('importance')}
-              className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600"
+              className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
             >
               Sort by Importance
               {sortBy === 'importance' && (
@@ -189,7 +189,7 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
             </button>
             <button
               onClick={() => handleSort('name')}
-              className="flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600"
+              className="flex items-center text-sm font-medium text-gray-700 hover:text-primary-600"
             >
               Sort by Name
               {sortBy === 'name' && (
@@ -230,7 +230,7 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
 
       <Card>
         <div className="flex items-center mb-4">
-          <Info className="w-5 h-5 text-indigo-500 mr-2" />
+          <Info className="w-5 h-5 text-primary mr-2" />
           <h3 className="text-sm font-medium text-gray-900">Understanding Feature Importance</h3>
         </div>
         
@@ -241,9 +241,9 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-indigo-50 rounded-lg">
-              <h4 className="font-medium text-indigo-900 mb-2">Benefits of Feature Selection</h4>
-              <ul className="list-disc list-inside space-y-1 text-indigo-800">
+            <div className="p-4 bg-primary/5 rounded-lg">
+              <h4 className="font-medium text-primary-900 mb-2">Benefits of Feature Selection</h4>
+              <ul className="list-disc list-inside space-y-1 text-primary-800">
                 <li>Reduces model complexity</li>
                 <li>Prevents overfitting</li>
                 <li>Improves training speed</li>

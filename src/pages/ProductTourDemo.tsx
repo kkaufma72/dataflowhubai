@@ -260,9 +260,9 @@ const ProductTourDemo: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Models</p>
-                  <p className="text-3xl font-bold text-purple-600">{DEMO_MODELS.length}</p>
+                  <p className="text-3xl font-bold text-primary-600">{DEMO_MODELS.length}</p>
                 </div>
-                <Brain className="w-10 h-10 text-purple-500" />
+                <Brain className="w-10 h-10 text-primary" />
               </div>
               <p className="text-sm text-green-600 mt-2">{DEMO_MODELS.length} deployed in production</p>
             </Card>
@@ -282,9 +282,9 @@ const ProductTourDemo: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Accuracy</p>
-                  <p className="text-3xl font-bold text-indigo-600">96.7%</p>
+                  <p className="text-3xl font-bold text-primary-600">96.7%</p>
                 </div>
-                <Target className="w-10 h-10 text-indigo-500" />
+                <Target className="w-10 h-10 text-primary" />
               </div>
               <p className="text-sm text-green-600 mt-2">Industry-leading AI performance</p>
             </Card>
@@ -355,9 +355,9 @@ const ProductTourDemo: React.FC = () => {
                   <CheckCircle className="w-5 h-5 text-green-500" />
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                       <Cpu className="w-5 h-5 text-gray-900" />
                     </div>
                     <span className="font-medium text-gray-900">API Connections</span>
@@ -409,7 +409,7 @@ const ProductTourDemo: React.FC = () => {
                     <span className="text-sm text-gray-600">98%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-500 h-2 rounded-full" style={{width: '98%'}}></div>
+                    <div className="bg-primary h-2 rounded-full" style={{width: '98%'}}></div>
                   </div>
                 </div>
               </div>
@@ -580,8 +580,8 @@ const ProductTourDemo: React.FC = () => {
                 <p className="text-sm text-gray-600">Automatically discover patterns and correlations in your data</p>
               </div>
               
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <Brain className="w-8 h-8 text-purple-600 mb-2" />
+              <div className="p-4 bg-primary/5 rounded-lg">
+                <Brain className="w-8 h-8 text-primary-600 mb-2" />
                 <h4 className="font-medium mb-1">ML Recommendations</h4>
                 <p className="text-sm text-gray-600">Get suggestions for feature engineering and model selection</p>
               </div>
@@ -677,9 +677,9 @@ const ProductTourDemo: React.FC = () => {
                   <p className="text-sm text-blue-800">Removed 8 highly correlated features (&gt;0.95 correlation)</p>
                 </div>
                 
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <h4 className="font-medium text-purple-900 mb-2">Variance Threshold</h4>
-                  <p className="text-sm text-purple-800">Filtered out 3 low-variance features (&lt;0.01 variance)</p>
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <h4 className="font-medium text-primary-900 mb-2">Variance Threshold</h4>
+                  <p className="text-sm text-primary-800">Filtered out 3 low-variance features (&lt;0.01 variance)</p>
                 </div>
                 
                 <div className="p-4 bg-green-50 rounded-lg">
@@ -759,8 +759,8 @@ const ProductTourDemo: React.FC = () => {
                   key={model.id}
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedModel.id === model.id 
-                      ? 'border-purple-500 bg-purple-50' 
-                      : 'border-gray-200 hover:border-purple-300'
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-gray-200 hover:border-primary/30'
                   }`}
                   onClick={() => setSelectedModel(model)}
                 >
@@ -794,7 +794,7 @@ const ProductTourDemo: React.FC = () => {
                     <p className="text-sm text-gray-600">Accuracy</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-purple-600">{(selectedModel.precision * 100).toFixed(1)}%</p>
+                    <p className="text-2xl font-bold text-primary-600">{(selectedModel.precision * 100).toFixed(1)}%</p>
                     <p className="text-sm text-gray-600">Precision</p>
                   </div>
                   <div className="text-center">
@@ -802,7 +802,7 @@ const ProductTourDemo: React.FC = () => {
                     <p className="text-sm text-gray-600">Recall</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-indigo-600">{(selectedModel.f1Score * 100).toFixed(1)}%</p>
+                    <p className="text-2xl font-bold text-primary-600">{(selectedModel.f1Score * 100).toFixed(1)}%</p>
                     <p className="text-sm text-gray-600">F1 Score</p>
                   </div>
                 </div>
@@ -946,11 +946,11 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-6 text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-6 h-6 text-primary-600" />
               </div>
               <h3 className="font-semibold text-lg mb-2">Global Latency</h3>
-              <p className="text-3xl font-bold text-purple-600 mb-1">8ms</p>
+              <p className="text-3xl font-bold text-primary-600 mb-1">8ms</p>
               <p className="text-sm text-gray-600">Edge-optimized response</p>
             </Card>
           </div>
@@ -1114,8 +1114,8 @@ const ProductTourDemo: React.FC = () => {
             </Card>
             
             <Card className="p-4 text-center">
-              <Clock className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-purple-600">8ms</p>
+              <Clock className="w-8 h-8 text-primary-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-primary-600">8ms</p>
               <p className="text-sm text-gray-600">Global Edge Latency</p>
             </Card>
             
@@ -1270,7 +1270,7 @@ const ProductTourDemo: React.FC = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <a
           href="/signin"
-          className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-900 font-semibold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300"
+          className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-gray-900 font-semibold rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transform transition-all duration-300"
         >
           <Zap className="w-5 h-5" />
           Start Free Trial
@@ -1282,7 +1282,7 @@ const ProductTourDemo: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-600 to-primary-600 rounded-xl flex items-center justify-center">
                 <StepIcon className="w-6 h-6 text-gray-900" />
               </div>
               <div>
@@ -1307,7 +1307,7 @@ const ProductTourDemo: React.FC = () => {
               {/* Sign Up Button */}
               <a
                 href="/signin"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-900 font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-600 text-gray-900 font-semibold rounded-lg hover:from-primary-700 hover:to-primary-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
               >
                 <Zap className="w-4 h-4" />
                 Sign Up Free
@@ -1328,7 +1328,7 @@ const ProductTourDemo: React.FC = () => {
                 onClick={() => goToStep(index)}
                 className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   index === currentStep
-                    ? 'bg-indigo-600 text-gray-900'
+                    ? 'bg-primary-600 text-gray-900'
                     : index < currentStep
                     ? 'bg-green-100 text-green-800'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -1349,7 +1349,7 @@ const ProductTourDemo: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Current Step Header */}
         <div className="mb-8 text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <StepIcon className="w-8 h-8 text-gray-900" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">{currentTourStep.title}</h2>
@@ -1380,7 +1380,7 @@ const ProductTourDemo: React.FC = () => {
                 onClick={() => goToStep(index)}
                 className={`w-3 h-3 rounded-full transition-all ${
                   index === currentStep
-                    ? 'bg-indigo-600'
+                    ? 'bg-primary-600'
                     : index < currentStep
                     ? 'bg-green-500'
                     : 'bg-gray-300'
@@ -1401,7 +1401,7 @@ const ProductTourDemo: React.FC = () => {
 
         {/* Sign Up CTA Section */}
         <div className="mt-16 mb-16">
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-12 text-center text-gray-900 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+          <div className="bg-gradient-to-r from-primary-600 via-primary-600 to-pink-600 rounded-3xl p-12 text-center text-gray-900 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
             <div className="max-w-4xl mx-auto">
               <div className="mb-6">
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-full text-sm font-semibold backdrop-blur-sm">
@@ -1413,7 +1413,7 @@ const ProductTourDemo: React.FC = () => {
               <h2 className="text-4xl font-bold mb-4">
                 Ready to Transform Your Data?
               </h2>
-              <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl text-primary/10 mb-8 max-w-2xl mx-auto leading-relaxed">
                 You've just seen our enterprise-scale platform with <strong>96.7% AI accuracy</strong>, 
                 <strong> 2.4B daily predictions</strong>, and <strong>8ms global latency</strong>. 
                 Start your AI journey today.
@@ -1422,7 +1422,7 @@ const ProductTourDemo: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <a
                   href="/signin"
-                  className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-xl hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-primary-600 font-bold text-lg rounded-xl hover:bg-primary/5 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <Zap className="w-6 h-6" />
                   Start Free Trial
@@ -1476,8 +1476,8 @@ const ProductTourDemo: React.FC = () => {
             </div>
             
             <div className="p-6">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="w-6 h-6 text-primary-600" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Natural Language</h4>
               <p className="text-gray-600">Query your data and train models using simple natural language commands</p>

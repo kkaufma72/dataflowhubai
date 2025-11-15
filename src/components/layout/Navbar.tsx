@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
               {/* New Project Button */}
               <button
                 onClick={() => setShowNewProjectModal(true)}
-                className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
                 title="Create New Project"
               >
                 <Plus className="h-4 w-4" />

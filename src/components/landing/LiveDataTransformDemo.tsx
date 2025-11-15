@@ -106,7 +106,7 @@ const LiveDataTransformDemo: React.FC = () => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-5 py-3 text-white">
+      <div className="bg-gradient-to-r from-primary-600 to-primary-600 px-5 py-3 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5" />
@@ -128,14 +128,14 @@ const LiveDataTransformDemo: React.FC = () => {
           <span className="text-xs text-gray-500 font-medium">COMMAND:</span>
           <div className="flex-1 font-mono text-sm text-gray-900">
             {commandText}
-            {isTyping && <span className="inline-block w-2 h-4 bg-indigo-600 ml-1 animate-pulse" />}
+            {isTyping && <span className="inline-block w-2 h-4 bg-primary-600 ml-1 animate-pulse" />}
           </div>
           {!isTyping && commandText && (
             <Check className="w-4 h-4 text-green-500" />
           )}
         </div>
         {commandText && !isTyping && (
-          <p className="text-xs text-indigo-600 mt-2">
+          <p className="text-xs text-primary-600 mt-2">
             {COMMANDS[currentCommand].description}
           </p>
         )}

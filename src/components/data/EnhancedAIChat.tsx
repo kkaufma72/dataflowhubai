@@ -297,7 +297,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const ChatContent = () => (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-indigo-500 to-purple-600">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-primary to-primary-600">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
@@ -336,8 +336,8 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
               {/* Avatar */}
               <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm ${
                 message.role === 'user' 
-                  ? 'bg-gradient-to-br from-indigo-500 to-indigo-600' 
-                  : 'bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-600'
+                  ? 'bg-gradient-to-br from-primary to-primary-600' 
+                  : 'bg-gradient-to-br from-primary via-primary-600 to-blue-600'
               }`}>
                 {message.role === 'user' ? (
                   <User className="w-4 h-4 text-white" />
@@ -350,7 +350,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
               <div>
                 <div className={`rounded-xl px-4 py-3 shadow-sm ${
                   message.role === 'user'
-                    ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white'
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -358,7 +358,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
                   {/* Insights */}
                   {message.insights && message.insights.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs font-semibold text-indigo-600 mb-2">💡 Key Insights:</p>
+                      <p className="text-xs font-semibold text-primary-600 mb-2">💡 Key Insights:</p>
                       <ul className="space-y-1">
                         {message.insights.map((insight, i) => (
                           <li key={i} className="text-xs text-gray-700">• {insight}</li>
@@ -370,7 +370,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
                   {/* Charts */}
                   {message.charts && message.charts.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs font-semibold text-indigo-600 mb-2">📊 Generated Charts:</p>
+                      <p className="text-xs font-semibold text-primary-600 mb-2">📊 Generated Charts:</p>
                       {message.charts.map((chart, i) => (
                         <div key={i} className="mt-2 p-2 bg-gray-50 rounded">
                           <p className="text-xs text-gray-600">{chart.title || `Chart ${i + 1}`}</p>
@@ -386,7 +386,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
                         <button
                           key={i}
                           onClick={() => toast.success(`Executing: ${action.label}`)}
-                          className="text-xs px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 transition"
+                          className="text-xs px-3 py-1.5 bg-primary/10 text-primary-700 rounded-full hover:bg-indigo-200 transition"
                         >
                           {action.label}
                         </button>
@@ -409,12 +409,12 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         {isLoading && (
           <div className="flex justify-start">
             <div className="flex items-start space-x-2">
-              <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-600 shadow-sm">
+              <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary via-primary-600 to-blue-600 shadow-sm">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200 max-w-xs">
                 <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-primary-600 animate-spin" />
                   <div>
                     <p className="text-sm text-gray-900 font-medium">AI Team Working...</p>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -432,9 +432,9 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
 
       {/* Quick Actions (show if conversation is new) */}
       {messages.length <= 2 && !isLoading && quickActions.length > 0 && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-indigo-50">
+        <div className="px-4 py-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-primary/5">
           <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-            <Sparkles className="w-3 h-3 mr-1 text-indigo-500" />
+            <Sparkles className="w-3 h-3 mr-1 text-primary" />
             {isMarketingUser(userProfile) ? '🎯 Marketing Actions:' : '⚡ Quick Actions:'}
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -442,7 +442,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
               <button
                 key={idx}
                 onClick={qa.action}
-                className="text-xs px-3 py-2 bg-gradient-to-r from-white to-indigo-50 text-indigo-700 rounded-lg hover:from-indigo-50 hover:to-indigo-100 transition-all border border-indigo-200 font-medium shadow-sm hover:shadow"
+                className="text-xs px-3 py-2 bg-gradient-to-r from-white to-primary/5 text-primary-700 rounded-lg hover:from-primary/5 hover:to-primary/10 transition-all border border-primary/20 font-medium shadow-sm hover:shadow"
               >
                 {qa.label}
               </button>
@@ -480,7 +480,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             onKeyPress={handleKeyPress}
             placeholder={isListening ? "Listening..." : `Ask about ${dataset.name}...`}
             disabled={isLoading || isListening}
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
           />
           
           <Button
@@ -496,7 +496,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         {/* Context indicator */}
         <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center">
-            <Sparkles className="w-3 h-3 mr-1 text-indigo-500" />
+            <Sparkles className="w-3 h-3 mr-1 text-primary" />
             <span>
               {userProfile.use_case && `${formatUseCase(userProfile.use_case)}`}
               {userProfile.company && ` at ${userProfile.company}`}

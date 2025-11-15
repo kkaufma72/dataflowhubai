@@ -27,10 +27,10 @@ const UserGuide: React.FC<UserGuideProps> = ({
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center mb-4">
-          <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Book className="w-6 h-6 text-indigo-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+            <Book className="w-6 h-6 text-primary-600" />
           </div>
-          <h1 className="ml-4 text-2xl font-bold text-purple-600">{title}</h1>
+          <h1 className="ml-4 text-2xl font-bold text-primary-600">{title}</h1>
         </div>
         <p className="text-gray-600">{description}</p>
       </div>
@@ -40,7 +40,7 @@ const UserGuide: React.FC<UserGuideProps> = ({
           {steps.map((step, index) => (
             <div key={index} className="flex">
               <div className="flex-shrink-0 mr-4">
-                <div className="flex items-center justify-center w-8 h-8 text-white bg-indigo-600 rounded-full">
+                <div className="flex items-center justify-center w-8 h-8 text-white bg-primary-600 rounded-full">
                   {index + 1}
                 </div>
               </div>

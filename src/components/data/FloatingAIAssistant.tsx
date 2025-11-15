@@ -78,7 +78,7 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
     return (
       <button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110 z-40"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110 z-40"
       >
         <Bot className="w-6 h-6 text-white" />
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
@@ -90,7 +90,7 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110 z-40"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center group hover:scale-110 z-40"
       >
         <Bot className="w-6 h-6 text-white" />
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
@@ -101,9 +101,9 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
   const userName = user?.user_metadata?.full_name?.split(' ')[0] || 'there';
 
   return (
-    <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 z-50 animate-slide-up">
+    <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-primary/20 z-50 animate-slide-up">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-t-2xl">
+      <div className="bg-gradient-to-r from-primary to-primary-600 p-4 rounded-t-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
@@ -130,9 +130,9 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
       <div className="p-6">
         {/* Greeting */}
         <div className="mb-6">
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+          <div className="bg-gradient-to-r from-primary/5 to-primary/5 rounded-xl p-4 border border-primary/10">
             <div className="flex items-start space-x-3">
-              <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+              <Sparkles className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-gray-900 font-semibold text-base">
                   👋 Hi {userName}!
@@ -157,22 +157,22 @@ const FloatingAIAssistant: React.FC<FloatingAIAssistantProps> = ({ onAction }) =
             const colorClasses = {
               blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
               green: { bg: 'bg-green-100', text: 'text-green-600' },
-              purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
-              indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600' }
+              purple: { bg: 'bg-primary/10', text: 'text-primary-600' },
+              indigo: { bg: 'bg-primary/10', text: 'text-primary-600' }
             }[action.color] || { bg: 'bg-gray-100', text: 'text-gray-600' };
 
             return (
               <button
                 key={action.id}
                 onClick={() => handleAction(action.id)}
-                className="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 group"
+                className="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-primary-400 hover:bg-primary/5 transition-all duration-200 group"
               >
                 <div className="flex items-start space-x-3">
                   <div className={`w-10 h-10 ${colorClasses.bg} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
                     <action.icon className={`w-5 h-5 ${colorClasses.text}`} />
                   </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
+                  <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-600">
                     {action.label}
                   </p>
                   <p className="text-xs text-gray-600 mt-0.5">

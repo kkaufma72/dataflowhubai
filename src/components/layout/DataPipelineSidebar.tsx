@@ -38,11 +38,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md group transition-colors ${
             isActive
-              ? 'text-indigo-700 bg-indigo-50'
-              : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              ? 'text-primary-700 bg-primary/5'
+              : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
           }`}
         >
-          <Icon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-indigo-500" />
+          <Icon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-primary" />
           <span className="flex-1">{title}</span>
           {isOpen ? (
             <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -60,8 +60,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 className={({ isActive }) =>
                   `block px-3 py-2 text-sm font-medium rounded-md ${
                     isActive
-                      ? 'text-indigo-700 bg-indigo-50'
-                      : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
+                      ? 'text-primary-700 bg-primary/5'
+                      : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
                   }`
                 }
               >
@@ -80,12 +80,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       className={({ isActive }) =>
         `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
           isActive
-            ? 'text-indigo-700 bg-indigo-50'
-            : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+            ? 'text-primary-700 bg-primary/5'
+            : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
         }`
       }
     >
-      <Icon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-indigo-500" />
+      <Icon className="w-5 h-5 mr-3 text-gray-500 group-hover:text-primary" />
       <span>{title}</span>
     </NavLink>
   );
@@ -198,8 +198,8 @@ const DataPipelineSidebar: React.FC = () => {
                 className={({ isActive }) =>
                   `p-2 rounded-md ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-indigo-600'
+                      ? 'bg-primary/5 text-primary-600'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-primary-600'
                   }`
                 }
                 title={item.title}
@@ -226,7 +226,7 @@ const DataPipelineSidebar: React.FC = () => {
       
       {!collapsed && (
         <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+          <button className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700">
             <Plus className="w-4 h-4 mr-2" />
             New Pipeline
           </button>

@@ -323,8 +323,8 @@ print(prediction)`;
   if (models.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-          <Rocket className="w-6 h-6 text-indigo-600" />
+        <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+          <Rocket className="w-6 h-6 text-primary-600" />
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for deployment</h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -342,7 +342,7 @@ print(prediction)`;
       {/* Page Header - Improved visibility */}
       <div className="mb-8">
         <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
             <Rocket className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -369,7 +369,7 @@ print(prediction)`;
                       key={model.id}
                       className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                         selectedModel?.id === model.id
-                          ? 'bg-indigo-50 text-indigo-700'
+                          ? 'bg-primary/5 text-primary-700'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                       onClick={() => handleModelSelect(model.id)}
@@ -378,14 +378,14 @@ print(prediction)`;
                         <Rocket
                           className={`w-4 h-4 mr-2 ${
                             selectedModel?.id === model.id
-                              ? 'text-indigo-500'
+                              ? 'text-primary'
                               : 'text-gray-400'
                           }`}
                         />
                         <span className="truncate">{model.name}</span>
                       </div>
                       {selectedModel?.id === model.id && (
-                        <ChevronRight className="w-4 h-4 text-indigo-500" />
+                        <ChevronRight className="w-4 h-4 text-primary" />
                       )}
                     </button>
                   ))}
@@ -401,7 +401,7 @@ print(prediction)`;
                       key={model.id}
                       className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                         selectedModel?.id === model.id
-                          ? 'bg-indigo-50 text-indigo-700'
+                          ? 'bg-primary/5 text-primary-700'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                       onClick={() => handleModelSelect(model.id)}
@@ -410,14 +410,14 @@ print(prediction)`;
                         <BarChart2
                           className={`w-4 h-4 mr-2 ${
                             selectedModel?.id === model.id
-                              ? 'text-indigo-500'
+                              ? 'text-primary'
                               : 'text-gray-400'
                           }`}
                         />
                         <span className="truncate">{model.name}</span>
                       </div>
                       {selectedModel?.id === model.id && (
-                        <ChevronRight className="w-4 h-4 text-indigo-500" />
+                        <ChevronRight className="w-4 h-4 text-primary" />
                       )}
                     </button>
                   ))}
@@ -509,7 +509,7 @@ print(prediction)`;
                             <input
                               type="text"
                               id="endpoint"
-                              className="flex-1 block w-full min-w-0 px-3 py-2 border-gray-300 rounded-none rounded-r-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              className="flex-1 block w-full min-w-0 px-3 py-2 border-gray-300 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm"
                               value={deploymentConfig.endpoint}
                               onChange={(e) =>
                                 setDeploymentConfig({
@@ -531,7 +531,7 @@ print(prediction)`;
                             </label>
                             <select
                               id="minInstances"
-                              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
                               value={deploymentConfig.scalingOptions.minInstances}
                               onChange={(e) =>
                                 setDeploymentConfig({
@@ -558,7 +558,7 @@ print(prediction)`;
                             </label>
                             <select
                               id="maxInstances"
-                              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
                               value={deploymentConfig.scalingOptions.maxInstances}
                               onChange={(e) =>
                                 setDeploymentConfig({
@@ -588,7 +588,7 @@ print(prediction)`;
                                 id="auth-api-key"
                                 name="authentication"
                                 type="radio"
-                                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary"
                                 checked={deploymentConfig.authentication === 'api_key'}
                                 onChange={() =>
                                   setDeploymentConfig({
@@ -609,7 +609,7 @@ print(prediction)`;
                                 id="auth-oauth"
                                 name="authentication"
                                 type="radio"
-                                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary"
                                 checked={deploymentConfig.authentication === 'oauth'}
                                 onChange={() =>
                                   setDeploymentConfig({
@@ -646,7 +646,7 @@ print(prediction)`;
                         API Endpoint
                       </h4>
                       <div className="flex items-center p-2 mt-2 bg-gray-50 rounded-md">
-                        <code className="flex-1 text-sm text-indigo-600 break-all">
+                        <code className="flex-1 text-sm text-primary-600 break-all">
                           {selectedModel.deploymentEndpoint}
                         </code>
                         <button
@@ -673,7 +673,7 @@ print(prediction)`;
                         API Key
                       </h4>
                       <div className="flex items-center p-2 mt-2 bg-gray-50 rounded-md">
-                        <code className="flex-1 text-sm text-indigo-600 font-mono">
+                        <code className="flex-1 text-sm text-primary-600 font-mono">
                           {showApiKey ? apiKey : '•'.repeat(20)}
                         </code>
                         <div className="flex ml-2">
@@ -892,12 +892,12 @@ print(prediction)`;
       <Card>
         <h2 className="text-lg font-medium text-gray-900 mb-4">Deployment Options</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="p-4 bg-indigo-50 rounded-lg">
-            <h3 className="text-md font-medium text-indigo-900 mb-2">REST API</h3>
-            <p className="text-sm text-indigo-700 mb-3">
+          <div className="p-4 bg-primary/5 rounded-lg">
+            <h3 className="text-md font-medium text-primary-900 mb-2">REST API</h3>
+            <p className="text-sm text-primary-700 mb-3">
               Deploy your model as a RESTful API endpoint for easy integration.
             </p>
-            <ul className="space-y-1 text-xs text-indigo-600">
+            <ul className="space-y-1 text-xs text-primary-600">
               <li>• Standard HTTP/HTTPS protocols</li>
               <li>• JSON request/response format</li>
               <li>• API key authentication</li>
@@ -918,12 +918,12 @@ print(prediction)`;
             </ul>
           </div>
 
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <h3 className="text-md font-medium text-purple-900 mb-2">Edge Deployment</h3>
-            <p className="text-sm text-purple-700 mb-3">
+          <div className="p-4 bg-primary/5 rounded-lg">
+            <h3 className="text-md font-medium text-primary-900 mb-2">Edge Deployment</h3>
+            <p className="text-sm text-primary-700 mb-3">
               Deploy optimized models to edge devices for local inference.
             </p>
-            <ul className="space-y-1 text-xs text-purple-600">
+            <ul className="space-y-1 text-xs text-primary-600">
               <li>• Optimized for resource-constrained devices</li>
               <li>• Reduced latency with local inference</li>
               <li>• Offline capability</li>

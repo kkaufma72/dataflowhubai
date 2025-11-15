@@ -13,8 +13,8 @@ const PitchDeck: React.FC = () => {
       subtitle: "Democratizing Machine Learning",
       content: (
         <div className="flex flex-col items-center justify-center h-full space-y-6">
-          <div className="flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full">
-            <Zap className="w-10 h-10 text-indigo-600" />
+          <div className="flex items-center justify-center w-20 h-20 bg-primary/10 rounded-full">
+            <Zap className="w-10 h-10 text-primary-600" />
           </div>
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900">AutoML Platform</h2>
@@ -124,7 +124,7 @@ const PitchDeck: React.FC = () => {
               }
             ].map((feature, index) => (
               <div key={index} className="p-6 transition-all bg-white rounded-lg shadow-sm hover:shadow-md">
-                <feature.icon className="w-8 h-8 text-indigo-600" />
+                <feature.icon className="w-8 h-8 text-primary-600" />
                 <h3 className="mt-4 text-lg font-medium text-gray-900">{feature.title}</h3>
                 <p className="mt-2 text-sm text-gray-500">{feature.description}</p>
               </div>
@@ -132,44 +132,44 @@ const PitchDeck: React.FC = () => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="p-6 bg-indigo-50 rounded-lg">
-              <h3 className="mb-4 text-lg font-semibold text-indigo-900">Technological Innovation</h3>
+            <div className="p-6 bg-primary/5 rounded-lg">
+              <h3 className="mb-4 text-lg font-semibold text-primary-900">Technological Innovation</h3>
               <ul className="space-y-3">
-                <li className="flex items-center text-indigo-700">
-                  <CheckCircle className="w-5 h-5 mr-2 text-indigo-600" />
+                <li className="flex items-center text-primary-700">
+                  <CheckCircle className="w-5 h-5 mr-2 text-primary-600" />
                   Proprietary AutoML optimization algorithms
                 </li>
-                <li className="flex items-center text-indigo-700">
-                  <CheckCircle className="w-5 h-5 mr-2 text-indigo-600" />
+                <li className="flex items-center text-primary-700">
+                  <CheckCircle className="w-5 h-5 mr-2 text-primary-600" />
                   Automated feature engineering
                 </li>
-                <li className="flex items-center text-indigo-700">
-                  <CheckCircle className="w-5 h-5 mr-2 text-indigo-600" />
+                <li className="flex items-center text-primary-700">
+                  <CheckCircle className="w-5 h-5 mr-2 text-primary-600" />
                   Real-time model monitoring
                 </li>
-                <li className="flex items-center text-indigo-700">
-                  <CheckCircle className="w-5 h-5 mr-2 text-indigo-600" />
+                <li className="flex items-center text-primary-700">
+                  <CheckCircle className="w-5 h-5 mr-2 text-primary-600" />
                   Distributed training architecture
                 </li>
               </ul>
             </div>
-            <div className="p-6 bg-purple-50 rounded-lg">
-              <h3 className="mb-4 text-lg font-semibold text-purple-900">Competitive Advantage</h3>
+            <div className="p-6 bg-primary/5 rounded-lg">
+              <h3 className="mb-4 text-lg font-semibold text-primary-900">Competitive Advantage</h3>
               <ul className="space-y-3">
-                <li className="flex items-center text-purple-700">
-                  <Star className="w-5 h-5 mr-2 text-purple-600" />
+                <li className="flex items-center text-primary-700">
+                  <Star className="w-5 h-5 mr-2 text-primary-600" />
                   10x faster deployment
                 </li>
-                <li className="flex items-center text-purple-700">
-                  <Star className="w-5 h-5 mr-2 text-purple-600" />
+                <li className="flex items-center text-primary-700">
+                  <Star className="w-5 h-5 mr-2 text-primary-600" />
                   80% cost reduction
                 </li>
-                <li className="flex items-center text-purple-700">
-                  <Star className="w-5 h-5 mr-2 text-purple-600" />
+                <li className="flex items-center text-primary-700">
+                  <Star className="w-5 h-5 mr-2 text-primary-600" />
                   95% automation rate
                 </li>
-                <li className="flex items-center text-purple-700">
-                  <Star className="w-5 h-5 mr-2 text-purple-600" />
+                <li className="flex items-center text-primary-700">
+                  <Star className="w-5 h-5 mr-2 text-primary-600" />
                   Enterprise-grade security
                 </li>
               </ul>
@@ -194,12 +194,12 @@ const PitchDeck: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500">Enterprise Clients</p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-sm">
-              <Target className="w-8 h-8 text-purple-600" />
+              <Target className="w-8 h-8 text-primary-600" />
               <p className="mt-4 text-3xl font-bold text-gray-900">98.5%</p>
               <p className="mt-1 text-sm text-gray-500">Client Retention</p>
             </div>
             <div className="p-6 bg-white rounded-lg shadow-sm">
-              <Globe className="w-8 h-8 text-indigo-600" />
+              <Globe className="w-8 h-8 text-primary-600" />
               <p className="mt-4 text-3xl font-bold text-gray-900">12</p>
               <p className="mt-1 text-sm text-gray-500">Countries Served</p>
             </div>
@@ -271,34 +271,34 @@ const PitchDeck: React.FC = () => {
                 </li>
               </ul>
             </div>
-            <div className="p-6 transition-all bg-indigo-50 rounded-lg shadow-sm hover:shadow-md">
-              <h3 className="text-lg font-medium text-indigo-900">Pro</h3>
-              <p className="mt-2 text-sm text-indigo-700">For growing teams</p>
+            <div className="p-6 transition-all bg-primary/5 rounded-lg shadow-sm hover:shadow-md">
+              <h3 className="text-lg font-medium text-primary-900">Pro</h3>
+              <p className="mt-2 text-sm text-primary-700">For growing teams</p>
               <div className="mt-4">
-                <p className="text-3xl font-bold text-indigo-900">$499</p>
-                <p className="text-sm text-indigo-700">/month</p>
+                <p className="text-3xl font-bold text-primary-900">$499</p>
+                <p className="text-sm text-primary-700">/month</p>
               </div>
-              <ul className="mt-4 space-y-2 text-sm text-indigo-800">
+              <ul className="mt-4 space-y-2 text-sm text-primary-800">
                 <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2 text-indigo-600" />
+                  <CheckCircle className="w-4 h-4 mr-2 text-primary-600" />
                   Unlimited models
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2 text-indigo-600" />
+                  <CheckCircle className="w-4 h-4 mr-2 text-primary-600" />
                   Priority support
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2 text-indigo-600" />
+                  <CheckCircle className="w-4 h-4 mr-2 text-primary-600" />
                   Advanced analytics
                 </li>
               </ul>
             </div>
-            <div className="p-6 transition-all bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm hover:shadow-md">
+            <div className="p-6 transition-all bg-gradient-to-br from-primary to-primary-600 rounded-lg shadow-sm hover:shadow-md">
               <h3 className="text-lg font-medium text-white">Enterprise</h3>
-              <p className="mt-2 text-sm text-indigo-100">Full-scale deployment</p>
+              <p className="mt-2 text-sm text-primary/10">Full-scale deployment</p>
               <div className="mt-4">
                 <p className="text-3xl font-bold text-white">Custom</p>
-                <p className="text-sm text-indigo-100">Contact sales</p>
+                <p className="text-sm text-primary/10">Contact sales</p>
               </div>
               <ul className="mt-4 space-y-2 text-sm text-white">
                 <li className="flex items-center">
@@ -368,7 +368,7 @@ const PitchDeck: React.FC = () => {
       title: "Investment Opportunity",
       content: (
         <div className="space-y-6">
-          <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg text-white">
+          <div className="p-6 bg-gradient-to-r from-primary to-primary-600 rounded-lg text-white">
             <h3 className="text-xl font-bold mb-4">Funding Round</h3>
             <div className="grid gap-4 md:grid-cols-3">
               <div>
@@ -409,20 +409,20 @@ const PitchDeck: React.FC = () => {
               </ul>
             </div>
 
-            <div className="p-6 bg-purple-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-purple-900 mb-4">Financial Projections</h3>
+            <div className="p-6 bg-primary/5 rounded-lg">
+              <h3 className="text-lg font-semibold text-primary-900 mb-4">Financial Projections</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-purple-700">Year 1 Revenue</span>
-                  <span className="font-semibold text-purple-900">$5.2M</span>
+                  <span className="text-primary-700">Year 1 Revenue</span>
+                  <span className="font-semibold text-primary-900">$5.2M</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-purple-700">Year 2 Revenue</span>
-                  <span className="font-semibold text-purple-900">$12.8M</span>
+                  <span className="text-primary-700">Year 2 Revenue</span>
+                  <span className="font-semibold text-primary-900">$12.8M</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-purple-700">Year 3 Revenue</span>
-                  <span className="font-semibold text-purple-900">$28.5M</span>
+                  <span className="text-primary-700">Year 3 Revenue</span>
+                  <span className="font-semibold text-primary-900">$28.5M</span>
                 </div>
               </div>
             </div>
@@ -474,7 +474,7 @@ const PitchDeck: React.FC = () => {
 
   return (
     <Card className={`overflow-hidden transition-all ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
-      <div className="flex items-center justify-between p-6 bg-gradient-to-r from-indigo-500 to-purple-600">
+      <div className="flex items-center justify-between p-6 bg-gradient-to-r from-primary to-primary-600">
         <h2 className="text-2xl font-bold text-white">{slides[currentSlide].title}</h2>
         <div className="flex items-center space-x-4">
           <span className="text-sm text-white">

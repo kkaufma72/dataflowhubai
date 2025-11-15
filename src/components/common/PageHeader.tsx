@@ -29,7 +29,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     primary: 'bg-blue-100 text-blue-700 border-blue-200',
     success: 'bg-green-100 text-green-700 border-green-200',
     warning: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    premium: 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 border-purple-200'
+    premium: 'bg-gradient-to-r from-primary/10 to-primary/10 text-primary-700 border-primary/20'
   };
 
   return (
@@ -38,7 +38,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         <div className="flex items-start space-x-4">
           {/* Icon */}
           {Icon && (
-            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
               <Icon className="w-7 h-7 text-white" />
             </div>
           )}

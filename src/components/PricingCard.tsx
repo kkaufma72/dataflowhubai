@@ -118,7 +118,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           <span className={isPopular ? 'text-white' : 'text-gray-900'}>
             ${monthlyEquivalent}
           </span>
-          <span className={`text-sm ml-2 ${isPopular ? 'text-indigo-200' : 'text-gray-500'}`}>
+          <span className={`text-sm ml-2 ${isPopular ? 'text-primary/20' : 'text-gray-500'}`}>
             (${annualPrice}/year)
           </span>
         </div>
@@ -129,12 +129,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   };
 
   const cardClasses = isPopular
-    ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 p-8 rounded-xl shadow-2xl border-4 border-indigo-800 transform scale-105'
+    ? 'bg-gradient-to-br from-primary-600 to-primary-700 p-8 rounded-xl shadow-2xl border-4 border-indigo-800 transform scale-105'
     : 'bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow';
 
   const titleClasses = isPopular ? 'text-white' : 'text-gray-900';
   const priceClasses = isPopular ? 'text-white' : 'text-gray-900';
-  const periodClasses = isPopular ? 'text-indigo-200' : 'text-gray-600';
+  const periodClasses = isPopular ? 'text-primary/20' : 'text-gray-600';
   const featureClasses = isPopular ? 'text-white' : 'text-gray-600';
   const iconClasses = isPopular ? 'text-indigo-300' : 'text-green-500';
 
@@ -160,10 +160,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
                 billingPeriod === 'monthly'
                   ? isPopular
-                    ? 'bg-white text-indigo-600'
-                    : 'bg-indigo-600 text-white'
+                    ? 'bg-white text-primary-600'
+                    : 'bg-primary-600 text-white'
                   : isPopular
-                  ? 'bg-indigo-500 text-white hover:bg-indigo-400'
+                  ? 'bg-primary text-white hover:bg-indigo-400'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -177,10 +177,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition relative ${
                 billingPeriod === 'annual'
                   ? isPopular
-                    ? 'bg-white text-indigo-600'
-                    : 'bg-indigo-600 text-white'
+                    ? 'bg-white text-primary-600'
+                    : 'bg-primary-600 text-white'
                   : isPopular
-                  ? 'bg-indigo-500 text-white hover:bg-indigo-400'
+                  ? 'bg-primary text-white hover:bg-indigo-400'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -224,7 +224,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         disabled={loading}
         className={`w-full px-6 py-3 rounded-lg font-semibold transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
           isPopular
-            ? 'bg-white text-indigo-600 hover:bg-gray-100'
+            ? 'bg-white text-primary-600 hover:bg-gray-100'
             : isFree
             ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
             : 'bg-gray-900 text-white hover:bg-gray-800'
@@ -272,7 +272,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                   }
                 }}
                 placeholder="you@example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 autoFocus
               />
               {emailError && (
@@ -298,7 +298,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                   console.log('💳 Continue to Payment clicked');
                   handleEmailSubmit();
                 }}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? (

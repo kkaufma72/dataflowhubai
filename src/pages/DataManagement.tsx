@@ -28,7 +28,7 @@ const DataTransformationStudio = lazy(() => import('../components/data/DataTrans
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
   <div className="flex items-center justify-center py-12">
-    <Loader className="w-8 h-8 text-indigo-600 animate-spin" />
+    <Loader className="w-8 h-8 text-primary-600 animate-spin" />
   </div>
 );
 
@@ -363,7 +363,7 @@ const DataManagement: React.FC = () => {
       {/* Page Header - Improved visibility */}
       <div className="mb-8">
         <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
             <Database className="w-7 h-7 text-white" />
           </div>
           <div>
@@ -450,7 +450,7 @@ const DataManagement: React.FC = () => {
               onClick={() => setViewMode('grid')}
               className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                  ? 'bg-primary/10 text-primary-700 font-semibold'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -461,7 +461,7 @@ const DataManagement: React.FC = () => {
               onClick={() => setViewMode('organize')}
               className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
                 viewMode === 'organize'
-                  ? 'bg-indigo-100 text-indigo-700 font-semibold'
+                  ? 'bg-primary/10 text-primary-700 font-semibold'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -541,7 +541,7 @@ const DataManagement: React.FC = () => {
                       onClick={() => setGeneratorType(type)}
                       className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
                         generatorType === type
-                          ? 'bg-purple-600 text-white border-purple-600'
+                          ? 'bg-primary-600 text-white border-purple-600'
                           : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                       }`}
                     >
@@ -570,8 +570,8 @@ const DataManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                <p className="text-sm text-purple-800">
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                <p className="text-sm text-primary-800">
                   <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
                 </p>
               </div>
@@ -702,7 +702,7 @@ const DataManagement: React.FC = () => {
                               onClick={() => handlePageChange(page)}
                               className={`px-3 py-1 text-sm font-medium rounded-md ${
                                 currentPage === page
-                                  ? 'bg-indigo-600 text-white'
+                                  ? 'bg-primary-600 text-white'
                                   : 'text-gray-700 hover:bg-gray-100'
                               }`}
                             >

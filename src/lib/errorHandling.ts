@@ -57,7 +57,7 @@ export const handleApiError = (error: any, overrideMessage?: string): { message:
     }
   }
   
-  let status = error?.status;
+  const status = error?.status;
 
   // Truncate long messages
   if (message.length > 100) {

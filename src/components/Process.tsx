@@ -14,7 +14,7 @@ const Process = () => {
       icon: <Zap className="h-6 w-6" />,
       title: 'Automated Training',
       description: 'Our platform automatically tests multiple algorithms to find the best model for your data.',
-      color: 'bg-purple-100 text-purple-600'
+      color: 'bg-primary/10 text-primary-600'
     },
     {
       icon: <BarChart2 className="h-6 w-6" />,
@@ -60,7 +60,7 @@ const Process = () => {
           </div>
         </div>
         
-        <div className="mt-20 bg-indigo-50 rounded-2xl p-8 md:p-12">
+        <div className="mt-20 bg-primary/5 rounded-2xl p-8 md:p-12">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold mb-6">Ready to Get Started?</h3>
@@ -73,19 +73,19 @@ const Process = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white rounded-lg p-4 shadow-md">
-                <div className="text-3xl font-bold text-indigo-600 mb-2">5 min</div>
+                <div className="text-3xl font-bold text-primary-600 mb-2">5 min</div>
                 <p className="text-sm text-gray-600">Average setup time</p>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-md">
-                <div className="text-3xl font-bold text-indigo-600 mb-2">10+</div>
+                <div className="text-3xl font-bold text-primary-600 mb-2">10+</div>
                 <p className="text-sm text-gray-600">Supported algorithms</p>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-md">
-                <div className="text-3xl font-bold text-indigo-600 mb-2">99.9%</div>
+                <div className="text-3xl font-bold text-primary-600 mb-2">99.9%</div>
                 <p className="text-sm text-gray-600">Uptime guarantee</p>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-md">
-                <div className="text-3xl font-bold text-indigo-600 mb-2">24/7</div>
+                <div className="text-3xl font-bold text-primary-600 mb-2">24/7</div>
                 <p className="text-sm text-gray-600">Expert support</p>
               </div>
             </div>

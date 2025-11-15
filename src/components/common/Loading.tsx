@@ -20,7 +20,7 @@ const Loading: React.FC<LoadingProps> = ({
 
   const content = (
     <div className="flex flex-col items-center justify-center">
-      <Loader2 className={`${sizeClasses[size]} text-indigo-600 animate-spin`} />
+      <Loader2 className={`${sizeClasses[size]} text-primary-600 animate-spin`} />
       {text && <p className="mt-2 text-sm text-gray-500">{text}</p>}
     </div>
   );

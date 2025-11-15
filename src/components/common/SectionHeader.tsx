@@ -28,8 +28,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         <div className="flex items-center space-x-3">
           {/* Icon */}
           {Icon && (
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
-              <Icon className="w-5 h-5 text-indigo-600" />
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg flex items-center justify-center">
+              <Icon className="w-5 h-5 text-primary-600" />
             </div>
           )}
           

@@ -110,7 +110,7 @@ const DataManagementHybrid: React.FC = () => {
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-700 rounded-lg flex items-center justify-center">
               <Database className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -124,10 +124,10 @@ const DataManagementHybrid: React.FC = () => {
           </div>
           
           <button
-            onClick={() => setShowUploader(true)}
-            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+            onClick={handleUploadClick}
+            className="px-4 py-2 bg-gradient-to-r from-primary to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" />
+            <Upload className="w-4 h-4" />
             Upload Dataset
           </button>
         </div>
@@ -145,10 +145,10 @@ const DataManagementHybrid: React.FC = () => {
               return (
                 <div className="bg-white rounded-xl shadow-sm border-2 border-gray-200 overflow-hidden">
                   {/* Card Header with Health Badge */}
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                  <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-6 py-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center">
                           <Database className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -193,12 +193,12 @@ const DataManagementHybrid: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-purple-700 uppercase">Columns</span>
-                        <Database className="w-5 h-5 text-purple-600" />
+                        <span className="text-sm font-semibold text-primary-700 uppercase">Columns</span>
+                        <Database className="w-5 h-5 text-primary-600" />
                       </div>
-                      <div className="text-3xl font-bold text-purple-900">
+                      <div className="text-3xl font-bold text-primary-900">
                         {activeDataset.column_count || activeDataset.preview_data?.columns?.length || 12}
                       </div>
                     </div>
@@ -251,15 +251,14 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowTransform(true);
                       }}
-                      className="px-4 py-3 bg-purple-50 border-2 border-purple-200 text-purple-700 hover:bg-purple-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-primary-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <BarChart3 className="w-5 h-5" />
                       Transform
                     </button>
                     <button
                       onClick={() => handleExport(activeDataset!)}
-                      className="px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
-                    >
+                      className="px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
                       <Download className="w-5 h-5" />
                       Export CSV
                     </button>
@@ -268,7 +267,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowChat(true);
                       }}
-                      className="px-4 py-3 bg-indigo-50 border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-primary-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                     >
                       <Sparkles className="w-5 h-5" />
                       Ask AI
@@ -292,7 +291,7 @@ const DataManagementHybrid: React.FC = () => {
                       <h4 className="text-sm font-bold text-gray-900 truncate">
                         {col}
                       </h4>
-                      <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold">
+                      <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary-700 rounded-full font-semibold">
                         Column {idx + 1}
                       </span>
                     </div>
@@ -333,7 +332,7 @@ const DataManagementHybrid: React.FC = () => {
               </p>
               <button
                 onClick={() => setShowUploader(true)}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="px-6 py-3 bg-gradient-to-r from-primary to-primary-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
               >
                 <Plus className="w-5 h-5 inline mr-2" />
                 Upload Your First Dataset
@@ -357,7 +356,7 @@ const DataManagementHybrid: React.FC = () => {
                 className={`
                   group relative px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 flex-shrink-0 border-2
                   ${activeDatasetId === dataset.id
-                    ? 'bg-white text-indigo-600 border-indigo-500 border-b-white -mb-0.5 shadow-md'
+                    ? 'bg-white text-primary-600 border-primary border-b-white -mb-0.5 shadow-md'
                     : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
                   }
                 `}
@@ -383,7 +382,7 @@ const DataManagementHybrid: React.FC = () => {
                     e.stopPropagation();
                     handleExport(dataset);
                   }}
-                  className="p-1 rounded hover:bg-indigo-100 opacity-70 hover:opacity-100 transition-all"
+                  className="p-1 rounded hover:bg-primary/10 opacity-70 hover:opacity-100 transition-all"
                   title="Export CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -416,8 +415,8 @@ const DataManagementHybrid: React.FC = () => {
 
       {/* Friendly AI Helper Bot */}
       {showAIHelper && (
-        <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 z-50 animate-bounce-in">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-t-2xl">
+        <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-primary/20 z-50 animate-bounce-in">
+          <div className="bg-gradient-to-r from-primary to-primary-700 p-4 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -438,9 +437,9 @@ const DataManagementHybrid: React.FC = () => {
           </div>
 
           <div className="p-6">
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 mb-4">
+            <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20 mb-4">
               <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                <Sparkles className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-gray-900 font-semibold mb-1">
                     👋 Hi {user?.user_metadata?.full_name?.split(' ')[0] || 'there'}!
@@ -501,12 +500,12 @@ const DataManagementHybrid: React.FC = () => {
                   setShowChat(true);
                   setShowAIHelper(false);
                 }}
-                className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-purple-400 hover:bg-purple-50 rounded-xl transition-all group"
+                className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-primary-400 hover:bg-primary/5 rounded-xl transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <Sparkles className="w-5 h-5 text-primary-600" />
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 group-hover:text-purple-600">
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-600">
                       Ask AI Questions
                     </p>
                     <p className="text-xs text-gray-600">
@@ -534,7 +533,7 @@ const DataManagementHybrid: React.FC = () => {
       {!showAIHelper && (
         <button
           onClick={() => setShowAIHelper(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110 z-40"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-700 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group hover:scale-110 z-40"
         >
           <Bot className="w-6 h-6 text-white" />
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
@@ -605,7 +604,7 @@ const DataManagementHybrid: React.FC = () => {
                   setShowPreview(false);
                   setShowChat(true);
                 }}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold"
+                className="px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-lg font-semibold"
               >
                 Ask AI About This Data
               </button>

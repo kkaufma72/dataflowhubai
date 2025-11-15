@@ -56,7 +56,7 @@ const NODE_TEMPLATES = [
     type: NODE_TYPES.PREPROCESSING,
     label: 'Data Preprocessing',
     icon: Filter,
-    color: 'bg-purple-100 text-purple-600',
+    color: 'bg-primary/10 text-primary-600',
     description: 'Clean and prepare data',
     inputs: ['data'],
     outputs: ['processed_data'],
@@ -86,7 +86,7 @@ const NODE_TEMPLATES = [
     type: NODE_TYPES.MODEL_TRAINING,
     label: 'Model Training',
     icon: Layers,
-    color: 'bg-indigo-100 text-indigo-600',
+    color: 'bg-primary/10 text-primary-600',
     description: 'Train machine learning models',
     inputs: ['features'],
     outputs: ['model'],
@@ -414,7 +414,7 @@ const NodeConfigPanel = ({ node, onUpdate, onClose }) => {
               
               {option.type === 'select' && (
                 <select
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   value={config[option.name] || ''}
                   onChange={(e) => handleChange(option.name, e.target.value)}
                 >
@@ -427,7 +427,7 @@ const NodeConfigPanel = ({ node, onUpdate, onClose }) => {
               
               {option.type === 'dataset_select' && (
                 <select
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   value={config[option.name] || ''}
                   onChange={(e) => handleChange(option.name, e.target.value)}
                 >
@@ -445,7 +445,7 @@ const NodeConfigPanel = ({ node, onUpdate, onClose }) => {
                     id={`${node.id}-${option.name}`}
                     checked={!!config[option.name]}
                     onChange={(e) => handleChange(option.name, e.target.checked)}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                   />
                   <label htmlFor={`${node.id}-${option.name}`} className="ml-2 block text-sm text-gray-900">
                     Enable
@@ -469,7 +469,7 @@ const NodeConfigPanel = ({ node, onUpdate, onClose }) => {
                             handleChange(option.name, currentValues.filter(v => v !== opt));
                           }
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                       <label htmlFor={`${node.id}-${option.name}-${opt}`} className="ml-2 block text-sm text-gray-900">
                         {opt}
@@ -754,7 +754,7 @@ const PipelineBuilder: React.FC = () => {
                 type="text"
                 value={pipelineName}
                 onChange={(e) => setPipelineName(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 autoFocus
               />
               <Button
@@ -837,7 +837,7 @@ const PipelineBuilder: React.FC = () => {
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full">
                 <div 
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  className="h-full bg-primary-600 rounded-full transition-all duration-300"
                   style={{ width: `${runProgress}%` }}
                 />
               </div>
@@ -964,8 +964,8 @@ const PipelineBuilder: React.FC = () => {
               {/* Empty state */}
               {nodes.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mb-4">
-                    <Layers className="w-6 h-6 text-indigo-600" />
+                  <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
+                    <Layers className="w-6 h-6 text-primary-600" />
                   </div>
                   <h3 className="text-sm font-medium text-gray-900">Build Your ML Pipeline</h3>
                   <p className="mt-1 text-sm text-gray-500 max-w-xs">

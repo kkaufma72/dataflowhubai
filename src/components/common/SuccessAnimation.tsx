@@ -48,7 +48,7 @@ const SuccessAnimation: React.FC<SuccessAnimationProps> = ({
           <Sparkles className="w-8 h-8 text-yellow-400" />
         </div>
         <div className="absolute -bottom-2 -left-2 animate-pulse">
-          <Sparkles className="w-6 h-6 text-purple-400" />
+          <Sparkles className="w-6 h-6 text-primary-400" />
         </div>
       </div>
 

@@ -118,7 +118,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
           <select
             id="targetVariable"
             name="targetVariable"
-            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
             value={targetVariable}
             onChange={(e) => setTargetVariable(e.target.value)}
             required
@@ -145,7 +145,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
                 id="modelType-classification"
                 name="modelType"
                 type="radio"
-                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary"
                 value="classification"
                 checked={modelType === 'classification'}
                 onChange={(e) => setModelType(e.target.value)}
@@ -159,7 +159,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
                 id="modelType-regression"
                 name="modelType"
                 type="radio"
-                className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary"
                 value="regression"
                 checked={modelType === 'regression'}
                 onChange={(e) => setModelType(e.target.value)}
@@ -206,7 +206,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
               id="hyperparameterTuning"
               name="hyperparameterTuning"
               type="checkbox"
-              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary"
               checked={hyperparameterTuning}
               onChange={(e) => setHyperparameterTuning(e.target.checked)}
             />
@@ -229,7 +229,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
             <select
               id="optimizationMetric"
               name="optimizationMetric"
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
               value={optimizationMetric}
               onChange={(e) => setOptimizationMetric(e.target.value)}
             >
@@ -256,7 +256,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
         <div className="border-t border-gray-200 pt-4">
           <button
             type="button"
-            className="flex items-center text-sm text-indigo-600 hover:text-indigo-500"
+            className="flex items-center text-sm text-primary-600 hover:text-primary"
             onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
           >
             {showAdvancedOptions ? 'Hide' : 'Show'} Advanced Options

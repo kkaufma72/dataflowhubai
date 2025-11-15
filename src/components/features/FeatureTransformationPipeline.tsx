@@ -241,8 +241,8 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
       <Card>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-              <Layers className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+              <Layers className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-900">Transformation Pipeline</h3>
@@ -269,7 +269,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                   Transformation Type
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   value={newTransformation.type}
                   onChange={(e) => setNewTransformation({
                     ...newTransformation,
@@ -300,7 +300,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                           <input
                             type="checkbox"
                             id={`feature-${feature}`}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                             checked={newTransformation.features.includes(feature)}
                             onChange={() => handleFeatureToggle(feature)}
                           />
@@ -327,7 +327,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                       </label>
                       {option.type === 'select' ? (
                         <select
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           value={newTransformation.config[option.name] || option.options?.[0]}
                           onChange={(e) => handleConfigChange(option.name, e.target.value)}
                         >
@@ -338,14 +338,14 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                       ) : option.type === 'number' ? (
                         <input
                           type="number"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           value={newTransformation.config[option.name] || option.default || ''}
                           onChange={(e) => handleConfigChange(option.name, parseFloat(e.target.value))}
                         />
                       ) : (
                         <input
                           type="text"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                           value={newTransformation.config[option.name] || option.default || ''}
                           onChange={(e) => handleConfigChange(option.name, e.target.value)}
                         />
@@ -390,8 +390,8 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
               
               {transformations.map((transformation, index) => (
                 <div key={transformation.id} className="relative flex items-start mb-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 z-10">
-                    <span className="text-sm font-medium text-indigo-700">{index + 1}</span>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 z-10">
+                    <span className="text-sm font-medium text-primary-700">{index + 1}</span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="p-4 border border-gray-200 rounded-lg bg-white">
@@ -550,7 +550,7 @@ const FeatureTransformationPipeline: React.FC<FeatureTransformationPipelineProps
                         {row.original[feature]}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={row.original[feature] !== row.transformed[feature] ? 'text-indigo-600 font-medium' : ''}>
+                        <span className={row.original[feature] !== row.transformed[feature] ? 'text-primary-600 font-medium' : ''}>
                           {typeof row.transformed[feature] === 'number' 
                             ? row.transformed[feature].toFixed(4) 
                             : row.transformed[feature]}

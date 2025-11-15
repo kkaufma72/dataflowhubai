@@ -38,10 +38,10 @@ const DatasetCard: React.FC<DatasetCardProps> = ({ dataset, onPreview, onAnalyze
   };
 
   return (
-    <Card className="h-full transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-indigo-200">
+    <Card className="h-full transition-all hover:shadow-xl hover:-translate-y-1 border-2 border-transparent hover:border-primary/20">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-primary/10 rounded-lg flex items-center justify-center">
             <Database className="w-6 h-6 text-blue-600" />
           </div>
           <div className="flex-1">
@@ -113,7 +113,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({ dataset, onPreview, onAnalyze
             {dataset.preview_data.columns.slice(0, 4).map((col, idx) => (
               <span
                 key={idx}
-                className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium"
+                className="px-2 py-1 bg-primary/5 text-primary-700 rounded text-xs font-medium"
               >
                 {col}
               </span>

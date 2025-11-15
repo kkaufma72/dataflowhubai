@@ -73,7 +73,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       title: 'Models',
       subtitle: 'Train and manage models',
       category: 'navigation',
-      icon: <Zap className="w-5 h-5 text-purple-500" />,
+      icon: <Zap className="w-5 h-5 text-primary" />,
       action: () => {
         navigate('/app/models');
         onClose();
@@ -109,7 +109,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       title: 'Profile',
       subtitle: 'View your profile',
       category: 'navigation',
-      icon: <User className="w-5 h-5 text-indigo-500" />,
+      icon: <User className="w-5 h-5 text-primary" />,
       action: () => {
         navigate('/app/profile');
         onClose();
@@ -138,7 +138,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       title: 'Generate Sample Data',
       subtitle: 'Create synthetic dataset',
       category: 'action',
-      icon: <Sparkles className="w-5 h-5 text-purple-500" />,
+      icon: <Sparkles className="w-5 h-5 text-primary" />,
       action: () => {
         navigate('/app/data');
         onClose();
@@ -182,7 +182,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     title: model.name,
     subtitle: model.status || 'Ready',
     category: 'model',
-    icon: <Zap className="w-5 h-5 text-purple-500" />,
+    icon: <Zap className="w-5 h-5 text-primary" />,
     action: () => {
       navigate('/app/models');
       onClose();
@@ -357,7 +357,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                         ref={el => itemsRef.current[globalIndex] = el}
                         className={`px-4 py-3 flex items-center justify-between cursor-pointer transition-colors ${
                           isSelected 
-                            ? 'bg-indigo-50 border-l-2 border-indigo-500' 
+                            ? 'bg-primary/5 border-l-2 border-primary' 
                             : 'hover:bg-gray-50 border-l-2 border-transparent'
                         }`}
                         onClick={() => executeAction(item)}
@@ -369,7 +369,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm font-medium truncate ${
-                              isSelected ? 'text-indigo-900' : 'text-gray-900'
+                              isSelected ? 'text-primary-900' : 'text-gray-900'
                             }`}>
                               {item.title}
                             </p>
@@ -381,7 +381,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
                           </div>
                         </div>
                         <ArrowRight className={`w-4 h-4 flex-shrink-0 ml-2 ${
-                          isSelected ? 'text-indigo-500' : 'text-gray-400'
+                          isSelected ? 'text-primary' : 'text-gray-400'
                         }`} />
                       </div>
                     );

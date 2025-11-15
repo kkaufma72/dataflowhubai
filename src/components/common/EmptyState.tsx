@@ -31,7 +31,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     if (!actionLabel) return null;
 
     const buttonClasses = variant === 'gradient'
-      ? 'px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105'
+      ? 'px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-700 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105'
       : 'px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-all shadow-md hover:shadow-lg';
 
     if (actionHref) {
@@ -74,11 +74,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Icon */}
       <div className={`mb-6 ${
         variant === 'gradient' 
-          ? 'w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center'
+          ? 'w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/10 rounded-2xl flex items-center justify-center'
           : 'w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center'
       }`}>
         <Icon className={`${
-          variant === 'gradient' ? 'w-10 h-10 text-indigo-600' : 'w-8 h-8 text-gray-400'
+          variant === 'gradient' ? 'w-10 h-10 text-primary-600' : 'w-8 h-8 text-gray-400'
         }`} />
       </div>
 

@@ -202,7 +202,7 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
       {/* Training Configuration */}
       <Card>
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-600 rounded-lg flex items-center justify-center">
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -219,7 +219,7 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
           <select
             value={modelType}
             onChange={(e) => setModelType(e.target.value as any)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="classification">Classification</option>
             <option value="regression">Regression</option>
@@ -244,7 +244,7 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
                       setSelectedFeatures(selectedFeatures.filter(f => f !== col));
                     }
                   }}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary"
                 />
                 <span className="text-sm text-gray-700">{col}</span>
               </label>
@@ -263,7 +263,7 @@ const DockerTensorFlowTrainer: React.FC<DockerTensorFlowTrainerProps> = ({ datas
           <select
             value={targetColumn}
             onChange={(e) => setTargetColumn(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">Select target...</option>
             {columns.map(col => (

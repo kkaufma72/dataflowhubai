@@ -15,14 +15,10 @@ import {
   Clock,
   BarChart3,
   ArrowUpRight,
-  ArrowDownRight,
   Circle,
-  Sparkles,
-  Upload,
-  PlayCircle
+  Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { DashboardStatsSkeleton } from '../components/common/SkeletonLoader';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
@@ -112,7 +108,7 @@ const DashboardKoyfin: React.FC = () => {
         name: m.name,
         timestamp: m.createdAt,
         icon: Brain,
-        color: 'text-purple-500'
+        color: 'text-primary'
       });
     });
 
@@ -126,7 +122,7 @@ const DashboardKoyfin: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-950">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
           <p className="text-gray-400">Loading dashboard...</p>
         </div>
       </div>
@@ -202,7 +198,7 @@ const DashboardKoyfin: React.FC = () => {
           <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-gray-700 transition-colors">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Models</span>
-              <Brain className="w-4 h-4 text-purple-500" />
+              <Brain className="w-4 h-4 text-primary" />
             </div>
             <div className="flex items-end justify-between">
               <div>
@@ -281,7 +277,7 @@ const DashboardKoyfin: React.FC = () => {
                 <h3 className="text-sm font-semibold text-gray-100">Recent Datasets</h3>
                 <button
                   onClick={() => navigate('/app/data')}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                  className="text-xs text-primary hover:text-primary-400 transition-colors flex items-center gap-1"
                 >
                   View all
                   <ArrowUpRight className="w-3 h-3" />
@@ -295,7 +291,7 @@ const DashboardKoyfin: React.FC = () => {
                   <p className="text-sm">No datasets yet</p>
                   <button
                     onClick={() => navigate('/app/data')}
-                    className="mt-4 text-xs text-indigo-400 hover:text-indigo-300"
+                    className="mt-4 text-xs text-primary hover:text-primary-400"
                   >
                     Upload your first dataset →
                   </button>
@@ -376,11 +372,11 @@ const DashboardKoyfin: React.FC = () => {
           {/* Quick Action 1 */}
           <button
             onClick={() => navigate('/app/data')}
-            className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-indigo-500/50 hover:bg-gray-800/50 transition-all"
+            className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-primary/50 hover:bg-gray-800/50 transition-all"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center group-hover:bg-indigo-500/20 transition-colors">
-                <Database className="w-5 h-5 text-indigo-400" />
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Database className="w-5 h-5 text-primary-400" />
               </div>
               <div className="text-left flex-1">
                 <div className="text-sm font-semibold text-gray-100">Upload Data</div>
@@ -396,15 +392,15 @@ const DashboardKoyfin: React.FC = () => {
           {/* Quick Action 2 */}
           <button
             onClick={() => navigate('/app/insights')}
-            className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-purple-500/50 hover:bg-gray-800/50 transition-all"
+            className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-primary/50 hover:bg-gray-800/50 transition-all"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                <BarChart3 className="w-5 h-5 text-purple-400" />
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <BarChart3 className="w-5 h-5 text-primary-400" />
               </div>
               <div className="text-left flex-1">
                 <div className="text-sm font-semibold text-gray-100">View Insights</div>
-                <div className="text-Solution text-gray-500">Analytics dashboard</div>
+                <div className="text-xs text-gray-500">Analytics dashboard</div>
               </div>
             </div>
             <div className="flex items-center justify-between text-xs text-gray-600">

@@ -120,7 +120,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search datasets by name or description..."
-            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
           />
           {searchTerm && (
             <button
@@ -138,7 +138,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
         >
           Filters
           {activeFilterCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-600">
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary-600">
               {activeFilterCount}
             </span>
           )}
@@ -156,7 +156,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
               handleClearSearch();
               handleClearFilters();
             }}
-            className="text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-primary-600 hover:text-primary-700 font-medium"
           >
             Clear all
           </button>
@@ -170,7 +170,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
             <h3 className="text-sm font-medium text-gray-900">Filter Options</h3>
             <button
               onClick={handleClearFilters}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Reset filters
             </button>
@@ -187,7 +187,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
                 onChange={(e) =>
                   setFilters({ ...filters, fileType: e.target.value })
                 }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               >
                 <option value="all">All Types</option>
                 <option value="csv">CSV</option>
@@ -212,7 +212,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
                   })
                 }
                 placeholder="0"
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               />
             </div>
 
@@ -233,7 +233,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
                   })
                 }
                 placeholder="No limit"
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               />
             </div>
 
@@ -250,7 +250,7 @@ const DatasetSearchFilter: React.FC<DatasetSearchFilterProps> = ({
                     sortBy: e.target.value as any,
                   })
                 }
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>

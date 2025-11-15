@@ -223,27 +223,27 @@ const ModelAlgorithms: React.FC<ModelAlgorithmsProps> = ({
               key={algorithm.id}
               className={`cursor-pointer transition-all ${
                 isSelected 
-                  ? 'ring-2 ring-indigo-500 bg-indigo-50'
+                  ? 'ring-2 ring-indigo-500 bg-primary/5'
                   : 'hover:bg-gray-50'
               }`}
               onClick={() => onAlgorithmSelect(algorithm.id)}
             >
               <div className="flex items-center">
                 <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
-                  isSelected ? 'bg-indigo-100' : 'bg-gray-100'
+                  isSelected ? 'bg-primary/10' : 'bg-gray-100'
                 }`}>
                   <Icon className={`w-6 h-6 ${
-                    isSelected ? 'text-indigo-600' : 'text-gray-600'
+                    isSelected ? 'text-primary-600' : 'text-gray-600'
                   }`} />
                 </div>
                 <div className="ml-4">
                   <h3 className={`text-sm font-medium ${
-                    isSelected ? 'text-indigo-900' : 'text-gray-900'
+                    isSelected ? 'text-primary-900' : 'text-gray-900'
                   }`}>
                     {algorithm.name}
                   </h3>
                   <p className={`mt-1 text-xs ${
-                    isSelected ? 'text-indigo-500' : 'text-gray-500'
+                    isSelected ? 'text-primary' : 'text-gray-500'
                   }`}>
                     {algorithm.description}
                   </p>

@@ -51,8 +51,8 @@ const ModelCard: React.FC<ModelCardProps> = ({ model, onDeploy, onEvaluate }) =>
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <div className="flex items-center">
-            <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-lg">
-              <BarChart className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg">
+              <BarChart className="w-6 h-6 text-primary-600" />
             </div>
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">{model.name}</h3>

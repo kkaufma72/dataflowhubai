@@ -44,13 +44,13 @@ const DatasetItem: React.FC<DatasetItemProps> = ({ dataset, onRemove, isTraining
       ref={drag}
       className={`flex items-center justify-between p-3 mb-2 bg-white rounded-lg border ${
         isDragging ? 'opacity-50' : ''
-      } ${isTraining ? 'border-indigo-300 bg-indigo-50' : ''}`}
+      } ${isTraining ? 'border-primary/30 bg-primary/5' : ''}`}
     >
       <div className="flex items-center">
         {isTraining ? (
-          <Activity className="w-4 h-4 text-indigo-500 mr-2 animate-pulse" />
+          <Activity className="w-4 h-4 text-primary mr-2 animate-pulse" />
         ) : (
-          <Layers className="w-4 h-4 text-indigo-500 mr-2" />
+          <Layers className="w-4 h-4 text-primary mr-2" />
         )}
         <span className="text-sm font-medium text-gray-700">{dataset.name}</span>
       </div>
@@ -165,7 +165,7 @@ const DatasetCluster: React.FC<DatasetClusterProps> = ({
     <div
       ref={drop}
       className={`p-4 rounded-lg border-2 border-dashed transition-colors ${
-        isOver ? 'border-indigo-500 bg-indigo-50' : isTraining ? 'border-indigo-400' : 'border-gray-300'
+        isOver ? 'border-primary bg-primary/5' : isTraining ? 'border-primary-400' : 'border-gray-300'
       }`}
     >
       <div className="text-center mb-4">
@@ -195,7 +195,7 @@ const DatasetCluster: React.FC<DatasetClusterProps> = ({
           </div>
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+              className="h-full bg-primary-600 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -244,20 +244,20 @@ const DatasetCluster: React.FC<DatasetClusterProps> = ({
                 value={clusterQuestion}
                 onChange={(e) => setClusterQuestion(e.target.value)}
                 placeholder="e.g., Is this cluster balanced?"
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <div className="flex items-center gap-2">
                 <button
                   type="submit"
                   disabled={!clusterQuestion.trim()}
-                  className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-md bg-primary-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-primary-700 disabled:opacity-60"
                 >
                   Ask
                 </button>
                 <button
                   type="button"
                   onClick={() => setClusterAnswer(null)}
-                  className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                  className="text-xs font-medium text-slate-500 hover:text-primary-600"
                 >
                   Clear
                 </button>

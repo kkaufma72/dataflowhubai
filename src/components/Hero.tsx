@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <section className="bg-gradient-to-b from-indigo-50 to-white py-20 md:py-32">
+    <section className="bg-gradient-to-b from-primary/5 to-white py-20 md:py-32">
       <div className="container-custom">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in">
-            <div className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full mb-4">
+            <div className="inline-block px-3 py-1 text-xs font-semibold text-primary-600 bg-primary/10 rounded-full mb-4">
               Automated Machine Learning Platform
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Build AI Models with <span className="text-indigo-600">DataFlowHub AI</span>
+              Build AI Models with <span className="text-primary-600">DataFlowHub AI</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-lg">
               DataFlowHub AI empowers your team to create, train, and deploy machine learning models without writing a single line of code. Get from data to production in minutes, not months.
@@ -44,7 +44,7 @@ const Hero = () => {
           
           <div className="relative animate-fade-in">
             <div className="relative z-10 bg-white rounded-xl shadow-custom-lg p-6 border border-gray-100">
-              <div className="absolute -top-4 -right-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div className="absolute -top-4 -right-4 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 Live Demo
               </div>
               <div className="flex items-center mb-6">
@@ -55,15 +55,15 @@ const Hero = () => {
               <div className="space-y-4">
                 <div className="h-8 bg-gray-100 rounded-md w-3/4"></div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="h-24 bg-indigo-50 rounded-md flex items-center justify-center">
-                    <Database className="h-8 w-8 text-indigo-500" />
+                  <div className="h-24 bg-primary/5 rounded-md flex items-center justify-center">
+                    <Database className="h-8 w-8 text-primary" />
                   </div>
-                  <div className="h-24 bg-indigo-50 rounded-md flex items-center justify-center">
-                    <BarChart2 className="h-8 w-8 text-indigo-500" />
+                  <div className="h-24 bg-primary/5 rounded-md flex items-center justify-center">
+                    <BarChart2 className="h-8 w-8 text-primary" />
                   </div>
                 </div>
                 <div className="h-32 bg-gray-100 rounded-md"></div>
-                <div className="h-10 bg-indigo-600 rounded-md flex items-center justify-center text-white font-medium">
+                <div className="h-10 bg-primary-600 rounded-md flex items-center justify-center text-white font-medium">
                   <Zap className="h-5 w-5 mr-2" />
                   Train Model
                 </div>

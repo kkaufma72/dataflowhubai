@@ -152,18 +152,18 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+        <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-purple-700 uppercase mb-1">
+              <p className="text-sm font-semibold text-primary-700 uppercase mb-1">
                 Analyses
               </p>
-              <p className="text-3xl font-bold text-purple-900">
+              <p className="text-3xl font-bold text-primary-900">
                 {totalAnalyses.toLocaleString()}
               </p>
-              <p className="text-xs text-purple-600 mt-1">Last 30 days</p>
+              <p className="text-xs text-primary-600 mt-1">Last 30 days</p>
             </div>
-            <BarChart2 className="w-10 h-10 text-purple-600" />
+            <BarChart2 className="w-10 h-10 text-primary-600" />
           </div>
         </Card>
 
@@ -201,7 +201,7 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
       {/* Top Datasets */}
       <Card className="p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="w-5 h-5 text-indigo-600 mr-2" />
+          <TrendingUp className="w-5 h-5 text-primary-600 mr-2" />
           Most Analyzed Datasets
         </h3>
         <div className="space-y-3">
@@ -211,8 +211,8 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
               className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <span className="text-sm font-bold text-indigo-600">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary-600">
                     #{idx + 1}
                   </span>
                 </div>
@@ -226,7 +226,7 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-indigo-600">
+                <p className="text-2xl font-bold text-primary-600">
                   {dataset.analysis_count}
                 </p>
                 <p className="text-xs text-gray-500">analyses</p>
@@ -239,7 +239,7 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
       {/* User Engagement */}
       <Card className="p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          <Users className="w-5 h-5 text-purple-600 mr-2" />
+          <Users className="w-5 h-5 text-primary-600 mr-2" />
           User Engagement (Last 30 Days)
         </h3>
         <div className="overflow-x-auto">
@@ -278,7 +278,7 @@ const WarehouseAnalyticsDashboard: React.FC = () => {
                   <td className="py-3 px-4 text-sm font-semibold text-gray-900 text-right">
                     {user.datasets_used}
                   </td>
-                  <td className="py-3 px-4 text-sm font-semibold text-indigo-600 text-right">
+                  <td className="py-3 px-4 text-sm font-semibold text-primary-600 text-right">
                     {user.total_actions}
                   </td>
                 </tr>

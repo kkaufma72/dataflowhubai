@@ -118,7 +118,7 @@ const DeploymentStatusMonitor: React.FC<DeploymentStatusMonitorProps> = ({
       case 'building':
         return <Server className="w-6 h-6 text-blue-500" />;
       case 'deploying':
-        return <Rocket className="w-6 h-6 text-indigo-500 animate-pulse" />;
+        return <Rocket className="w-6 h-6 text-primary animate-pulse" />;
       case 'live':
         return <Check className="w-6 h-6 text-green-500" />;
       case 'failed':
@@ -137,7 +137,7 @@ const DeploymentStatusMonitor: React.FC<DeploymentStatusMonitorProps> = ({
       case 'building':
         return 'bg-blue-100';
       case 'deploying':
-        return 'bg-indigo-100';
+        return 'bg-primary/10';
       case 'live':
         return 'bg-green-100';
       case 'failed':
@@ -228,7 +228,7 @@ const DeploymentStatusMonitor: React.FC<DeploymentStatusMonitorProps> = ({
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  className="h-full bg-primary-600 rounded-full transition-all duration-300"
                   style={{ width: `${deploymentStatus.progress}%` }}
                 />
               </div>
@@ -238,10 +238,10 @@ const DeploymentStatusMonitor: React.FC<DeploymentStatusMonitorProps> = ({
           {(deploymentStatus.url || deploymentStatus.deploy_url) && (
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <Globe className="w-5 h-5 text-indigo-500" />
+                <Globe className="w-5 h-5 text-primary" />
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-gray-900">Deployment URL</h3>
-                  <p className="mt-1 text-sm text-indigo-600 font-mono break-all">
+                  <p className="mt-1 text-sm text-primary-600 font-mono break-all">
                     {deploymentStatus.deploy_url || deploymentStatus.url}
                   </p>
                 </div>

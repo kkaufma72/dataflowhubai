@@ -223,7 +223,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
       </div>
 
       {/* Status Panel */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-primary/5 rounded-lg p-6 border border-blue-200">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <Zap className="h-6 w-6 text-blue-600 mr-2" />
@@ -300,7 +300,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
           <div className="space-y-8">
             {/* Features Grid */}
             <div>
-              <h2 className="text-2xl font-bold text-purple-600 mb-6">Key Features</h2>
+              <h2 className="text-2xl font-bold text-primary-600 mb-6">Key Features</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
@@ -352,7 +352,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'search' && (
           <div>
-            <h2 className="text-2xl font-bold text-purple-600 mb-6">Knowledge Search</h2>
+            <h2 className="text-2xl font-bold text-primary-600 mb-6">Knowledge Search</h2>
             <div className="bg-white rounded-lg border border-gray-200">
               <KnowledgeSearchPanel
                 onResultClick={(result) => {
@@ -367,7 +367,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'chat' && (
           <div>
-            <h2 className="text-2xl font-bold text-purple-600 mb-6">Enhanced AI Chat</h2>
+            <h2 className="text-2xl font-bold text-primary-600 mb-6">Enhanced AI Chat</h2>
             <div className="h-[600px]">
               <EnhancedRAGChat
                 dataset={demoDataset}
@@ -383,7 +383,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
 
         {activeTab === 'workflow' && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-purple-600 mb-6">Use Cases & Workflows</h2>
+            <h2 className="text-2xl font-bold text-primary-600 mb-6">Use Cases & Workflows</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {useCases.map((useCase, index) => (
@@ -399,11 +399,11 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
             </div>
 
             {/* Integration Steps */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg">
+            <div className="bg-gradient-to-r from-primary/5 to-primary/5 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Integration Guide</h3>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                  <div className="bg-primary/10 text-primary-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                     1
                   </div>
                   <div>
@@ -412,7 +412,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                  <div className="bg-primary/10 text-primary-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                     2
                   </div>
                   <div>
@@ -421,7 +421,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                  <div className="bg-primary/10 text-primary-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                     3
                   </div>
                   <div>
@@ -430,7 +430,7 @@ export const RAGWorkflowDemo: React.FC<RAGWorkflowDemoProps> = ({ className = ''
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-indigo-100 text-indigo-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                  <div className="bg-primary/10 text-primary-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                     4
                   </div>
                   <div>

@@ -20,7 +20,7 @@ const Benefits = () => {
       icon: <Zap className="h-6 w-6" />,
       title: 'Boost Productivity',
       description: 'Empower your entire team to build and deploy machine learning models without specialized expertise.',
-      color: 'bg-purple-100 text-purple-600'
+      color: 'bg-primary/10 text-primary-600'
     },
     {
       icon: <Shield className="h-6 w-6" />,
@@ -55,7 +55,7 @@ const Benefits = () => {
           ))}
         </div>
         
-        <div className="mt-16 bg-indigo-600 rounded-xl p-8 text-white">
+        <div className="mt-16 bg-primary-600 rounded-xl p-8 text-white">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold mb-4">Get Results Faster</h3>
@@ -79,7 +79,7 @@ const Benefits = () => {
             </div>
             <div className="hidden md:block">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-transparent"></div>
                 <img 
                   src="https://images.pexels.com/photos/7947541/pexels-photo-7947541.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
                   alt="Data visualization" 

@@ -67,7 +67,7 @@ const DataPipelineTopNav: React.FC = () => {
           {/* Left section */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/dashboard" className="text-xl font-bold text-indigo-600">
+              <Link to="/dashboard" className="text-xl font-bold text-primary-600">
                 DataFlowHub AI
               </Link>
             </div>
@@ -94,7 +94,7 @@ const DataPipelineTopNav: React.FC = () => {
             <div className="flex-shrink-0">
               <button
                 type="button"
-                className="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 <span>New Project</span>
@@ -109,7 +109,7 @@ const DataPipelineTopNav: React.FC = () => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="Search"
                 />
               </div>
@@ -118,7 +118,7 @@ const DataPipelineTopNav: React.FC = () => {
               <div className="ml-3 relative">
                 <button
                   type="button"
-                  className="relative bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="relative bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   onClick={() => {
                     setShowNotifications(!showNotifications);
                     setShowUserMenu(false);
@@ -140,7 +140,7 @@ const DataPipelineTopNav: React.FC = () => {
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
-                          className="text-xs text-indigo-600 hover:text-indigo-500"
+                          className="text-xs text-primary-600 hover:text-primary"
                         >
                           Mark all as read
                         </button>
@@ -156,7 +156,7 @@ const DataPipelineTopNav: React.FC = () => {
                           <div
                             key={notification.id}
                             className={`px-4 py-3 hover:bg-gray-50 ${
-                              !notification.read ? 'bg-indigo-50' : ''
+                              !notification.read ? 'bg-primary/5' : ''
                             }`}
                             onClick={() => markAsRead(notification.id)}
                           >
@@ -172,7 +172,7 @@ const DataPipelineTopNav: React.FC = () => {
                     <div className="px-4 py-2 border-t border-gray-100 text-center">
                       <Link
                         to="/notifications"
-                        className="text-sm text-indigo-600 hover:text-indigo-500"
+                        className="text-sm text-primary-600 hover:text-primary"
                         onClick={() => setShowNotifications(false)}
                       >
                         View all notifications
@@ -185,7 +185,7 @@ const DataPipelineTopNav: React.FC = () => {
               {/* Settings */}
               <Link
                 to="/settings"
-                className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 <span className="sr-only">Settings</span>
                 <Settings className="h-6 w-6" />
@@ -194,7 +194,7 @@ const DataPipelineTopNav: React.FC = () => {
               {/* Help */}
               <Link
                 to="/help"
-                className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 <span className="sr-only">Help</span>
                 <HelpCircle className="h-6 w-6" />
@@ -205,14 +205,14 @@ const DataPipelineTopNav: React.FC = () => {
                 <div>
                   <button
                     type="button"
-                    className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                     onClick={() => {
                       setShowUserMenu(!showUserMenu);
                       setShowNotifications(false);
                     }}
                   >
                     <span className="sr-only">Open user menu</span>
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary-600">
                       <User className="h-5 w-5" />
                     </div>
                   </button>

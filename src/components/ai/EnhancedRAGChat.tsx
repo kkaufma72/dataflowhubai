@@ -186,7 +186,7 @@ export const EnhancedRAGChat: React.FC<EnhancedRAGChatProps> = ({
     switch (type) {
       case 'dataset': return 'text-blue-600 bg-blue-50';
       case 'analysis': return 'text-green-600 bg-green-50';
-      case 'documentation': return 'text-purple-600 bg-purple-50';
+      case 'documentation': return 'text-primary-600 bg-primary/5';
       default: return 'text-gray-600 bg-gray-50';
     }
   };

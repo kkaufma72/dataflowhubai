@@ -57,7 +57,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
             value={localSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search datasets by name, description, or columns..."
-            className="block w-full pl-12 pr-12 py-3.5 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-200 text-gray-900 placeholder-gray-500"
+            className="block w-full pl-12 pr-12 py-3.5 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all duration-200 text-gray-900 placeholder-gray-500"
           />
           {localSearch && (
             <button
@@ -73,7 +73,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
         <Button
           onClick={onUpload}
           icon={<Upload className="w-4 h-4" />}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl px-6 py-3.5"
+          className="bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white shadow-lg hover:shadow-xl px-6 py-3.5"
         >
           <span className="hidden sm:inline">Upload</span>
         </Button>
@@ -90,7 +90,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
       </div>
 
       {/* Stats & Bulk Actions Bar */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl px-4 py-3 border border-gray-200">
+      <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-primary/5 rounded-xl px-4 py-3 border border-gray-200">
         <div className="flex items-center space-x-6">
           <div>
             <p className="text-sm text-gray-600">Total Datasets</p>
@@ -99,7 +99,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
           {localSearch && (
             <div className="border-l border-gray-300 pl-6">
               <p className="text-sm text-gray-600">Search Results</p>
-              <p className="text-2xl font-bold text-indigo-600">{totalCount}</p>
+              <p className="text-2xl font-bold text-primary-600">{totalCount}</p>
             </div>
           )}
         </div>
@@ -153,7 +153,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
                   setSelectedFilters(newFilters);
                   onFilter(newFilters);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">All Types</option>
                 <option value="csv">CSV</option>
@@ -175,7 +175,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
                   setSelectedFilters(newFilters);
                   onFilter(newFilters);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">All Dates</option>
                 <option value="today">Today</option>
@@ -197,7 +197,7 @@ const CRMDatabaseHeader: React.FC<CRMDatabaseHeaderProps> = ({
                   setSelectedFilters(newFilters);
                   onFilter(newFilters);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">All Sizes</option>
                 <option value="small">Small (&lt;1k rows)</option>

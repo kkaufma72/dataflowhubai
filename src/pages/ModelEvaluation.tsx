@@ -677,7 +677,7 @@ const ModelEvaluationContent = () => {
                       value={performanceQuestion}
                       onChange={(e) => setPerformanceQuestion(e.target.value)}
                       placeholder="e.g., Are metrics trending up?"
-                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center gap-2">
                       <Button type="submit" size="sm" disabled={!performanceQuestion.trim()}>
@@ -686,7 +686,7 @@ const ModelEvaluationContent = () => {
                       <button
                         type="button"
                         onClick={() => setPerformanceAnswer(null)}
-                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                        className="text-xs font-medium text-slate-500 hover:text-primary-600"
                       >
                         Clear answer
                       </button>
@@ -764,7 +764,7 @@ const ModelEvaluationContent = () => {
                       value={confusionQuestion}
                       onChange={(e) => setConfusionQuestion(e.target.value)}
                       placeholder="e.g., Where do most errors happen?"
-                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center gap-2">
                       <Button type="submit" size="sm" disabled={!confusionQuestion.trim()}>
@@ -773,7 +773,7 @@ const ModelEvaluationContent = () => {
                       <button
                         type="button"
                         onClick={() => setConfusionAnswer(null)}
-                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                        className="text-xs font-medium text-slate-500 hover:text-primary-600"
                       >
                         Clear answer
                       </button>
@@ -825,7 +825,7 @@ const ModelEvaluationContent = () => {
                         value={rocQuestion}
                         onChange={(e) => setRocQuestion(e.target.value)}
                         placeholder="e.g., Should I adjust the threshold?"
-                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                       <div className="flex items-center gap-2">
                         <Button type="submit" size="sm" disabled={!rocQuestion.trim()}>
@@ -834,7 +834,7 @@ const ModelEvaluationContent = () => {
                         <button
                           type="button"
                           onClick={() => setRocAnswer(null)}
-                          className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                          className="text-xs font-medium text-slate-500 hover:text-primary-600"
                         >
                           Clear answer
                         </button>
@@ -900,7 +900,7 @@ const ModelEvaluationContent = () => {
                     value={featureQuestion}
                     onChange={(e) => setFeatureQuestion(e.target.value)}
                     placeholder="e.g., Can I drop any columns?"
-                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   <div className="flex items-center gap-2">
                     <Button type="submit" size="sm" disabled={!featureQuestion.trim()}>
@@ -909,7 +909,7 @@ const ModelEvaluationContent = () => {
                     <button
                       type="button"
                       onClick={() => setFeatureAnswer(null)}
-                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                      className="text-xs font-medium text-slate-500 hover:text-primary-600"
                     >
                       Clear answer
                     </button>
@@ -989,7 +989,7 @@ const ModelEvaluationContent = () => {
                     value={predictionQuestion}
                     onChange={(e) => setPredictionQuestion(e.target.value)}
                     placeholder="e.g., Are predictions confident enough?"
-                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   <div className="flex items-center gap-2">
                     <Button type="submit" size="sm" disabled={!predictionQuestion.trim()}>
@@ -998,7 +998,7 @@ const ModelEvaluationContent = () => {
                     <button
                       type="button"
                       onClick={() => setPredictionAnswer(null)}
-                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                      className="text-xs font-medium text-slate-500 hover:text-primary-600"
                     >
                       Clear answer
                     </button>

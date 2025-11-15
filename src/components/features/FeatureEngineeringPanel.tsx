@@ -220,7 +220,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full">
               <div
-                className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
+                className="h-2 transition-all duration-300 bg-primary-600 rounded-full"
                 style={{ width: `${autoSelectProgress}%` }}
               ></div>
             </div>
@@ -237,7 +237,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
             onClick={() => setActiveTab('selection')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'selection'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -247,7 +247,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
             onClick={() => setActiveTab('importance')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'importance'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -257,7 +257,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
             onClick={() => setActiveTab('transformation')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'transformation'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -267,7 +267,7 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
             onClick={() => setActiveTab('timeseries')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'timeseries'
-                ? 'border-indigo-500 text-indigo-600'
+                ? 'border-primary text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >

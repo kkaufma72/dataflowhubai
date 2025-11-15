@@ -25,6 +25,8 @@ import {
   insightAnswerClass,
   subtleListBulletClass,
 } from '../styles/insightPanels';
+import { typography, components } from '../styles/designSystem';
+import { PageHeader } from '../components/ui/PageHeader';
 
 type CrossValidationResult = {
   fold: number;
@@ -436,22 +438,12 @@ const ModelTraining: React.FC = () => {
   return (
       <DndProvider backend={HTML5Backend}>
       <div>
-        {/* Page Header - Improved visibility */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Layers className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-                Model Training
-              </h1>
-              <p className="mt-2 text-lg text-gray-600 font-medium">
-                Train and deploy production-ready machine learning models
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Page Header */}
+        <PageHeader 
+          title="Model Training"
+          description="Train and deploy production-ready machine learning models"
+          icon={<Layers className="w-7 h-7 text-white" />}
+        />
 
         <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
           <div className="hidden"></div>
@@ -461,7 +453,7 @@ const ModelTraining: React.FC = () => {
                 {selectedDataset ? (
                   <div className="flex items-center space-x-2">
                     <select
-                      className="block w-48 px-3 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className={components.input.small}
                       value={selectedDatasetSafe?.id ?? ''}
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
@@ -481,7 +473,7 @@ const ModelTraining: React.FC = () => {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <select
-                      className="block w-48 px-3 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className={components.input.small}
                       value=""
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
@@ -510,8 +502,8 @@ const ModelTraining: React.FC = () => {
             <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full">
               <AlertCircle className="w-6 h-6 text-amber-600" />
             </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No datasets available</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className={`mt-4 ${typography.cardTitle}`}>No datasets available</h3>
+            <p className={`mt-1 ${typography.bodySmall}`}>
               You need to upload a dataset before you can train models
             </p>
             <Button
@@ -538,50 +530,40 @@ const ModelTraining: React.FC = () => {
               <nav className="-mb-px flex space-x-8">
                 <button
                   onClick={() => setActiveTab('train')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'train'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`${components.tab.base} ${
+                    activeTab === 'train' ? components.tab.active : components.tab.inactive
                   }`}
                 >
                   Training
                 </button>
                 <button
                   onClick={() => setActiveTab('compare')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'compare'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`${components.tab.base} ${
+                    activeTab === 'compare' ? components.tab.active : components.tab.inactive
                   }`}
                 >
                   Compare Models
                 </button>
                 <button
                   onClick={() => setActiveTab('versions')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'versions'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`${components.tab.base} ${
+                    activeTab === 'versions' ? components.tab.active : components.tab.inactive
                   }`}
                 >
                   Versioning
                 </button>
                 <button
                   onClick={() => setActiveTab('export')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'export'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`${components.tab.base} ${
+                    activeTab === 'export' ? components.tab.active : components.tab.inactive
                   }`}
                 >
                   Export/Import
                 </button>
                 <button
                   onClick={() => setActiveTab('tensorflow')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                    activeTab === 'tensorflow'
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  className={`${components.tab.base} flex items-center space-x-2 ${
+                    activeTab === 'tensorflow' ? components.tab.active : components.tab.inactive
                   }`}
                 >
                   <Package2 className="w-4 h-4" />
@@ -592,10 +574,10 @@ const ModelTraining: React.FC = () => {
 
             {activeTab === 'train' && (
               <Card>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Dataset Clustering</h3>
+                <h3 className={typography.cardTitle + ' mb-4'}>Dataset Clustering</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-4">Available Datasets</h4>
+                    <h4 className={typography.label + ' mb-4'}>Available Datasets</h4>
                     <div className="grid gap-4">
                       {datasets
                         .filter(d => !clusteredDatasets.find(cd => cd.id === d.id))
@@ -610,7 +592,7 @@ const ModelTraining: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-4">Cluster Training</h4>
+                    <h4 className={typography.label + ' mb-4'}>Cluster Training</h4>
                     <DatasetCluster
                       datasets={clusteredDatasets}
                       onRemoveDataset={handleRemoveFromCluster}
@@ -659,9 +641,9 @@ const ModelTraining: React.FC = () => {
                 {/* Dataset Selector for TensorFlow */}
                 {!selectedDataset && (
                   <Card>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Select Dataset for TensorFlow Training</h3>
+                    <h3 className={`${typography.cardTitle} mb-4`}>Select Dataset for TensorFlow Training</h3>
                     <select
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                      className={components.input.base}
                       value=""
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
@@ -681,8 +663,8 @@ const ModelTraining: React.FC = () => {
                     <Card>
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{selectedDatasetSafe?.name}</h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <h3 className={typography.cardTitle}>{selectedDatasetSafe?.name}</h3>
+                          <p className={`${typography.bodySmall} mt-1`}>
                             {selectedDatasetSafe?.rows} rows × {selectedDatasetSafe?.columns} columns
                           </p>
                         </div>
@@ -703,8 +685,8 @@ const ModelTraining: React.FC = () => {
                           <Package2 className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">TensorFlow.js (Browser)</h3>
-                          <p className="text-sm text-gray-500">Train models directly in your browser - no server needed</p>
+                          <h3 className={typography.cardTitle}>TensorFlow.js (Browser)</h3>
+                          <p className={typography.bodySmall}>Train models directly in your browser - no server needed</p>
                         </div>
                       </div>
                       <TensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
@@ -714,12 +696,12 @@ const ModelTraining: React.FC = () => {
                     {import.meta.env.VITE_TENSORFLOW_API_URL && (
                       <div>
                         <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-700 rounded-lg flex items-center justify-center">
                             <Package2 className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">TensorFlow (Docker GPU)</h3>
-                            <p className="text-sm text-gray-500">Server-side training with GPU acceleration</p>
+                            <h3 className={typography.cardTitle}>TensorFlow (Docker GPU)</h3>
+                            <p className={typography.bodySmall}>Server-side training with GPU acceleration</p>
                           </div>
                         </div>
                         <DockerTensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
@@ -736,20 +718,20 @@ const ModelTraining: React.FC = () => {
           <Card className="mb-6" title="Training in Progress">
             <div className="space-y-4">
               <div className="flex items-center">
-                <Layers className="w-5 h-5 mr-2 text-indigo-600" />
-                <span className="text-sm font-medium text-gray-900">
+                <Layers className="w-5 h-5 mr-2 text-primary" />
+                <span className={`${typography.bodySmall} font-medium`}>
                   {currentTraining.name}
                 </span>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700">Training progress</span>
-                  <span className="text-sm font-medium text-gray-700">{Math.round(progress)}%</span>
+                  <span className={typography.label}>Training progress</span>
+                  <span className={typography.label}>{Math.round(progress)}%</span>
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full">
                   <div
-                    className="h-2 transition-all duration-300 bg-indigo-600 rounded-full"
+                    className="h-2 transition-all duration-300 bg-primary rounded-full"
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
@@ -760,8 +742,8 @@ const ModelTraining: React.FC = () => {
                   <BarChart2 className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">Training Information</h3>
-                  <div className="mt-2 text-sm text-blue-700">
+                  <h3 className={`${typography.label} text-blue-800`}>Training Information</h3>
+                  <div className={`mt-2 ${typography.bodySmall} text-blue-700`}>
                     <ul className="space-y-1 list-disc list-inside">
                       <li>Evaluating multiple algorithms in parallel</li>
                       <li>Performing hyperparameter optimization</li>
@@ -777,7 +759,7 @@ const ModelTraining: React.FC = () => {
 
         {trainingModels.length > 0 && !isTraining && (
           <div className="mb-8">
-            <h2 className="mb-4 text-lg font-medium text-gray-900">Models in Training</h2>
+            <h2 className={`mb-4 ${typography.sectionTitle}`}>Models in Training</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {trainingModels.map((model) => (
                 <ModelCard
@@ -793,7 +775,7 @@ const ModelTraining: React.FC = () => {
 
         {trainedModels.length > 0 && (
           <div>
-            <h2 className="mb-4 text-lg font-medium text-gray-900">Trained Models</h2>
+            <h2 className={`mb-4 ${typography.sectionTitle}`}>Trained Models</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {trainedModels.map((model) => (
                 <ModelCard
@@ -809,11 +791,11 @@ const ModelTraining: React.FC = () => {
 
         {trainedModels.length === 0 && trainingModels.length === 0 && !isTraining && (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-              <Layers className="w-6 h-6 text-indigo-600" />
+            <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+              <Layers className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No models trained yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className={`mt-4 ${typography.cardTitle}`}>No models trained yet</h3>
+            <p className={`mt-1 ${typography.bodySmall}`}>
               Start training your first model to see it here
             </p>
             {datasets.length > 0 && !selectedDataset && (
@@ -831,24 +813,24 @@ const ModelTraining: React.FC = () => {
         {crossValidationResults && (
           <div className="mt-8 space-y-6">
             <Card>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Cross-Validation Results</h3>
+              <h3 className={`${typography.cardTitle} mb-4`}>Cross-Validation Results</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
                         Fold
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
                         Accuracy
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
                         Precision
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
                         Recall
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
                         F1 Score
                       </th>
                     </tr>
@@ -856,37 +838,37 @@ const ModelTraining: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {crossValidationResults.map((result) => (
                       <tr key={result.fold}>
-                        <td className="px-3 py-2 text-sm text-gray-900">
+                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
                           {result.fold}
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
+                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
                           {(result.accuracy * 100).toFixed(2)}%
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
+                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
                           {(result.precision * 100).toFixed(2)}%
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
+                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
                           {(result.recall * 100).toFixed(2)}%
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
+                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
                           {(result.f1Score * 100).toFixed(2)}%
                         </td>
                       </tr>
                     ))}
                     <tr className="bg-gray-50 font-medium">
-                      <td className="px-3 py-2 text-sm text-gray-900">
+                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
                         Average
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900">
+                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
                         {(crossValidationResults.reduce((acc, val) => acc + val.accuracy, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900">
+                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
                         {(crossValidationResults.reduce((acc, val) => acc + val.precision, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900">
+                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
                         {(crossValidationResults.reduce((acc, val) => acc + val.recall, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className="px-3 py-2 text-sm text-gray-900">
+                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
                         {(crossValidationResults.reduce((acc, val) => acc + val.f1Score, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
                     </tr>
@@ -898,7 +880,7 @@ const ModelTraining: React.FC = () => {
             {crossValidationNarrative && (
               <div className="grid gap-6 lg:grid-cols-2">
                 <Card className={insightPanelClass}>
-                  <div className="space-y-3 text-sm text-slate-700">
+                  <div className={`space-y-3 ${typography.bodySmall} text-slate-700`}>
                     <p>{crossValidationNarrative.intro}</p>
                     <p>{crossValidationNarrative.balanceMessage}</p>
                     <p>{crossValidationNarrative.spreadMessage}</p>
@@ -925,7 +907,7 @@ const ModelTraining: React.FC = () => {
                         value={cvQuestion}
                         onChange={(e) => setCvQuestion(e.target.value)}
                         placeholder="e.g., How consistent are the folds?"
-                        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        className={components.input.base}
                       />
                       <div className="flex items-center gap-2">
                         <Button type="submit" size="sm" disabled={!cvQuestion.trim()}>
@@ -934,7 +916,7 @@ const ModelTraining: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setCvAnswer(null)}
-                          className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                          className={`${typography.helperText} font-medium text-slate-500 hover:text-primary`}
                         >
                           Clear answer
                         </button>
@@ -946,7 +928,7 @@ const ModelTraining: React.FC = () => {
                       </div>
                     )}
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quick suggestions</p>
+                      <p className={`${typography.helperText} font-semibold uppercase tracking-wide text-slate-500`}>Quick suggestions</p>
                       <div className="flex flex-wrap gap-2">
                         {questionSuggestions.map((suggestion) => (
                           <button

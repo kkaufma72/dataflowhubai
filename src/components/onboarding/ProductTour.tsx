@@ -63,7 +63,7 @@ const ProductTour: React.FC<ProductTourProps> = ({ userProfile }) => {
           <p className="text-gray-700">
             Upload and manage all your datasets here. Supports CSV, Excel, and JSON files.
           </p>
-          <p className="text-sm text-indigo-600 mt-2">
+          <p className="text-sm text-primary-600 mt-2">
             💡 Tip: Drag & drop files anywhere to upload!
           </p>
         </div>
@@ -83,7 +83,7 @@ const ProductTour: React.FC<ProductTourProps> = ({ userProfile }) => {
             🟡 70-89 = Good, minor issues<br />
             🔴 Below 70 = Needs cleaning
           </p>
-          <p className="text-sm text-indigo-600 mt-2">
+          <p className="text-sm text-primary-600 mt-2">
             We check: completeness, consistency, validity, and uniqueness
           </p>
         </div>
@@ -117,7 +117,7 @@ const ProductTour: React.FC<ProductTourProps> = ({ userProfile }) => {
               </>
             )}
           </ul>
-          <p className="text-sm text-indigo-600 mt-2">
+          <p className="text-sm text-primary-600 mt-2">
             🎤 Bonus: Click the mic to use voice input!
           </p>
         </div>
@@ -132,7 +132,7 @@ const ProductTour: React.FC<ProductTourProps> = ({ userProfile }) => {
           <p className="text-gray-700">
             See beautiful visualizations and statistics automatically generated from your data.
           </p>
-          <p className="text-sm text-indigo-600 mt-2">
+          <p className="text-sm text-primary-600 mt-2">
             All charts are interactive and downloadable!
           </p>
         </div>
@@ -162,9 +162,9 @@ const ProductTour: React.FC<ProductTourProps> = ({ userProfile }) => {
           <p className="text-gray-700 mb-3">
             You now know the key features of DataFlowHub AI.
           </p>
-          <div className="bg-indigo-50 rounded-lg p-4 mb-3">
-            <p className="font-semibold text-indigo-900 mb-2">💡 Pro Tips:</p>
-            <ul className="text-sm text-indigo-800 space-y-1">
+          <div className="bg-primary/5 rounded-lg p-4 mb-3">
+            <p className="font-semibold text-primary-900 mb-2">💡 Pro Tips:</p>
+            <ul className="text-sm text-primary-800 space-y-1">
               <li>• Upload your own data to see real insights</li>
               <li>• The AI remembers your conversations</li>
               <li>• Health scores update automatically</li>

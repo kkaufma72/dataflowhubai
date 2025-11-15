@@ -127,7 +127,7 @@ const UserProfile: React.FC = () => {
   if (isLoadingProfile) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
       </div>
     );
   }
@@ -136,7 +136,7 @@ const UserProfile: React.FC = () => {
   if (!userProfile && user) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-purple-600 mb-6">User Profile</h1>
+        <h1 className="text-2xl font-bold text-primary-600 mb-6">User Profile</h1>
         
         <Card>
           <div className="text-center py-12">
@@ -168,7 +168,7 @@ const UserProfile: React.FC = () => {
   if (!userProfile && !user) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-purple-600">Profile Not Found</h2>
+        <h2 className="text-2xl font-bold text-primary-600">Profile Not Found</h2>
         <p className="mt-2 text-gray-600">Please sign in to view your profile.</p>
       </div>
     );
@@ -176,7 +176,7 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-purple-600 mb-6">User Profile</h1>
+      <h1 className="text-2xl font-bold text-primary-600 mb-6">User Profile</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Card */}
@@ -192,15 +192,15 @@ const UserProfile: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-indigo-100">
-                      <User className="w-16 h-16 text-indigo-500" />
+                    <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                      <User className="w-16 h-16 text-primary" />
                     </div>
                   )}
                 </div>
                 {!isEditing ? null : (
                   <label 
                     htmlFor="avatar-upload" 
-                    className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700"
+                    className="absolute bottom-0 right-0 bg-primary-600 text-white p-2 rounded-full cursor-pointer hover:bg-primary-700"
                   >
                     {isUploading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -251,7 +251,7 @@ const UserProfile: React.FC = () => {
                       href={userProfile.website.startsWith('http') ? userProfile.website : `https://${userProfile.website}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-800"
+                      className="text-primary-600 hover:text-primary-800"
                     >
                       {userProfile.website}
                     </a>
@@ -326,7 +326,7 @@ const UserProfile: React.FC = () => {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                     />
                   </div>
                   
@@ -341,7 +341,7 @@ const UserProfile: React.FC = () => {
                         name="jobTitle"
                         value={formData.jobTitle}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                       />
                     </div>
                     
@@ -355,7 +355,7 @@ const UserProfile: React.FC = () => {
                         name="company"
                         value={formData.company}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                       />
                     </div>
                   </div>
@@ -370,7 +370,7 @@ const UserProfile: React.FC = () => {
                       rows={3}
                       value={formData.bio}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                     />
                   </div>
                   
@@ -385,7 +385,7 @@ const UserProfile: React.FC = () => {
                         name="location"
                         value={formData.location}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                       />
                     </div>
                     
@@ -399,7 +399,7 @@ const UserProfile: React.FC = () => {
                         name="website"
                         value={formData.website}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-3 py-2 border"
                       />
                     </div>
                   </div>
@@ -421,7 +421,7 @@ const UserProfile: React.FC = () => {
                             name="twitter"
                             value={formData.twitter}
                             onChange={handleInputChange}
-                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-primary focus:ring-primary sm:text-sm"
                           />
                         </div>
                       </div>
@@ -440,7 +440,7 @@ const UserProfile: React.FC = () => {
                             name="linkedin"
                             value={formData.linkedin}
                             onChange={handleInputChange}
-                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-primary focus:ring-primary sm:text-sm"
                           />
                         </div>
                       </div>
@@ -459,7 +459,7 @@ const UserProfile: React.FC = () => {
                             name="github"
                             value={formData.github}
                             onChange={handleInputChange}
-                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="flex-1 min-w-0 block w-full rounded-none rounded-r-md border-gray-300 focus:border-primary focus:ring-primary sm:text-sm"
                           />
                         </div>
                       </div>

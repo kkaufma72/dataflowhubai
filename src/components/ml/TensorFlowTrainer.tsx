@@ -106,7 +106,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
       <div className="space-y-6">
       <Card>
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-600 rounded-lg flex items-center justify-center">
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -123,7 +123,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
           <select
             value={modelType}
             onChange={(e) => setModelType(e.target.value as any)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="classification">Classification</option>
             <option value="regression">Regression</option>
@@ -148,7 +148,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
                       setSelectedFeatures(selectedFeatures.filter(f => f !== col));
                     }
                   }}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary"
                 />
                 <span className="text-sm text-gray-700">{col}</span>
               </label>
@@ -167,7 +167,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
           <select
             value={targetColumn}
             onChange={(e) => setTargetColumn(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">Select target...</option>
             {columns.map(col => (
@@ -228,7 +228,7 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
               return (
                 <div
                   key={idx}
-                  className="w-2 bg-indigo-500 rounded-t"
+                  className="w-2 bg-primary rounded-t"
                   style={{ height: `${height}%` }}
                   title={`Epoch ${progress.epoch}: Loss ${progress.loss.toFixed(4)}`}
                 />

@@ -52,7 +52,7 @@ const LandingNav: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl mr-2">D</div>
+              <div className="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xl mr-2">D</div>
               <span className={`text-xl font-bold ${isScrolled || !isLandingPage ? 'text-gray-900 dark:text-white' : isLandingPage ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>DataFlowHub AI</span>
             </Link>
             
@@ -61,41 +61,41 @@ const LandingNav: React.FC = () => {
                 <>
                   <button 
                     onClick={() => scrollToSection('features')}
-                    className={`${isScrolled ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400'}`}
+                    className={`${isScrolled ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400'}`}
                   >
                     Features
                   </button>
                   <button 
                     onClick={() => scrollToSection('pricing')}
-                    className={`${isScrolled ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400'}`}
+                    className={`${isScrolled ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400'}`}
                   >
                     Pricing
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/#features" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">Features</Link>
-                  <Link to="/#pricing" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">Pricing</Link>
+                  <Link to="/#features" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">Features</Link>
+                  <Link to="/#pricing" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">Pricing</Link>
                 </>
               )}
-              <Link to="/documentation" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Documentation</Link>
-              <Link to="/api-reference" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>API Reference</Link>
+              <Link to="/documentation" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : isLandingPage ? 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400' : 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'}`}>Documentation</Link>
+              <Link to="/api-reference" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : isLandingPage ? 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400' : 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'}`}>API Reference</Link>
             </nav>
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <Link to="/app" className="text-indigo-600 hover:text-indigo-500 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">Dashboard</Link>
+              <Link to="/app" className="text-primary-600 hover:text-primary font-medium dark:text-primary-400 dark:hover:text-primary-400">Dashboard</Link>
             ) : (
               <>
-                <Link to="/signin" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>Sign In</Link>
-                <Link to="/signin" className="btn btn-primary dark:bg-indigo-700 dark:hover:bg-indigo-600">Get Started</Link>
+                <Link to="/signin" className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : isLandingPage ? 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400' : 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'}`}>Sign In</Link>
+                <Link to="/signin" className="btn btn-primary dark:bg-indigo-700 dark:hover:bg-primary-600">Get Started</Link>
               </>
             )}
           </div>
           
           <div className="md:hidden">
-            <button onClick={toggleMenu} className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400' : isLandingPage ? 'text-gray-800 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-indigo-400' : 'text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400'}`}>
+            <button onClick={toggleMenu} className={`${isScrolled || !isLandingPage ? 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400' : isLandingPage ? 'text-gray-800 hover:text-primary-600 dark:text-gray-200 dark:hover:text-primary-400' : 'text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'}`}>
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -109,33 +109,33 @@ const LandingNav: React.FC = () => {
                 <>
                   <button 
                     onClick={() => scrollToSection('features')}
-                    className="text-left text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+                    className="text-left text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400"
                   >
                     Features
                   </button>
                   <button 
                     onClick={() => scrollToSection('pricing')}
-                    className="text-left text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+                    className="text-left text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400"
                   >
                     Pricing
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/#features" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">Features</Link>
-                  <Link to="/#pricing" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">Pricing</Link>
+                  <Link to="/#features" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">Features</Link>
+                  <Link to="/#pricing" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">Pricing</Link>
                 </>
               )}
-              <Link to="/documentation" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">Documentation</Link>
-              <Link to="/api-reference" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">API Reference</Link>
+              <Link to="/documentation" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">Documentation</Link>
+              <Link to="/api-reference" className="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">API Reference</Link>
               
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 {user ? (
-                  <Link to="/app" className="block text-indigo-600 hover:text-indigo-500 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">Dashboard</Link>
+                  <Link to="/app" className="block text-primary-600 hover:text-primary font-medium dark:text-primary-400 dark:hover:text-primary-400">Dashboard</Link>
                 ) : (
                   <>
-                    <Link to="/signin" className="block text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 mb-4">Sign In</Link>
-                    <Link to="/signin" className="btn btn-primary w-full dark:bg-indigo-700 dark:hover:bg-indigo-600">Get Started</Link>
+                    <Link to="/signin" className="block text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 mb-4">Sign In</Link>
+                    <Link to="/signin" className="btn btn-primary w-full dark:bg-indigo-700 dark:hover:bg-primary-600">Get Started</Link>
                   </>
                 )}
               </div>

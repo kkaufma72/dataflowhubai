@@ -269,7 +269,7 @@ const AccountSettings: React.FC = () => {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-purple-600">Account Not Found</h2>
+        <h2 className="text-2xl font-bold text-primary-600">Account Not Found</h2>
         <p className="mt-2 text-gray-600">Please sign in to view your account settings.</p>
       </div>
     );
@@ -277,7 +277,7 @@ const AccountSettings: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-purple-600 mb-6">Account Settings</h1>
+      <h1 className="text-2xl font-bold text-primary-600 mb-6">Account Settings</h1>
       
       <div className="bg-white shadow rounded-lg">
         <div className="border-b border-gray-200">
@@ -286,7 +286,7 @@ const AccountSettings: React.FC = () => {
               onClick={() => setActiveTab('general')}
               className={`py-4 px-6 text-sm font-medium ${
                 activeTab === 'general'
-                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  ? 'border-b-2 border-primary text-primary-600'
                   : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -296,7 +296,7 @@ const AccountSettings: React.FC = () => {
               onClick={() => setActiveTab('security')}
               className={`py-4 px-6 text-sm font-medium ${
                 activeTab === 'security'
-                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  ? 'border-b-2 border-primary text-primary-600'
                   : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -306,7 +306,7 @@ const AccountSettings: React.FC = () => {
               onClick={() => setActiveTab('notifications')}
               className={`py-4 px-6 text-sm font-medium ${
                 activeTab === 'notifications'
-                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  ? 'border-b-2 border-primary text-primary-600'
                   : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -332,7 +332,7 @@ const AccountSettings: React.FC = () => {
                       type="radio"
                       checked={preferences.theme === 'light'}
                       onChange={() => handlePreferenceChange('theme', 'light')}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300"
                     />
                     <label htmlFor="theme-light" className="ml-3 flex items-center">
                       <Sun className="w-5 h-5 text-amber-500 mr-2" />
@@ -347,10 +347,10 @@ const AccountSettings: React.FC = () => {
                       type="radio"
                       checked={preferences.theme === 'dark'}
                       onChange={() => handlePreferenceChange('theme', 'dark')}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300"
                     />
                     <label htmlFor="theme-dark" className="ml-3 flex items-center">
-                      <Moon className="w-5 h-5 text-indigo-500 mr-2" />
+                      <Moon className="w-5 h-5 text-primary mr-2" />
                       <span className="text-sm font-medium text-gray-700">Dark</span>
                     </label>
                   </div>
@@ -362,7 +362,7 @@ const AccountSettings: React.FC = () => {
                       type="radio"
                       checked={preferences.theme === 'system'}
                       onChange={() => handlePreferenceChange('theme', 'system')}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300"
                     />
                     <label htmlFor="theme-system" className="ml-3 flex items-center">
                       <span className="text-sm font-medium text-gray-700">System Default</span>
@@ -391,7 +391,7 @@ const AccountSettings: React.FC = () => {
                       className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm ${
                         emailErrors.newEmail 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                          : 'border-gray-300 focus:border-primary focus:ring-primary'
                       }`}
                     />
                     {emailErrors.newEmail && (
@@ -412,7 +412,7 @@ const AccountSettings: React.FC = () => {
                       className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm ${
                         emailErrors.password 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                          : 'border-gray-300 focus:border-primary focus:ring-primary'
                       }`}
                     />
                     {emailErrors.password && (
@@ -483,7 +483,7 @@ const AccountSettings: React.FC = () => {
                       className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm ${
                         passwordErrors.currentPassword 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                          : 'border-gray-300 focus:border-primary focus:ring-primary'
                       }`}
                     />
                     {passwordErrors.currentPassword && (
@@ -504,7 +504,7 @@ const AccountSettings: React.FC = () => {
                       className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm ${
                         passwordErrors.newPassword 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                          : 'border-gray-300 focus:border-primary focus:ring-primary'
                       }`}
                     />
                     {passwordErrors.newPassword && (
@@ -525,7 +525,7 @@ const AccountSettings: React.FC = () => {
                       className={`mt-1 block w-full rounded-md shadow-sm sm:text-sm ${
                         passwordErrors.confirmPassword 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                          : 'border-gray-300 focus:border-primary focus:ring-primary'
                       }`}
                     />
                     {passwordErrors.confirmPassword && (
@@ -618,7 +618,7 @@ const AccountSettings: React.FC = () => {
                         type="checkbox"
                         checked={preferences.emailNotifications}
                         onChange={(e) => handlePreferenceChange('emailNotifications', e.target.checked)}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -648,7 +648,7 @@ const AccountSettings: React.FC = () => {
                         type="checkbox"
                         checked={true}
                         disabled={!preferences.emailNotifications}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -669,7 +669,7 @@ const AccountSettings: React.FC = () => {
                         type="checkbox"
                         checked={true}
                         disabled={!preferences.emailNotifications}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -690,7 +690,7 @@ const AccountSettings: React.FC = () => {
                         type="checkbox"
                         checked={true}
                         disabled={!preferences.emailNotifications}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -711,7 +711,7 @@ const AccountSettings: React.FC = () => {
                         type="checkbox"
                         checked={false}
                         disabled={!preferences.emailNotifications}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary border-gray-300 rounded"
                       />
                     </div>
                     <div className="ml-3 text-sm">
@@ -754,7 +754,7 @@ const Switch: React.FC<SwitchProps> = ({ checked, onChange, className = '' }) =>
   return (
     <button
       type="button"
-      className={`${checked ? 'bg-indigo-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full ${className}`}
+      className={`${checked ? 'bg-primary-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full ${className}`}
       onClick={() => onChange(!checked)}
     >
       <span

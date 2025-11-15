@@ -68,7 +68,7 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
           <h2 className="text-lg font-medium text-gray-900">Help Center</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <X className="w-5 h-5" />
           </button>
@@ -81,7 +81,7 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
               placeholder="Search help articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -98,10 +98,10 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
                 return (
                   <button
                     key={category.id}
-                    className="flex flex-col items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex flex-col items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
                     onClick={() => setActiveCategory(category.id)}
                   >
-                    <Icon className="w-6 h-6 text-indigo-600 mb-2" />
+                    <Icon className="w-6 h-6 text-primary-600 mb-2" />
                     <span className="text-sm font-medium text-gray-900">{category.name}</span>
                   </button>
                 );
@@ -121,7 +121,7 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
             {activeCategory && !searchQuery && (
               <div className="mb-4">
                 <button
-                  className="flex items-center text-sm text-indigo-600 hover:text-indigo-500"
+                  className="flex items-center text-sm text-primary-600 hover:text-primary"
                   onClick={() => setActiveCategory(null)}
                 >
                   <ArrowRight className="w-4 h-4 mr-1 transform rotate-180" />
@@ -142,7 +142,7 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
                   <h4 className="text-sm font-medium text-gray-900">{article.title}</h4>
                   <p className="mt-1 text-xs text-gray-500">{article.excerpt}</p>
                   <div className="mt-2 flex justify-end">
-                    <button className="text-xs text-indigo-600 hover:text-indigo-500 flex items-center">
+                    <button className="text-xs text-primary-600 hover:text-primary flex items-center">
                       Read more
                       <ArrowRight className="w-3 h-3 ml-1" />
                     </button>
@@ -159,10 +159,10 @@ const InAppHelp: React.FC<InAppHelpProps> = ({ isOpen, onClose }) => {
           </div>
         )}
         
-        <div className="p-4 bg-indigo-50 border-t border-gray-200">
+        <div className="p-4 bg-primary/5 border-t border-gray-200">
           <div className="flex items-center">
-            <MessageSquare className="w-5 h-5 text-indigo-600 mr-2" />
-            <p className="text-sm text-indigo-700">Need more help?</p>
+            <MessageSquare className="w-5 h-5 text-primary-600 mr-2" />
+            <p className="text-sm text-primary-700">Need more help?</p>
           </div>
           <div className="mt-2 flex space-x-3">
             <Button size="sm" className="flex-1">

@@ -321,7 +321,7 @@ const DatasetInsights: React.FC = () => {
     return (
       <div className="text-center py-12">
         <Database className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-purple-600 mb-2">No Datasets Available</h2>
+        <h2 className="text-2xl font-bold text-primary-600 mb-2">No Datasets Available</h2>
         <p className="text-gray-600 mb-4">Upload datasets to view insights and visualizations.</p>
         <Button onClick={() => navigate('/app/data')}>
           Go to Data Management
@@ -335,7 +335,7 @@ const DatasetInsights: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-purple-600">Dataset Insights</h1>
+          <h1 className="text-2xl font-bold text-primary-600">Dataset Insights</h1>
           <p className="mt-1 text-sm text-gray-500">
             Comprehensive analytics and visualizations for your datasets
           </p>
@@ -352,7 +352,7 @@ const DatasetInsights: React.FC = () => {
             onClick={() => setActiveTab('overview')}
             className={`${
               activeTab === 'overview'
-                ? 'border-indigo-600 text-indigo-600'
+                ? 'border-indigo-600 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
           >
@@ -363,7 +363,7 @@ const DatasetInsights: React.FC = () => {
             onClick={() => setActiveTab('visualizations')}
             className={`${
               activeTab === 'visualizations'
-                ? 'border-indigo-600 text-indigo-600'
+                ? 'border-indigo-600 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
           >
@@ -376,7 +376,7 @@ const DatasetInsights: React.FC = () => {
               onClick={() => setActiveTab('graph')}
               className={`${
                 activeTab === 'graph'
-                  ? 'border-indigo-600 text-indigo-600'
+                  ? 'border-indigo-600 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
             >
@@ -389,7 +389,7 @@ const DatasetInsights: React.FC = () => {
             onClick={() => setActiveTab('warehouse')}
             className={`${
               activeTab === 'warehouse'
-                ? 'border-indigo-600 text-indigo-600'
+                ? 'border-indigo-600 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
           >
@@ -407,12 +407,12 @@ const DatasetInsights: React.FC = () => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="p-6">
               <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg">
-                  <Database className="w-6 h-6 text-indigo-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                  <Database className="w-6 h-6 text-primary-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Datasets</p>
-                  <p className="text-2xl font-bold text-purple-600">{datasets.length}</p>
+                  <p className="text-2xl font-bold text-primary-600">{datasets.length}</p>
                 </div>
               </div>
             </Card>
@@ -424,7 +424,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Rows</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-primary-600">
                     {stats.totalRows.toLocaleString()}
                   </p>
                 </div>
@@ -433,12 +433,12 @@ const DatasetInsights: React.FC = () => {
 
             <Card className="p-6">
               <div className="flex items-center">
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
-                  <BarChart2 className="w-6 h-6 text-purple-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
+                  <BarChart2 className="w-6 h-6 text-primary-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Columns</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-primary-600">
                     {stats.totalColumns.toLocaleString()}
                   </p>
                 </div>
@@ -452,7 +452,7 @@ const DatasetInsights: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Avg Rows/Dataset</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-primary-600">
                     {stats.avgRows.toLocaleString()}
                   </p>
                 </div>
@@ -469,7 +469,7 @@ const DatasetInsights: React.FC = () => {
                   <ChartComp.Line data={uploadsOverTimeData} options={chartOptions} />
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+                    <Loader className="w-8 h-8 animate-spin text-primary-600" />
                   </div>
                 )}
               </div>
@@ -482,7 +482,7 @@ const DatasetInsights: React.FC = () => {
                   <ChartComp.Pie data={fileTypeDistributionData} options={chartOptions} />
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+                    <Loader className="w-8 h-8 animate-spin text-primary-600" />
                   </div>
                 )}
               </div>
@@ -495,7 +495,7 @@ const DatasetInsights: React.FC = () => {
                   <ChartComp.Bar data={rowCountDistributionData} options={chartOptions} />
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+                    <Loader className="w-8 h-8 animate-spin text-primary-600" />
                   </div>
                 )}
               </div>
@@ -507,7 +507,7 @@ const DatasetInsights: React.FC = () => {
                 {datasets.slice(0, 5).map((dataset) => (
                   <div key={dataset.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center">
-                      <div className="w-2 h-2 bg-indigo-600 rounded-full mr-3"></div>
+                      <div className="w-2 h-2 bg-primary-600 rounded-full mr-3"></div>
                       <span className="text-sm font-medium text-gray-900">{dataset.name}</span>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -534,7 +534,7 @@ const DatasetInsights: React.FC = () => {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="all">All Types</option>
                   {fileTypes.map(type => (
@@ -572,8 +572,8 @@ const DatasetInsights: React.FC = () => {
 
                   <div className="flex items-start justify-between mb-3 pr-16">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <Database className="w-5 h-5 text-indigo-600" />
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Database className="w-5 h-5 text-primary-600" />
                       </div>
                       <div className="ml-3">
                         <h4 className="text-sm font-medium text-gray-900">{dataset.name}</h4>
@@ -616,7 +616,7 @@ const DatasetInsights: React.FC = () => {
             <select
               value={selectedDatasetId || ''}
               onChange={(e) => setSelectedDatasetId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {datasets.map(dataset => (
                 <option key={dataset.id} value={dataset.id}>
@@ -643,7 +643,7 @@ const DatasetInsights: React.FC = () => {
                               <ChartComp.Bar data={data} options={chartOptions} />
                             ) : (
                               <div className="flex items-center justify-center h-full">
-                                <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+                                <Loader className="w-8 h-8 animate-spin text-primary-600" />
                               </div>
                             )}
                           </div>
@@ -668,7 +668,7 @@ const DatasetInsights: React.FC = () => {
                               <ChartComp.Pie data={data} options={chartOptions} />
                             ) : (
                               <div className="flex items-center justify-center h-full">
-                                <Loader className="w-8 h-8 animate-spin text-indigo-600" />
+                                <Loader className="w-8 h-8 animate-spin text-primary-600" />
                               </div>
                             )}
                           </div>
@@ -698,7 +698,7 @@ const DatasetInsights: React.FC = () => {
         <div className="space-y-6">
           <Suspense fallback={
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-              <Loader className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
+              <Loader className="w-12 h-12 text-primary-600 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Loading knowledge graph...</p>
             </div>
           }>
@@ -715,15 +715,15 @@ const DatasetInsights: React.FC = () => {
                 <h4 className="font-semibold text-gray-900 mb-2">What You See:</h4>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start">
-                    <span className="text-indigo-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span><strong>Nodes:</strong> Your uploaded datasets</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-indigo-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span><strong>Edges:</strong> Relationships between datasets</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-indigo-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span><strong>Size:</strong> Node size = number of rows</span>
                   </li>
                 </ul>
@@ -732,15 +732,15 @@ const DatasetInsights: React.FC = () => {
                 <h4 className="font-semibold text-gray-900 mb-2">Use Cases:</h4>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start">
-                    <span className="text-purple-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span>Find similar datasets automatically</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-purple-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span>Track data lineage and transformations</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-purple-600 mr-2">•</span>
+                    <span className="text-primary-600 mr-2">•</span>
                     <span>Discover hidden connections in your data</span>
                   </li>
                 </ul>
@@ -755,7 +755,7 @@ const DatasetInsights: React.FC = () => {
         <div className="space-y-6">
           <Suspense fallback={
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-              <Loader className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
+              <Loader className="w-12 h-12 text-primary-600 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Loading warehouse analytics...</p>
             </div>
           }>
