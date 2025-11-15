@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthProvider';
 
 interface CheckoutOptions {
-  tier: 'starter' | 'professional' | 'team';
+  tier: 'free' | 'starter' | 'professional' | 'team';
   billing: 'monthly' | 'annual';
   email?: string;
 }

@@ -10,7 +10,7 @@ interface PricingCardProps {
   period?: 'monthly' | 'annual';
   features: string[];
   isPopular?: boolean;
-  tier: 'starter' | 'professional' | 'team';
+  tier: 'free' | 'starter' | 'professional' | 'team';
   ctaText?: string;
   isFree?: boolean;
 }
