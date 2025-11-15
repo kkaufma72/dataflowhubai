@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -7,12 +8,14 @@ import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 
 const AccountSettings: React.FC = () => {
+  const navigate = useNavigate();
   const { userProfile, updateUserProfile } = useUser();
   const { user, signOut } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'general' | 'security' | 'notifications'>('general');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   
   // Password change form
   const [passwordForm, setPasswordForm] = useState({
@@ -256,13 +259,15 @@ const AccountSettings: React.FC = () => {
   // Sign out
   const handleSignOut = async () => {
     try {
+      setIsSigningOut(true);
       await signOut();
       toast.success('Signed out successfully');
       // Navigate to landing page after successful sign out
-      window.location.href = '/';
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');
+      setIsSigningOut(false);
     }
   };
 
@@ -442,9 +447,10 @@ const AccountSettings: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={handleSignOut}
-                    icon={<LogOut className="w-4 h-4" />}
+                    disabled={isSigningOut}
+                    icon={isSigningOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
                   >
-                    Sign Out
+                    {isSigningOut ? 'Signing out...' : 'Sign Out'}
                   </Button>
                 </div>
               </div>

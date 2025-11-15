@@ -107,7 +107,6 @@ export default defineConfig(({ mode }) => ({
       // LangChain ES module dependencies that need pre-bundling
       'camelcase',
       'decamelize',
-      'uuid',
       'p-retry',
       'p-queue',
       'semver'

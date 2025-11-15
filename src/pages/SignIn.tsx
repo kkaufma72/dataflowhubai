@@ -67,7 +67,7 @@ const SignIn = () => {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session && !isSignUp) {
+        if (session) {
           console.log('User already has active session, redirecting to:', from);
           setRedirectInProgress(true);
           navigate(from, { replace: true });
@@ -82,14 +82,13 @@ const SignIn = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       console.log('Auth state change in SignIn:', event);
       
-      // Only redirect on SIGNED_IN if we're not in signup mode
-      // This prevents redirect when user just created account
-      if (event === 'SIGNED_IN' && !redirectInProgress && !isSignUp) {
-        console.log('Signed in event detected (not signup), redirecting to:', from);
+      // Redirect on any SIGNED_IN event (including after signup)
+      if (event === 'SIGNED_IN' && !redirectInProgress) {
+        console.log('Signed in event detected, redirecting to:', from);
         setRedirectInProgress(true);
-        navigate(from, { replace: true });
-      } else if (event === 'SIGNED_IN' && isSignUp) {
-        console.log('Signup detected - staying on page, user can now sign in');
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 500);
       }
     });
 
@@ -97,7 +96,7 @@ const SignIn = () => {
       console.log('SignIn component unmounting, cleaning up subscription');
       subscription.unsubscribe();
     };
-  }, [navigate, from, redirectInProgress, isSignUp]);
+  }, [navigate, from, redirectInProgress]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,22 +220,67 @@ const SignIn = () => {
       if (data.user) {
         console.log('User created successfully:', data.user.id);
         
+        // Create user profile immediately
+        try {
+          console.log('📝 Creating user profile...');
+          const { error: profileError } = await supabase.from('user_profiles').insert([{
+            user_id: data.user.id,
+            full_name: fullName,
+            email: email,
+            use_case: useCase || 'general',
+            company: company || '',
+            job_title: jobTitle || '',
+            linkedin_url: linkedinUrl || '',
+          }]);
+          
+          if (profileError) {
+            console.error('❌ Error creating profile:', profileError);
+          } else {
+            console.log('✅ User profile created');
+          }
+        } catch (profileErr) {
+          console.error('❌ Error in profile creation:', profileErr);
+        }
+        
         toast.success('🎉 Account created successfully!', {
           duration: 5000,
           icon: '✅'
         });
         
-        // Switch to signin mode - user can sign in immediately (email verification disabled for dev)
-        setIsSignUp(false);
-        setPassword('');
-        
-        // Show success message
-        toast.success('You can now sign in with your credentials!', {
-          duration: 5000,
-        });
-        
-        // Don't redirect - stay on signin page
-        console.log('Signup complete - user can now sign in');
+        // Automatically sign in the user and redirect to dashboard
+        try {
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+          
+          if (signInError) {
+            console.error('Auto sign-in error:', signInError);
+            // Show success but require manual sign-in
+            setIsSignUp(false);
+            setPassword('');
+            toast.success('Please sign in with your new credentials', {
+              duration: 5000,
+            });
+          } else {
+            console.log('✅ Auto sign-in successful, redirecting to dashboard...');
+            toast.success('Welcome! Redirecting to your dashboard...', {
+              duration: 3000,
+            });
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+              navigate('/app', { replace: true });
+            }, 1000);
+          }
+        } catch (signInErr) {
+          console.error('Auto sign-in failed:', signInErr);
+          setIsSignUp(false);
+          setPassword('');
+          toast.success('You can now sign in with your credentials!', {
+            duration: 5000,
+          });
+        }
       }
     } catch (error: any) {
       console.error('Error during signup:', error);

@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const isInitialMount = useRef(true);
+  const isSigningOut = useRef(false);
 
   // Memoized function to clear local data
   const clearLocalData = useCallback(async () => {
@@ -140,7 +141,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out');
-        await clearLocalData();
+        // Only clear data if not already signing out (to prevent loops)
+        if (!isSigningOut.current) {
+          await clearLocalData();
+        }
         setUser(null);
         setSession(null);
         setLoading(false);
@@ -286,15 +290,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Sign out
   const signOut = useCallback(async () => {
+    // Prevent multiple simultaneous sign-outs
+    if (isSigningOut.current) {
+      console.log('⏭️ Sign out already in progress, skipping...');
+      return;
+    }
+    
     try {
+      isSigningOut.current = true;
       console.log('👋 Signing out...');
-      await clearLocalData();
+      
+      // Sign out from Supabase first
       await supabase.auth.signOut();
+      
+      // Then clear local data
+      await clearLocalData();
+      
+      // Update state
       setUser(null);
       setSession(null);
+      
       console.log('✅ Signed out successfully');
     } catch (error) {
       console.error('❌ Error signing out:', error);
+    } finally {
+      // Reset flag after a short delay to allow redirect
+      setTimeout(() => {
+        isSigningOut.current = false;
+      }, 1000);
     }
   }, [clearLocalData]);
 
