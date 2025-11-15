@@ -41,6 +41,7 @@ const ProductTourDemo = lazy(() => import('./pages/ProductTourDemo.tsx'));
 const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
 const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
+const AsyncMLOperations = lazy(() => import('./pages/AsyncMLOperations.tsx')); // Celery async operations
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
@@ -190,6 +191,7 @@ if (!isSupabaseConfigured) {
                               <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
                               <Route path="usage" element={<UsageDashboard />} />
                               <Route path="trash" element={<TrashBin />} />
+                              <Route path="async-ml" element={<AsyncMLOperations />} />
                             </Route>
 
                             <Route path="*" element={<Navigate to="/" replace />} />

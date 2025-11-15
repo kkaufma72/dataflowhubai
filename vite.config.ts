@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => ({
     port: 5173,  // Changed port to force fresh cache
     strictPort: true,
     host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     watch: {
       usePolling: true,
       interval: 1000,

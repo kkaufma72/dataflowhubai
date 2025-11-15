@@ -52,9 +52,7 @@ class PipelineCreate(BaseModel):
     steps: List[PipelineStep]
     schedule: Optional[str] = None  # Cron expression
     is_active: bool = True
-
-    @Field(default_factory=dict)
-    config: Dict[str, Any]
+    config: Dict[str, Any] = Field(default_factory=dict)
 
 
 class PipelineUpdate(BaseModel):

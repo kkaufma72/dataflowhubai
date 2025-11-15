@@ -20,6 +20,7 @@ from middleware.performance import PerformanceMiddleware
 from routers import (
     analytics_routes,
     auth_routes,
+    celery_ml_routes,
     data_routes,
     deployment_routes,
     health_routes,
@@ -75,6 +76,7 @@ def create_application() -> FastAPI:
     app.include_router(auth_routes.router, prefix="/api/auth", tags=["Authentication"])
     app.include_router(data_routes.router, prefix="/api/data", tags=["Data Management"])
     app.include_router(ml_routes.router, prefix="/api/ml", tags=["Machine Learning"])
+    app.include_router(celery_ml_routes.router, prefix="/api/ml", tags=["ML Tasks (Async)"])
     app.include_router(deployment_routes.router, prefix="/api/deploy", tags=["Deployment"])
     app.include_router(monitoring_routes.router, prefix="/api/monitoring", tags=["Monitoring"])
     app.include_router(pipeline_routes.router, prefix="/api/pipelines", tags=["Pipelines"])

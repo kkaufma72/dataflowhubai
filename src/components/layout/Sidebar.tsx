@@ -175,6 +175,13 @@ const Sidebar: React.FC = () => {
           icon: Activity,
           description: 'Track performance',
           premium: true
+        },
+        {
+          name: 'Async ML',
+          href: '/app/async-ml',
+          icon: Zap,
+          description: 'Background tasks',
+          premium: true
         }
       ]
     }

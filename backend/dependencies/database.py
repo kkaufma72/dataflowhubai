@@ -2,6 +2,7 @@
 Database connection management and dependency injection.
 """
 
+import logging
 from typing import AsyncGenerator
 
 import redis.asyncio as aioredis
@@ -11,6 +12,8 @@ from neo4j import AsyncGraphDatabase, AsyncDriver
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 from utils.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 # Database Engines and Clients
@@ -85,11 +88,15 @@ async def initialize_database_connections() -> None:
     if not minio_client.bucket_exists(settings.MINIO_BUCKET):
         minio_client.make_bucket(settings.MINIO_BUCKET)
 
-    # Kafka Producer
-    kafka_producer = AIOKafkaProducer(
-        bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-    )
-    await kafka_producer.start()
+    # Kafka Producer (optional - will log warning if unavailable)
+    try:
+        kafka_producer = AIOKafkaProducer(
+            bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
+        )
+        await kafka_producer.start()
+        logger.info("Kafka producer connected")
+    except Exception as e:
+        logger.warning(f"Kafka not available: {e}. Continuing without Kafka.")
 
 
 async def close_database_connections() -> None:

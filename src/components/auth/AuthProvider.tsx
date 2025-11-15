@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const isInitialMount = useRef(true);
   const isSigningOut = useRef(false);
+  const isInitialized = useRef(false); // Prevent multiple initializations
 
   // Memoized function to clear local data
   const clearLocalData = useCallback(async () => {
@@ -68,14 +69,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [clearLocalData]);
 
   useEffect(() => {
-    console.log('🚀 AuthProvider mounting...');
+    // Skip if already initialized (prevents double-initialization in StrictMode)
+    if (isInitialized.current) {
+      return; // Silent skip for better performance
+    }
+    
+    isInitialized.current = true;
     let mounted = true;
 
     // Check active sessions and set the user (avoid supabase.auth.getSession() as it hangs)
     const initializeAuth = async () => {
       try {
-        console.log('📡 Getting session from localStorage...');
-        
         // Try to get session from localStorage first (Supabase stores it there)
         const authData = localStorage.getItem('sb-bcobpxgktvgfsffdsiog-auth-token');
         let session = null;
@@ -90,15 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 access_token: parsedAuth.access_token,
                 refresh_token: parsedAuth.refresh_token
               };
-              console.log('✅ Session found in localStorage:', session.user?.email);
             }
           } catch (e) {
-            console.warn('Could not parse session from localStorage');
+            // Silent fail, session will be null
           }
         }
         
         if (!mounted) {
-          console.log('⚠️ Component unmounted, skipping session update');
           return;
         }
         
@@ -107,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         isInitialMount.current = false;
       } catch (error) {
-        console.error('❌ Error getting session:', error);
         if (mounted) {
           await handleAuthError(error);
           setLoading(false);
@@ -119,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for changes on auth state
     console.log('👂 Setting up auth state listener...');
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: Session | null) => {
       if (!mounted) {
         console.log('⚠️ Component unmounted, skipping auth state change');
         return;
