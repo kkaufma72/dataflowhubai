@@ -686,7 +686,7 @@ const ModelEvaluationContent = () => {
                       <button
                         type="button"
                         onClick={() => setPerformanceAnswer(null)}
-                        className="text-xs font-medium text-slate-500 hover:text-primary-600"
+                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
                       >
                         Clear answer
                       </button>
@@ -773,7 +773,7 @@ const ModelEvaluationContent = () => {
                       <button
                         type="button"
                         onClick={() => setConfusionAnswer(null)}
-                        className="text-xs font-medium text-slate-500 hover:text-primary-600"
+                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
                       >
                         Clear answer
                       </button>
@@ -834,7 +834,7 @@ const ModelEvaluationContent = () => {
                         <button
                           type="button"
                           onClick={() => setRocAnswer(null)}
-                          className="text-xs font-medium text-slate-500 hover:text-primary-600"
+                          className="text-xs font-medium text-slate-500 hover:text-indigo-600"
                         >
                           Clear answer
                         </button>
@@ -909,7 +909,7 @@ const ModelEvaluationContent = () => {
                     <button
                       type="button"
                       onClick={() => setFeatureAnswer(null)}
-                      className="text-xs font-medium text-slate-500 hover:text-primary-600"
+                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
                     >
                       Clear answer
                     </button>
@@ -998,7 +998,7 @@ const ModelEvaluationContent = () => {
                     <button
                       type="button"
                       onClick={() => setPredictionAnswer(null)}
-                      className="text-xs font-medium text-slate-500 hover:text-primary-600"
+                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
                     >
                       Clear answer
                     </button>

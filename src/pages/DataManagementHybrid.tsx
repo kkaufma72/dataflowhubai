@@ -361,7 +361,7 @@ const DataManagementHybrid: React.FC = () => {
                 className={`
                   group relative px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 flex-shrink-0 border-2
                   ${activeDatasetId === dataset.id
-                    ? 'bg-white text-primary-600 border-primary border-b-white -mb-0.5 shadow-md'
+                    ? 'bg-white text-indigo-600 border-primary border-b-white -mb-0.5 shadow-md'
                     : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
                   }
                 `}
@@ -444,7 +444,7 @@ const DataManagementHybrid: React.FC = () => {
           <div className="p-6">
             <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20 mb-4">
               <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-gray-900 font-semibold mb-1">
                     👋 Hi {user?.user_metadata?.full_name?.split(' ')[0] || 'there'}!
@@ -508,9 +508,9 @@ const DataManagementHybrid: React.FC = () => {
                 className="w-full text-left px-4 py-3 bg-white border-2 border-gray-200 hover:border-primary-400 hover:bg-primary/5 rounded-xl transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-primary-600" />
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-600">
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600">
                       Ask AI Questions
                     </p>
                     <p className="text-xs text-gray-600">

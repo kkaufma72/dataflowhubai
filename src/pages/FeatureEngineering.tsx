@@ -89,8 +89,8 @@ const FeatureEngineering: React.FC = () => {
   if (!selectedDataset) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
-          <Database className="w-6 h-6 text-primary-600" />
+        <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
+          <Database className="w-6 h-6 text-indigo-600" />
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No datasets available</h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -107,7 +107,7 @@ const FeatureEngineering: React.FC = () => {
     <div>
       <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-primary-600">Feature Engineering</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Feature Engineering</h1>
           <p className="mt-1 text-sm text-gray-500">
             Select, transform, and create features to improve model performance
           </p>
@@ -125,8 +125,8 @@ const FeatureEngineering: React.FC = () => {
 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-primary-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-indigo-50 rounded-lg mr-4">
+            <Database className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">{selectedDataset.name}</h2>
@@ -169,10 +169,10 @@ const FeatureEngineering: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-primary/5 rounded-lg">
-              <h4 className="text-sm font-medium text-primary-900 mb-2">Selected Features</h4>
-              <p className="text-2xl font-semibold text-primary-700">{engineeredFeatures.length}</p>
-              <p className="text-sm text-primary-600">out of {selectedDataset.preview_data?.columns.length || 0} original features</p>
+            <div className="p-4 bg-indigo-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Features</h4>
+              <p className="text-2xl font-semibold text-gray-900">{engineeredFeatures.length}</p>
+              <p className="text-sm text-indigo-600">out of {selectedDataset.preview_data?.columns.length || 0} original features</p>
             </div>
             
             <div className="p-4 bg-green-50 rounded-lg">
@@ -181,10 +181,10 @@ const FeatureEngineering: React.FC = () => {
               <p className="text-sm text-green-600">scaling, encoding, and custom transformations</p>
             </div>
             
-            <div className="p-4 bg-primary/5 rounded-lg">
-              <h4 className="text-sm font-medium text-primary-900 mb-2">New Features Created</h4>
-              <p className="text-2xl font-semibold text-primary-700">12</p>
-              <p className="text-sm text-primary-600">including time series and interaction features</p>
+            <div className="p-4 bg-indigo-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">New Features Created</h4>
+              <p className="text-2xl font-semibold text-gray-900">12</p>
+              <p className="text-sm text-indigo-600">including time series and interaction features</p>
             </div>
           </div>
           

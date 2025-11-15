@@ -130,8 +130,8 @@ const ModelMonitoringContent: React.FC = () => {
   if (!selectedModel) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
-          <Activity className="w-6 h-6 text-primary-600" />
+        <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
+          <Activity className="w-6 h-6 text-indigo-600" />
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for monitoring</h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -200,7 +200,7 @@ const ModelMonitoringContent: React.FC = () => {
                     <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
                     <button
                       onClick={markAllAsRead}
-                      className="text-xs text-primary-600 hover:text-primary"
+                      className="text-xs text-indigo-600 hover:text-indigo-700"
                     >
                       Mark all as read
                     </button>
@@ -248,8 +248,8 @@ const ModelMonitoringContent: React.FC = () => {
 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-primary-600" />
+          <div className="flex items-center justify-center w-10 h-10 bg-indigo-50 rounded-lg mr-4">
+            <Database className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">{selectedModel.name}</h2>
@@ -287,7 +287,7 @@ const ModelMonitoringContent: React.FC = () => {
               onClick={() => setActiveTab('realtime')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'realtime'
-                  ? 'border-primary text-primary-600'
+                  ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -297,7 +297,7 @@ const ModelMonitoringContent: React.FC = () => {
               onClick={() => setActiveTab('performance')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'performance'
-                  ? 'border-primary text-primary-600'
+                  ? 'border-indigo-600 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

@@ -323,8 +323,8 @@ print(prediction)`;
   if (models.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
-          <Rocket className="w-6 h-6 text-primary-600" />
+        <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
+          <Rocket className="w-6 h-6 text-indigo-600" />
         </div>
         <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for deployment</h3>
         <p className="mt-1 text-sm text-gray-500">
@@ -646,7 +646,7 @@ print(prediction)`;
                         API Endpoint
                       </h4>
                       <div className="flex items-center p-2 mt-2 bg-gray-50 rounded-md">
-                        <code className="flex-1 text-sm text-primary-600 break-all">
+                        <code className="flex-1 text-sm text-indigo-600 break-all">
                           {selectedModel.deploymentEndpoint}
                         </code>
                         <button
@@ -673,8 +673,8 @@ print(prediction)`;
                         API Key
                       </h4>
                       <div className="flex items-center p-2 mt-2 bg-gray-50 rounded-md">
-                        <code className="flex-1 text-sm text-primary-600 font-mono">
-                          {showApiKey ? apiKey : '•'.repeat(20)}
+                        <code className="flex-1 text-sm text-indigo-600 font-mono">
+                          {showApiKey ? selectedModel.apiKey : '••••••••••••••••'}
                         </code>
                         <div className="flex ml-2">
                           <button
@@ -892,12 +892,12 @@ print(prediction)`;
       <Card>
         <h2 className="text-lg font-medium text-gray-900 mb-4">Deployment Options</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="p-4 bg-primary/5 rounded-lg">
-            <h3 className="text-md font-medium text-primary-900 mb-2">REST API</h3>
-            <p className="text-sm text-primary-700 mb-3">
+          <div className="p-4 bg-indigo-50 rounded-lg">
+            <h3 className="text-md font-medium text-gray-900 mb-2">REST API</h3>
+            <p className="text-sm text-gray-700 mb-3">
               Deploy your model as a RESTful API endpoint for easy integration.
             </p>
-            <ul className="space-y-1 text-xs text-primary-600">
+            <ul className="space-y-1 text-xs text-indigo-600">
               <li>• Standard HTTP/HTTPS protocols</li>
               <li>• JSON request/response format</li>
               <li>• API key authentication</li>
@@ -918,12 +918,12 @@ print(prediction)`;
             </ul>
           </div>
 
-          <div className="p-4 bg-primary/5 rounded-lg">
-            <h3 className="text-md font-medium text-primary-900 mb-2">Edge Deployment</h3>
-            <p className="text-sm text-primary-700 mb-3">
+          <div className="p-4 bg-indigo-50 rounded-lg">
+            <h3 className="text-md font-medium text-gray-900 mb-2">Edge Deployment</h3>
+            <p className="text-sm text-gray-700 mb-3">
               Deploy optimized models to edge devices for local inference.
             </p>
-            <ul className="space-y-1 text-xs text-primary-600">
+            <ul className="space-y-1 text-xs text-indigo-600">
               <li>• Optimized for resource-constrained devices</li>
               <li>• Reduced latency with local inference</li>
               <li>• Offline capability</li>
