@@ -1,19 +1,31 @@
 declare module 'papaparse' {
-  export interface ParseConfig {
+  export interface ParseError {
+    type: string;
+    code: string;
+    message: string;
+    row: number;
+  }
+
+  export interface ParseMeta {
+    fields?: string[];
+    aborted?: boolean;
+    truncated?: boolean;
+    cursor?: number;
+  }
+
+  export interface ParseResult<T = unknown> {
+    data: T[];
+    errors: ParseError[];
+    meta: ParseMeta;
+  }
+  
+  export interface ParseConfig<T = unknown> {
     header?: boolean;
     skipEmptyLines?: boolean;
     dynamicTyping?: boolean;
-    complete?: (results: any) => void;
-    error?: (error: any) => void;
+    complete?: (results: ParseResult<T>) => void;
+    error?: (error: ParseError) => void;
   }
   
-  export interface ParseResult {
-    data: any[];
-    errors: any[];
-    meta: {
-      fields?: string[];
-    };
-  }
-  
-  export function parse(content: string, config: ParseConfig): void;
+  export function parse<T = unknown>(content: string | File, config: ParseConfig<T>): void;
 }

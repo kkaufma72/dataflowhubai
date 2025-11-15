@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart2, Sliders, Settings, Check, Info } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BarChart2, InfoIcon } from 'lucide-react';
 import { Dataset, ModelTrainingConfig } from '../../types';
-import { useMLContext } from '../../context/MLContext';
 import Button from '../common/Button';
 import Card from '../common/Card';
-import ModelAlgorithms, { algorithms } from './ModelAlgorithms';
+import ModelAlgorithms from './ModelAlgorithms';
 import CrossValidation from './CrossValidation';
 import toast from 'react-hot-toast';
 
@@ -12,6 +11,14 @@ interface ModelTrainingFormProps {
   dataset: Dataset;
   onSubmit: (config: ModelTrainingConfig) => void;
 }
+
+type CrossValidationResult = {
+  fold: number;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+};
 
 const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   dataset,
@@ -28,15 +35,14 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   ]);
   const [crossValidationFolds, setCrossValidationFolds] = useState(5);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [validationResults, setValidationResults] = useState<any[] | null>(null);
+
+  const [validationResults, setValidationResults] = useState<CrossValidationResult[] | null>(null);
   const [isValidating, setIsValidating] = useState(false);
 
   const toggleAlgorithm = (algorithm: string) => {
-    if (algorithms.includes(algorithm)) {
-      setAlgorithms(algorithms.filter((a) => a !== algorithm));
-    } else {
-      setAlgorithms([...algorithms, algorithm]);
-    }
+    setAlgorithms((prev) =>
+      prev.includes(algorithm) ? prev.filter((a) => a !== algorithm) : [...prev, algorithm]
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -59,7 +65,10 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   };
 
   // Get available columns from dataset
-  const availableColumns = dataset.preview_data?.columns || [];
+  const availableColumns = useMemo(
+    () => dataset.preview_data?.columns ?? [],
+    [dataset.id, dataset.preview_data?.columns]
+  );
 
   // Reset target variable if it's not in the new dataset's columns
   useEffect(() => {
@@ -275,7 +284,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
               <CrossValidation 
                 folds={crossValidationFolds}
                 onFoldsChange={setCrossValidationFolds}
-                validationResults={validationResults}
+                validationResults={validationResults ?? undefined}
               />
               
               {!validationResults && targetVariable && algorithms.length > 0 && (
@@ -295,7 +304,7 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
             <div className="p-4 bg-blue-50 rounded-lg">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-blue-400" />
+                  <InfoIcon className="h-5 w-5 text-blue-400" />
                 </div>
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-blue-800">Advanced Configuration</h3>

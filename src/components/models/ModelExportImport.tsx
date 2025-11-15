@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
-import { Download, Upload, FileJson, FileText, Package, Check, AlertCircle } from 'lucide-react';
+import { Download, Upload, FileJson, FileText, Package2, Check, AlertCircle } from 'lucide-react';
 import Button from '../common/Button';
 import { MLModel } from '../../types';
 import JSZip from 'jszip';
@@ -235,7 +235,7 @@ main();
     const Papa = (await import('papaparse')).default;
     Papa.parse(file, {
       header: true,
-      complete: (results) => {
+      complete: () => {
         try {
           // Convert CSV data to model format
           // This is a simplified example - in a real app, you'd need more logic
@@ -283,7 +283,7 @@ main();
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-            <Package className="w-6 h-6 text-indigo-600" />
+            <Package2 className="w-6 h-6 text-indigo-600" />
           </div>
           <div className="ml-4">
             <h3 className="text-sm font-medium text-gray-900">Export & Import</h3>
@@ -335,7 +335,7 @@ main();
               onClick={() => setExportFormat('onnx')}
             >
               <div className="flex items-center">
-                <Package className="w-5 h-5 text-indigo-500 mr-2" />
+                <Package2 className="w-5 h-5 text-indigo-500 mr-2" />
                 <span className="text-sm font-medium text-gray-900">ONNX Format (.onnx)</span>
               </div>
               <p className="mt-2 text-xs text-gray-500">

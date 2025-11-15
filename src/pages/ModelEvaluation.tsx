@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
 import {
@@ -61,35 +61,20 @@ const ModelEvaluationContent = () => {
     }
   }, [modelId, models, datasets]);
 
-  if (!selectedModel) {
-    return (
-      <div className="p-4 md:p-10 mx-auto max-w-7xl">
-        <Card>
-          <div className="flex flex-col items-center justify-center p-8">
-            <Layers className="w-12 h-12 text-gray-400 mb-4" />
-            <Text className="text-lg font-medium text-gray-900">No Model Selected</Text>
-            <Text className="text-gray-500 mt-2">Please select a model to evaluate</Text>
-            <Button 
-              className="mt-4"
-              onClick={() => navigate('/app/train')}
-            >
-              Go to Model Training
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const trainedModels = models.filter(m => m.status === 'trained' || m.status === 'deployed');
-  const currentIndex = trainedModels.findIndex(m => m.id === selectedModel.id);
+  const trainedModels = useMemo(
+    () => models.filter(m => m.status === 'trained' || m.status === 'deployed'),
+    [models]
+  );
+  const currentIndex = selectedModel ? trainedModels.findIndex(m => m.id === selectedModel.id) : -1;
 
   const handleModelChange = (direction: 'prev' | 'next') => {
+    if (!trainedModels.length) return;
+    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
     let newIndex;
     if (direction === 'prev') {
-      newIndex = currentIndex === 0 ? trainedModels.length - 1 : currentIndex - 1;
+      newIndex = safeIndex === 0 ? trainedModels.length - 1 : safeIndex - 1;
     } else {
-      newIndex = currentIndex === trainedModels.length - 1 ? 0 : currentIndex + 1;
+      newIndex = safeIndex === trainedModels.length - 1 ? 0 : safeIndex + 1;
     }
     navigate(`/app/evaluate?model=${trainedModels[newIndex].id}`);
   };
@@ -102,9 +87,12 @@ const ModelEvaluationContent = () => {
   const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
   const performanceData = useMemo(() => {
-    const accuracy = selectedModel.metrics?.accuracy ?? 0.78;
-    const precision = selectedModel.metrics?.precision ?? 0.75;
-    const recall = selectedModel.metrics?.recall ?? 0.73;
+    if (!selectedModel) {
+      return [] as Array<{ date: string; accuracy: number; precision: number; recall: number }>;
+    }
+    const accuracy = selectedModel?.metrics?.accuracy ?? 0.78;
+    const precision = selectedModel?.metrics?.precision ?? 0.75;
+    const recall = selectedModel?.metrics?.recall ?? 0.73;
 
     return [
       {
@@ -126,16 +114,16 @@ const ModelEvaluationContent = () => {
         recall
       }
     ];
-  }, [selectedModel.metrics]);
+  }, [selectedModel]);
 
-  const describeDelta = (label: string, start: number, end: number) => {
+  const describeDelta = useCallback((label: string, start: number, end: number) => {
     const delta = (end - start) * 100;
     if (Math.abs(delta) < 0.5) {
       return `${label} held steady around ${formatPercent(end)}.`;
     }
     const direction = delta > 0 ? 'increased' : 'decreased';
     return `${label} ${direction} ${Math.abs(delta).toFixed(1)} pts to ${formatPercent(end)}.`;
-  };
+  }, []);
 
   const performanceNarrative = useMemo(() => {
     if (!performanceData.length) return null;
@@ -158,7 +146,7 @@ const ModelEvaluationContent = () => {
       recallMsg,
       stability,
     };
-  }, [performanceData]);
+  }, [performanceData, describeDelta]);
 
   const performanceQuestionSuggestions = [
     'Are metrics trending up?',
@@ -206,9 +194,29 @@ const ModelEvaluationContent = () => {
   };
 
   const confusionMatrix = useMemo(() => {
-    const accuracy = Math.min(Math.max(selectedModel.metrics?.accuracy ?? 0.82, 0), 0.999);
-    const precision = Math.min(Math.max(selectedModel.metrics?.precision ?? 0.8, 0.01), 0.999);
-    const recall = Math.min(Math.max(selectedModel.metrics?.recall ?? 0.78, 0.01), 0.999);
+    if (!selectedModel) {
+      return {
+        rows: [] as Array<{ actual: string; predicted: string; count: number }>,
+        totals: {
+          truePositives: 0,
+          falseNegatives: 0,
+          falsePositives: 0,
+          trueNegatives: 0,
+          totalSamples: 0,
+          accuracy: 0,
+          precision: 0,
+          recall: 0,
+          specificity: 0,
+          falsePositiveRate: 0,
+          falseNegativeRate: 0,
+          balancedAccuracy: 0,
+        },
+      };
+    }
+
+  const accuracy = Math.min(Math.max(selectedModel?.metrics?.accuracy ?? 0.82, 0), 0.999);
+  const precision = Math.min(Math.max(selectedModel?.metrics?.precision ?? 0.8, 0.01), 0.999);
+  const recall = Math.min(Math.max(selectedModel?.metrics?.recall ?? 0.78, 0.01), 0.999);
     const totalSamples = Math.max(selectedDataset?.rows ?? 1200, 400);
     const positiveShare = 0.4;
     const totalPositives = Math.round(totalSamples * positiveShare);
@@ -247,7 +255,7 @@ const ModelEvaluationContent = () => {
         balancedAccuracy,
       },
     };
-  }, [selectedModel.metrics, selectedDataset?.rows]);
+  }, [selectedModel, selectedDataset?.rows]);
 
   const confusionNarrative = useMemo(() => {
     if (!confusionMatrix) return null;
@@ -325,10 +333,13 @@ const ModelEvaluationContent = () => {
   };
 
   const rocNarrative = useMemo(() => {
-  const auc = selectedModel.metrics?.auc ?? 0.83;
-    const accuracy = selectedModel.metrics?.accuracy ?? 0.8;
-    const precision = selectedModel.metrics?.precision ?? 0.78;
-    const recall = selectedModel.metrics?.recall ?? 0.76;
+    if (!selectedModel) {
+      return null;
+    }
+    const auc = selectedModel?.metrics?.auc ?? 0.83;
+    const accuracy = selectedModel?.metrics?.accuracy ?? 0.8;
+    const precision = selectedModel?.metrics?.precision ?? 0.78;
+    const recall = selectedModel?.metrics?.recall ?? 0.76;
 
     const aucDescriptor = auc >= 0.9
       ? 'AUC above 0.90 signals excellent separation between positive and negative classes.'
@@ -348,7 +359,7 @@ const ModelEvaluationContent = () => {
       descriptor: aucDescriptor,
       thresholdHint,
     };
-  }, [selectedModel.metrics]);
+  }, [selectedModel]);
 
   const rocQuestionSuggestions = [
     'What does my AUC indicate?',
@@ -494,6 +505,26 @@ const ModelEvaluationContent = () => {
         : 'Consider adjusting the threshold or class weights if this skew doesn’t match your domain.',
     };
   }, [predictionSamples]);
+
+  if (!selectedModel) {
+    return (
+      <div className="p-4 md:p-10 mx-auto max-w-7xl">
+        <Card>
+          <div className="flex flex-col items-center justify-center p-8">
+            <Layers className="w-12 h-12 text-gray-400 mb-4" />
+            <Text className="text-lg font-medium text-gray-900">No Model Selected</Text>
+            <Text className="text-gray-500 mt-2">Please select a model to evaluate</Text>
+            <Button
+              className="mt-4"
+              onClick={() => navigate('/app/train')}
+            >
+              Go to Model Training
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const predictionQuestionSuggestions = [
     'Are predictions confident enough?',

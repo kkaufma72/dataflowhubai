@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Plus, Layers, Check, BarChart2, GitBranch, Package } from 'lucide-react';
+import { AlertCircle, Plus, Layers, BarChart2, Package2 } from 'lucide-react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
@@ -14,7 +14,6 @@ import DraggableDataset from '../components/models/DraggableDataset';
 import ModelComparison from '../components/models/ModelComparison';
 import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
-import CrossValidation from '../components/models/CrossValidation';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import toast from 'react-hot-toast';
@@ -585,7 +584,7 @@ const ModelTraining: React.FC = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Package className="w-4 h-4" />
+                  <Package2 className="w-4 h-4" />
                   <span>TensorFlow</span>
                 </button>
               </nav>
@@ -701,7 +700,7 @@ const ModelTraining: React.FC = () => {
                     <div>
                       <div className="flex items-center space-x-2 mb-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                          <Package className="w-5 h-5 text-white" />
+                          <Package2 className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">TensorFlow.js (Browser)</h3>
@@ -716,7 +715,7 @@ const ModelTraining: React.FC = () => {
                       <div>
                         <div className="flex items-center space-x-2 mb-4">
                           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-white" />
+                            <Package2 className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900">TensorFlow (Docker GPU)</h3>
