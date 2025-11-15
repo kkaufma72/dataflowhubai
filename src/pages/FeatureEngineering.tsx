@@ -129,8 +129,8 @@ const FeatureEngineering: React.FC = () => {
             <Database className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{selectedDataset.name}</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-xl font-semibold text-white">{selectedDataset.name}</h2>
+            <p className="text-sm text-gray-400">
               {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns
             </p>
           </div>

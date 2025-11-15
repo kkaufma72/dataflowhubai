@@ -300,18 +300,18 @@ const MagicMomentWelcome: React.FC<MagicMomentWelcomeProps> = ({ userProfile, on
                 </div>
                 
                 {/* Content */}
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                <h3 className="text-lg font-bold text-white mb-1">
                   {sample.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-gray-300 mb-3">
                   {sample.subtitle}
                 </p>
-                <p className="text-sm text-gray-700 mb-4">
+                <p className="text-sm text-gray-200 mb-4">
                   {sample.description}
                 </p>
                 
                 {/* Preview info */}
-                <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
                   <span className="flex items-center">
                     <BarChart3 className="w-3 h-3 mr-1" />
                     {sample.rows} rows

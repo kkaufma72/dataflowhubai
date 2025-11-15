@@ -111,17 +111,17 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ feature, onClose, isModal
 
       {/* Pricing Comparison */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-4 bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-md">
           <p className="text-sm text-gray-600 mb-1">Current Plan</p>
           <p className="text-2xl font-bold text-primary-600">Free</p>
           <p className="text-xs text-gray-500 mt-2">
             3 datasets • 20 AI questions/month
           </p>
         </div>
-        <div className="p-4 bg-gradient-to-br from-primary-600 to-primary-600 rounded-lg shadow-md">
-          <p className="text-sm text-white/80 mb-1">Upgrade to</p>
-          <p className="text-2xl font-bold text-white">Pro</p>
-          <p className="text-xs text-white/80 mt-2">
+        <div className="p-4 bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-md">
+          <p className="text-sm text-gray-600 mb-1">Upgrade to</p>
+          <p className="text-2xl font-bold text-primary-600">Pro</p>
+          <p className="text-xs text-gray-500 mt-2">
             Unlimited everything
           </p>
         </div>

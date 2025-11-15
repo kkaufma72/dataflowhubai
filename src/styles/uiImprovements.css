@@ -18,9 +18,9 @@
   @apply text-2xl font-bold text-gray-900 tracking-tight;
 }
 
-/* Card Titles - More Visible */
+/* Card Titles - More Visible (pure black for maximum contrast) */
 .card-title {
-  @apply text-xl font-semibold text-gray-900;
+  @apply text-xl font-semibold text-black;
 }
 
 /* Subtitles - Improved Readability */
@@ -141,9 +141,9 @@
   @apply bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow;
 }
 
-/* Stat Value - Large Numbers (no color - inherit from context) */
+/* Stat Value - Large Numbers (black for maximum visibility) */
 .stat-value {
-  @apply text-4xl font-bold;
+  @apply text-4xl font-bold text-black;
 }
 
 /* Stat Label */

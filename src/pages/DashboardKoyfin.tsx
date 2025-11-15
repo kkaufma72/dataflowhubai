@@ -179,7 +179,7 @@ const DashboardKoyfin: React.FC = () => {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value text-gray-100">
+                <div className="stat-value">
                   {metrics.totalDatasets}
                 </div>
                 <div className={`text-xs flex items-center gap-1 mt-1 ${
@@ -206,7 +206,7 @@ const DashboardKoyfin: React.FC = () => {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value text-gray-100">
+                <div className="stat-value">
                   {metrics.totalModels}
                 </div>
                 <div className={`text-xs flex items-center gap-1 mt-1 ${
@@ -233,7 +233,7 @@ const DashboardKoyfin: React.FC = () => {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value text-gray-100">
+                <div className="stat-value">
                   {metrics.avgHealthScore.toFixed(0)}
                 </div>
                 <div className={`text-xs flex items-center gap-1 mt-1 ${
@@ -260,7 +260,7 @@ const DashboardKoyfin: React.FC = () => {
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value text-gray-100">
+                <div className="stat-value">
                   {metrics.trainedModels}
                 </div>
                 <div className="text-xs flex items-center gap-1 mt-1 text-green-500">
@@ -282,7 +282,7 @@ const DashboardKoyfin: React.FC = () => {
           <div className="lg:col-span-2 card-improved bg-gray-900">
             <div className="card-header border-gray-800">
               <div className="flex items-center justify-between">
-                <h3 className="card-title text-gray-100">Recent Datasets</h3>
+                <h3 className="card-title">Recent Datasets</h3>
                 <button
                   onClick={() => navigate('/app/data')}
                   className="text-xs text-primary hover:text-primary-400 transition-colors flex items-center gap-1"
@@ -341,7 +341,7 @@ const DashboardKoyfin: React.FC = () => {
           {/* Activity Feed - Terminal Style */}
           <div className="card-improved bg-gray-900">
             <div className="card-header border-gray-800">
-              <h3 className="card-title text-gray-100">Live Activity</h3>
+              <h3 className="card-title">Live Activity</h3>
             </div>
             <div className="p-4 space-y-3">
               {recentActivity.length === 0 ? (
