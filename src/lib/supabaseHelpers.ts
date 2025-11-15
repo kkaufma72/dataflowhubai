@@ -78,18 +78,18 @@ export async function getAuthToken(): Promise<string> {
               return newToken;
             }
           }
-          console.log('⚠️ Could not refresh token, will fall back to anon key');
+          // Token expired, fall back to anon key
         } else {
-          console.log('🔑 Using cached auth token from localStorage');
+          // Using cached auth token
           return parsedAuth.access_token;
         }
       }
     } catch (e) {
-      console.warn('Could not parse cached auth token');
+      // Could not parse cached auth token
     }
   }
   
-  console.log('🔑 No cached token, using anon key');
+  // No cached token, using anon key
   return supabaseKey;
 }
 

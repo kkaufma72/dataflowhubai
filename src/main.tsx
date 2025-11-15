@@ -210,5 +210,4 @@ if (!isSupabaseConfigured) {
   );
 }
 
-console.log('🚀 LOCAL DEV SERVER - Build timestamp:', new Date().toISOString());
-console.log('🔧 FIXED VERSION - All agent errors resolved!');
+// Render the app

@@ -173,21 +173,16 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     }
   }, [hasFetched, loadInitialData]);
 
-  // Listen for auth state changes
+    // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      // Note: event and session parameters not used, so removed to avoid linter warnings
-      const checkAuthState = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setHasFetched(false); // Reset to allow refetch
-        } else {
-          setDatasets([]);
-          setModels([]);
-          setHasFetched(false);
-        }
-      };
-      checkAuthState();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
+      // Reset data when auth state changes
+      if (session) {
+        setHasFetched(false); // Reset to allow refetch
+      } else {
+        setDatasets([]);
+        setModels([]);
+      }
     });
 
     return () => subscription.unsubscribe();
