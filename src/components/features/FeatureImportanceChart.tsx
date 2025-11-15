@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { BarChart2, Info, Download, Filter, ArrowUpDown } from 'lucide-react';
 import Button from '../common/Button';
@@ -19,6 +19,12 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
   const [sortBy, setSortBy] = useState<'importance' | 'name'>('importance');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [threshold, setThreshold] = useState<number>(0.1); // 10% importance threshold
+  const [chartKey, setChartKey] = useState(0);
+
+  // Force chart re-render when data changes
+  useEffect(() => {
+    setChartKey(prev => prev + 1);
+  }, [featureImportance, selectedFeatures, showAll, sortBy, sortDirection, threshold]);
 
   const handleSort = (by: 'importance' | 'name') => {
     if (sortBy === by) {
@@ -224,7 +230,7 @@ const FeatureImportanceChart: React.FC<FeatureImportanceChartProps> = ({
         </div>
 
         <div className="h-[500px]">
-          <Bar data={chartData} options={chartOptions} />
+          <Bar key={chartKey} data={chartData} options={chartOptions} />
         </div>
       </Card>
 

@@ -107,8 +107,8 @@ const FeatureEngineering: React.FC = () => {
     <div>
       <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Feature Engineering</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-white">Feature Engineering</h1>
+          <p className="mt-1 text-sm text-white">
             Select, transform, and create features to improve model performance
           </p>
         </div>

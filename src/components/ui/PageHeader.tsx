@@ -1,5 +1,5 @@
 import React from 'react';
-import { typography, spacing } from '../../styles/designSystem';
+import { spacing } from '../../styles/designSystem';
 
 interface PageHeaderProps {
   title: string;
@@ -26,9 +26,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </div>
           )}
           <div>
-            <h1 className={typography.pageTitle}>{title}</h1>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white tracking-tight">{title}</h1>
             {description && (
-              <p className={`mt-2 ${typography.bodyLarge}`}>
+              <p className="mt-2 text-lg font-body text-white leading-relaxed">
                 {description}
               </p>
             )}
