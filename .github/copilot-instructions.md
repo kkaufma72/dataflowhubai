@@ -110,6 +110,25 @@ DataFlowHub AI is an enterprise AutoML platform built with React + TypeScript (f
   - Real-time search and filtering
   - Virtualization for large lists (ready for react-window integration)
 
+#### 11. UI Design System & CSS Architecture
+- **Design System Files**:
+  - `src/styles/designSystem.css` - Base design tokens (buttons, cards, badges, icons)
+  - `src/styles/uiImprovements.css` - Enhanced visibility classes (typography, forms, alerts)
+  - `src/index.css` - Global styles, imports design system first
+- **CSS Class Naming Pattern**: Semantic utility classes with `@apply` directives
+  - Typography: `page-title`, `section-title`, `card-title`, `page-subtitle`, `body-text`, `label-text`
+  - Cards: `card-improved`, `card-header`, `stat-card`, `card-gradient`
+  - Buttons: `btn-primary-improved`, `btn-secondary-improved`
+  - Icons: `icon-container-primary`, `icon-container-success`, `icon-container-warning`, `icon-container-info`
+  - Badges: `badge-premium`, `badge-pro`, `badge-success`, `badge-warning`
+  - Forms: `form-label`, `form-input-improved`
+  - Alerts: `alert-info`, `alert-success`, `alert-warning`, `alert-error`
+- **Theme Variants**:
+  - Landing pages use Linear-inspired light theme (minimalist, white space)
+  - Dashboard uses Koyfin-inspired dark terminal theme (professional, data-dense)
+  - Both themes share consistent component patterns but different color palettes
+- **Color Usage Pattern**: Use neutral greys (`bg-gray-700`, `text-gray-300`) for dashboard KPI icons on dark backgrounds instead of colorful gradients for better visibility
+
 ### Critical Developer Workflows
 
 #### 1. Local Development
@@ -722,6 +741,28 @@ git push origin main      # Triggers Vercel deployment
 
 ### When Making Changes
 
+#### UI Improvements Workflow
+**When applying design system improvements:**
+1. **Check Instructions**: Review `.github/instructions/uiimprovements.css.instructions.md` for available CSS classes
+2. **Replace Inline Styles**: Convert Tailwind utilities to design system classes:
+   ```tsx
+   // Before
+   <h1 className="text-3xl font-bold text-gray-900">Title</h1>
+   // After
+   <h1 className="page-title">Title</h1>
+   ```
+3. **Common Replacements**:
+   - Page headers → `page-title` + `page-subtitle`
+   - Card wrappers → `card-improved` with `card-header`
+   - Buttons → `btn-primary-improved` or `btn-secondary-improved`
+   - Form inputs → `form-label` + `form-input-improved`
+   - Stat cards → `stat-card` with `stat-value` and `stat-label`
+4. **Dark Theme Considerations**: For `DashboardKoyfin.tsx` and dark-themed pages:
+   - Keep existing dark background classes (`bg-gray-950`, `bg-gray-900`)
+   - Use neutral icon containers (`bg-gray-700`) instead of colorful gradients
+   - Maintain monospace fonts for numbers (`font-mono`)
+   - Preserve terminal aesthetic with `text-gray-100`, `text-gray-400` text colors
+
 #### Adding Routes
 1. Create page component in `src/pages/`
 2. Lazy load: `const NewPage = lazy(() => import('./pages/NewPage.tsx'));`
@@ -753,11 +794,20 @@ pip install package-name
 ```
 
 #### Styling Guidelines
-- **Prefer**: Tailwind utility classes
-- **Custom Colors**: Use `primary`, `secondary`, `accent` from config
-- **Dark Mode**: Add `dark:` variants for all colors/backgrounds
+- **Prefer**: Tailwind utility classes over custom CSS
+- **Design System**: Always use classes from `uiImprovements.css` and `designSystem.css` for consistency
+  - Import order: `designSystem.css` → `uiImprovements.css` → Tailwind (already set in `index.css`)
+- **Custom Colors**: Use `primary` (indigo), `secondary` (green), `accent` (amber) from Tailwind config
+  - **Avoid hardcoded colors**: Replace `text-purple-600`, `bg-indigo-500` with `text-primary`, `bg-primary`
+- **Dark Mode**: Add `dark:` variants for all colors/backgrounds (uses `class` strategy)
 - **Responsive**: Mobile-first, use `sm:`, `md:`, `lg:`, `xl:` breakpoints
-- **Consistency**: Match Koyfin terminal aesthetic (dark theme default)
+- **Consistency**: 
+  - Landing pages: Match Linear minimalist aesthetic (light theme, large typography, white space)
+  - Dashboard: Match Koyfin terminal aesthetic (dark theme, monospace numbers, data-dense)
+  - App pages: Use design system classes for unified look
+- **Icon Containers**: For dashboard metrics on dark backgrounds, use neutral greys instead of gradient backgrounds for better visibility
+  - ❌ Avoid: `icon-container-primary` (colorful gradient hard to see)
+  - ✅ Use: `bg-gray-700` with `text-gray-300` icons
 
 #### State Management
 - **New Context**: Create in `src/context/`, export provider and hook
@@ -774,4 +824,4 @@ pip install package-name
 
 ---
 
-*Last Updated: 2025-01-12 | Version: 2.0*
+*Last Updated: 2025-11-15 | Version: 2.1*

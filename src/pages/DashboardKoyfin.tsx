@@ -173,8 +173,8 @@ const DashboardKoyfin: React.FC = () => {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-2">
               <span className="stat-label">Datasets</span>
-              <div className="icon-container-info">
-                <Database className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Database className="w-6 h-6 text-gray-300" />
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -200,8 +200,8 @@ const DashboardKoyfin: React.FC = () => {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-2">
               <span className="stat-label">Models</span>
-              <div className="icon-container-primary">
-                <Brain className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Brain className="w-6 h-6 text-gray-300" />
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -227,8 +227,8 @@ const DashboardKoyfin: React.FC = () => {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-2">
               <span className="stat-label">Avg Health</span>
-              <div className="icon-container-success">
-                <Activity className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Activity className="w-6 h-6 text-gray-300" />
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -254,8 +254,8 @@ const DashboardKoyfin: React.FC = () => {
           <div className="stat-card">
             <div className="flex items-center justify-between mb-2">
               <span className="stat-label">Activity</span>
-              <div className="icon-container-warning">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Zap className="w-6 h-6 text-gray-300" />
               </div>
             </div>
             <div className="flex items-end justify-between">
