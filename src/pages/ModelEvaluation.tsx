@@ -25,7 +25,6 @@ import {
 } from '@tremor/react';
 import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../components/common/Button';
-import PremiumFeatureGate from '../components/common/PremiumFeatureGate';
 import {
   insightPanelClass,
   insightHeadingClass,
@@ -1030,12 +1029,10 @@ const ModelEvaluationContent = () => {
   );
 };
 
+// Model Evaluation is a core feature available to all users
+// Essential for validating trained models and understanding performance
 const ModelEvaluation = () => {
-  return (
-    <PremiumFeatureGate feature="evaluate">
-      <ModelEvaluationContent />
-    </PremiumFeatureGate>
-  );
+  return <ModelEvaluationContent />;
 };
 
 export default ModelEvaluation;

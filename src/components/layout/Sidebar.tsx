@@ -149,8 +149,8 @@ const Sidebar: React.FC = () => {
           name: 'Evaluate',
           href: '/app/evaluate',
           icon: BarChart3,
-          description: 'Test model performance',
-          premium: true
+          description: 'Test model performance'
+          // Free tier - essential for validating trained models
         }
       ]
     },
