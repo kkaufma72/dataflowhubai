@@ -3,6 +3,7 @@ import { useMLContext } from '../context/MLContext';
 import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
+import QueryBuilderModal from '../components/data/QueryBuilderModal';
 
 // Lazy load Neo4j graph visualization
 const DatasetGraphVisualization = lazy(() => import('../components/graphs/DatasetGraphVisualization'));
@@ -187,6 +188,7 @@ const DatasetInsights: React.FC = () => {
   const [ChartComp, setChartComp] = useState<any>(null);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(null);
   const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
+  const [showQueryBuilder, setShowQueryBuilder] = useState(false);
 
   // Load charts on mount
   useEffect(() => {
@@ -640,7 +642,11 @@ const DatasetInsights: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 rounded-md flex items-center gap-2 transition-all">
+            <button 
+              onClick={() => setShowQueryBuilder(true)}
+              disabled={!selectedDataset}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 rounded-md flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -1757,6 +1763,14 @@ const DatasetInsights: React.FC = () => {
             <WarehouseAnalyticsDashboard />
           </Suspense>
         </div>
+      )}
+
+      {/* Query Builder Modal */}
+      {showQueryBuilder && selectedDataset && (
+        <QueryBuilderModal
+          dataset={selectedDataset}
+          onClose={() => setShowQueryBuilder(false)}
+        />
       )}
     </div>
   );
