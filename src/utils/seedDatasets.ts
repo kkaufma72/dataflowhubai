@@ -5,14 +5,32 @@ import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 
 export const seedEnhancedDatasets = async (userId: string, projectId: string | null = null) => {
   try {
+    // IMPORTANT: Check if this user already has sample datasets to prevent duplicates
+    const { data: existingDatasets, error: checkError } = await supabase
+      .from('datasets')
+      .select('id')
+      .eq('user_id', userId)
+      .like('id', 'sample-%')
+      .limit(1);
+    
+    if (checkError) {
+      console.warn('Could not check existing datasets:', checkError);
+    }
+    
+    if (existingDatasets && existingDatasets.length > 0) {
+      console.log('ℹ️ User already has sample datasets, skipping seed');
+      return existingDatasets;
+    }
+    
     const datasets = generateEnhancedSampleDatasets();
     
     console.log('Seeding enhanced sample datasets...');
     
-    // Delete existing sample datasets first (optional)
+    // Delete existing sample datasets with matching IDs (cleanup safety)
     const { error: deleteError } = await supabase
       .from('datasets')
       .delete()
+      .eq('user_id', userId)
       .in('id', datasets.map(d => d.id));
     
     if (deleteError) {
@@ -39,7 +57,7 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       throw error;
     }
     
-    console.log(`Successfully seeded ${data?.length || 0} datasets`);
+    console.log(`✅ Successfully seeded ${data?.length || 0} datasets for user ${userId}`);
     // Toast notification removed per user request
     
     return data;

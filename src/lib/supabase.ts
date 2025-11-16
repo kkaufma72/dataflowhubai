@@ -67,6 +67,12 @@ export const checkSupabaseConnection = async () => {
 export const initializeSupabase = () => {
   if (isSupabaseConfigured) {
     console.log('Supabase client initialized');
+    
+    // Expose to window for debugging/console access (dev only)
+    if (import.meta.env.DEV) {
+      (window as any).supabase = supabase;
+      console.log('💡 Debug: window.supabase is now available in console');
+    }
   } else {
     console.warn('Supabase not configured - using fallback client');
   }

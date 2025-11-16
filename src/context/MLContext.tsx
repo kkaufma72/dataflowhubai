@@ -134,27 +134,38 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       setHasFetched(true);
 
       // Auto-load sample data for new users with no datasets
+      // ONLY do this once by checking localStorage flag
       if (mergedDatasets.length === 0 && user?.id) {
-        console.log('🎯 New user detected - auto-loading sample data...');
-        try {
-          const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
-          // Pass null for project_id since we removed projects
-          await seedEnhancedDatasets(user.id, null);
-          
-          // Refresh datasets after seeding
-          const refreshResponse = await supabaseFetch(
-            `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
-            { method: 'GET' }
-          );
-          
-          if (refreshResponse.ok) {
-            const refreshedDatasets = await refreshResponse.json();
-            setDatasets(refreshedDatasets);
-            console.log('✅ Sample data loaded for new user');
+        const hasSeededKey = `hasSeededDatasets_${user.id}`;
+        const hasSeeded = localStorage.getItem(hasSeededKey);
+        
+        if (!hasSeeded) {
+          console.log('🎯 New user detected - auto-loading sample data...');
+          try {
+            const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
+            // Pass null for project_id since we removed projects
+            await seedEnhancedDatasets(user.id, null);
+            
+            // Mark as seeded to prevent duplicate runs
+            localStorage.setItem(hasSeededKey, 'true');
+            
+            // Refresh datasets after seeding
+            const refreshResponse = await supabaseFetch(
+              `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
+              { method: 'GET' }
+            );
+            
+            if (refreshResponse.ok) {
+              const refreshedDatasets = await refreshResponse.json();
+              setDatasets(refreshedDatasets);
+              console.log('✅ Sample data loaded for new user');
+            }
+          } catch (seedError) {
+            console.warn('Could not auto-load sample data:', seedError);
+            // Don't throw - this is optional
           }
-        } catch (seedError) {
-          console.warn('Could not auto-load sample data:', seedError);
-          // Don't throw - this is optional
+        } else {
+          console.log('ℹ️ User already has seeded data flag set');
         }
       }
 
