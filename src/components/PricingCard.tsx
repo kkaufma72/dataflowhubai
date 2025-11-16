@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle } from 'lucide-react';
 import { useStripeCheckout } from '../hooks/useStripeCheckout';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -128,25 +127,27 @@ export const PricingCard: React.FC<PricingCardProps> = ({
     return `$${price}`;
   };
 
+  // Dynamic classes based on card type - clean minimal style
   const cardClasses = isPopular
-    ? 'bg-gradient-to-br from-primary-600 to-primary-700 p-8 rounded-xl shadow-2xl border-4 border-indigo-800 transform scale-105'
-    : 'bg-white p-8 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow';
-
-  const titleClasses = isPopular ? 'text-white' : 'text-gray-900';
+    ? 'bg-gray-900 p-8 rounded-2xl shadow-lg relative'
+    : 'bg-white p-8 rounded-2xl shadow-sm border border-gray-200 relative';
+  
+  const titleClasses = isPopular ? 'text-2xl font-bold text-white mb-6' : 'text-2xl font-bold text-gray-900 mb-6';
   const priceClasses = isPopular ? 'text-white' : 'text-gray-900';
-  const periodClasses = isPopular ? 'text-gray-200' : 'text-gray-600';
-  const featureClasses = isPopular ? 'text-white' : 'text-gray-600';
-  const iconClasses = isPopular ? 'text-green-400' : 'text-green-500';
+  const periodClasses = isPopular ? 'text-gray-400' : 'text-gray-500';
+  const featureClasses = isPopular ? 'text-gray-200' : 'text-gray-600';
 
   return (
     <div className={cardClasses}>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className={`text-2xl font-bold ${titleClasses}`}>{title}</h3>
-        {isPopular && (
-          <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-semibold">
-            POPULAR
+      {isPopular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-medium">
+            Most popular
           </span>
-        )}
+        </div>
+      )}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className={titleClasses}>{title}</h3>
       </div>
 
       {!isFree && price !== 'Custom' && (
@@ -157,14 +158,14 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 console.log('📅 Billing period changed to: monthly');
                 setBillingPeriod('monthly');
               }}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition ${
+              className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
                 billingPeriod === 'monthly'
                   ? isPopular
-                    ? 'bg-white text-primary-600'
-                    : 'bg-primary-600 text-white'
+                    ? 'bg-white text-gray-900'
+                    : 'bg-indigo-600 text-white'
                   : isPopular
-                  ? 'bg-primary text-white hover:bg-indigo-400'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Monthly
@@ -174,14 +175,14 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 console.log('📅 Billing period changed to: annual');
                 setBillingPeriod('annual');
               }}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition relative ${
+              className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition relative ${
                 billingPeriod === 'annual'
                   ? isPopular
-                    ? 'bg-white text-primary-600'
-                    : 'bg-primary-600 text-white'
+                    ? 'bg-white text-gray-900'
+                    : 'bg-indigo-600 text-white'
                   : isPopular
-                  ? 'bg-primary text-white hover:bg-indigo-400'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Annual
@@ -194,20 +195,20 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       )}
 
       <div className="mb-6">
-        <div className={`text-4xl font-bold ${priceClasses}`}>
+        <div className={`text-5xl font-bold mb-2 ${priceClasses}`}>
           {getDisplayPrice()}
         </div>
         {price !== 'Custom' && (
-          <span className={periodClasses}>
-            {billingPeriod === 'annual' ? '/month, billed annually' : '/month'}
+          <span className={`text-base ${periodClasses}`}>
+            {billingPeriod === 'annual' ? '/month' : '/month'}
           </span>
         )}
       </div>
 
-      <ul className="space-y-4 mb-8">
+      <ul className="space-y-3 mb-8">
         {features.map((feature, idx) => (
-          <li key={idx} className={`flex items-center ${featureClasses}`}>
-            <CheckCircle className={`w-5 h-5 ${iconClasses} mr-3 flex-shrink-0`} />
+          <li key={idx} className={`flex items-start text-base ${featureClasses}`}>
+            <span className="mr-2">•</span>
             {feature}
           </li>
         ))}
@@ -222,12 +223,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       <button
         onClick={handleCTA}
         disabled={loading}
-        className={`w-full px-6 py-3 rounded-lg font-semibold transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full py-3 px-6 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed ${
           isPopular
-            ? 'bg-white text-primary-600 hover:bg-gray-100'
+            ? 'bg-white text-gray-900 hover:bg-gray-100'
             : isFree
-            ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-            : 'bg-gray-900 text-white hover:bg-gray-800'
+            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700'
         }`}
       >
         {loading ? (
@@ -246,16 +247,16 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       {/* Email Modal for unauthenticated users */}
       {showEmailModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <div className="card-improved max-w-md w-full p-6 shadow-2xl">
+            <h3 className="card-title mb-2">
               Enter your email to continue
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="body-text text-gray-600 mb-6">
               We'll send you a link to complete your registration after payment.
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="form-label">
                 Email Address
               </label>
               <input
@@ -272,7 +273,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                   }
                 }}
                 placeholder="you@example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="form-input-improved"
                 autoFocus
               />
               {emailError && (
@@ -288,7 +289,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                   setEmail('');
                   setEmailError('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                className="btn-secondary-improved flex-1"
                 disabled={loading}
               >
                 Cancel
@@ -298,7 +299,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                   console.log('💳 Continue to Payment clicked');
                   handleEmailSubmit();
                 }}
-                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary-improved flex-1"
                 disabled={loading}
               >
                 {loading ? (

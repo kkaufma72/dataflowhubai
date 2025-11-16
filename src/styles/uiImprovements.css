@@ -141,14 +141,14 @@
   @apply bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow;
 }
 
-/* Stat Value - Large Numbers (black for maximum visibility) */
+/* Stat Value - Large Numbers (no color so components can control it) */
 .stat-value {
-  @apply text-4xl font-bold text-black;
+  @apply text-4xl font-bold;
 }
 
-/* Stat Label */
+/* Stat Label (no color so components can control it) */
 .stat-label {
-  @apply text-sm font-semibold text-gray-600 uppercase tracking-wide;
+  @apply text-sm font-semibold uppercase tracking-wide;
 }
 
 /* ==================================================================
