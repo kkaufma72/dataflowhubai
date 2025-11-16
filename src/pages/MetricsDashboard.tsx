@@ -238,7 +238,10 @@ const MetricsDashboard: React.FC = () => {
               {models.map((model) => (
                 <button
                   key={model.modelId}
-                  onClick={() => setSelectedModelId(model.modelId)}
+                  onClick={() => {
+                    console.log('Selected model:', model.modelId, model.modelName);
+                    setSelectedModelId(model.modelId);
+                  }}
                   className={`text-left p-4 rounded-lg border-2 transition-all ${
                     selectedModelId === model.modelId
                       ? 'border-blue-500 bg-blue-900/20'
@@ -277,6 +280,25 @@ const MetricsDashboard: React.FC = () => {
         {/* Metrics Display */}
         {selectedModelId && (
           <>
+            {metricsLoading ? (
+              <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 mb-6">
+                <div className="text-center text-gray-400">
+                  <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4" />
+                  <p className="text-lg font-semibold mb-2">Loading metrics...</p>
+                  <p className="text-sm">Fetching data from InfluxDB</p>
+                </div>
+              </div>
+            ) : !metrics || metrics.timestamps.length === 0 ? (
+              <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 mb-6">
+                <div className="text-center text-gray-400">
+                  <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-semibold mb-2">No metrics data available</p>
+                  <p className="text-sm">This model hasn't logged metrics yet, or data is outside the selected time range.</p>
+                  <p className="text-sm mt-2">Try training the model again or adjusting the time range.</p>
+                </div>
+              </div>
+            ) : (
+            <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               {/* Current Accuracy */}
@@ -433,6 +455,8 @@ const MetricsDashboard: React.FC = () => {
                   </table>
                 </div>
               </div>
+            )}
+            </>
             )}
           </>
         )}
