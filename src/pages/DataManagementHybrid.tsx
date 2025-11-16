@@ -109,19 +109,19 @@ const DataManagementHybrid: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen flex flex-col bg-gray-950">
       {/* Top Bar with Project Info */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between">
+      <div className="saas-card-header border-b border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-700 rounded-lg flex items-center justify-center">
-              <Database className="w-5 h-5 text-white" />
+            <div className="saas-icon-blue">
+              <Database className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="saas-h3">
                 {currentProject?.name || 'My Datasets'}
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="saas-caption">
                 {datasets.length} {datasets.length === 1 ? 'dataset' : 'datasets'}
               </p>
             </div>
@@ -129,7 +129,7 @@ const DataManagementHybrid: React.FC = () => {
           
           <button
             onClick={handleUploadClick}
-            className="px-4 py-2 bg-gradient-to-r from-primary to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+            className="saas-btn-primary saas-btn-md"
           >
             <Upload className="w-4 h-4" />
             Upload Dataset
@@ -147,19 +147,19 @@ const DataManagementHybrid: React.FC = () => {
               const badge = getHealthBadgeProps(health.score);
               
               return (
-                <div className="bg-white rounded-xl shadow-sm border-2 border-gray-200 overflow-hidden">
+                <div className="saas-card">
                   {/* Card Header with Health Badge */}
-                  <div className="bg-gradient-to-r from-primary/5 to-primary/10 px-6 py-4 border-b border-gray-200">
+                  <div className="saas-card-header bg-gradient-to-r from-primary/5 to-primary/10">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center">
-                          <Database className="w-6 h-6 text-white" />
+                        <div className="saas-icon-purple w-14 h-14">
+                          <Database className="w-7 h-7" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-gray-900">
+                          <h2 className="saas-h3">
                             {activeDataset.name}
                           </h2>
-                          <p className="text-sm text-gray-600 mt-0.5">
+                          <p className="saas-body-small mt-1">
                             {activeDataset.description || 'No description'}
                           </p>
                         </div>
@@ -186,43 +186,51 @@ const DataManagementHybrid: React.FC = () => {
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-4 gap-4 p-6 bg-white">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-blue-700 uppercase">Rows</span>
-                        <BarChart3 className="w-5 h-5 text-blue-600" />
+                  <div className="grid grid-cols-4 gap-6 p-6">
+                    <div className="saas-stat-card">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="saas-label text-blue-400">Rows</span>
+                        <div className="saas-icon-blue w-10 h-10">
+                          <BarChart3 className="w-5 h-5" />
+                        </div>
                       </div>
-                      <div className="text-3xl font-bold text-blue-900">
+                      <div className="saas-stat-value">
                         {activeDataset.row_count?.toLocaleString() || activeDataset.preview_data?.rows?.length?.toLocaleString() || '1,234'}
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-indigo-700 uppercase">Columns</span>
-                        <Database className="w-5 h-5 text-indigo-600" />
+                    <div className="saas-stat-card">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="saas-label text-purple-400">Columns</span>
+                        <div className="saas-icon-purple w-10 h-10">
+                          <Database className="w-5 h-5" />
+                        </div>
                       </div>
-                      <div className="text-3xl font-bold text-indigo-900">
+                      <div className="saas-stat-value">
                         {activeDataset.column_count || activeDataset.preview_data?.columns?.length || 12}
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-green-700 uppercase">Complete</span>
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div className="saas-stat-card">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="saas-label text-green-400">Complete</span>
+                        <div className="saas-icon-green w-10 h-10">
+                          <CheckCircle className="w-5 h-5" />
+                        </div>
                       </div>
-                      <div className="text-3xl font-bold text-green-900">
+                      <div className="saas-stat-value">
                         {health.completeness || 95}%
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-orange-700 uppercase">Unique</span>
-                        <Sparkles className="w-5 h-5 text-orange-600" />
+                    <div className="saas-stat-card">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="saas-label text-orange-400">Unique</span>
+                        <div className="saas-icon-orange w-10 h-10">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
                       </div>
-                      <div className="text-3xl font-bold text-orange-900">
+                      <div className="saas-stat-value">
                         {health.uniqueness || 87}%
                       </div>
                     </div>
@@ -235,7 +243,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowPreview(true);
                       }}
-                      className="px-4 py-3 bg-cyan-50 border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="saas-btn-outline saas-btn-md text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10"
                     >
                       <Eye className="w-5 h-5" />
                       Preview Data
@@ -245,7 +253,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowQuality(true);
                       }}
-                      className="px-4 py-3 bg-green-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="saas-btn-outline saas-btn-md text-green-400 border-green-500/30 hover:bg-green-500/10"
                     >
                       <CheckCircle className="w-5 h-5" />
                       Quality Report
@@ -255,14 +263,14 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowTransform(true);
                       }}
-                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-indigo-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="saas-btn-outline saas-btn-md text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
                     >
                       <BarChart3 className="w-5 h-5" />
                       Transform
                     </button>
                     <button
                       onClick={() => handleExport(activeDataset!)}
-                      className="px-4 py-3 bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                      className="saas-btn-outline saas-btn-md text-blue-400 border-blue-500/30 hover:bg-blue-500/10">
                       <Download className="w-5 h-5" />
                       Export CSV
                     </button>
@@ -271,7 +279,7 @@ const DataManagementHybrid: React.FC = () => {
                         setSelectedDataset(activeDataset);
                         setShowChat(true);
                       }}
-                      className="px-4 py-3 bg-primary/5 border-2 border-primary/20 text-indigo-700 hover:bg-primary/10 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                      className="saas-btn-outline saas-btn-md text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10"
                     >
                       <Sparkles className="w-5 h-5" />
                       Ask AI
@@ -290,33 +298,35 @@ const DataManagementHybrid: React.FC = () => {
                 const uniqueCount = new Set(values).size;
                 
                 return (
-                  <div key={col} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-bold text-gray-900 truncate">
-                        {col}
-                      </h4>
-                      <span className="text-xs px-2 py-0.5 bg-primary/10 text-indigo-700 rounded-full font-semibold">
-                        Column {idx + 1}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Type:</span>
-                        <span className="font-semibold text-gray-900">
-                          {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
+                  <div key={col} className="saas-card-hover">
+                    <div className="saas-card-body">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="saas-body font-bold text-white truncate">
+                          {col}
+                        </h4>
+                        <span className="saas-badge-info saas-badge-sm">
+                          Col {idx + 1}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Unique:</span>
-                        <span className="font-semibold text-gray-900">
-                          {uniqueCount}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sample:</span>
-                        <span className="font-semibold text-gray-900 truncate max-w-[100px]">
-                          {String(values?.[0])}
-                        </span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between saas-caption">
+                          <span className="text-gray-400">Type:</span>
+                          <span className="font-semibold text-gray-200">
+                            {typeof values?.[0] === 'number' ? 'Numeric' : 'Text'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between saas-caption">
+                          <span className="text-gray-400">Unique:</span>
+                          <span className="font-semibold text-gray-200">
+                            {uniqueCount}
+                          </span>
+                        </div>
+                        <div className="flex justify-between saas-caption">
+                          <span className="text-gray-400">Sample:</span>
+                          <span className="font-semibold text-gray-200 truncate max-w-[100px]">
+                            {String(values?.[0])}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -327,16 +337,18 @@ const DataManagementHybrid: React.FC = () => {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Database className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="saas-icon-blue w-20 h-20 mx-auto mb-4">
+                <Database className="w-10 h-10" />
+              </div>
+              <h3 className="saas-h3 mb-2">
                 No Dataset Selected
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="saas-body mb-6 text-gray-400">
                 Click a dataset tab below or upload a new one
               </p>
               <button
                 onClick={() => setShowUploader(true)}
-                className="px-6 py-3 bg-gradient-to-r from-primary to-primary-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="saas-btn-primary saas-btn-lg"
               >
                 <Plus className="w-5 h-5 inline mr-2" />
                 Upload Your First Dataset
@@ -347,7 +359,7 @@ const DataManagementHybrid: React.FC = () => {
       </div>
 
       {/* Excel-Style Dataset Tabs at Bottom */}
-      <div className="bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
+      <div className="bg-gray-900 border-t border-gray-800 px-4 py-2 shadow-lg">
         <div className="flex items-center gap-2 overflow-x-auto">
           {datasets.map((dataset) => {
             const health = calculateDatasetHealth(dataset);
@@ -360,16 +372,16 @@ const DataManagementHybrid: React.FC = () => {
                 className={`
                   group relative px-4 py-2 rounded-t-lg transition-all flex items-center gap-2 flex-shrink-0 border-2
                   ${activeDatasetId === dataset.id
-                    ? 'bg-white text-indigo-600 border-primary border-b-white -mb-0.5 shadow-md'
-                    : 'bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200 hover:text-gray-900'
+                    ? 'bg-gray-950 text-blue-400 border-blue-500/50 border-b-gray-950 -mb-0.5'
+                    : 'bg-gray-800 text-gray-400 border-transparent hover:bg-gray-700 hover:text-gray-200'
                   }
                 `}
               >
                 <Database className="w-4 h-4" />
-                <span className="text-sm font-semibold">
+                <span className="saas-caption font-semibold">
                   {dataset.name}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 font-mono">
                   ({dataset.row_count?.toLocaleString() || dataset.preview_data?.rows?.length?.toLocaleString() || '1.2K'})
                 </span>
                 
@@ -386,7 +398,7 @@ const DataManagementHybrid: React.FC = () => {
                     e.stopPropagation();
                     handleExport(dataset);
                   }}
-                  className="p-1 rounded hover:bg-primary/10 opacity-70 hover:opacity-100 transition-all"
+                  className="p-1 rounded hover:bg-blue-500/20 opacity-70 hover:opacity-100 transition-all"
                   title="Export CSV"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -398,9 +410,9 @@ const DataManagementHybrid: React.FC = () => {
                     e.stopPropagation();
                     handleDelete(dataset);
                   }}
-                  className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 hover:bg-red-100 rounded transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 hover:bg-red-500/20 rounded transition-opacity"
                 >
-                  <X className="w-3 h-3 text-red-600" />
+                  <X className="w-3 h-3 text-red-400" />
                 </button>
               </button>
             );
@@ -409,10 +421,10 @@ const DataManagementHybrid: React.FC = () => {
           {/* Add New Tab */}
           <button
             onClick={() => setShowUploader(true)}
-            className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 text-green-700 hover:bg-green-100 rounded-t-lg transition-all flex items-center gap-1 flex-shrink-0 font-semibold"
+            className="saas-btn-outline saas-btn-sm text-green-400 border-green-500/30 hover:bg-green-500/10"
           >
             <Plus className="w-4 h-4" />
-            <span className="text-sm">New Dataset</span>
+            <span>New Dataset</span>
           </button>
         </div>
       </div>

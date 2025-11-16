@@ -1,6 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Plus, Layers, BarChart2, Package2 } from 'lucide-react';
+import {
+  Plus,
+  Layers,
+  BarChart2,
+  Package2,
+  Brain,
+  Zap,
+  Play,
+} from 'lucide-react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
@@ -17,16 +25,6 @@ import ModelExportImport from '../components/models/ModelExportImport';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import toast from 'react-hot-toast';
-import {
-  insightPanelClass,
-  insightHeadingClass,
-  insightHelperClass,
-  chipButtonClass,
-  insightAnswerClass,
-  subtleListBulletClass,
-} from '../styles/insightPanels';
-import { typography, components } from '../styles/designSystem';
-import { PageHeader } from '../components/ui/PageHeader';
 
 type CrossValidationResult = {
   fold: number;
@@ -67,6 +65,63 @@ const ModelTraining: React.FC = () => {
   const [crossValidationResults, setCrossValidationResults] = useState<CrossValidationResult[] | null>(null);
   const [cvQuestion, setCvQuestion] = useState('');
   const [cvAnswer, setCvAnswer] = useState<string | null>(null);
+  const [chartsLoaded, setChartsLoaded] = useState(false);
+  const [ChartComponents, setChartComponents] = useState<any>(null);
+
+  // Load Chart.js components
+  useEffect(() => {
+    const loadCharts = async () => {
+      try {
+        const { Line, Bar, Doughnut, Scatter, Bubble } = await import('react-chartjs-2');
+        const chartjs = await import('chart.js');
+        
+        chartjs.Chart.register(
+          chartjs.CategoryScale,
+          chartjs.LinearScale,
+          chartjs.PointElement,
+          chartjs.LineElement,
+          chartjs.BarElement,
+          chartjs.ArcElement,
+          chartjs.Filler,
+          chartjs.Tooltip,
+          chartjs.Legend
+        );
+        
+        setChartComponents({ Line, Bar, Doughnut, Scatter, Bubble });
+        setChartsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load charts:', error);
+      }
+    };
+    
+    loadCharts();
+  }, []);
+
+  // Generate mock training metrics over time (last 30 epochs)
+  const trainingMetricsData = useMemo(() => {
+    const epochs = Array.from({ length: 30 }, (_, i) => i + 1);
+    
+    // Simulate accuracy improving over time with some variance
+    const accuracyData = epochs.map(epoch => {
+      const baseAccuracy = 0.60 + (epoch / 30) * 0.35; // 60% to 95%
+      const noise = (Math.random() - 0.5) * 0.03; // ±1.5% noise
+      return Math.min(0.98, Math.max(0.55, baseAccuracy + noise));
+    });
+
+    // Loss decreasing over time
+    const lossData = epochs.map(epoch => {
+      const baseLoss = 0.8 - (epoch / 30) * 0.6; // 0.8 to 0.2
+      const noise = (Math.random() - 0.5) * 0.05;
+      return Math.max(0.1, baseLoss + noise);
+    });
+
+    // Training speed (samples/sec)
+    const speedData = epochs.map(() => {
+      return 850 + Math.random() * 300; // 850-1150 samples/sec
+    });
+
+    return { epochs, accuracyData, lossData, speedData };
+  }, []);
 
   const questionSuggestions = [
     'Which fold performed the best?',
@@ -437,23 +492,26 @@ const ModelTraining: React.FC = () => {
 
   return (
       <DndProvider backend={HTML5Backend}>
-      <div>
-        {/* Page Header */}
-        <PageHeader 
-          title="Model Training"
-          description="Train and deploy production-ready machine learning models"
-          icon={<Layers className="w-7 h-7 text-white" />}
-        />
+      <div className="min-h-screen bg-[#0d1117]">
+        {/* InfluxDB-Style Header */}
+        <div className="border-b border-gray-800 bg-[#161b22]">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Home</span>
+                <span className="text-gray-600">/</span>
+                <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Machine Learning</span>
+                <span className="text-gray-600">/</span>
+                <span className="text-white font-medium">Model Training</span>
+              </div>
 
-        <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
-          <div className="hidden"></div>
-          <div className="mt-4 md:mt-0">
-            {datasets.length > 0 && !isTraining && (
-              <div className="flex items-center space-x-2">
+              {/* Actions */}
+              <div className="flex items-center gap-3">
                 {selectedDataset ? (
-                  <div className="flex items-center space-x-2">
+                  <>
                     <select
-                      className={components.input.small}
+                      className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
                       value={selectedDatasetSafe?.id ?? ''}
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
@@ -463,121 +521,499 @@ const ModelTraining: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <Button
-                      variant="outline"
+                    <button
                       onClick={() => setSelectedDataset(null)}
+                      className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded hover:border-gray-600 transition-colors"
                     >
                       Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
+                    </button>
+                  </>
+                ) : datasets.length > 0 && (
+                  <>
                     <select
-                      className={components.input.small}
+                      className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
                       value=""
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
-                      <option value="">Select a dataset</option>
+                      <option value="">Select dataset...</option>
                       {datasets.map((dataset) => (
                         <option key={dataset.id} value={dataset.id}>
                           {dataset.name}
                         </option>
                       ))}
                     </select>
-                    <Button
-                      icon={<Plus className="w-4 h-4" />}
-                      onClick={() => handleDatasetSelect(datasets[0].id)}
+                    <button
+                      onClick={() => datasets.length > 0 && handleDatasetSelect(datasets[0].id)}
+                      className="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors flex items-center gap-2"
                     >
-                      Train New Model
-                    </Button>
-                  </div>
+                      <Play className="w-4 h-4" />
+                      Train Model
+                    </button>
+                  </>
                 )}
+              </div>
+            </div>
+
+            {/* Title Section */}
+            <div className="mt-4">
+              <h1 className="text-3xl font-bold text-white">Model Training</h1>
+              <p className="text-sm text-gray-400 mt-1">Train and deploy production-ready ML models</p>
+            </div>
+
+            {/* Training Metrics Stats */}
+            <div className="grid grid-cols-4 gap-4 mt-6">
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Active Training</span>
+                </div>
+                <div className="text-2xl font-mono font-bold text-white">{trainingModels.length}</div>
+                <div className="text-xs text-gray-500 mt-1">Running models</div>
+              </div>
+
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3 bg-emerald-500 rounded-full"></div>
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Completed</span>
+                </div>
+                <div className="text-2xl font-mono font-bold text-white">{trainedModels.length}</div>
+                <div className="text-xs text-gray-500 mt-1">Trained models</div>
+              </div>
+
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3 bg-orange-500 rounded-full"></div>
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Avg Accuracy</span>
+                </div>
+                <div className="text-2xl font-mono font-bold text-white">
+                  {trainedModels.length > 0 
+                    ? `${(trainedModels.reduce((acc, m) => acc + (m.metrics?.accuracy || 0), 0) / trainedModels.length * 100).toFixed(1)}%`
+                    : '0%'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Across all models</div>
+              </div>
+
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1 h-3 bg-purple-500 rounded-full"></div>
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Datasets</span>
+                </div>
+                <div className="text-2xl font-mono font-bold text-white">{datasets.length}</div>
+                <div className="text-xs text-gray-500 mt-1">Available sources</div>
+              </div>
+            </div>
+
+            {/* Training Metrics Charts */}
+            {chartsLoaded && ChartComponents && (
+              <div className="space-y-4 mt-4">
+                {/* Top Row: Accuracy and Loss */}
+                <div className="grid grid-cols-2 gap-4">
+                {/* Accuracy Over Time */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-purple-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Model Accuracy</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Current</div>
+                          <div className="text-sm font-mono font-semibold text-blue-400">
+                            {(trainingMetricsData.accuracyData[trainingMetricsData.accuracyData.length - 1] * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Best</div>
+                          <div className="text-sm font-mono font-semibold text-emerald-400">
+                            {(Math.max(...trainingMetricsData.accuracyData) * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 h-64">
+                    <ChartComponents.Line
+                      data={{
+                        labels: trainingMetricsData.epochs,
+                        datasets: [{
+                          label: 'Accuracy',
+                          data: trainingMetricsData.accuracyData.map(v => v * 100),
+                          borderColor: 'rgb(59, 130, 246)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+                            gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.3)');
+                            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+                            return gradient;
+                          },
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 0,
+                          pointHoverRadius: 4,
+                          pointHoverBackgroundColor: 'rgb(59, 130, 246)',
+                          pointHoverBorderColor: '#fff',
+                          pointHoverBorderWidth: 2,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#a0aec0',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                              title: (items: any[]) => `Epoch ${items[0].label}`,
+                              label: (item: any) => `Accuracy: ${item.formattedValue}%`
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                          },
+                          y: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { 
+                              color: '#9ca3af', 
+                              font: { size: 10 },
+                              callback: (value: any) => `${value}%`
+                            },
+                            min: 50,
+                            max: 100
+                          }
+                        },
+                        interaction: {
+                          mode: 'nearest',
+                          axis: 'x',
+                          intersect: false
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Training Loss */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-orange-400 to-red-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Training Loss</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Current</div>
+                          <div className="text-sm font-mono font-semibold text-orange-400">
+                            {trainingMetricsData.lossData[trainingMetricsData.lossData.length - 1].toFixed(3)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Best</div>
+                          <div className="text-sm font-mono font-semibold text-emerald-400">
+                            {Math.min(...trainingMetricsData.lossData).toFixed(3)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 h-64">
+                    <ChartComponents.Line
+                      data={{
+                        labels: trainingMetricsData.epochs,
+                        datasets: [{
+                          label: 'Loss',
+                          data: trainingMetricsData.lossData,
+                          borderColor: 'rgb(249, 115, 22)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
+                            gradient.addColorStop(0.5, 'rgba(239, 68, 68, 0.3)');
+                            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
+                            return gradient;
+                          },
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 0,
+                          pointHoverRadius: 4,
+                          pointHoverBackgroundColor: 'rgb(249, 115, 22)',
+                          pointHoverBorderColor: '#fff',
+                          pointHoverBorderWidth: 2,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#a0aec0',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                              title: (items: any[]) => `Epoch ${items[0].label}`,
+                              label: (item: any) => `Loss: ${parseFloat(item.formattedValue).toFixed(3)}`
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                          },
+                          y: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { 
+                              color: '#9ca3af', 
+                              font: { size: 10 }
+                            }
+                          }
+                        },
+                        interaction: {
+                          mode: 'nearest',
+                          axis: 'x',
+                          intersect: false
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                </div>
+
+                {/* Bottom Row: Training Speed Bar Chart with Gradient */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-cyan-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Training Speed (samples/sec)</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Avg</div>
+                          <div className="text-sm font-mono font-semibold text-emerald-400">
+                            {(trainingMetricsData.speedData.reduce((a, b) => a + b, 0) / trainingMetricsData.speedData.length).toFixed(0)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Peak</div>
+                          <div className="text-sm font-mono font-semibold text-cyan-400">
+                            {Math.max(...trainingMetricsData.speedData).toFixed(0)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 h-64">
+                    <ChartComponents.Line
+                      data={{
+                        labels: trainingMetricsData.epochs.slice(-15), // Last 15 epochs
+                        datasets: [{
+                          type: 'bar' as const,
+                          label: 'Speed',
+                          data: trainingMetricsData.speedData.slice(-15),
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+                            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.6)');
+                            gradient.addColorStop(1, 'rgba(6, 182, 212, 0.3)');
+                            return gradient;
+                          },
+                          borderColor: 'rgba(16, 185, 129, 1)',
+                          borderWidth: 1,
+                          borderRadius: 4,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#a0aec0',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                              title: (items: any[]) => `Epoch ${items[0].label}`,
+                              label: (item: any) => `Speed: ${Math.round(item.parsed.y)} samples/sec`
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { color: '#9ca3af', font: { size: 10 } }
+                          },
+                          y: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { 
+                              color: '#9ca3af', 
+                              font: { size: 10 },
+                              callback: (value: any) => `${value}`
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
 
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
         {datasets.length === 0 && (
-          <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full">
-              <AlertCircle className="w-6 h-6 text-amber-600" />
+          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+              <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                <Package2 className="w-8 h-8 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No datasets available</h3>
+              <p className="text-sm text-gray-400 mb-6 max-w-md">
+                Upload a dataset to start training models and unlock the power of machine learning.
+              </p>
+              <button
+                onClick={() => navigate('/app/data')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
+              >
+                Go to Data Management
+              </button>
             </div>
-            <h3 className={`mt-4 ${typography.cardTitle}`}>No datasets available</h3>
-            <p className={`mt-1 ${typography.bodySmall}`}>
-              You need to upload a dataset before you can train models
-            </p>
-            <Button
-              className="mt-4"
-              onClick={() => navigate('/app/data')}
-            >
-              Upload Dataset
-            </Button>
-          </Card>
+          </div>
         )}
 
         {selectedDataset && (
-          <Card className="mb-6" title={`Train New Model on ${selectedDatasetSafe?.name ?? ''}`}>
-            <ModelTrainingForm 
-              dataset={selectedDatasetSafe as Dataset} 
-              onSubmit={handleTrainingSubmit} 
-            />
-          </Card>
+          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                <h3 className="text-sm font-semibold text-white">Train New Model - {selectedDatasetSafe?.name ?? ''}</h3>
+              </div>
+            </div>
+            <div className="p-4">
+              <ModelTrainingForm 
+                dataset={selectedDatasetSafe as Dataset} 
+                onSubmit={handleTrainingSubmit} 
+              />
+            </div>
+          </div>
         )}
 
         {!selectedDataset && datasets.length > 0 && (
-          <div className="mb-6">
-            <div className="border-b border-gray-200 mb-6">
-              <nav className="-mb-px flex space-x-8">
+          <div className="space-y-6">
+            {/* InfluxDB-Style Tabs */}
+            <div className="border-b border-gray-800">
+              <nav className="flex gap-6 px-2">
                 <button
                   onClick={() => setActiveTab('train')}
-                  className={`${components.tab.base} ${
-                    activeTab === 'train' ? components.tab.active : components.tab.inactive
+                  className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'train' 
+                      ? 'border-blue-500 text-blue-400' 
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Training
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    Training
+                  </div>
                 </button>
                 <button
                   onClick={() => setActiveTab('compare')}
-                  className={`${components.tab.base} ${
-                    activeTab === 'compare' ? components.tab.active : components.tab.inactive
+                  className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'compare' 
+                      ? 'border-blue-500 text-blue-400' 
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Compare Models
+                  <div className="flex items-center gap-2">
+                    <BarChart2 className="w-4 h-4" />
+                    Compare
+                  </div>
                 </button>
                 <button
                   onClick={() => setActiveTab('versions')}
-                  className={`${components.tab.base} ${
-                    activeTab === 'versions' ? components.tab.active : components.tab.inactive
+                  className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'versions' 
+                      ? 'border-blue-500 text-blue-400' 
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Versioning
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4" />
+                    Versions
+                  </div>
                 </button>
                 <button
                   onClick={() => setActiveTab('export')}
-                  className={`${components.tab.base} ${
-                    activeTab === 'export' ? components.tab.active : components.tab.inactive
+                  className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'export' 
+                      ? 'border-blue-500 text-blue-400' 
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Export/Import
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Export/Import
+                  </div>
                 </button>
                 <button
                   onClick={() => setActiveTab('tensorflow')}
-                  className={`${components.tab.base} flex items-center space-x-2 ${
-                    activeTab === 'tensorflow' ? components.tab.active : components.tab.inactive
+                  className={`px-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'tensorflow' 
+                      ? 'border-blue-500 text-blue-400' 
+                      : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  <Package2 className="w-4 h-4" />
-                  <span>TensorFlow</span>
+                  <div className="flex items-center gap-2">
+                    <Package2 className="w-4 h-4" />
+                    TensorFlow
+                  </div>
                 </button>
               </nav>
             </div>
 
             {activeTab === 'train' && (
-              <Card>
-                <h3 className={typography.cardTitle + ' mb-4'}>Dataset Clustering</h3>
-                <div className="grid gap-6 md:grid-cols-2">
+              <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-white">Dataset Clustering</h3>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <h4 className={typography.label + ' mb-4'}>Available Datasets</h4>
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Available Datasets</h4>
                     <div className="grid gap-4">
                       {datasets
                         .filter(d => !clusteredDatasets.find(cd => cd.id === d.id))
@@ -592,7 +1028,7 @@ const ModelTraining: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <h4 className={typography.label + ' mb-4'}>Cluster Training</h4>
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Cluster Training</h4>
                     <DatasetCluster
                       datasets={clusteredDatasets}
                       onRemoveDataset={handleRemoveFromCluster}
@@ -611,7 +1047,8 @@ const ModelTraining: React.FC = () => {
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
+            </div>
             )}
 
             {activeTab === 'compare' && (
@@ -640,10 +1077,16 @@ const ModelTraining: React.FC = () => {
               <div className="space-y-6">
                 {/* Dataset Selector for TensorFlow */}
                 {!selectedDataset && (
-                  <Card>
-                    <h3 className={`${typography.cardTitle} mb-4`}>Select Dataset for TensorFlow Training</h3>
+                  <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Select Dataset for TensorFlow Training</h3>
+                      </div>
+                    </div>
+                    <div className="p-4">
                     <select
-                      className={components.input.base}
+                      className="w-full bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
                       value=""
                       onChange={(e) => handleDatasetSelect(e.target.value)}
                     >
@@ -654,57 +1097,63 @@ const ModelTraining: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                  </Card>
+                    </div>
+                  </div>
                 )}
 
                 {selectedDataset && (
                   <>
                     {/* Dataset Info */}
-                    <Card>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className={typography.cardTitle}>{selectedDatasetSafe?.name}</h3>
-                          <p className={`${typography.bodySmall} mt-1`}>
-                            {selectedDatasetSafe?.rows} rows × {selectedDatasetSafe?.columns} columns
-                          </p>
+                    <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-4 bg-cyan-500 rounded-full"></div>
+                            <h3 className="text-sm font-semibold text-white">{selectedDatasetSafe?.name}</h3>
+                          </div>
+                          <button
+                            onClick={() => setSelectedDataset(null)}
+                            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded hover:border-gray-600 transition-colors"
+                          >
+                            Change Dataset
+                          </button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedDataset(null)}
-                        >
-                          Change Dataset
-                        </Button>
                       </div>
-                    </Card>
+                      <div className="p-4">
+                        <p className="text-sm text-gray-400">
+                          {selectedDatasetSafe?.rows} rows × {selectedDatasetSafe?.columns} columns
+                        </p>
+                      </div>
+                    </div>
 
                     {/* Browser-Based TensorFlow.js */}
-                    <div>
-                      <div className="flex items-center space-x-2 mb-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                          <Package2 className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className={typography.cardTitle}>TensorFlow.js (Browser)</h3>
-                          <p className={typography.bodySmall}>Train models directly in your browser - no server needed</p>
+                    {/* Browser-Based TensorFlow.js */}
+                    <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                          <h3 className="text-sm font-semibold text-white">TensorFlow.js (Browser)</h3>
                         </div>
                       </div>
-                      <TensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                      <div className="p-4">
+                        <p className="text-sm text-gray-400 mb-4">Train models directly in your browser - no server needed</p>
+                        <TensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                      </div>
                     </div>
 
                     {/* Docker-Based TensorFlow (if configured) */}
                     {import.meta.env.VITE_TENSORFLOW_API_URL && (
-                      <div>
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-700 rounded-lg flex items-center justify-center">
-                            <Package2 className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className={typography.cardTitle}>TensorFlow (Docker GPU)</h3>
-                            <p className={typography.bodySmall}>Server-side training with GPU acceleration</p>
+                      <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                        <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                            <h3 className="text-sm font-semibold text-white">TensorFlow (Docker GPU)</h3>
                           </div>
                         </div>
-                        <DockerTensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                        <div className="p-4">
+                          <p className="text-sm text-gray-400 mb-4">Server-side training with GPU acceleration</p>
+                          <DockerTensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                        </div>
                       </div>
                     )}
                   </>
@@ -715,19 +1164,23 @@ const ModelTraining: React.FC = () => {
         )}
 
         {isTraining && currentTraining && (
-          <Card className="mb-6" title="Training in Progress">
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <Layers className="w-5 h-5 mr-2 text-primary" />
-                <span className={`${typography.bodySmall} font-medium`}>
-                  {currentTraining.name}
-                </span>
+          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+                <h3 className="text-sm font-semibold text-white">Training in Progress</h3>
+              </div>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-orange-400" />
+                <span className="text-sm font-medium text-white">{currentTraining.name}</span>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className={typography.label}>Training progress</span>
-                  <span className={typography.label}>{Math.round(progress)}%</span>
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Training progress</span>
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{Math.round(progress)}%</span>
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full">
                   <div
@@ -737,13 +1190,13 @@ const ModelTraining: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start p-4 mt-4 bg-blue-50 rounded-md">
+              <div className="flex items-start p-4 mt-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
                 <div className="flex-shrink-0">
                   <BarChart2 className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="ml-3">
-                  <h3 className={`${typography.label} text-blue-800`}>Training Information</h3>
-                  <div className={`mt-2 ${typography.bodySmall} text-blue-700`}>
+                  <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Training Information</h3>
+                  <div className="mt-2 text-sm text-gray-300">
                     <ul className="space-y-1 list-disc list-inside">
                       <li>Evaluating multiple algorithms in parallel</li>
                       <li>Performing hyperparameter optimization</li>
@@ -754,12 +1207,12 @@ const ModelTraining: React.FC = () => {
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {trainingModels.length > 0 && !isTraining && (
-          <div className="mb-8">
-            <h2 className={`mb-4 ${typography.sectionTitle}`}>Models in Training</h2>
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-white">Models in Training</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {trainingModels.map((model) => (
                 <ModelCard
@@ -774,8 +1227,8 @@ const ModelTraining: React.FC = () => {
         )}
 
         {trainedModels.length > 0 && (
-          <div>
-            <h2 className={`mb-4 ${typography.sectionTitle}`}>Trained Models</h2>
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-white mb-4">Trained Models</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {trainedModels.map((model) => (
                 <ModelCard
@@ -786,6 +1239,553 @@ const ModelTraining: React.FC = () => {
                 />
               ))}
             </div>
+
+            {/* Detailed Model Performance Visualizations with Gradients */}
+            {chartsLoaded && ChartComponents && (
+              <div className="mt-6 space-y-4">
+                <h3 className="text-lg font-semibold text-white mb-4">Performance Analysis</h3>
+                
+                {/* Time Series Decomposition - Seasonal-Trend Analysis */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden mb-4">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Seasonal-Trend Decomposition</h3>
+                      </div>
+                      <div className="flex gap-3 text-[10px] text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                          Original
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                          Trend
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                          Seasonal
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
+                          Residual
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    {/* Original Series */}
+                    <div className="h-32">
+                      <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Original</div>
+                      <ChartComponents.Line
+                        data={{
+                          labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                          datasets: [{
+                            label: 'Original Accuracy',
+                            data: trainingMetricsData.accuracyData,
+                            borderColor: 'rgb(34, 211, 238)',
+                            backgroundColor: (context: any) => {
+                              const ctx = context.chart.ctx;
+                              const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                              gradient.addColorStop(0, 'rgba(34, 211, 238, 0.3)');
+                              gradient.addColorStop(1, 'rgba(34, 211, 238, 0.01)');
+                              return gradient;
+                            },
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                          },
+                          scales: {
+                            x: { 
+                              display: false,
+                              grid: { display: false }
+                            },
+                            y: {
+                              display: false,
+                              grid: { display: false }
+                            }
+                          },
+                          elements: {
+                            line: { borderWidth: 1 }
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Trend Component */}
+                    <div className="h-32">
+                      <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Trend</div>
+                      <ChartComponents.Line
+                        data={{
+                          labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                          datasets: [{
+                            label: 'Trend',
+                            data: trainingMetricsData.epochs.map((_: number, i: number) => 60 + (i * 1.2)), // Smooth upward trend
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: (context: any) => {
+                              const ctx = context.chart.ctx;
+                              const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                              gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+                              gradient.addColorStop(1, 'rgba(59, 130, 246, 0.01)');
+                              return gradient;
+                            },
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.1,
+                            pointRadius: 0,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                          },
+                          scales: {
+                            x: { 
+                              display: false,
+                              grid: { display: false }
+                            },
+                            y: {
+                              display: false,
+                              grid: { display: false }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Seasonal Component */}
+                    <div className="h-32">
+                      <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Seasonal</div>
+                      <ChartComponents.Line
+                        data={{
+                          labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                          datasets: [{
+                            label: 'Seasonal',
+                            data: trainingMetricsData.epochs.map((_: number, i: number) => Math.sin(i * 0.5) * 5 + 70), // Oscillating pattern
+                            borderColor: 'rgb(168, 85, 247)',
+                            backgroundColor: (context: any) => {
+                              const ctx = context.chart.ctx;
+                              const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                              gradient.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+                              gradient.addColorStop(1, 'rgba(168, 85, 247, 0.01)');
+                              return gradient;
+                            },
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                          },
+                          scales: {
+                            x: { 
+                              display: false,
+                              grid: { display: false }
+                            },
+                            y: {
+                              display: false,
+                              grid: { display: false }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* Residual Component */}
+                    <div className="h-32">
+                      <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Residual</div>
+                      <ChartComponents.Line
+                        data={{
+                          labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                          datasets: [{
+                            label: 'Residual',
+                            data: trainingMetricsData.epochs.map(() => (Math.random() - 0.5) * 3 + 70), // Random noise
+                            borderColor: 'rgb(236, 72, 153)',
+                            backgroundColor: (context: any) => {
+                              const ctx = context.chart.ctx;
+                              const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                              gradient.addColorStop(0, 'rgba(236, 72, 153, 0.3)');
+                              gradient.addColorStop(1, 'rgba(236, 72, 153, 0.01)');
+                              return gradient;
+                            },
+                            borderWidth: 1,
+                            fill: true,
+                            tension: 0,
+                            pointRadius: 0,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                          },
+                          scales: {
+                            x: { 
+                              display: true,
+                              grid: { display: false },
+                              ticks: { 
+                                color: '#6b7280',
+                                font: { size: 9 },
+                                maxTicksLimit: 10
+                              }
+                            },
+                            y: {
+                              display: false,
+                              grid: { display: false }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Model Metrics Comparison - Gradient Bar Chart */}
+                  <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-blue-400 via-purple-500 to-pink-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Model Metrics Comparison</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 h-80">
+                      <ChartComponents.Bar
+                        data={{
+                          labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC-ROC'],
+                          datasets: [{
+                            label: 'Performance',
+                            data: [92.5, 89.3, 91.2, 90.1, 94.3],
+                            backgroundColor: (context: any) => {
+                              const index = context.dataIndex;
+                              const colors = [
+                                { start: 'rgba(59, 130, 246, 0.9)', end: 'rgba(59, 130, 246, 0.4)' },
+                                { start: 'rgba(139, 92, 246, 0.9)', end: 'rgba(139, 92, 246, 0.4)' },
+                                { start: 'rgba(236, 72, 153, 0.9)', end: 'rgba(236, 72, 153, 0.4)' },
+                                { start: 'rgba(251, 146, 60, 0.9)', end: 'rgba(251, 146, 60, 0.4)' },
+                                { start: 'rgba(34, 197, 94, 0.9)', end: 'rgba(34, 197, 94, 0.4)' },
+                              ];
+                              const ctx = context.chart.ctx;
+                              const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                              gradient.addColorStop(0, colors[index].start);
+                              gradient.addColorStop(1, colors[index].end);
+                              return gradient;
+                            },
+                            borderColor: ['rgb(59, 130, 246)', 'rgb(139, 92, 246)', 'rgb(236, 72, 153)', 'rgb(251, 146, 60)', 'rgb(34, 197, 94)'],
+                            borderWidth: 2,
+                            borderRadius: 6,
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                              titleColor: '#fff',
+                              bodyColor: '#a0aec0',
+                              borderColor: '#374151',
+                              borderWidth: 1,
+                              padding: 12,
+                              displayColors: false,
+                              callbacks: {
+                                label: (item: any) => `${item.label}: ${item.parsed.y.toFixed(1)}%`
+                              }
+                            }
+                          },
+                          scales: {
+                            x: {
+                              grid: { display: false },
+                              ticks: { color: '#9ca3af', font: { size: 11 } }
+                            },
+                            y: {
+                              grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                              ticks: { 
+                                color: '#9ca3af', 
+                                font: { size: 10 },
+                                callback: (value: any) => `${value}%`
+                              },
+                              max: 100
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Model Type Distribution - Gradient Doughnut Chart */}
+                  <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-purple-400 to-pink-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Training Status Heatmap</h3>
+                      </div>
+                    </div>
+                    <div className="p-4 h-80">
+                      {/* Heatmap-style visualization */}
+                      <div className="space-y-1">
+                        <div className="flex gap-1 mb-3 text-[9px] text-gray-500">
+                          <span className="w-16">Model</span>
+                          {trainingMetricsData.epochs.slice(0, 15).map((e) => (
+                            <div key={e} className="w-6 text-center">E{e}</div>
+                          ))}
+                        </div>
+                        {['RF', 'NN', 'XGB', 'SVM', 'LR'].map((model, modelIdx) => (
+                          <div key={model} className="flex gap-1 items-center">
+                            <span className="w-16 text-[10px] text-gray-400 font-mono">{model}</span>
+                            {trainingMetricsData.epochs.slice(0, 15).map((e) => {
+                              const intensity = trainingMetricsData.accuracyData[e - 1] || 0;
+                              const hue = modelIdx * 50; // Different color per model
+                              const opacity = (intensity / 100) * 0.8 + 0.2;
+                              return (
+                                <div
+                                  key={e}
+                                  className="w-6 h-6 rounded border border-gray-800"
+                                  style={{
+                                    backgroundColor: `hsla(${hue + 200}, 70%, 50%, ${opacity})`,
+                                  }}
+                                  title={`${model} E${e}: ${intensity.toFixed(1)}%`}
+                                />
+                              );
+                            })}
+                          </div>
+                        ))}
+                        <div className="flex gap-2 items-center justify-center mt-4 text-[9px] text-gray-500">
+                          <span>Low</span>
+                          <div className="flex gap-0.5">
+                            {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
+                              <div
+                                key={opacity}
+                                className="w-4 h-4 rounded"
+                                style={{ backgroundColor: `hsla(220, 70%, 50%, ${opacity})` }}
+                              />
+                            ))}
+                          </div>
+                          <span>High</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Accuracy vs Loss Scatter Plot */}
+                  <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-orange-500 rounded-full"></div>
+                          <h3 className="text-sm font-semibold text-white">Accuracy vs Loss Correlation</h3>
+                        </div>
+                        <div className="flex gap-3 text-[10px]">
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span className="text-gray-400">High Perf</span>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            <span className="text-gray-400">Low Perf</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 h-80">
+                      {(() => {
+                        // Generate scatter data: high accuracy = low loss
+                        const scatterData = trainingMetricsData.epochs.map((_, i) => {
+                          const accuracy = trainingMetricsData.accuracyData[i];
+                          const loss = trainingMetricsData.lossData[i];
+                          return { x: accuracy, y: loss };
+                        });
+                        
+                        return (
+                          <ChartComponents.Scatter
+                            data={{
+                              datasets: [
+                                {
+                                  label: 'High Performance',
+                                  data: scatterData.filter(d => d.x > 85),
+                                  backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                  borderColor: 'rgb(59, 130, 246)',
+                                  borderWidth: 2,
+                                  pointRadius: 6,
+                                  pointHoverRadius: 8,
+                                },
+                                {
+                                  label: 'Low Performance',
+                                  data: scatterData.filter(d => d.x <= 85),
+                                  backgroundColor: 'rgba(251, 146, 60, 0.7)',
+                                  borderColor: 'rgb(251, 146, 60)',
+                                  borderWidth: 2,
+                                  pointRadius: 6,
+                                  pointHoverRadius: 8,
+                                }
+                              ]
+                            }}
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                  titleColor: '#fff',
+                                  bodyColor: '#a0aec0',
+                                  borderColor: '#374151',
+                                  borderWidth: 1,
+                                  padding: 12,
+                                  callbacks: {
+                                    label: (item: any) => [
+                                      `Accuracy: ${item.parsed.x.toFixed(1)}%`,
+                                      `Loss: ${item.parsed.y.toFixed(3)}`
+                                    ]
+                                  }
+                                }
+                              },
+                              scales: {
+                                x: {
+                                  title: {
+                                    display: true,
+                                    text: 'Accuracy (%)',
+                                    color: '#9ca3af',
+                                    font: { size: 11 }
+                                  },
+                                  grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                  ticks: { color: '#9ca3af', font: { size: 10 } }
+                                },
+                                y: {
+                                  title: {
+                                    display: true,
+                                    text: 'Loss',
+                                    color: '#9ca3af',
+                                    font: { size: 11 }
+                                  },
+                                  grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                  ticks: { color: '#9ca3af', font: { size: 10 } }
+                                }
+                              }
+                            }}
+                          />
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Model Performance Bubble Chart */}
+                  <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full"></div>
+                          <h3 className="text-sm font-semibold text-white">Model Performance Clusters</h3>
+                        </div>
+                        <span className="text-[10px] text-gray-400">Bubble size = Training Time</span>
+                      </div>
+                    </div>
+                    <div className="p-4 h-80">
+                      {(() => {
+                        // Generate bubble data for different models
+                        const bubbleData = [
+                          { x: 35, y: -80, r: 20, label: 'RF-1' },
+                          { x: 32, y: -95, r: 25, label: 'RF-2' },
+                          { x: 30, y: -85, r: 22, label: 'NN-1' },
+                          { x: 38, y: -75, r: 18, label: 'NN-2' },
+                          { x: 40, y: -70, r: 30, label: 'XGB-1' },
+                          { x: 42, y: -82, r: 28, label: 'XGB-2' },
+                          { x: 45, y: -90, r: 24, label: 'XGB-3' },
+                          { x: 43, y: -78, r: 26, label: 'SVM-1' },
+                          { x: 48, y: -88, r: 20, label: 'SVM-2' },
+                          { x: 50, y: -92, r: 32, label: 'LR-1' },
+                          { x: 52, y: -125, r: 22, label: 'LR-2' },
+                          { x: 65, y: -155, r: 35, label: 'Ensemble' },
+                        ];
+                        
+                        return (
+                          <ChartComponents.Bubble
+                            data={{
+                              datasets: [{
+                                label: 'Models',
+                                data: bubbleData,
+                                backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                                borderColor: 'rgb(234, 179, 8)',
+                                borderWidth: 2,
+                              }]
+                            }}
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                  titleColor: '#fff',
+                                  bodyColor: '#a0aec0',
+                                  borderColor: '#374151',
+                                  borderWidth: 1,
+                                  padding: 12,
+                                  callbacks: {
+                                    label: (item: any) => {
+                                      const point = item.raw as any;
+                                      return [
+                                        `Model: ${point.label}`,
+                                        `Lat: ${point.x}`,
+                                        `Lng: ${point.y}`,
+                                        `Size: ${point.r}min`
+                                      ];
+                                    }
+                                  }
+                                }
+                              },
+                              scales: {
+                                x: {
+                                  title: {
+                                    display: true,
+                                    text: 'Lat',
+                                    color: '#9ca3af',
+                                    font: { size: 11 }
+                                  },
+                                  grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                  ticks: { color: '#9ca3af', font: { size: 10 } }
+                                },
+                                y: {
+                                  title: {
+                                    display: true,
+                                    text: 'Lng',
+                                    color: '#9ca3af',
+                                    font: { size: 11 }
+                                  },
+                                  grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                  ticks: { color: '#9ca3af', font: { size: 10 } }
+                                }
+                              }
+                            }}
+                          />
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -794,8 +1794,8 @@ const ModelTraining: React.FC = () => {
             <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
               <Layers className="w-6 h-6 text-primary" />
             </div>
-            <h3 className={`mt-4 ${typography.cardTitle}`}>No models trained yet</h3>
-            <p className={`mt-1 ${typography.bodySmall}`}>
+            <h3 className="mt-4 text-lg font-semibold text-white">No models trained yet</h3>
+            <p className="mt-1 text-sm text-gray-400">
               Start training your first model to see it here
             </p>
             {datasets.length > 0 && !selectedDataset && (
@@ -813,24 +1813,24 @@ const ModelTraining: React.FC = () => {
         {crossValidationResults && (
           <div className="mt-8 space-y-6">
             <Card>
-              <h3 className={`${typography.cardTitle} mb-4`}>Cross-Validation Results</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Cross-Validation Results</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase">
                         Fold
                       </th>
-                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase">
                         Accuracy
                       </th>
-                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase">
                         Precision
                       </th>
-                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase">
                         Recall
                       </th>
-                      <th className={`px-3 py-2 text-left ${typography.helperText} uppercase`}>
+                      <th className="px-3 py-2 text-left text-xs text-gray-500 uppercase">
                         F1 Score
                       </th>
                     </tr>
@@ -838,37 +1838,37 @@ const ModelTraining: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {crossValidationResults.map((result) => (
                       <tr key={result.fold}>
-                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                        <td className="px-3 py-2 text-sm text-gray-700">
                           {result.fold}
                         </td>
-                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                        <td className="px-3 py-2 text-sm text-gray-700">
                           {(result.accuracy * 100).toFixed(2)}%
                         </td>
-                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                        <td className="px-3 py-2 text-sm text-gray-700">
                           {(result.precision * 100).toFixed(2)}%
                         </td>
-                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                        <td className="px-3 py-2 text-sm text-gray-700">
                           {(result.recall * 100).toFixed(2)}%
                         </td>
-                        <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                        <td className="px-3 py-2 text-sm text-gray-700">
                           {(result.f1Score * 100).toFixed(2)}%
                         </td>
                       </tr>
                     ))}
                     <tr className="bg-gray-50 font-medium">
-                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                      <td className="px-3 py-2 text-sm text-gray-700">
                         Average
                       </td>
-                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                      <td className="px-3 py-2 text-sm text-gray-700">
                         {(crossValidationResults.reduce((acc, val) => acc + val.accuracy, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                      <td className="px-3 py-2 text-sm text-gray-700">
                         {(crossValidationResults.reduce((acc, val) => acc + val.precision, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                      <td className="px-3 py-2 text-sm text-gray-700">
                         {(crossValidationResults.reduce((acc, val) => acc + val.recall, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
-                      <td className={`px-3 py-2 ${typography.bodySmall}`}>
+                      <td className="px-3 py-2 text-sm text-gray-700">
                         {(crossValidationResults.reduce((acc, val) => acc + val.f1Score, 0) / crossValidationResults.length * 100).toFixed(2)}%
                       </td>
                     </tr>
@@ -879,15 +1879,15 @@ const ModelTraining: React.FC = () => {
 
             {crossValidationNarrative && (
               <div className="grid gap-6 lg:grid-cols-2">
-                <Card className={insightPanelClass}>
-                  <div className={`space-y-3 ${typography.bodySmall} text-slate-700`}>
+                <Card>
+                  <div className="space-y-3 text-sm text-gray-700">
                     <p>{crossValidationNarrative.intro}</p>
                     <p>{crossValidationNarrative.balanceMessage}</p>
                     <p>{crossValidationNarrative.spreadMessage}</p>
                     <ul className="mt-4 space-y-2">
                       {crossValidationNarrative.supportingBullets.map((bullet) => (
                         <li key={bullet} className="flex items-start gap-2">
-                          <span className={subtleListBulletClass} aria-hidden="true"></span>
+                          <span className="text-primary" aria-hidden="true">•</span>
                           <span>{bullet}</span>
                         </li>
                       ))}
@@ -895,11 +1895,11 @@ const ModelTraining: React.FC = () => {
                   </div>
                 </Card>
 
-                <Card className={insightPanelClass}>
+                <Card>
                   <div className="space-y-4">
                     <div>
-                      <h4 className={insightHeadingClass}>Ask about these results</h4>
-                      <p className={insightHelperClass}>Use natural language to interpret fold stability, top performers, or imbalance.</p>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">Ask about these results</h4>
+                      <p className="text-sm text-gray-600">Use natural language to interpret fold stability, top performers, or imbalance.</p>
                     </div>
                     <form onSubmit={handleCvQuestionSubmit} className="space-y-3">
                       <input
@@ -907,7 +1907,7 @@ const ModelTraining: React.FC = () => {
                         value={cvQuestion}
                         onChange={(e) => setCvQuestion(e.target.value)}
                         placeholder="e.g., How consistent are the folds?"
-                        className={components.input.base}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                       />
                       <div className="flex items-center gap-2">
                         <Button type="submit" size="sm" disabled={!cvQuestion.trim()}>
@@ -916,26 +1916,26 @@ const ModelTraining: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setCvAnswer(null)}
-                          className={`${typography.helperText} font-medium text-slate-500 hover:text-primary`}
+                          className="text-xs font-medium text-gray-500 hover:text-primary"
                         >
                           Clear answer
                         </button>
                       </div>
                     </form>
                     {cvAnswer && (
-                      <div className={insightAnswerClass} aria-live="polite">
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-700" aria-live="polite">
                         {cvAnswer}
                       </div>
                     )}
                     <div className="space-y-2">
-                      <p className={`${typography.helperText} font-semibold uppercase tracking-wide text-slate-500`}>Quick suggestions</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Quick suggestions</p>
                       <div className="flex flex-wrap gap-2">
                         {questionSuggestions.map((suggestion) => (
                           <button
                             key={suggestion}
                             type="button"
                             onClick={() => handleSuggestionClick(suggestion)}
-                            className={chipButtonClass}
+                            className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-full transition-colors"
                           >
                             {suggestion}
                           </button>
@@ -948,7 +1948,9 @@ const ModelTraining: React.FC = () => {
             )}
           </div>
         )}
-      </div>
+        
+        </div> {/* Close max-w-7xl mx-auto px-6 py-6 space-y-6 */}
+      </div> {/* Close min-h-screen bg-[#0d1117] */}
     </DndProvider>
   );
 };

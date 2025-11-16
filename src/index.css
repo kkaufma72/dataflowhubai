@@ -4,6 +4,9 @@
 /* Import UI improvements */
 @import './styles/uiImprovements.css';
 
+/* Import Modern SaaS Dark Theme */
+@import './styles/saasModernDark.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

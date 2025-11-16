@@ -16,12 +16,96 @@ import {
   BarChart3,
   ArrowUpRight,
   Circle,
-  Sparkles
+  Sparkles,
+  Loader
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
+
+// Prediction models configuration (same as DatasetInsights)
+const predictionModels = [
+  {
+    id: 'marketing-campaigns',
+    name: 'Marketing Campaign ROI',
+    metric: 'Campaign ROI',
+    unit: '%',
+    color: 'rgb(59, 130, 246)', // Blue
+    historicalData: Array.from({ length: 30 }, (_, i) => {
+      const base = 145;
+      const trend = i * 0.8;
+      const seasonal = Math.sin(i / 7) * 12;
+      const noise = (Math.random() - 0.5) * 8;
+      return Math.max(100, Math.round(base + trend + seasonal + noise));
+    }),
+    forecastData: Array.from({ length: 14 }, (_, i) => {
+      const base = 170;
+      const trend = i * 0.9;
+      const seasonal = Math.sin((30 + i) / 7) * 12;
+      const noise = (Math.random() - 0.5) * 6;
+      return Math.round(base + trend + seasonal + noise);
+    })
+  },
+  {
+    id: 'sales-forecast',
+    name: 'Sales Revenue',
+    metric: 'Revenue',
+    unit: 'K',
+    color: 'rgb(16, 185, 129)', // Emerald
+    historicalData: Array.from({ length: 30 }, (_, i) => {
+      const base = 280;
+      const trend = i * 1.2;
+      const seasonal = Math.sin(i / 5) * 25;
+      const noise = (Math.random() - 0.5) * 15;
+      return Math.max(200, Math.round(base + trend + seasonal + noise));
+    }),
+    forecastData: Array.from({ length: 14 }, (_, i) => {
+      const base = 320;
+      const trend = i * 1.4;
+      const seasonal = Math.sin((30 + i) / 5) * 25;
+      const noise = (Math.random() - 0.5) * 12;
+      return Math.round(base + trend + seasonal + noise);
+    })
+  },
+  {
+    id: 'customer-churn',
+    name: 'Customer Churn',
+    metric: 'Churn Rate',
+    unit: '%',
+    color: 'rgb(249, 115, 22)', // Orange
+    historicalData: Array.from({ length: 30 }, (_, i) => {
+      const base = 8.5;
+      const trend = -i * 0.08;
+      const seasonal = Math.sin(i / 6) * 1.5;
+      const noise = (Math.random() - 0.5) * 0.8;
+      return Math.max(3, parseFloat((base + trend + seasonal + noise).toFixed(2)));
+    }),
+    forecastData: Array.from({ length: 14 }, (_, i) => {
+      const base = 6.2;
+      const trend = -i * 0.06;
+      const seasonal = Math.sin((30 + i) / 6) * 1.5;
+      const noise = (Math.random() - 0.5) * 0.6;
+      return parseFloat((base + trend + seasonal + noise).toFixed(2));
+    })
+  }
+];
+
+// Dynamic import for Chart.js
+let ChartComponents: any = null;
+const loadCharts = async () => {
+  if (!ChartComponents) {
+    const [{ Line }, { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler }] = await Promise.all([
+      import('react-chartjs-2'),
+      import('chart.js')
+    ]);
+    
+    ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+    ChartComponents = { Line };
+    return ChartComponents;
+  }
+  return ChartComponents;
+};
 
 const DashboardKoyfin: React.FC = () => {
   const { datasets, models, isLoading } = useMLContext();
@@ -29,6 +113,22 @@ const DashboardKoyfin: React.FC = () => {
   const navigate = useNavigate();
   const [showMagicMoment, setShowMagicMoment] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
+  const [chartsLoaded, setChartsLoaded] = useState(false);
+  const [ChartComp, setChartComp] = useState<any>(null);
+
+  // Load charts on mount
+  useEffect(() => {
+    loadCharts()
+      .then((comps) => {
+        setChartComp(comps);
+        setChartsLoaded(true);
+      })
+      .catch((error) => {
+        console.error('Failed to load charts:', error);
+        setChartsLoaded(false);
+      });
+  }, []);
 
   // Real-time clock
   useEffect(() => {
@@ -57,7 +157,7 @@ const DashboardKoyfin: React.FC = () => {
     const totalModels = models.length;
     const totalRows = datasets.reduce((sum, d) => sum + (d.rows || 0), 0);
     const avgHealthScore = datasets.length > 0 
-      ? datasets.reduce((sum, d) => sum + 90, 0) / datasets.length // Simplified
+      ? datasets.reduce((sum) => sum + 90, 0) / datasets.length // Simplified
       : 0;
 
     const trainedModels = models.filter(m => m.status === 'trained' || m.status === 'deployed').length;
@@ -130,34 +230,34 @@ const DashboardKoyfin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      {/* Koyfin-Style Header Bar */}
-      <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur">
-        <div className="px-6 py-3">
+    <div className="min-h-screen bg-gray-950">
+      {/* Modern SaaS Header Bar */}
+      <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Left - User info */}
             <div className="flex items-center gap-6">
               <div>
-                <div className="text-sm font-medium text-gray-100">
+                <h1 className="saas-h3">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                </div>
-                <div className="text-xs text-gray-400">
+                </h1>
+                <p className="saas-body-small text-gray-400">
                   {user?.user_metadata?.company || user?.email}
-                </div>
+                </p>
               </div>
-              <div className="h-4 w-px bg-gray-800" />
-              <div className="text-xs text-gray-400">
+              <div className="h-6 w-px bg-gray-800" />
+              <span className="saas-label text-gray-400">
                 {user?.user_metadata?.use_case?.replace(/-/g, ' ') || 'General'}
-              </div>
+              </span>
             </div>
 
             {/* Right - Live clock + status */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Circle className="w-2 h-2 fill-green-500 text-green-500 animate-pulse" />
-                <span className="text-xs text-gray-400">Live</span>
+                <Circle className="w-2 h-2 fill-green-400 text-green-400 animate-pulse" />
+                <span className="saas-caption">Live</span>
               </div>
-              <div className="text-xs font-mono text-gray-400">
+              <div className="saas-caption font-mono">
                 {currentTime.toLocaleTimeString('en-US', { hour12: false })}
               </div>
             </div>
@@ -166,140 +266,300 @@ const DashboardKoyfin: React.FC = () => {
       </div>
 
       {/* Main Dashboard Grid */}
-      <div className="p-6 space-y-4">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         {/* Top Row - Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Metric 1: Datasets */}
-          <div className="stat-card">
-            <div className="flex items-center justify-between mb-2">
-              <span className="stat-label">Datasets</span>
-              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Database className="w-6 h-6 text-gray-300" />
+          <div className="saas-stat-card">
+            <div className="flex items-center justify-between mb-4">
+              <span className="saas-stat-label">Datasets</span>
+              <div className="saas-icon-blue">
+                <Database className="w-6 h-6" />
               </div>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value">
+                <div className="saas-stat-value">
                   {metrics.totalDatasets}
                 </div>
-                <div className={`text-xs flex items-center gap-1 mt-1 ${
-                  metrics.isUp.datasets ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {metrics.isUp.datasets ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <div className={`saas-stat-change-${metrics.isUp.datasets ? 'positive' : 'negative'} mt-2`}>
+                  {metrics.isUp.datasets ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                   <span>{metrics.datasetChange}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-500">{metrics.totalRows.toLocaleString()}</div>
-                <div className="text-xs text-gray-600">total rows</div>
+                <div className="text-sm font-semibold text-gray-400">{metrics.totalRows.toLocaleString()}</div>
+                <div className="saas-caption">total rows</div>
               </div>
             </div>
           </div>
 
           {/* Metric 2: Models */}
-          <div className="stat-card">
-            <div className="flex items-center justify-between mb-2">
-              <span className="stat-label">Models</span>
-              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Brain className="w-6 h-6 text-gray-300" />
+          <div className="saas-stat-card">
+            <div className="flex items-center justify-between mb-4">
+              <span className="saas-stat-label">Models</span>
+              <div className="saas-icon-purple">
+                <Brain className="w-6 h-6" />
               </div>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value">
+                <div className="saas-stat-value">
                   {metrics.totalModels}
                 </div>
-                <div className={`text-xs flex items-center gap-1 mt-1 ${
-                  metrics.isUp.models ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {metrics.isUp.models ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <div className={`saas-stat-change-${metrics.isUp.models ? 'positive' : 'negative'} mt-2`}>
+                  {metrics.isUp.models ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                   <span>{metrics.modelChange}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-500">{metrics.deployedModels}</div>
-                <div className="text-xs text-gray-600">deployed</div>
+                <div className="text-sm font-semibold text-gray-400">{metrics.deployedModels}</div>
+                <div className="saas-caption">deployed</div>
               </div>
             </div>
           </div>
 
           {/* Metric 3: Health Score */}
-          <div className="stat-card">
-            <div className="flex items-center justify-between mb-2">
-              <span className="stat-label">Avg Health</span>
-              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Activity className="w-6 h-6 text-gray-300" />
+          <div className="saas-stat-card">
+            <div className="flex items-center justify-between mb-4">
+              <span className="saas-stat-label">Avg Health</span>
+              <div className="saas-icon-green">
+                <Activity className="w-6 h-6" />
               </div>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value">
+                <div className="saas-stat-value">
                   {metrics.avgHealthScore.toFixed(0)}
                 </div>
-                <div className={`text-xs flex items-center gap-1 mt-1 ${
-                  metrics.isUp.health ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {metrics.isUp.health ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <div className={`saas-stat-change-${metrics.isUp.health ? 'positive' : 'negative'} mt-2`}>
+                  {metrics.isUp.health ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                   <span>{metrics.healthChange}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-500">Quality</div>
-                <div className="text-xs text-gray-600">score</div>
+                <div className="text-sm font-semibold text-gray-400">Quality</div>
+                <div className="saas-caption">score</div>
               </div>
             </div>
           </div>
 
           {/* Metric 4: Activity */}
-          <div className="stat-card">
-            <div className="flex items-center justify-between mb-2">
-              <span className="stat-label">Activity</span>
-              <div className="w-14 h-14 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Zap className="w-6 h-6 text-gray-300" />
+          <div className="saas-stat-card">
+            <div className="flex items-center justify-between mb-4">
+              <span className="saas-stat-label">Activity</span>
+              <div className="saas-icon-orange">
+                <Zap className="w-6 h-6" />
               </div>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <div className="stat-value">
+                <div className="saas-stat-value">
                   {metrics.trainedModels}
                 </div>
-                <div className="text-xs flex items-center gap-1 mt-1 text-green-500">
-                  <TrendingUp className="w-3 h-3" />
+                <div className="saas-stat-change-positive mt-2">
+                  <TrendingUp className="w-4 h-4" />
                   <span>Active</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs text-gray-500">Today</div>
-                <div className="text-xs text-gray-600">models</div>
+                <div className="text-sm font-semibold text-gray-400">Today</div>
+                <div className="saas-caption">models</div>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Prediction Models Section - Compact Version for Dashboard */}
+        <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-cyan-500 rounded-full"></div>
+                <h3 className="text-sm font-semibold text-white">Model Predictions</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedPredictionModel}
+                  onChange={(e) => setSelectedPredictionModel(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
+                >
+                  {predictionModels.map(model => (
+                    <option key={model.id} value={model.id}>{model.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => navigate('/app/insights')}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  View Full Report →
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="p-4">
+            {(() => {
+              const model = predictionModels.find(m => m.id === selectedPredictionModel);
+              if (!model) return null;
+
+              const labels = Array.from({ length: 44 }, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - 30 + i);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              });
+
+              const chartData = {
+                labels,
+                datasets: [
+                  {
+                    label: 'Historical',
+                    data: [...model.historicalData, ...Array(14).fill(null)],
+                    borderColor: model.color,
+                    backgroundColor: `${model.color.replace('rgb', 'rgba').replace(')', ', 0.1)')}`,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 3,
+                    borderWidth: 2,
+                  },
+                  {
+                    label: 'Forecast',
+                    data: [...Array(30).fill(null), ...model.forecastData],
+                    borderColor: model.color,
+                    backgroundColor: `${model.color.replace('rgb', 'rgba').replace(')', ', 0.05)')}`,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 3,
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                  }
+                ]
+              };
+
+              const lastHistorical = model.historicalData[model.historicalData.length - 1];
+              const lastForecast = model.forecastData[model.forecastData.length - 1];
+              const change = ((lastForecast - lastHistorical) / lastHistorical * 100).toFixed(1);
+
+              return (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3 pb-3 border-b border-gray-800">
+                    <div className="text-center">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Current</div>
+                      <div className="text-xl font-bold text-white">{lastHistorical}{model.unit}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Forecast</div>
+                      <div className="text-xl font-bold" style={{ color: model.color }}>{lastForecast}{model.unit}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Change</div>
+                      <div className={`text-xl font-bold ${parseFloat(change) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {parseFloat(change) >= 0 ? '+' : ''}{change}%
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="h-64">
+                    {chartsLoaded && ChartComp ? (
+                      <ChartComp.Line 
+                        data={chartData}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          interaction: { mode: 'index' as const, intersect: false },
+                          plugins: {
+                            legend: {
+                              display: true,
+                              position: 'top' as const,
+                              align: 'end' as const,
+                              labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: { size: 10 },
+                                padding: 8,
+                                usePointStyle: true,
+                                boxWidth: 6,
+                                boxHeight: 6,
+                              }
+                            },
+                            tooltip: {
+                              backgroundColor: 'rgba(22, 27, 34, 0.95)',
+                              titleColor: '#fff',
+                              bodyColor: '#fff',
+                              borderColor: model.color,
+                              borderWidth: 1,
+                              padding: 10,
+                              displayColors: true,
+                              callbacks: {
+                                label: function(context: any) {
+                                  const value = context.parsed.y;
+                                  if (value !== null) {
+                                    return `${context.dataset.label}: ${value}${model.unit}`;
+                                  }
+                                  return '';
+                                }
+                              }
+                            }
+                          },
+                          scales: {
+                            y: {
+                              grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                              ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                font: { size: 9 },
+                                callback: function(value: any) {
+                                  return value + model.unit;
+                                }
+                              }
+                            },
+                            x: {
+                              grid: { display: false },
+                              ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                font: { size: 9 },
+                                maxRotation: 45,
+                                minRotation: 45
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Loader className="w-6 h-6 animate-spin text-cyan-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
         {/* Second Row - Charts and Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Datasets - Terminal Style List */}
-          <div className="lg:col-span-2 card-improved bg-gray-900">
-            <div className="card-header border-gray-800">
+          <div className="lg:col-span-2 saas-card">
+            <div className="saas-card-header">
               <div className="flex items-center justify-between">
-                <h3 className="card-title">Recent Datasets</h3>
+                <h3 className="saas-h4">Recent Datasets</h3>
                 <button
                   onClick={() => navigate('/app/data')}
-                  className="text-xs text-primary hover:text-primary-400 transition-colors flex items-center gap-1"
+                  className="saas-btn-ghost saas-btn-sm flex items-center gap-1"
                 >
                   View all
                   <ArrowUpRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
-            <div className="p-4">
+            <div className="saas-card-body">
               {datasets.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">No datasets yet</p>
+                  <p className="saas-body-small">No datasets yet</p>
                   <button
                     onClick={() => navigate('/app/data')}
-                    className="mt-4 text-xs text-primary hover:text-primary-400"
+                    className="saas-btn-primary saas-btn-sm mt-4"
                   >
                     Upload your first dataset →
                   </button>
@@ -310,25 +570,25 @@ const DashboardKoyfin: React.FC = () => {
                     <button
                       key={dataset.id}
                       onClick={() => navigate('/app/insights')}
-                      className="list-item-improved w-full flex items-center justify-between rounded-lg hover:bg-gray-800/50 transition-all group"
+                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 transition-all group border border-transparent hover:border-gray-700"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="icon-container-info w-10 h-10">
-                          <Database className="w-5 h-5 text-white" />
+                        <div className="saas-icon-blue w-10 h-10">
+                          <Database className="w-5 h-5" />
                         </div>
                         <div className="text-left flex-1">
-                          <div className="text-sm font-semibold text-gray-100 group-hover:text-white transition-colors">
+                          <div className="saas-body font-semibold text-white">
                             {dataset.name}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="saas-caption font-mono">
                             {(dataset.rows || 0).toLocaleString()} rows • {dataset.columns || 0} cols
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="badge-success">
+                        <span className="saas-badge-success">
                           92
-                        </div>
+                        </span>
                         <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
                       </div>
                     </button>
@@ -339,15 +599,15 @@ const DashboardKoyfin: React.FC = () => {
           </div>
 
           {/* Activity Feed - Terminal Style */}
-          <div className="card-improved bg-gray-900">
-            <div className="card-header border-gray-800">
-              <h3 className="card-title">Live Activity</h3>
+          <div className="saas-card">
+            <div className="saas-card-header">
+              <h3 className="saas-h4">Live Activity</h3>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="saas-card-body space-y-3">
               {recentActivity.length === 0 ? (
                 <div className="text-center py-8 text-gray-600">
                   <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-xs">No recent activity</p>
+                  <p className="saas-caption">No recent activity</p>
                 </div>
               ) : (
                 recentActivity.map((activity, idx) => {
@@ -355,15 +615,15 @@ const DashboardKoyfin: React.FC = () => {
                   const timeAgo = getTimeAgo(activity.timestamp);
                   
                   return (
-                    <div key={idx} className="flex items-start gap-3">
+                    <div key={idx} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-800/30 transition-colors">
                       <div className={`mt-0.5 ${activity.color}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-300 truncate">
+                        <p className="saas-body truncate text-gray-300">
                           {activity.name}
                         </p>
-                        <p className="text-Solution text-gray-600 font-mono">
+                        <p className="saas-caption font-mono text-gray-500">
                           {timeAgo}
                         </p>
                       </div>
@@ -376,64 +636,70 @@ const DashboardKoyfin: React.FC = () => {
         </div>
 
         {/* Third Row - Quick Actions Terminal */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Quick Action 1 */}
           <button
             onClick={() => navigate('/app/data')}
-            className="group card-improved bg-gray-900 hover:border-primary/50 hover:bg-gray-800/50"
+            className="group saas-card-hover text-left"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="icon-container-primary group-hover:shadow-xl">
-                <Database className="w-5 h-5 text-white" />
+            <div className="saas-card-body">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="saas-icon-blue group-hover:scale-110 transition-transform">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="saas-body font-semibold text-white">Upload Data</div>
+                  <div className="saas-caption">Add new dataset</div>
+                </div>
               </div>
-              <div className="text-left flex-1">
-                <div className="text-sm font-semibold text-gray-100">Upload Data</div>
-                <div className="text-xs text-gray-500">Add new dataset</div>
+              <div className="flex items-center justify-between saas-caption">
+                <span>CSV, Excel, JSON</span>
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>CSV, Excel, JSON</span>
-              <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </button>
 
           {/* Quick Action 2 */}
           <button
             onClick={() => navigate('/app/insights')}
-            className="group card-improved bg-gray-900 hover:border-primary/50 hover:bg-gray-800/50"
+            className="group saas-card-hover text-left"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="icon-container-info group-hover:shadow-xl">
-                <BarChart3 className="w-5 h-5 text-white" />
+            <div className="saas-card-body">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="saas-icon-purple group-hover:scale-110 transition-transform">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="saas-body font-semibold text-white">View Insights</div>
+                  <div className="saas-caption">Analytics dashboard</div>
+                </div>
               </div>
-              <div className="text-left flex-1">
-                <div className="text-sm font-semibold text-gray-100">View Insights</div>
-                <div className="text-xs text-gray-500">Analytics dashboard</div>
+              <div className="flex items-center justify-between saas-caption">
+                <span>Charts & stats</span>
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>Charts & stats</span>
-              <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </button>
 
           {/* Quick Action 3 */}
           <button
             onClick={() => navigate('/app/train')}
-            className="group card-improved bg-gray-900 hover:border-pink-500/50 hover:bg-gray-800/50"
+            className="group saas-card-hover text-left"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="icon-container-primary group-hover:shadow-xl">
-                <Brain className="w-5 h-5 text-white" />
+            <div className="saas-card-body">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="saas-icon-pink group-hover:scale-110 transition-transform">
+                  <Brain className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="saas-body font-semibold text-white">Train Model</div>
+                  <div className="saas-caption">Build ML model</div>
+                </div>
               </div>
-              <div className="text-left flex-1">
-                <div className="text-sm font-semibold text-gray-100">Train Model</div>
-                <div className="text-xs text-gray-500">Build ML model</div>
+              <div className="flex items-center justify-between saas-caption">
+                <span>One-click ML</span>
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <span>One-click ML</span>
-              <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </button>
 
@@ -448,63 +714,65 @@ const DashboardKoyfin: React.FC = () => {
                 toast('Upload a dataset first!', { icon: '👋' });
               }
             }}
-            className="group bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-green-500/50 hover:bg-gray-800/50 transition-all"
+            className="group saas-card-hover text-left"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                <Sparkles className="w-5 h-5 text-green-400" />
+            <div className="saas-card-body">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="saas-icon-green group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="saas-body font-semibold text-white">Ask AI</div>
+                  <div className="saas-caption">Get insights</div>
+                </div>
               </div>
-              <div className="text-left flex-1">
-                <div className="text-sm font-semibold text-gray-100">Ask AI</div>
-                <div className="text-xs text-gray-500">Get insights</div>
+              <div className="flex items-center justify-between saas-caption">
+                <span>Natural language</span>
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-Solution text-gray-600">
-              <span>Natural language</span>
-              <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </button>
         </div>
 
-        {/* Bottom Row - Status Board */}
-        <div className="bg-gray-900 border border-gray-800 rounded-lg">
-          <div className="border-b border-gray-800 px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-100">System Status</h3>
+        {/* Bottom Row - System Status Board */}
+        <div className="saas-card">
+          <div className="saas-card-header">
+            <h3 className="saas-h4">System Status</h3>
           </div>
-          <div className="p-4">
+          <div className="saas-card-body">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <div className="text-xs text-gray-500 mb-1">Data Quality</div>
+                <div className="saas-label mb-2">Data Quality</div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: `${metrics.avgHealthScore}%` }} />
+                  <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400" style={{ width: `${metrics.avgHealthScore}%` }} />
                   </div>
-                  <span className="text-xs font-mono text-gray-400">{metrics.avgHealthScore.toFixed(0)}%</span>
+                  <span className="saas-caption font-mono text-gray-400">{metrics.avgHealthScore.toFixed(0)}%</span>
                 </div>
               </div>
 
               <div>
-                <div className="text-xs text-gray-500 mb-1">AI Availability</div>
+                <div className="saas-label mb-2">AI Availability</div>
                 <div className="flex items-center gap-2">
                   <Circle className="w-2 h-2 fill-green-500 text-green-500" />
-                  <span className="text-Solution font-mono text-green-400">Operational</span>
+                  <span className="saas-caption font-mono text-green-400">Operational</span>
                 </div>
               </div>
 
               <div>
-                <div className="text-Solution text-gray-500 mb-1">Model Training</div>
+                <div className="saas-label mb-2">Model Training</div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-gray-400">
+                  <span className="saas-caption font-mono text-gray-400">
                     {models.filter(m => m.status === 'training').length} active
                   </span>
                 </div>
               </div>
 
               <div>
-                <div className="text-xs text-gray-500 mb-1">Last Updated</div>
+                <div className="saas-label mb-2">Last Updated</div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-3 h-3 text-gray-600" />
-                  <span className="text-xs font-mono text-gray-400">
+                  <Clock className="w-3 h-3 text-gray-500" />
+                  <span className="saas-caption font-mono text-gray-400">
                     {currentTime.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

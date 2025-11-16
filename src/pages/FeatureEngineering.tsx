@@ -11,8 +11,6 @@ import {
   Layers,
   Sparkles
 } from 'lucide-react';
-import Button from '../components/common/Button';
-import Card from '../components/common/Card';
 import FeatureEngineeringPanel from '../components/features/FeatureEngineeringPanel';
 import toast from 'react-hot-toast';
 
@@ -88,72 +86,87 @@ const FeatureEngineering: React.FC = () => {
 
   if (!selectedDataset) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-lg">
-          <Database className="w-6 h-6 text-blue-600" />
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-12 text-center">
+        <div className="saas-icon-blue w-20 h-20">
+          <Database className="w-10 h-10" />
         </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No datasets available</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <h3 className="mt-6 saas-h3">No datasets available</h3>
+        <p className="mt-2 saas-body text-gray-400">
           Upload a dataset first to perform feature engineering
         </p>
-        <Button className="mt-4" onClick={() => navigate('/app/data')}>
+        <button 
+          className="mt-6 saas-btn-primary saas-btn-md" 
+          onClick={() => navigate('/app/data')}
+        >
           Upload Dataset
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-950 p-6 space-y-6">
       <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Feature Engineering</h1>
-          <p className="mt-1 text-sm text-white">
+          <h1 className="saas-h2">Feature Engineering</h1>
+          <p className="mt-2 saas-body text-gray-400">
             Select, transform, and create features to improve model performance
           </p>
         </div>
         <div className="mt-4 md:mt-0">
-          <Button
+          <button
             onClick={handleApplyAndTrain}
             disabled={isApplying}
-            icon={isApplying ? <Layers className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            className="saas-btn-primary saas-btn-md flex items-center gap-2"
           >
-            {isApplying ? 'Applying...' : 'Apply & Train Model'}
-          </Button>
+            {isApplying ? (
+              <>
+                <Layers className="w-4 h-4 animate-spin" />
+                Applying...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Apply & Train Model
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-lg mr-4">
-            <Database className="w-6 h-6 text-blue-600" />
+      <div className="saas-card">
+        <div className="saas-card-body">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="saas-icon-blue w-12 h-12">
+                <Database className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="saas-h4">{selectedDataset.name}</h2>
+                <p className="saas-caption text-gray-400">
+                  {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleDatasetChange('prev')}
+                disabled={datasets.length <= 1}
+                className="saas-btn-outline saas-btn-sm text-gray-300 hover:text-blue-400 flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              <button
+                onClick={() => handleDatasetChange('next')}
+                disabled={datasets.length <= 1}
+                className="saas-btn-outline saas-btn-sm text-gray-300 hover:text-blue-400 flex items-center gap-1"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-white">{selectedDataset.name}</h2>
-            <p className="text-sm text-gray-400">
-              {selectedDataset.rows?.toLocaleString()} rows • {selectedDataset.columns} columns
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDatasetChange('prev')}
-            disabled={datasets.length <= 1}
-            icon={<ChevronLeft className="w-4 h-4" />}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDatasetChange('next')}
-            disabled={datasets.length <= 1}
-            icon={<ChevronRight className="w-4 h-4 ml-1" />}
-          >
-            Next
-          </Button>
         </div>
       </div>
 
@@ -162,42 +175,58 @@ const FeatureEngineering: React.FC = () => {
         onFeatureUpdate={handleFeatureUpdate}
       />
 
-      <div className="mt-6">
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-900">Feature Engineering Summary</h3>
-          </div>
-          
+      <div className="saas-card">
+        <div className="saas-card-header">
+          <h3 className="saas-h4">Feature Engineering Summary</h3>
+        </div>
+        
+        <div className="saas-card-body">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-indigo-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Selected Features</h4>
-              <p className="text-2xl font-semibold text-gray-900">{engineeredFeatures.length}</p>
-              <p className="text-sm text-indigo-600">out of {selectedDataset.preview_data?.columns.length || 0} original features</p>
+            <div className="saas-stat-card">
+              <div className="flex items-center justify-between mb-3">
+                <span className="saas-label text-blue-400">Selected Features</span>
+                <div className="saas-icon-blue w-10 h-10">
+                  <Wand2 className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="saas-stat-value">{engineeredFeatures.length}</div>
+              <p className="saas-caption text-gray-400">out of {selectedDataset.preview_data?.columns.length || 0} original features</p>
             </div>
             
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="text-sm font-medium text-green-900 mb-2">Feature Transformations</h4>
-              <p className="text-2xl font-semibold text-green-700">3</p>
-              <p className="text-sm text-green-600">scaling, encoding, and custom transformations</p>
+            <div className="saas-stat-card">
+              <div className="flex items-center justify-between mb-3">
+                <span className="saas-label text-green-400">Transformations</span>
+                <div className="saas-icon-green w-10 h-10">
+                  <Layers className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="saas-stat-value">3</div>
+              <p className="saas-caption text-gray-400">scaling, encoding, and custom transformations</p>
             </div>
             
-            <div className="p-4 bg-indigo-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">New Features Created</h4>
-              <p className="text-2xl font-semibold text-gray-900">12</p>
-              <p className="text-sm text-indigo-600">including time series and interaction features</p>
+            <div className="saas-stat-card">
+              <div className="flex items-center justify-between mb-3">
+                <span className="saas-label text-purple-400">New Features</span>
+                <div className="saas-icon-purple w-10 h-10">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="saas-stat-value">12</div>
+              <p className="saas-caption text-gray-400">including time series and interaction features</p>
             </div>
           </div>
           
           <div className="mt-6 flex justify-end">
-            <Button
+            <button
               onClick={handleApplyAndTrain}
               disabled={isApplying}
-              icon={<ArrowRight className="w-4 h-4" />}
+              className="saas-btn-primary saas-btn-md flex items-center gap-2"
             >
               Continue to Model Training
-            </Button>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,445 @@
+/**
+ * Modern SaaS Dark Theme - Style Guide
+ * Based on 2025 SaaS UI/UX Design Best Practices
+ * 
+ * Key Principles:
+ * - Dark mode with high contrast
+ * - Minimalist, clean interfaces
+ * - Card-based layouts
+ * - Data visualization focus
+ * - Consistent spacing and typography
+ */
+
+/* ==================================================================
+   COLOR SYSTEM - Modern SaaS Dark Palette
+   ================================================================== */
+
+:root {
+  /* Background Colors - Dark Theme */
+  --bg-primary: #0F1117;
+  --bg-secondary: #1A1D29;
+  --bg-tertiary: #252936;
+  --bg-card: #1E2130;
+  --bg-card-hover: #252936;
+  
+  /* Text Colors - High Contrast */
+  --text-primary: #FFFFFF;
+  --text-secondary: #B4B8CD;
+  --text-tertiary: #6B7280;
+  --text-muted: #4B5563;
+  
+  /* Accent Colors - Vibrant on Dark */
+  --accent-blue: #3B82F6;
+  --accent-blue-light: #60A5FA;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --accent-orange: #F97316;
+  --accent-pink: #EC4899;
+  
+  /* Border Colors - Subtle */
+  --border-primary: #2D3142;
+  --border-secondary: #3F4458;
+  --border-accent: #4B5563;
+  
+  /* Status Colors */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #3B82F6;
+  
+  /* Shadows - Subtle Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+/* ==================================================================
+   TYPOGRAPHY - Modern SaaS Hierarchy
+   ================================================================== */
+
+.saas-h1 {
+  @apply text-4xl font-bold text-white tracking-tight;
+  line-height: 1.2;
+}
+
+.saas-h2 {
+  @apply text-3xl font-bold text-white tracking-tight;
+  line-height: 1.3;
+}
+
+.saas-h3 {
+  @apply text-2xl font-semibold text-white;
+  line-height: 1.4;
+}
+
+.saas-h4 {
+  @apply text-xl font-semibold text-white;
+}
+
+.saas-h5 {
+  @apply text-lg font-medium text-white;
+}
+
+.saas-body-large {
+  @apply text-base text-gray-300 leading-relaxed;
+}
+
+.saas-body {
+  @apply text-sm text-gray-300 leading-relaxed;
+}
+
+.saas-body-small {
+  @apply text-xs text-gray-400;
+}
+
+.saas-label {
+  @apply text-sm font-medium text-gray-400 uppercase tracking-wider;
+  letter-spacing: 0.05em;
+}
+
+.saas-caption {
+  @apply text-xs text-gray-500;
+}
+
+/* ==================================================================
+   CARD COMPONENTS - Modern SaaS Cards
+   ================================================================== */
+
+.saas-card {
+  @apply bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50;
+  box-shadow: var(--shadow-md);
+}
+
+.saas-card-hover {
+  @apply bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 transition-all duration-200;
+  box-shadow: var(--shadow-md);
+}
+
+.saas-card-hover:hover {
+  @apply border-gray-600 bg-gray-800/70;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.saas-card-header {
+  @apply px-6 py-4 border-b border-gray-700/50;
+}
+
+.saas-card-body {
+  @apply p-6;
+}
+
+.saas-card-footer {
+  @apply px-6 py-4 border-t border-gray-700/50 bg-gray-800/30;
+}
+
+/* ==================================================================
+   STAT CARDS - Dashboard Metrics
+   ================================================================== */
+
+.saas-stat-card {
+  @apply bg-gradient-to-br from-gray-800/60 to-gray-900/40 backdrop-blur-sm rounded-xl border border-gray-700/50 p-6;
+  box-shadow: var(--shadow-md);
+}
+
+.saas-stat-value {
+  @apply text-4xl font-bold text-white font-mono tracking-tight;
+}
+
+.saas-stat-label {
+  @apply text-sm font-medium text-gray-400 uppercase tracking-wide;
+}
+
+.saas-stat-change-positive {
+  @apply text-green-400 text-sm font-medium flex items-center gap-1;
+}
+
+.saas-stat-change-negative {
+  @apply text-red-400 text-sm font-medium flex items-center gap-1;
+}
+
+/* ==================================================================
+   BUTTONS - Modern SaaS Actions
+   ================================================================== */
+
+.saas-btn-primary {
+  @apply px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-all duration-200 shadow-lg shadow-blue-600/20;
+}
+
+.saas-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+}
+
+.saas-btn-secondary {
+  @apply px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 border border-gray-600;
+}
+
+.saas-btn-outline {
+  @apply px-4 py-2.5 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white font-medium rounded-lg transition-all duration-200 border border-gray-600 hover:border-gray-500;
+}
+
+.saas-btn-ghost {
+  @apply px-4 py-2.5 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white font-medium rounded-lg transition-all duration-200;
+}
+
+.saas-btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.saas-btn-lg {
+  @apply px-6 py-3 text-base;
+}
+
+/* ==================================================================
+   ICON CONTAINERS - Vibrant Accents
+   ================================================================== */
+
+.saas-icon-blue {
+  @apply w-12 h-12 bg-blue-600/10 border border-blue-600/20 rounded-lg flex items-center justify-center text-blue-400;
+}
+
+.saas-icon-purple {
+  @apply w-12 h-12 bg-purple-600/10 border border-purple-600/20 rounded-lg flex items-center justify-center text-purple-400;
+}
+
+.saas-icon-green {
+  @apply w-12 h-12 bg-green-600/10 border border-green-600/20 rounded-lg flex items-center justify-center text-green-400;
+}
+
+.saas-icon-orange {
+  @apply w-12 h-12 bg-orange-600/10 border border-orange-600/20 rounded-lg flex items-center justify-center text-orange-400;
+}
+
+.saas-icon-pink {
+  @apply w-12 h-12 bg-pink-600/10 border border-pink-600/20 rounded-lg flex items-center justify-center text-pink-400;
+}
+
+/* ==================================================================
+   BADGES - Status Indicators
+   ================================================================== */
+
+.saas-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.saas-badge-success {
+  @apply saas-badge bg-green-500/10 text-green-400 border border-green-500/20;
+}
+
+.saas-badge-warning {
+  @apply saas-badge bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+}
+
+.saas-badge-error {
+  @apply saas-badge bg-red-500/10 text-red-400 border border-red-500/20;
+}
+
+.saas-badge-info {
+  @apply saas-badge bg-blue-500/10 text-blue-400 border border-blue-500/20;
+}
+
+.saas-badge-neutral {
+  @apply saas-badge bg-gray-700 text-gray-300 border border-gray-600;
+}
+
+/* ==================================================================
+   TABLES - Data Display
+   ================================================================== */
+
+.saas-table {
+  @apply w-full text-sm;
+}
+
+.saas-table-header {
+  @apply bg-gray-800/30;
+}
+
+.saas-table-header-cell {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider;
+}
+
+.saas-table-row {
+  @apply border-t border-gray-700/50 hover:bg-gray-800/30 transition-colors;
+}
+
+.saas-table-cell {
+  @apply px-6 py-4 text-gray-300;
+}
+
+/* ==================================================================
+   FORMS - Modern Input Fields
+   ================================================================== */
+
+.saas-input {
+  @apply w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all;
+}
+
+.saas-input-label {
+  @apply block text-sm font-medium text-gray-300 mb-2;
+}
+
+.saas-select {
+  @apply w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all;
+}
+
+.saas-textarea {
+  @apply w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none;
+}
+
+.saas-checkbox {
+  @apply w-4 h-4 bg-gray-800 border-gray-700 rounded text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900;
+}
+
+/* ==================================================================
+   DIVIDERS & SEPARATORS
+   ================================================================== */
+
+.saas-divider {
+  @apply border-t border-gray-700/50 my-6;
+}
+
+.saas-divider-vertical {
+  @apply border-l border-gray-700/50 mx-6;
+}
+
+/* ==================================================================
+   ALERTS & NOTIFICATIONS
+   ================================================================== */
+
+.saas-alert {
+  @apply rounded-lg border p-4 flex items-start gap-3;
+}
+
+.saas-alert-info {
+  @apply saas-alert bg-blue-500/10 border-blue-500/20 text-blue-400;
+}
+
+.saas-alert-success {
+  @apply saas-alert bg-green-500/10 border-green-500/20 text-green-400;
+}
+
+.saas-alert-warning {
+  @apply saas-alert bg-yellow-500/10 border-yellow-500/20 text-yellow-400;
+}
+
+.saas-alert-error {
+  @apply saas-alert bg-red-500/10 border-red-500/20 text-red-400;
+}
+
+/* ==================================================================
+   CHARTS & VISUALIZATIONS
+   ================================================================== */
+
+.saas-chart-container {
+  @apply bg-gray-800/30 rounded-lg p-6 border border-gray-700/50;
+}
+
+.saas-chart-title {
+  @apply text-lg font-semibold text-white mb-4;
+}
+
+.saas-chart-legend {
+  @apply flex items-center gap-4 text-sm text-gray-400 mt-4;
+}
+
+/* ==================================================================
+   PROGRESS BARS
+   ================================================================== */
+
+.saas-progress-bar {
+  @apply w-full bg-gray-700 rounded-full h-2 overflow-hidden;
+}
+
+.saas-progress-fill {
+  @apply bg-gradient-to-r from-blue-600 to-blue-400 h-full transition-all duration-500;
+}
+
+.saas-progress-fill-success {
+  @apply bg-gradient-to-r from-green-600 to-green-400 h-full transition-all duration-500;
+}
+
+.saas-progress-fill-warning {
+  @apply bg-gradient-to-r from-yellow-600 to-yellow-400 h-full transition-all duration-500;
+}
+
+/* ==================================================================
+   TOOLTIPS
+   ================================================================== */
+
+.saas-tooltip {
+  @apply absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-xl border border-gray-700;
+}
+
+/* ==================================================================
+   LOADING STATES
+   ================================================================== */
+
+.saas-skeleton {
+  @apply animate-pulse bg-gray-700 rounded;
+}
+
+.saas-spinner {
+  @apply inline-block w-5 h-5 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin;
+}
+
+/* ==================================================================
+   UTILITY CLASSES
+   ================================================================== */
+
+.saas-bg-gradient {
+  @apply bg-gradient-to-br from-gray-800 to-gray-900;
+}
+
+.saas-text-gradient {
+  @apply bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent;
+}
+
+.saas-glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.saas-glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.saas-glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* ==================================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================================== */
+
+@media (max-width: 768px) {
+  .saas-h1 {
+    @apply text-3xl;
+  }
+  
+  .saas-h2 {
+    @apply text-2xl;
+  }
+  
+  .saas-card-body {
+    @apply p-4;
+  }
+  
+  .saas-stat-card {
+    @apply p-4;
+  }
+}
