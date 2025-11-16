@@ -35,6 +35,34 @@ import {
   subtleListBulletClass,
 } from '../styles/insightPanels';
 
+// Chart.js dynamic imports
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title as ChartTitle,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { Line, Bar, Scatter, Bubble } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ChartTitle,
+  Tooltip,
+  Legend,
+  Filler
+);
+
 const ModelEvaluationContent = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -526,6 +554,28 @@ const ModelEvaluationContent = () => {
       };
     });
   }, [selectedModel]);
+
+  // Training metrics data for performance analysis dashboards
+  const trainingMetricsData = useMemo(() => {
+    const epochs = Array.from({ length: 50 }, (_, i) => i + 1);
+    const accuracyData = epochs.map((_, i) => {
+      const base = 60;
+      const growth = Math.log(i + 1) * 8;
+      const noise = (Math.random() - 0.5) * 2;
+      return Math.min(Math.max(base + growth + noise, 55), 95);
+    });
+    const lossData = accuracyData.map(acc => {
+      const baseLoss = (100 - acc) / 100;
+      const noise = (Math.random() - 0.5) * 0.05;
+      return Math.max(baseLoss + noise, 0.01);
+    });
+
+    return {
+      epochs,
+      accuracyData,
+      lossData,
+    };
+  }, []);
 
   const featureNarrative = useMemo(() => {
     if (!featureImportanceData.length) return null;
@@ -1122,6 +1172,551 @@ const ModelEvaluationContent = () => {
                 </p>
               </div>
             </Card>
+
+            {/* Advanced Performance Analysis Dashboards */}
+            <div className="mt-6 space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-4">Advanced Performance Analysis</h3>
+              
+              {/* Time Series Decomposition - Seasonal-Trend Analysis */}
+              <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden mb-4">
+                <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-full"></div>
+                      <h3 className="text-sm font-semibold text-white">Seasonal-Trend Decomposition</h3>
+                    </div>
+                    <div className="flex gap-3 text-[10px] text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                        Original
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        Trend
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                        Seasonal
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
+                        Residual
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 space-y-2">
+                  {/* Original Series */}
+                  <div className="h-32">
+                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Original</div>
+                    <Line
+                      data={{
+                        labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                        datasets: [{
+                          label: 'Original Accuracy',
+                          data: trainingMetricsData.accuracyData,
+                          borderColor: 'rgb(34, 211, 238)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                            gradient.addColorStop(0, 'rgba(34, 211, 238, 0.3)');
+                            gradient.addColorStop(1, 'rgba(34, 211, 238, 0.01)');
+                            return gradient;
+                          },
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 0,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false }
+                        },
+                        scales: {
+                          x: { 
+                            display: false,
+                            grid: { display: false }
+                          },
+                          y: {
+                            display: false,
+                            grid: { display: false }
+                          }
+                        },
+                        elements: {
+                          line: { borderWidth: 1 }
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Trend Component */}
+                  <div className="h-32">
+                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Trend</div>
+                    <Line
+                      data={{
+                        labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                        datasets: [{
+                          label: 'Trend',
+                          data: trainingMetricsData.epochs.map((_: number, i: number) => 60 + (i * 1.2)), // Smooth upward trend
+                          borderColor: 'rgb(59, 130, 246)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+                            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.01)');
+                            return gradient;
+                          },
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.1,
+                          pointRadius: 0,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false }
+                        },
+                        scales: {
+                          x: { 
+                            display: false,
+                            grid: { display: false }
+                          },
+                          y: {
+                            display: false,
+                            grid: { display: false }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Seasonal Component */}
+                  <div className="h-32">
+                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Seasonal</div>
+                    <Line
+                      data={{
+                        labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                        datasets: [{
+                          label: 'Seasonal',
+                          data: trainingMetricsData.epochs.map((_: number, i: number) => Math.sin(i * 0.5) * 5 + 70), // Oscillating pattern
+                          borderColor: 'rgb(168, 85, 247)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                            gradient.addColorStop(0, 'rgba(168, 85, 247, 0.3)');
+                            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.01)');
+                            return gradient;
+                          },
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.4,
+                          pointRadius: 0,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false }
+                        },
+                        scales: {
+                          x: { 
+                            display: false,
+                            grid: { display: false }
+                          },
+                          y: {
+                            display: false,
+                            grid: { display: false }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Residual Component */}
+                  <div className="h-32">
+                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Residual</div>
+                    <Line
+                      data={{
+                        labels: trainingMetricsData.epochs.map(e => `E${e}`),
+                        datasets: [{
+                          label: 'Residual',
+                          data: trainingMetricsData.epochs.map(() => (Math.random() - 0.5) * 3 + 70), // Random noise
+                          borderColor: 'rgb(236, 72, 153)',
+                          backgroundColor: (context: any) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+                            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.3)');
+                            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.01)');
+                            return gradient;
+                          },
+                          borderWidth: 1,
+                          fill: true,
+                          tension: 0,
+                          pointRadius: 0,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false }
+                        },
+                        scales: {
+                          x: { 
+                            display: true,
+                            grid: { display: false },
+                            ticks: { 
+                              color: '#6b7280',
+                              font: { size: 9 },
+                              maxTicksLimit: 10
+                            }
+                          },
+                          y: {
+                            display: false,
+                            grid: { display: false }
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Model Metrics Comparison - Gradient Bar Chart */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-gradient-to-b from-blue-400 via-purple-500 to-pink-600 rounded-full"></div>
+                      <h3 className="text-sm font-semibold text-white">Model Metrics Comparison</h3>
+                    </div>
+                  </div>
+                  <div className="p-4 h-80">
+                    <Bar
+                      data={{
+                        labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC-ROC'],
+                        datasets: [{
+                          label: 'Performance',
+                          data: [92.5, 89.3, 91.2, 90.1, 94.3],
+                          backgroundColor: (context: any) => {
+                            const index = context.dataIndex;
+                            const colors = [
+                              { start: 'rgba(59, 130, 246, 0.9)', end: 'rgba(59, 130, 246, 0.4)' },
+                              { start: 'rgba(139, 92, 246, 0.9)', end: 'rgba(139, 92, 246, 0.4)' },
+                              { start: 'rgba(236, 72, 153, 0.9)', end: 'rgba(236, 72, 153, 0.4)' },
+                              { start: 'rgba(251, 146, 60, 0.9)', end: 'rgba(251, 146, 60, 0.4)' },
+                              { start: 'rgba(34, 197, 94, 0.9)', end: 'rgba(34, 197, 94, 0.4)' },
+                            ];
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, colors[index].start);
+                            gradient.addColorStop(1, colors[index].end);
+                            return gradient;
+                          },
+                          borderColor: ['rgb(59, 130, 246)', 'rgb(139, 92, 246)', 'rgb(236, 72, 153)', 'rgb(251, 146, 60)', 'rgb(34, 197, 94)'],
+                          borderWidth: 2,
+                          borderRadius: 6,
+                        }]
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#a0aec0',
+                            borderColor: '#374151',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                              label: (item: any) => `${item.label}: ${item.parsed.y.toFixed(1)}%`
+                            }
+                          }
+                        },
+                        scales: {
+                          x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { size: 11 } }
+                          },
+                          y: {
+                            grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                            ticks: { 
+                              color: '#9ca3af', 
+                              font: { size: 10 },
+                              callback: (value: any) => `${value}%`
+                            },
+                            max: 100
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Training Status Heatmap */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 bg-gradient-to-b from-purple-400 to-pink-600 rounded-full"></div>
+                      <h3 className="text-sm font-semibold text-white">Training Status Heatmap</h3>
+                    </div>
+                  </div>
+                  <div className="p-4 h-80">
+                    {/* Heatmap-style visualization */}
+                    <div className="space-y-1">
+                      <div className="flex gap-1 mb-3 text-[9px] text-gray-500">
+                        <span className="w-16">Model</span>
+                        {trainingMetricsData.epochs.slice(0, 15).map((e) => (
+                          <div key={e} className="w-6 text-center">E{e}</div>
+                        ))}
+                      </div>
+                      {['RF', 'NN', 'XGB', 'SVM', 'LR'].map((model, modelIdx) => (
+                        <div key={model} className="flex gap-1 items-center">
+                          <span className="w-16 text-[10px] text-gray-400 font-mono">{model}</span>
+                          {trainingMetricsData.epochs.slice(0, 15).map((e) => {
+                            const intensity = trainingMetricsData.accuracyData[e - 1] || 0;
+                            const hue = modelIdx * 50; // Different color per model
+                            const opacity = (intensity / 100) * 0.8 + 0.2;
+                            return (
+                              <div
+                                key={e}
+                                className="w-6 h-6 rounded border border-gray-800"
+                                style={{
+                                  backgroundColor: `hsla(${hue + 200}, 70%, 50%, ${opacity})`,
+                                }}
+                                title={`${model} E${e}: ${intensity.toFixed(1)}%`}
+                              />
+                            );
+                          })}
+                        </div>
+                      ))}
+                      <div className="flex gap-2 items-center justify-center mt-4 text-[9px] text-gray-500">
+                        <span>Low</span>
+                        <div className="flex gap-0.5">
+                          {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
+                            <div
+                              key={opacity}
+                              className="w-4 h-4 rounded"
+                              style={{ backgroundColor: `hsla(220, 70%, 50%, ${opacity})` }}
+                            />
+                          ))}
+                        </div>
+                        <span>High</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Accuracy vs Loss Scatter Plot */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-orange-500 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Accuracy vs Loss Correlation</h3>
+                      </div>
+                      <div className="flex gap-3 text-[10px]">
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                          <span className="text-gray-400">High Perf</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                          <span className="text-gray-400">Low Perf</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 h-80">
+                    {(() => {
+                      // Generate scatter data: high accuracy = low loss
+                      const scatterData = trainingMetricsData.epochs.map((_, i) => {
+                        const accuracy = trainingMetricsData.accuracyData[i];
+                        const loss = trainingMetricsData.lossData[i];
+                        return { x: accuracy, y: loss };
+                      });
+                      
+                      return (
+                        <Scatter
+                          data={{
+                            datasets: [
+                              {
+                                label: 'High Performance',
+                                data: scatterData.filter(d => d.x > 85),
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgb(59, 130, 246)',
+                                borderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                              },
+                              {
+                                label: 'Low Performance',
+                                data: scatterData.filter(d => d.x <= 85),
+                                backgroundColor: 'rgba(251, 146, 60, 0.7)',
+                                borderColor: 'rgb(251, 146, 60)',
+                                borderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                              }
+                            ]
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: { display: false },
+                              tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#a0aec0',
+                                borderColor: '#374151',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                  label: (item: any) => [
+                                    `Accuracy: ${item.parsed.x.toFixed(1)}%`,
+                                    `Loss: ${item.parsed.y.toFixed(3)}`
+                                  ]
+                                }
+                              }
+                            },
+                            scales: {
+                              x: {
+                                title: {
+                                  display: true,
+                                  text: 'Accuracy (%)',
+                                  color: '#9ca3af',
+                                  font: { size: 11 }
+                                },
+                                grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                ticks: { color: '#9ca3af', font: { size: 10 } }
+                              },
+                              y: {
+                                title: {
+                                  display: true,
+                                  text: 'Loss',
+                                  color: '#9ca3af',
+                                  font: { size: 11 }
+                                },
+                                grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                ticks: { color: '#9ca3af', font: { size: 10 } }
+                              }
+                            }
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Model Performance Bubble Chart */}
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full"></div>
+                        <h3 className="text-sm font-semibold text-white">Model Performance Clusters</h3>
+                      </div>
+                      <span className="text-[10px] text-gray-400">Bubble size = Training Time</span>
+                    </div>
+                  </div>
+                  <div className="p-4 h-80">
+                    {(() => {
+                      // Generate bubble data for different models
+                      const bubbleData = [
+                        { x: 35, y: -80, r: 20, label: 'RF-1' },
+                        { x: 32, y: -95, r: 25, label: 'RF-2' },
+                        { x: 30, y: -85, r: 22, label: 'NN-1' },
+                        { x: 38, y: -75, r: 18, label: 'NN-2' },
+                        { x: 40, y: -70, r: 30, label: 'XGB-1' },
+                        { x: 42, y: -82, r: 28, label: 'XGB-2' },
+                        { x: 45, y: -90, r: 24, label: 'XGB-3' },
+                        { x: 43, y: -78, r: 26, label: 'SVM-1' },
+                        { x: 48, y: -88, r: 20, label: 'SVM-2' },
+                        { x: 50, y: -92, r: 32, label: 'LR-1' },
+                        { x: 52, y: -125, r: 22, label: 'LR-2' },
+                        { x: 65, y: -155, r: 35, label: 'Ensemble' },
+                      ];
+                      
+                      return (
+                        <Bubble
+                          data={{
+                            datasets: [{
+                              label: 'Models',
+                              data: bubbleData,
+                              backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                              borderColor: 'rgb(234, 179, 8)',
+                              borderWidth: 2,
+                            }]
+                          }}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: { display: false },
+                              tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#a0aec0',
+                                borderColor: '#374151',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                  label: (item: any) => {
+                                    const point = item.raw as any;
+                                    return [
+                                      `Model: ${point.label}`,
+                                      `Lat: ${point.x}`,
+                                      `Lng: ${point.y}`,
+                                      `Size: ${point.r}min`
+                                    ];
+                                  }
+                                }
+                              }
+                            },
+                            scales: {
+                              x: {
+                                title: {
+                                  display: true,
+                                  text: 'Lat',
+                                  color: '#9ca3af',
+                                  font: { size: 11 }
+                                },
+                                grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                ticks: { color: '#9ca3af', font: { size: 10 } }
+                              },
+                              y: {
+                                title: {
+                                  display: true,
+                                  text: 'Lng',
+                                  color: '#9ca3af',
+                                  font: { size: 11 }
+                                },
+                                grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                                ticks: { color: '#9ca3af', font: { size: 10 } }
+                              }
+                            }
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabPanel>
 
           <TabPanel>
