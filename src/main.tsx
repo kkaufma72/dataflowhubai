@@ -42,6 +42,7 @@ const TrashBin = lazy(() => import('./pages/TrashBin.tsx'));
 const SignupComplete = lazy(() => import('./pages/SignupComplete.tsx'));
 const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
 const AsyncMLOperations = lazy(() => import('./pages/AsyncMLOperations.tsx')); // Celery async operations
+const MetricsDashboard = lazy(() => import('./pages/MetricsDashboard.tsx')); // Real-time InfluxDB metrics
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
@@ -185,6 +186,7 @@ if (!isSupabaseConfigured) {
                               <Route path="evaluate" element={<ModelEvaluation />} />
                               <Route path="deploy" element={<Deployment />} />
                               <Route path="monitoring" element={<ModelMonitoring />} />
+                              <Route path="metrics" element={<MetricsDashboard />} />
                               <Route path="profile" element={<UserProfile />} />
                               <Route path="settings" element={<AccountSettings />} />
                               <Route path="documentation" element={<Documentation />} />

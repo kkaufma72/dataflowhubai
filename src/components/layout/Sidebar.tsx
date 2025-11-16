@@ -177,6 +177,13 @@ const Sidebar: React.FC = () => {
           premium: true
         },
         {
+          name: 'Metrics',
+          href: '/app/metrics',
+          icon: LineChart,
+          description: 'Real-time metrics',
+          premium: true
+        },
+        {
           name: 'Async ML',
           href: '/app/async-ml',
           icon: Zap,
