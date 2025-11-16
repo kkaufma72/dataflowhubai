@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
 import { Dataset } from '../types';
@@ -56,31 +56,159 @@ const FeatureEngineering: React.FC = () => {
 
   // Generate mock time series data for feature importance over time
   const generateFeatureImportanceData = () => {
+    if (!selectedDataset?.preview_data?.rows) {
+      return [];
+    }
+
+    const { columns, rows } = selectedDataset.preview_data;
     const epochs = Array.from({ length: 30 }, (_, i) => i + 1);
-    const features = ['Age', 'Income', 'Location', 'Education', 'Occupation'];
     
-    return features.map((feature, idx) => {
-      const baseValue = 0.3 - (idx * 0.05);
-      const data = epochs.map((_, i) => {
-        const trend = i * 0.001;
-        const noise = (Math.random() - 0.5) * 0.02;
-        return Math.max(0, Math.min(1, baseValue + trend + noise));
-      });
-      
-      const hue = idx * 60;
-      return {
-        label: feature,
-        data,
-        borderColor: `hsl(${hue + 220}, 70%, 50%)`,
-        backgroundColor: `hsla(${hue + 220}, 70%, 50%, 0.1)`,
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-      };
-    });
+    // Calculate real feature importance based on variance
+    const featureStats = columns
+      .filter(col => !col.toLowerCase().includes('id'))
+      .slice(0, 5) // Top 5 features
+      .map((col, colIdx) => {
+        const values = rows
+          .map(row => {
+            const value = Array.isArray(row) ? row[columns.indexOf(col)] : row[col];
+            return parseFloat(value);
+          })
+          .filter(v => !isNaN(v));
+        
+        if (values.length === 0) return null;
+        
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+        const coefficientOfVariation = mean !== 0 ? Math.sqrt(variance) / Math.abs(mean) : 0;
+        
+        // Simulate importance growth over epochs
+        const baseImportance = Math.min(0.35, coefficientOfVariation);
+        const data = epochs.map((_, i) => {
+          const trend = i * 0.001;
+          const noise = (Math.random() - 0.5) * 0.015;
+          return Math.max(0, Math.min(0.4, baseImportance + trend + noise));
+        });
+        
+        const hue = colIdx * 60;
+        return {
+          label: col,
+          data,
+          borderColor: `hsl(${hue + 220}, 70%, 50%)`,
+          backgroundColor: `hsla(${hue + 220}, 70%, 50%, 0.1)`,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+        };
+      })
+      .filter(Boolean);
+    
+    return featureStats.length > 0 ? featureStats : [];
   };
+
+  // Calculate real correlation matrix from dataset
+  const correlationMatrix = useMemo(() => {
+    if (!selectedDataset?.preview_data?.rows) return [];
+    
+    const { columns, rows } = selectedDataset.preview_data;
+    
+    // Get numeric columns only
+    const numericCols = columns.filter((col, idx) => {
+      if (col.toLowerCase().includes('id')) return false;
+      const sampleValues = rows.slice(0, 10).map(row => {
+        const val = Array.isArray(row) ? row[idx] : row[col];
+        return parseFloat(val);
+      });
+      return sampleValues.some(v => !isNaN(v));
+    }).slice(0, 5); // Limit to 5 columns for display
+    
+    if (numericCols.length === 0) return [];
+    
+    // Calculate Pearson correlation
+    return numericCols.map(col1 => {
+      const col1Index = columns.indexOf(col1);
+      
+      return numericCols.map(col2 => {
+        const col2Index = columns.indexOf(col2);
+        
+        if (col1 === col2) return 1.0;
+        
+        const values1 = rows
+          .map(r => parseFloat(Array.isArray(r) ? r[col1Index] : r[col1]))
+          .filter(v => !isNaN(v));
+        const values2 = rows
+          .map(r => parseFloat(Array.isArray(r) ? r[col2Index] : r[col2]))
+          .filter(v => !isNaN(v));
+        
+        if (values1.length === 0 || values2.length === 0) return 0;
+        
+        const mean1 = values1.reduce((a, b) => a + b, 0) / values1.length;
+        const mean2 = values2.reduce((a, b) => a + b, 0) / values2.length;
+        
+        let numerator = 0, denominator1 = 0, denominator2 = 0;
+        const minLength = Math.min(values1.length, values2.length);
+        
+        for (let i = 0; i < minLength; i++) {
+          const diff1 = values1[i] - mean1;
+          const diff2 = values2[i] - mean2;
+          numerator += diff1 * diff2;
+          denominator1 += diff1 * diff1;
+          denominator2 += diff2 * diff2;
+        }
+        
+        const correlation = denominator1 === 0 || denominator2 === 0 
+          ? 0 
+          : numerator / Math.sqrt(denominator1 * denominator2);
+        
+        return Math.max(-1, Math.min(1, correlation));
+      });
+    });
+  }, [selectedDataset]);
+
+  // Get column names for correlation matrix
+  const correlationColumns = useMemo(() => {
+    if (!selectedDataset?.preview_data?.columns) return [];
+    return selectedDataset.preview_data.columns
+      .filter(col => !col.toLowerCase().includes('id'))
+      .slice(0, 5);
+  }, [selectedDataset]);
+
+  // Calculate real feature statistics
+  const featureStatistics = useMemo(() => {
+    if (!selectedDataset?.preview_data?.rows) return [];
+    
+    const { columns, rows } = selectedDataset.preview_data;
+    
+    return columns
+      .filter(col => !col.toLowerCase().includes('id'))
+      .slice(0, 5)
+      .map((col, idx) => {
+        const colIndex = columns.indexOf(col);
+        const values = rows
+          .map(row => parseFloat(Array.isArray(row) ? row[colIndex] : row[col]))
+          .filter(v => !isNaN(v));
+        
+        if (values.length === 0) return null;
+        
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const sorted = [...values].sort((a, b) => a - b);
+        const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+        const std = Math.sqrt(variance);
+        
+        const colors = ['blue', 'emerald', 'purple', 'orange', 'pink'];
+        
+        return {
+          name: col.length > 15 ? col.substring(0, 15) + '...' : col,
+          mean: mean,
+          std: std,
+          min: sorted[0],
+          max: sorted[sorted.length - 1],
+          color: colors[idx % colors.length]
+        };
+      })
+      .filter(Boolean);
+  }, [selectedDataset]);
 
   useEffect(() => {
     if (datasetId) {
@@ -344,53 +472,60 @@ const FeatureEngineering: React.FC = () => {
                 </div>
               </div>
               <div className="p-4">
-                <div className="space-y-1">
-                  <div className="flex gap-1 mb-3 text-[9px] text-gray-500">
-                    <span className="w-16"></span>
-                    {['Age', 'Income', 'Loc', 'Edu', 'Occ'].map((f) => (
-                      <div key={f} className="w-12 text-center font-mono">{f}</div>
-                    ))}
-                  </div>
-                  {['Age', 'Income', 'Loc', 'Edu', 'Occ'].map((rowFeature, rowIdx) => (
-                    <div key={rowFeature} className="flex gap-1 items-center">
-                      <span className="w-16 text-[9px] text-gray-400 font-mono">{rowFeature}</span>
-                      {['Age', 'Income', 'Loc', 'Edu', 'Occ'].map((colFeature, colIdx) => {
-                        // Generate realistic correlation values
-                        const correlation = rowIdx === colIdx ? 1.0 : 
-                          (Math.abs(rowIdx - colIdx) === 1 ? 0.6 + Math.random() * 0.2 :
-                          0.2 + Math.random() * 0.3);
-                        const intensity = correlation;
-                        const hue = correlation > 0.7 ? 220 : correlation > 0.4 ? 45 : 120;
-                        return (
-                          <div
-                            key={`${rowIdx}-${colIdx}`}
-                            className="w-12 h-12 rounded border border-gray-800 flex items-center justify-center text-[10px] font-mono"
-                            style={{
-                              backgroundColor: `hsla(${hue}, 70%, 50%, ${intensity * 0.7})`,
-                              color: intensity > 0.5 ? '#fff' : '#9ca3af'
-                            }}
-                            title={`${rowFeature} vs ${colFeature}: ${correlation.toFixed(2)}`}
-                          >
-                            {correlation.toFixed(2)}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                  <div className="flex gap-2 items-center justify-center mt-4 text-[9px] text-gray-500">
-                    <span>Low</span>
-                    <div className="flex gap-0.5">
-                      {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
-                        <div
-                          key={opacity}
-                          className="w-6 h-4 rounded"
-                          style={{ backgroundColor: `hsla(220, 70%, 50%, ${opacity * 0.7})` }}
-                        />
+                {correlationMatrix.length > 0 ? (
+                  <div className="space-y-1">
+                    <div className="flex gap-1 mb-3 text-[9px] text-gray-500">
+                      <span className="w-16"></span>
+                      {correlationColumns.map((f) => (
+                        <div key={f} className="w-12 text-center font-mono truncate">{f.substring(0, 3)}</div>
                       ))}
                     </div>
-                    <span>High</span>
+                    {correlationColumns.map((rowFeature, rowIdx) => (
+                      <div key={rowFeature} className="flex gap-1 items-center">
+                        <span className="w-16 text-[9px] text-gray-400 font-mono truncate">{rowFeature}</span>
+                        {correlationMatrix[rowIdx]?.map((correlation, colIdx) => {
+                          const intensity = Math.abs(correlation);
+                          const hue = correlation > 0.7 ? 220 : correlation > 0.4 ? 45 : 120;
+                          return (
+                            <div
+                              key={`${rowIdx}-${colIdx}`}
+                              className="w-12 h-12 rounded border border-gray-800 flex items-center justify-center text-[10px] font-mono"
+                              style={{
+                                backgroundColor: `hsla(${hue}, 70%, 50%, ${intensity * 0.7})`,
+                                color: intensity > 0.5 ? '#fff' : '#9ca3af'
+                              }}
+                              title={`${rowFeature} vs ${correlationColumns[colIdx]}: ${correlation.toFixed(2)}`}
+                            >
+                              {correlation.toFixed(2)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">No numeric columns available for correlation analysis</p>
+                  </div>
+                )}
+                {/* Color Scale Legend */}
+                {correlationMatrix.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-800">
+                    <div className="flex items-center justify-between text-[10px] text-gray-400">
+                      <span>Low</span>
+                      <div className="flex gap-1">
+                        {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
+                          <div
+                            key={opacity}
+                            className="w-6 h-4 rounded"
+                            style={{ backgroundColor: `hsla(220, 70%, 50%, ${opacity * 0.7})` }}
+                          />
+                        ))}
+                      </div>
+                      <span>High</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -403,40 +538,40 @@ const FeatureEngineering: React.FC = () => {
                 </div>
               </div>
               <div className="p-4">
-                <div className="space-y-3">
-                  {[
-                    { name: 'Age', mean: 45.2, std: 12.8, min: 18, max: 85, color: 'blue' },
-                    { name: 'Income', mean: 68500, std: 25000, min: 25000, max: 150000, color: 'emerald' },
-                    { name: 'Location', mean: 3.4, std: 1.2, min: 1, max: 5, color: 'purple' },
-                    { name: 'Education', mean: 14.5, std: 2.3, min: 10, max: 20, color: 'orange' },
-                    { name: 'Occupation', mean: 5.2, std: 2.8, min: 1, max: 10, color: 'pink' },
-                  ].map((stat) => (
-                    <div key={stat.name} className="bg-[#0d1117] rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-white">{stat.name}</span>
-                        <div className={`w-2 h-2 bg-${stat.color}-400 rounded-full`}></div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-[10px]">
-                        <div>
-                          <span className="text-gray-500">Mean:</span>
-                          <span className="ml-1 text-gray-300 font-mono">{stat.mean.toLocaleString()}</span>
+                {featureStatistics.length > 0 ? (
+                  <div className="space-y-3">
+                    {featureStatistics.map((stat) => stat && (
+                      <div key={stat.name} className="bg-[#0d1117] rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-semibold text-white">{stat.name}</span>
+                          <div className={`w-2 h-2 bg-${stat.color}-400 rounded-full`}></div>
                         </div>
-                        <div>
-                          <span className="text-gray-500">Std:</span>
-                          <span className="ml-1 text-gray-300 font-mono">{stat.std.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Min:</span>
-                          <span className="ml-1 text-gray-300 font-mono">{stat.min.toLocaleString()}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Max:</span>
-                          <span className="ml-1 text-gray-300 font-mono">{stat.max.toLocaleString()}</span>
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">
+                          <div>
+                            <span className="text-gray-500">Mean:</span>
+                            <span className="ml-1 text-gray-300 font-mono">{stat.mean.toFixed(2)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Std:</span>
+                            <span className="ml-1 text-gray-300 font-mono">{stat.std.toFixed(2)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Min:</span>
+                            <span className="ml-1 text-gray-300 font-mono">{stat.min.toFixed(2)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Max:</span>
+                            <span className="ml-1 text-gray-300 font-mono">{stat.max.toFixed(2)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">No numeric columns available for statistics</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
