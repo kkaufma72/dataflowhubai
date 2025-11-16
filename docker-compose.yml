@@ -179,6 +179,31 @@ services:
       - dataflow_network
     restart: unless-stopped
 
+  # InfluxDB - Time-series metrics database
+  influxdb:
+    image: influxdb:2.7
+    container_name: dataflow_influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: dataflow_admin_2025
+      DOCKER_INFLUXDB_INIT_ORG: dataflowhub
+      DOCKER_INFLUXDB_INIT_BUCKET: model_metrics
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: dataflow-influx-token-2025
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    networks:
+      - dataflow_network
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # Grafana - Visualization and dashboards
   grafana:
     image: grafana/grafana:latest
@@ -192,6 +217,7 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
+      - influxdb
     networks:
       - dataflow_network
     restart: unless-stopped
@@ -324,6 +350,8 @@ volumes:
   timescaledb_data:
   prometheus_data:
   grafana_data:
+  influxdb_data:
+  influxdb_config:
 
 networks:
   dataflow_network:

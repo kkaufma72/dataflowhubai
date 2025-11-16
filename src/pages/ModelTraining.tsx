@@ -12,7 +12,9 @@ import {
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
+import { useAuth } from '../components/auth/AuthProvider';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
+import { influxdb } from '../lib/influxdb';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import ModelCard from '../components/models/ModelCard';
@@ -46,6 +48,7 @@ type CrossValidationStats = {
 
 const ModelTraining: React.FC = () => {
   const { datasets, models, addModel } = useMLContext();
+  const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
   const [isTraining, setIsTraining] = useState(false);
@@ -331,6 +334,28 @@ const ModelTraining: React.FC = () => {
       const interval = setInterval(() => {
         setProgress((prev) => {
           const newProgress = prev + Math.random() * 5;
+          
+          // Log metrics to InfluxDB periodically
+          if (newProgress < 100 && influxdb.isAvailable()) {
+            const currentEpoch = Math.floor(newProgress / 10) + 1;
+            const simulatedMetrics = {
+              accuracy: 0.5 + (newProgress / 100) * 0.4 + Math.random() * 0.05,
+              loss: 1.5 - (newProgress / 100) * 1.2 + Math.random() * 0.1,
+            };
+            
+            influxdb.logModelMetrics({
+              modelId: newModel.id,
+              modelName: newModel.name,
+              accuracy: simulatedMetrics.accuracy,
+              loss: simulatedMetrics.loss,
+              epoch: currentEpoch,
+              userId: user?.id,
+              datasetId: config.datasetId,
+            }).catch(err => {
+              console.warn('Failed to log metrics to InfluxDB:', err);
+            });
+          }
+          
           if (newProgress >= 100) {
             clearInterval(interval);
             setTimeout(() => {
@@ -387,6 +412,24 @@ const ModelTraining: React.FC = () => {
               setIsTraining(false);
               setCurrentTraining(null);
               toast.success('Model training completed successfully!', { id: 'training' });
+              
+              // Log final metrics to InfluxDB
+              if (influxdb.isAvailable() && completedModel.metrics) {
+                influxdb.logModelMetrics({
+                  modelId: completedModel.id,
+                  modelName: completedModel.name,
+                  accuracy: completedModel.metrics.accuracy || 0,
+                  loss: 1 - (completedModel.metrics.accuracy || 0), // Approximate loss
+                  precision: completedModel.metrics.precision,
+                  recall: completedModel.metrics.recall,
+                  f1Score: completedModel.metrics.f1Score,
+                  epoch: 100, // Final epoch
+                  userId: user?.id,
+                  datasetId: config.datasetId,
+                }).catch(err => {
+                  console.warn('Failed to log final metrics to InfluxDB:', err);
+                });
+              }
               
               if (config.crossValidation?.enabled) {
                 const results = [];
