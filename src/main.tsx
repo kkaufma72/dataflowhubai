@@ -8,6 +8,7 @@ import { MLProvider } from './context/MLContext.tsx';
 import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
 import PrivateRoute from './components/auth/PrivateRoute.tsx';
+import PremiumRoute from './components/auth/PremiumRoute.tsx';
 import AppLayout from './components/layout/AppLayoutKoyfin.tsx'; // Koyfin dark theme
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
@@ -185,16 +186,20 @@ if (!isSupabaseConfigured) {
                               <Route path="feature-engineering" element={<FeatureEngineering />} />
                               <Route path="train" element={<ModelTraining />} />
                               <Route path="evaluate" element={<ModelEvaluation />} />
-                              <Route path="deploy" element={<Deployment />} />
-                              <Route path="monitoring" element={<ModelMonitoring />} />
-                              <Route path="metrics" element={<MetricsDashboard />} />
+                              
+                              {/* Premium Features - Require Pro/Team subscription */}
+                              <Route path="deploy" element={<PremiumRoute requiredFeature="canDeploy"><Deployment /></PremiumRoute>} />
+                              <Route path="monitoring" element={<PremiumRoute requiredFeature="canMonitor"><ModelMonitoring /></PremiumRoute>} />
+                              <Route path="metrics" element={<PremiumRoute requiredFeature="canMonitor"><MetricsDashboard /></PremiumRoute>} />
+                              <Route path="async-ml" element={<PremiumRoute requiredFeature="advancedAnalytics"><AsyncMLOperations /></PremiumRoute>} />
+                              
+                              {/* User Account & Settings */}
                               <Route path="profile" element={<UserProfile />} />
                               <Route path="settings" element={<AccountSettings />} />
                               <Route path="documentation" element={<Documentation />} />
                               <Route path="documentation/guides/:guideId" element={<UserGuideDetail />} />
                               <Route path="usage" element={<UsageDashboard />} />
                               <Route path="trash" element={<TrashBin />} />
-                              <Route path="async-ml" element={<AsyncMLOperations />} />
                               <Route path="cleanup" element={<DatasetCleanup />} />
                             </Route>
 

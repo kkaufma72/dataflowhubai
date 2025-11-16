@@ -108,7 +108,7 @@ const getFreeFeatures = () => ({
   canTrainModels: true,       // ✅ Unlocked for all users
   canDeploy: false,           // 🔒 Premium only
   canMonitor: false,          // 🔒 Premium only
-  canEvaluate: false,         // 🔒 Premium only
+  canEvaluate: true,          // ✅ Free tier - essential for validating trained models
   unlimitedDatasets: false,   // Limited to 3
   unlimitedAIQuestions: false, // Limited to 20/month
   voiceInput: true,           // ✅ Available to all
