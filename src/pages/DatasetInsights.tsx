@@ -1598,7 +1598,7 @@ const DatasetInsights: React.FC = () => {
 
           {/* Visualizations */}
           {visualizationData ? (
-            <div className="space-y-6">
+            <div className="space-y-6" key={selectedDatasetId}>
               {/* Numeric Columns */}
               {visualizationData.numericColumns.length > 0 && (
                 <div>
@@ -1607,7 +1607,7 @@ const DatasetInsights: React.FC = () => {
                     {visualizationData.numericColumns.slice(0, 4).map((column: string) => {
                       const data = generateBarChartData(column);
                       return data ? (
-                        <div key={column} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
+                        <div key={`${selectedDatasetId}-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
                           <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                             <div className="flex items-center gap-2">
                               <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
@@ -1640,7 +1640,7 @@ const DatasetInsights: React.FC = () => {
                     {visualizationData.categoricalColumns.slice(0, 4).map((column: string) => {
                       const data = generatePieChartData(column);
                       return data ? (
-                        <div key={column} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
+                        <div key={`${selectedDatasetId}-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
                           <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                             <div className="flex items-center gap-2">
                               <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
