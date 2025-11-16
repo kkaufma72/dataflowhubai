@@ -24,7 +24,7 @@ import {
   TableBody,
   TableCell,
 } from '@tremor/react';
-import { Database, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import Button from '../components/common/Button';
 import {
   insightPanelClass,
@@ -669,13 +669,14 @@ const ModelEvaluationContent = () => {
   // No models available at all
   if (trainedModels.length === 0) {
     return (
-      <div className="p-4 md:p-10 mx-auto max-w-7xl">
-        <Card>
-          <div className="flex flex-col items-center justify-center p-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center mb-6">
-              <Layers className="w-10 h-10 text-indigo-600" />
-            </div>
-            <Text className="text-2xl font-bold text-gray-900 mb-2">No Trained Models Yet</Text>
+      <div className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <Card className="bg-white border border-gray-200 shadow-sm">
+            <div className="flex flex-col items-center justify-center p-12">
+              <div className="w-20 h-20 bg-blue-50 rounded-xl flex items-center justify-center mb-6">
+                <Layers className="w-10 h-10 text-blue-600" />
+              </div>
+              <Text className="text-2xl font-bold text-gray-900 mb-2">No Trained Models Yet</Text>
             <Text className="text-gray-600 mb-2 text-center max-w-md">
               You need to train at least one model before you can evaluate its performance.
             </Text>
@@ -699,6 +700,7 @@ const ModelEvaluationContent = () => {
             </div>
           </div>
         </Card>
+        </div>
       </div>
     );
   }
@@ -706,13 +708,14 @@ const ModelEvaluationContent = () => {
   // Models exist but none selected
   if (!selectedModel) {
     return (
-      <div className="p-4 md:p-10 mx-auto max-w-7xl">
-        <Card>
-          <div className="flex flex-col items-center justify-center p-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center mb-6">
-              <Layers className="w-10 h-10 text-green-600" />
-            </div>
-            <Text className="text-2xl font-bold text-gray-900 mb-2">Select a Model to Evaluate</Text>
+      <div className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <Card className="bg-white border border-gray-200 shadow-sm">
+            <div className="flex flex-col items-center justify-center p-12">
+              <div className="w-20 h-20 bg-green-50 rounded-xl flex items-center justify-center mb-6">
+                <Layers className="w-10 h-10 text-green-600" />
+              </div>
+              <Text className="text-2xl font-bold text-gray-900 mb-2">Select a Model to Evaluate</Text>
             <Text className="text-gray-600 mb-6 text-center max-w-md">
               Choose from your {trainedModels.length} trained {trainedModels.length === 1 ? 'model' : 'models'}
             </Text>
@@ -743,6 +746,7 @@ const ModelEvaluationContent = () => {
             </Button>
           </div>
         </Card>
+        </div>
       </div>
     );
   }
@@ -789,99 +793,81 @@ const ModelEvaluationContent = () => {
   };
 
   return (
-    <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      {/* Page Header - Improved visibility */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Database className="w-7 h-7 text-white" />
-            </div>
+    <main className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Page Header - Clean professional style */}
+        <div className="mb-8 pb-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Model Evaluation
               </h1>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="text-base text-gray-600">
                 Analyzing: <span className="font-semibold text-gray-900">{selectedModel.name}</span>
               </p>
             </div>
+
+            {/* Model Selector Dropdown */}
+            {trainedModels.length > 1 && (
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-gray-700">Switch Model:</label>
+                <select
+                  value={selectedModel.id}
+                  onChange={(e) => handleModelSelect(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-gray-900 font-medium bg-white"
+                >
+                  {trainedModels.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
-          {/* Model Selector Dropdown */}
-          {trainedModels.length > 1 && (
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-gray-700">Switch Model:</label>
-              <select
-                value={selectedModel.id}
-                onChange={(e) => handleModelSelect(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-gray-900 font-medium"
-              >
-                {trainedModels.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Dataset Info */}
+          {selectedDataset && (
+            <p className="text-sm text-gray-600">
+              Trained on <span className="font-semibold text-gray-900">{selectedDataset.name}</span>
+              {' • '}
+              <span className="text-gray-500">
+                {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
+              </span>
+            </p>
           )}
         </div>
 
-        {/* Dataset Info */}
-        {selectedDataset && (
-          <p className="text-base text-gray-600 font-medium">
-            Trained on <span className="font-semibold text-gray-700">{selectedDataset.name}</span>
-            {' • '}
-            <span className="text-gray-600">
-              {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
-            </span>
-          </p>
-        )}
-      </div>
+        {/* Tab Navigation */}
+        <TabGroup>
+          <TabList className="border-b border-gray-200">
+            <Tab className="font-semibold text-gray-700 data-[selected]:text-blue-600 data-[selected]:border-blue-600">
+              Overview
+            </Tab>
+            <Tab className="font-semibold text-gray-700 data-[selected]:text-blue-600 data-[selected]:border-blue-600">
+              Performance
+            </Tab>
+            <Tab className="font-semibold text-gray-700 data-[selected]:text-blue-600 data-[selected]:border-blue-600">
+              Feature Analysis
+            </Tab>
+            <Tab className="font-semibold text-gray-700 data-[selected]:text-blue-600 data-[selected]:border-blue-600">
+              Predictions
+            </Tab>
+          </TabList>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="hidden"></div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('prev')}
-            disabled={trainedModels.length <= 1}
-            icon={<ChevronLeft className="w-4 h-4" />}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleModelChange('next')}
-            disabled={trainedModels.length <= 1}
-            icon={<ChevronRight className="w-4 h-4 ml-1" />}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      <TabGroup>
-        <TabList>
-          <Tab>Overview</Tab>
-          <Tab>Performance</Tab>
-          <Tab>Feature Analysis</Tab>
-          <Tab>Predictions</Tab>
-        </TabList>
-
-        <TabPanels>
+          <TabPanels className="mt-6">
           <TabPanel>
             {/* Overview Tab - Clean summary with just metric cards */}
-            <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6 mt-6">
+            <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6">
               {Object.entries(selectedModel.metrics || {}).map(([key, value]) => (
-                <Card key={key}>
-                  <Text>{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</Text>
-                  <Metric>{formatMetric(value)}</Metric>
+                <Card key={key} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <Text className="text-sm font-medium text-gray-600">
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                  </Text>
+                  <Metric className="text-gray-900">{formatMetric(value)}</Metric>
                   <Flex className="mt-4">
-                    <Text>Previous Version</Text>
-                    <BadgeDelta deltaType="increase">
+                    <Text className="text-xs text-gray-500">Previous Version</Text>
+                    <BadgeDelta deltaType="increase" className="text-xs">
                       {(Math.random() * 5).toFixed(1)}%
                     </BadgeDelta>
                   </Flex>
@@ -1970,6 +1956,7 @@ const ModelEvaluationContent = () => {
           </TabPanel>
         </TabPanels>
       </TabGroup>
+      </div>
     </main>
   );
 };
