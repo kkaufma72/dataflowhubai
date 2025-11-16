@@ -64,7 +64,7 @@ ChartJS.register(
 );
 
 const ModelEvaluationContent = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { models, datasets } = useMLContext();
   const modelId = searchParams.get('model');
@@ -661,19 +661,85 @@ const ModelEvaluationContent = () => {
     };
   }, [predictionSamples]);
 
+  // Handle model selection from dropdown
+  const handleModelSelect = (modelId: string) => {
+    setSearchParams({ model: modelId });
+  };
+
+  // No models available at all
+  if (trainedModels.length === 0) {
+    return (
+      <div className="p-4 md:p-10 mx-auto max-w-7xl">
+        <Card>
+          <div className="flex flex-col items-center justify-center p-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center mb-6">
+              <Layers className="w-10 h-10 text-indigo-600" />
+            </div>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">No Trained Models Yet</Text>
+            <Text className="text-gray-600 mb-2 text-center max-w-md">
+              You need to train at least one model before you can evaluate its performance.
+            </Text>
+            <Text className="text-sm text-gray-500 mb-6 text-center max-w-md">
+              Train models on your datasets using various algorithms and configurations.
+            </Text>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/app/feature-engineering')}
+                className="flex items-center gap-2"
+              >
+                <span>Start with Feature Engineering</span>
+              </Button>
+              <Button
+                onClick={() => navigate('/app/train')}
+                className="flex items-center gap-2"
+              >
+                <span>Go to Model Training</span>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Models exist but none selected
   if (!selectedModel) {
     return (
       <div className="p-4 md:p-10 mx-auto max-w-7xl">
         <Card>
-          <div className="flex flex-col items-center justify-center p-8">
-            <Layers className="w-12 h-12 text-gray-400 mb-4" />
-            <Text className="text-lg font-medium text-gray-900">No Model Selected</Text>
-            <Text className="text-gray-500 mt-2">Please select a model to evaluate</Text>
+          <div className="flex flex-col items-center justify-center p-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center mb-6">
+              <Layers className="w-10 h-10 text-green-600" />
+            </div>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">Select a Model to Evaluate</Text>
+            <Text className="text-gray-600 mb-6 text-center max-w-md">
+              Choose from your {trainedModels.length} trained {trainedModels.length === 1 ? 'model' : 'models'}
+            </Text>
+            
+            {/* Model Dropdown */}
+            <div className="w-full max-w-md mb-4">
+              <label className="form-label mb-2">Select Model</label>
+              <select
+                onChange={(e) => handleModelSelect(e.target.value)}
+                className="form-input-improved"
+                defaultValue=""
+              >
+                <option value="" disabled>Choose a model...</option>
+                {trainedModels.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name} ({model.modelType || 'Unknown Type'}) - {model.status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <Button
-              className="mt-4"
               onClick={() => navigate('/app/train')}
+              variant="outline"
+              className="mt-2"
             >
-              Go to Model Training
+              Train More Models
             </Button>
           </div>
         </Card>
@@ -726,29 +792,50 @@ const ModelEvaluationContent = () => {
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       {/* Page Header - Improved visibility */}
       <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Database className="w-7 h-7 text-white" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Database className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+                Model Evaluation
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Analyzing: <span className="font-semibold text-gray-900">{selectedModel.name}</span>
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-              {selectedModel.name}
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 font-medium">
-              {selectedDataset ? (
-                <>
-                  Trained on <span className="font-semibold text-gray-700">{selectedDataset.name}</span>
-                  {' • '}
-                  <span className="text-gray-600">
-                    {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
-                  </span>
-                </>
-              ) : (
-                'Dataset information not available'
-              )}
-            </p>
-          </div>
+
+          {/* Model Selector Dropdown */}
+          {trainedModels.length > 1 && (
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">Switch Model:</label>
+              <select
+                value={selectedModel.id}
+                onChange={(e) => handleModelSelect(e.target.value)}
+                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-gray-900 font-medium"
+              >
+                {trainedModels.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
+
+        {/* Dataset Info */}
+        {selectedDataset && (
+          <p className="text-base text-gray-600 font-medium">
+            Trained on <span className="font-semibold text-gray-700">{selectedDataset.name}</span>
+            {' • '}
+            <span className="text-gray-600">
+              {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
+            </span>
+          </p>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-6">
