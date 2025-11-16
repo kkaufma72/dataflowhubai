@@ -12,6 +12,7 @@ interface MLContextType {
   error: string | null;
   addDataset: (dataset: Dataset) => Promise<Dataset>;
   updateDataset: (id: string, updates: Partial<Dataset>) => Promise<void>;
+  deleteDataset: (id: string) => Promise<void>;
   addModel: (model: MLModel) => void;
   updateModelStatus: (id: string, status: string, metrics?: Record<string, number>) => void;
 }
@@ -244,6 +245,37 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     }
   }, [datasets, user]);
 
+  const deleteDataset = useCallback(async (id: string): Promise<void> => {
+    try {
+      // Delete from Supabase if user is authenticated
+      if (user) {
+        const { error } = await supabase
+          .from('datasets')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error deleting dataset from Supabase:', error);
+          throw error;
+        }
+      }
+
+      // Delete from IndexedDB
+      try {
+        await storage.deleteDataset(id);
+      } catch (error) {
+        console.warn('⚠️ IndexedDB delete failed, continuing anyway:', error);
+      }
+
+      // Update state
+      setDatasets(prev => prev.filter(d => d.id !== id));
+      console.log(`✅ Dataset ${id} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting dataset:', error);
+      throw error;
+    }
+  }, [user]);
+
   const addModel = useCallback((model: MLModel) => {
     setModels(prev => [model, ...prev]);
   }, []);
@@ -266,9 +298,10 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     error,
     addDataset,
     updateDataset,
+    deleteDataset,
     addModel,
     updateModelStatus,
-  }), [datasets, models, isLoading, error, addDataset, updateDataset, addModel, updateModelStatus]);
+  }), [datasets, models, isLoading, error, addDataset, updateDataset, deleteDataset, addModel, updateModelStatus]);
 
   return <MLContext.Provider value={value}>{children}</MLContext.Provider>;
 };

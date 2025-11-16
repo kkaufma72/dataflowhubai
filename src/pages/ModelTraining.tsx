@@ -47,7 +47,7 @@ type CrossValidationStats = {
 };
 
 const ModelTraining: React.FC = () => {
-  const { datasets, models, addModel } = useMLContext();
+  const { datasets, models, addModel, deleteDataset } = useMLContext();
   const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
@@ -304,6 +304,24 @@ const ModelTraining: React.FC = () => {
 
   const handleEvaluate = (model: MLModel) => {
     navigate(`/app/evaluate?model=${model.id}`);
+  };
+
+  const handleDeleteDataset = async (id: string) => {
+    try {
+      await deleteDataset(id);
+      toast.success('Dataset deleted successfully');
+      
+      // If the deleted dataset was selected, clear selection
+      if (selectedDataset?.id === id) {
+        setSelectedDataset(null);
+      }
+      
+      // Remove from cluster if it was clustered
+      setClusteredDatasets(prev => prev.filter(d => d.id !== id));
+    } catch (error) {
+      console.error('Error deleting dataset:', error);
+      toast.error('Failed to delete dataset');
+    }
   };
 
   const handleTrainingSubmit = async (config: ModelTrainingConfig) => {
@@ -1066,6 +1084,7 @@ const ModelTraining: React.FC = () => {
                             dataset={dataset}
                             onDragEnd={() => handleAddToCluster(dataset)}
                             onClick={() => handleAddToCluster(dataset)}
+                            onDelete={handleDeleteDataset}
                           />
                         ))}
                     </div>
