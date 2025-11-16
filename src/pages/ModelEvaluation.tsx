@@ -53,6 +53,54 @@ const ModelEvaluationContent = () => {
   const [predictionQuestion, setPredictionQuestion] = useState('');
   const [predictionAnswer, setPredictionAnswer] = useState<string | null>(null);
 
+  // Smart detection: Determine if model is classification or regression
+  const isClassificationModel = useMemo(() => {
+    if (!selectedModel) return true; // Default to classification
+    
+    // Check 1: Explicit modelType field
+    const modelType = selectedModel.modelType?.toLowerCase() || '';
+    if (modelType.includes('classification') || modelType.includes('classifier')) return true;
+    if (modelType.includes('regression') || modelType.includes('regressor')) return false;
+    
+    // Check 2: Algorithm name patterns
+    const modelName = selectedModel.name?.toLowerCase() || '';
+    const classificationKeywords = [
+      'logistic', 'svm', 'svc', 'naive bayes', 'knn classifier', 
+      'decision tree classifier', 'random forest classifier',
+      'xgboost classifier', 'catboost classifier', 'lightgbm classifier',
+      'neural network classifier', 'mlp classifier'
+    ];
+    const regressionKeywords = [
+      'linear regression', 'ridge', 'lasso', 'elasticnet',
+      'svr', 'knn regressor', 'decision tree regressor',
+      'random forest regressor', 'xgboost regressor', 
+      'catboost regressor', 'lightgbm regressor',
+      'neural network regressor', 'mlp regressor'
+    ];
+    
+    if (classificationKeywords.some(keyword => modelName.includes(keyword))) return true;
+    if (regressionKeywords.some(keyword => modelName.includes(keyword))) return false;
+    
+    // Check 3: Metrics-based detection
+    const metrics = selectedModel.metrics || {};
+    const metricKeys = Object.keys(metrics).map(k => k.toLowerCase());
+    
+    // Classification-specific metrics
+    const hasClassificationMetrics = metricKeys.some(key => 
+      ['accuracy', 'precision', 'recall', 'f1', 'auc', 'roc'].includes(key)
+    );
+    
+    // Regression-specific metrics
+    const hasRegressionMetrics = metricKeys.some(key =>
+      ['mse', 'rmse', 'mae', 'r2', 'r_squared', 'mape'].includes(key)
+    );
+    
+    if (hasRegressionMetrics && !hasClassificationMetrics) return false;
+    
+    // Default to classification if unclear
+    return true;
+  }, [selectedModel]);
+
   useEffect(() => {
     const model = models.find(m => m.id === modelId);
     setSelectedModel(model);
@@ -448,6 +496,37 @@ const ModelEvaluationContent = () => {
     });
   }, [selectedModel]);
 
+  // Residual plot data for regression models
+  const residualPlotData = useMemo(() => {
+    if (!selectedModel) return [];
+    
+    const accuracy = selectedModel.metrics?.accuracy ?? 0.85;
+    const numSamples = 50;
+    
+    return Array.from({ length: numSamples }, (_, i) => {
+      // Generate predicted values (0-100 scale)
+      const predicted = Math.random() * 100;
+      
+      // Generate residuals (actual - predicted)
+      // Residuals should be roughly normal, centered at 0
+      // Magnitude based on model accuracy
+      const errorStdDev = (1 - accuracy) * 15;
+      
+      // Box-Muller transform for normal distribution
+      const u1 = Math.random();
+      const u2 = Math.random();
+      const normalRandom = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      const residual = normalRandom * errorStdDev;
+      
+      return {
+        id: `residual-${i + 1}`,
+        predicted: Number(predicted.toFixed(2)),
+        residual: Number(residual.toFixed(2)),
+        absResidual: Math.abs(residual),
+      };
+    });
+  }, [selectedModel]);
+
   const featureNarrative = useMemo(() => {
     if (!featureImportanceData.length) return null;
     const topFeature = featureImportanceData[0];
@@ -770,11 +849,13 @@ const ModelEvaluationContent = () => {
               </div>
             </Card>
 
-            {/* Confusion Matrix & ROC Curve side by side */}
-            <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
-              <Card>
-                <Title>Confusion Matrix</Title>
-                <Table className="mt-4">
+            {/* Conditional visualizations based on model type */}
+            {isClassificationModel ? (
+              /* Classification Models: Confusion Matrix & ROC Curve */
+              <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
+                <Card>
+                  <Title>Confusion Matrix</Title>
+                  <Table className="mt-4">
                   <TableHead>
                     <TableRow>
                       <TableHeaderCell>Actual</TableHeaderCell>
@@ -916,8 +997,79 @@ const ModelEvaluationContent = () => {
                 </div>
               </Card>
             </Grid>
+            ) : (
+              /* Regression Models: Residual Plot & Error Distribution */
+              <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
+                <Card>
+                  <Title>Residual Plot</Title>
+                  <Text className="mt-2">
+                    Shows prediction errors (residuals = actual - predicted) vs predicted values.
+                    Random scatter around zero indicates a good model.
+                  </Text>
+                  
+                  <ScatterChart
+                    className="h-72 mt-6"
+                    data={residualPlotData}
+                    category="Residual"
+                    x="predicted"
+                    y="residual"
+                    showLegend={false}
+                    colors={['rose']}
+                  />
 
-            {/* Predicted vs Actual Scatter Plot */}
+                  <div className={`mt-6 ${insightPanelClass} p-4 space-y-2 text-sm text-slate-700`}>
+                    <p>
+                      <strong>Ideal residual plot:</strong> Points randomly scattered around the horizontal line at zero.
+                    </p>
+                    <p>
+                      <strong>Patterns to watch for:</strong> Curves or funnels indicate the model may not capture all relationships.
+                    </p>
+                    <p>
+                      <strong>Outliers:</strong> Points far from zero represent predictions with large errors.
+                    </p>
+                  </div>
+                </Card>
+
+                <Card>
+                  <Title>Regression Metrics</Title>
+                  <div className="mt-6 space-y-4">
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <Text className="text-sm text-gray-600">Mean Absolute Error (MAE)</Text>
+                      <Metric className="mt-1">
+                        {(residualPlotData.reduce((sum, d) => sum + Math.abs(d.residual), 0) / residualPlotData.length).toFixed(2)}
+                      </Metric>
+                      <Text className="text-xs text-gray-500 mt-2">Average prediction error magnitude</Text>
+                    </div>
+
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <Text className="text-sm text-gray-600">Root Mean Squared Error (RMSE)</Text>
+                      <Metric className="mt-1">
+                        {Math.sqrt(residualPlotData.reduce((sum, d) => sum + d.residual ** 2, 0) / residualPlotData.length).toFixed(2)}
+                      </Metric>
+                      <Text className="text-xs text-gray-500 mt-2">Penalizes larger errors more heavily</Text>
+                    </div>
+
+                    <div className="bg-purple-50 rounded-lg p-4">
+                      <Text className="text-sm text-gray-600">R² Score</Text>
+                      <Metric className="mt-1">
+                        {selectedModel.metrics?.accuracy ? (selectedModel.metrics.accuracy).toFixed(3) : '0.850'}
+                      </Metric>
+                      <Text className="text-xs text-gray-500 mt-2">Proportion of variance explained (0-1)</Text>
+                    </div>
+
+                    <div className="bg-amber-50 rounded-lg p-4">
+                      <Text className="text-sm text-gray-600">Mean Residual</Text>
+                      <Metric className="mt-1">
+                        {(residualPlotData.reduce((sum, d) => sum + d.residual, 0) / residualPlotData.length).toFixed(3)}
+                      </Metric>
+                      <Text className="text-xs text-gray-500 mt-2">Should be close to zero (no bias)</Text>
+                    </div>
+                  </div>
+                </Card>
+              </Grid>
+            )}
+
+            {/* Predicted vs Actual Scatter Plot - Shown for both types */}
             <Card className="mt-6">
               <Title>Predicted vs Actual Values</Title>
               <Text className="mt-2">
