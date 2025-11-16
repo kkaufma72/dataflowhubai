@@ -630,6 +630,7 @@ const ModelEvaluationContent = () => {
 
         <TabPanels>
           <TabPanel>
+            {/* Overview Tab - Clean summary with just metric cards */}
             <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6 mt-6">
               {Object.entries(selectedModel.metrics || {}).map(([key, value]) => (
                 <Card key={key}>
@@ -645,75 +646,104 @@ const ModelEvaluationContent = () => {
               ))}
             </Grid>
 
-            <div className="mt-6">
-              <Card>
-                <Title>Performance Over Time</Title>
-                <AreaChart
-                  className="h-72 mt-4"
-                  data={performanceData}
-                  index="date"
-                  categories={['accuracy', 'precision', 'recall']}
-                  colors={['blue', 'cyan', 'indigo']}
-                />
-
-                {performanceNarrative && (
-                  <div className={`mt-6 ${insightPanelClass} p-4 text-sm text-slate-700 space-y-2`}>
-                    <p>{performanceNarrative.accuracyMsg}</p>
-                    <p>{performanceNarrative.precisionMsg}</p>
-                    <p>{performanceNarrative.recallMsg}</p>
-                    <p>{performanceNarrative.stability}</p>
+            {/* Model Information Card */}
+            <Card className="mt-6">
+              <Title>Model Information</Title>
+              <div className="mt-4 space-y-3">
+                <Flex>
+                  <Text>Model Type</Text>
+                  <Text className="font-medium">{selectedModel.modelType || 'Classification'}</Text>
+                </Flex>
+                <Flex>
+                  <Text>Training Date</Text>
+                  <Text className="font-medium">{new Date(selectedModel.createdAt).toLocaleDateString()}</Text>
+                </Flex>
+                <Flex>
+                  <Text>Status</Text>
+                  <BadgeDelta deltaType={selectedModel.status === 'trained' ? 'moderateIncrease' : 'unchanged'}>
+                    {selectedModel.status}
+                  </BadgeDelta>
+                </Flex>
+                {selectedModel.description && (
+                  <div>
+                    <Text className="text-sm text-gray-500 mb-1">Description</Text>
+                    <Text>{selectedModel.description}</Text>
                   </div>
                 )}
-
-                <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
-                  <div>
-                    <Text className={insightHeadingClass}>Ask about performance trends</Text>
-                    <Text className={insightHelperClass}>Use plain English to interpret accuracy, precision, and recall trajectories.</Text>
-                  </div>
-                  <form onSubmit={handlePerformanceSubmit} className="space-y-2">
-                    <input
-                      type="text"
-                      value={performanceQuestion}
-                      onChange={(e) => setPerformanceQuestion(e.target.value)}
-                      placeholder="e.g., Are metrics trending up?"
-                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button type="submit" size="sm" disabled={!performanceQuestion.trim()}>
-                        Ask
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => setPerformanceAnswer(null)}
-                        className="text-xs font-medium text-slate-500 hover:text-indigo-600"
-                      >
-                        Clear answer
-                      </button>
-                    </div>
-                  </form>
-                  {performanceAnswer && (
-                    <div className={insightAnswerClass} aria-live="polite">
-                      {performanceAnswer}
-                    </div>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {performanceQuestionSuggestions.map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        type="button"
-                        onClick={() => handlePerformanceSuggestion(suggestion)}
-                        className={chipButtonClass}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            </div>
+              </div>
+            </Card>
           </TabPanel>
 
           <TabPanel>
+            {/* Performance Tab - ALL charts and visualizations */}
+            
+            {/* Performance Over Time */}
+            <Card className="mt-6">
+              <Title>Performance Over Time</Title>
+              <AreaChart
+                className="h-72 mt-4"
+                data={performanceData}
+                index="date"
+                categories={['accuracy', 'precision', 'recall']}
+                colors={['blue', 'cyan', 'indigo']}
+              />
+
+              {performanceNarrative && (
+                <div className={`mt-6 ${insightPanelClass} p-4 text-sm text-slate-700 space-y-2`}>
+                  <p>{performanceNarrative.accuracyMsg}</p>
+                  <p>{performanceNarrative.precisionMsg}</p>
+                  <p>{performanceNarrative.recallMsg}</p>
+                  <p>{performanceNarrative.stability}</p>
+                </div>
+              )}
+
+              <div className={`mt-6 ${insightPanelClass} p-4 space-y-3`}>
+                <div>
+                  <Text className={insightHeadingClass}>Ask about performance trends</Text>
+                  <Text className={insightHelperClass}>Use plain English to interpret accuracy, precision, and recall trajectories.</Text>
+                </div>
+                <form onSubmit={handlePerformanceSubmit} className="space-y-2">
+                  <input
+                    type="text"
+                    value={performanceQuestion}
+                    onChange={(e) => setPerformanceQuestion(e.target.value)}
+                    placeholder="e.g., Are metrics trending up?"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button type="submit" size="sm" disabled={!performanceQuestion.trim()}>
+                      Ask
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setPerformanceAnswer(null)}
+                      className="text-xs font-medium text-slate-500 hover:text-indigo-600"
+                    >
+                      Clear answer
+                    </button>
+                  </div>
+                </form>
+                {performanceAnswer && (
+                  <div className={insightAnswerClass} aria-live="polite">
+                    {performanceAnswer}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {performanceQuestionSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => handlePerformanceSuggestion(suggestion)}
+                      className={chipButtonClass}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Confusion Matrix & ROC Curve side by side */}
             <Grid numItems={1} numItemsSm={2} className="gap-6 mt-6">
               <Card>
                 <Title>Confusion Matrix</Title>
