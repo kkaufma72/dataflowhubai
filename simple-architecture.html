@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataFlowHub AI Architecture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .layer {
+            margin-bottom: 25px;
+        }
+
+        .layer-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: #e0e0e0;
+            border-left: 3px solid #555;
+        }
+
+        .box {
+            border: 1px solid #888;
+            padding: 10px 12px;
+            margin: 8px 0;
+            background: #fafafa;
+        }
+
+        .box-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .box-detail {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
+            line-height: 1.5;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 20px;
+            margin: 10px 0;
+            color: #999;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DataFlowHub AI - Architecture</h1>
+
+        <!-- Frontend Layer -->
+        <div class="layer">
+            <div class="layer-title">1. FRONTEND</div>
+            <div class="box">
+                <div class="box-title">React Application</div>
+                <div class="box-detail">
+                    - React 18 + TypeScript<br>
+                    - Vite (build tool)<br>
+                    - Tailwind CSS (styling)<br>
+                    - React Router v6 (routing)<br>
+                    - Chart.js + D3.js (visualizations)
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- API Layer -->
+        <div class="layer">
+            <div class="layer-title">2. API GATEWAY</div>
+            <div class="box">
+                <div class="box-title">FastAPI Server</div>
+                <div class="box-detail">
+                    - Python FastAPI<br>
+                    - Async/await patterns<br>
+                    - REST endpoints<br>
+                    - Middleware: Auth, Logging, Error Handling
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Services Layer -->
+        <div class="layer">
+            <div class="layer-title">3. BACKEND SERVICES</div>
+            <div class="grid">
+                <div class="box">
+                    <div class="box-title">Authentication</div>
+                    <div class="box-detail">Supabase Auth<br>OAuth (Google, GitHub)</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Data Processing</div>
+                    <div class="box-detail">CSV parsing<br>Data validation</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">ML Training</div>
+                    <div class="box-detail">Model training<br>TensorFlow integration</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Deployment</div>
+                    <div class="box-detail">API generation<br>Model serving</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">AI Assistant</div>
+                    <div class="box-detail">OpenAI integration<br>LangChain orchestration</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Monitoring</div>
+                    <div class="box-detail">Metrics collection<br>Health checks</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Data Layer -->
+        <div class="layer">
+            <div class="layer-title">4. DATA STORES</div>
+            <div class="grid">
+                <div class="box">
+                    <div class="box-title">PostgreSQL (Supabase)</div>
+                    <div class="box-detail">Primary data storage<br>User accounts, datasets, models</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">TimescaleDB</div>
+                    <div class="box-detail">Time-series metrics<br>Performance tracking</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Neo4j</div>
+                    <div class="box-detail">Graph database<br>Dataset lineage</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">InfluxDB</div>
+                    <div class="box-detail">Real-time metrics<br>Model monitoring</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Redis</div>
+                    <div class="box-detail">Caching layer<br>Session storage</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">MinIO</div>
+                    <div class="box-detail">Object storage<br>S3-compatible</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- Infrastructure Layer -->
+        <div class="layer">
+            <div class="layer-title">5. INFRASTRUCTURE</div>
+            <div class="grid">
+                <div class="box">
+                    <div class="box-title">Apache Kafka</div>
+                    <div class="box-detail">Event streaming<br>Async processing</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Docker Compose</div>
+                    <div class="box-detail">Container orchestration<br>15+ services</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Prometheus</div>
+                    <div class="box-detail">Metrics scraping<br>Alerting</div>
+                </div>
+                <div class="box">
+                    <div class="box-title">Grafana</div>
+                    <div class="box-detail">Visualization<br>Dashboards</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Flow -->
+        <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
+            <div style="font-weight: bold; margin-bottom: 10px;">Data Flow:</div>
+            <div style="font-size: 12px; color: #555; line-height: 1.8;">
+                1. User uploads CSV via React frontend<br>
+                2. FastAPI validates and stores in PostgreSQL<br>
+                3. Kafka publishes data processing events<br>
+                4. ML service trains model (stores in PostgreSQL)<br>
+                5. Training metrics sent to InfluxDB + TimescaleDB<br>
+                6. Lineage graph updated in Neo4j<br>
+                7. Results cached in Redis<br>
+                8. Model artifacts stored in MinIO<br>
+                9. Prometheus scrapes metrics<br>
+                10. Grafana displays dashboards
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataFlowHub AI - Architecture Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .flow-section {
+            margin-bottom: 40px;
+        }
+        
+        .flow-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .box {
+            border: 2px solid #333;
+            padding: 20px;
+            background: white;
+            min-width: 200px;
+            text-align: center;
+        }
+        
+        .box h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .box p {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #333;
+            flex-shrink: 0;
+        }
+        
+        .vertical-arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .layer-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .multi-box-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .small-box {
+            border: 2px solid #333;
+            padding: 15px;
+            background: white;
+            text-align: center;
+        }
+        
+        .small-box h4 {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        
+        .small-box p {
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DataFlowHub AI - System Architecture</h1>
+        
+        <!-- Client Layer -->
+        <div class="flow-section">
+            <div class="layer-title">Client Layer</div>
+            <div class="flow-row">
+                <div class="box">
+                    <h3>Web Browser</h3>
+                    <p>React 18 + TypeScript<br>Vite Build Tool<br>Tailwind CSS</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vertical-arrow">↓</div>
+        
+        <!-- API Gateway -->
+        <div class="flow-section">
+            <div class="layer-title">API Gateway</div>
+            <div class="flow-row">
+                <div class="box">
+                    <h3>FastAPI</h3>
+                    <p>Python Async/Await<br>REST Endpoints<br>Middleware Stack</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vertical-arrow">↓</div>
+        
+        <!-- Service Layer -->
+        <div class="flow-section">
+            <div class="layer-title">Microservices</div>
+            <div class="multi-box-row">
+                <div class="small-box">
+                    <h4>Auth Service</h4>
+                    <p>Supabase OAuth</p>
+                </div>
+                <div class="small-box">
+                    <h4>Data Processing</h4>
+                    <p>ETL Pipeline</p>
+                </div>
+                <div class="small-box">
+                    <h4>ML Training</h4>
+                    <p>TensorFlow.js</p>
+                </div>
+                <div class="small-box">
+                    <h4>Model Deploy</h4>
+                    <p>API Generation</p>
+                </div>
+                <div class="small-box">
+                    <h4>AI Chat</h4>
+                    <p>OpenAI + LangChain</p>
+                </div>
+                <div class="small-box">
+                    <h4>Monitoring</h4>
+                    <p>Real-time Metrics</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vertical-arrow">↓</div>
+        
+        <!-- Data Store Layer -->
+        <div class="flow-section">
+            <div class="layer-title">Data Stores</div>
+            <div class="multi-box-row">
+                <div class="small-box">
+                    <h4>PostgreSQL</h4>
+                    <p>Primary DB<br>User Data<br>CRUD Ops</p>
+                </div>
+                <div class="small-box">
+                    <h4>TimescaleDB</h4>
+                    <p>Time-Series<br>Performance<br>History</p>
+                </div>
+                <div class="small-box">
+                    <h4>Neo4j</h4>
+                    <p>Graph DB<br>Dataset<br>Lineage</p>
+                </div>
+                <div class="small-box">
+                    <h4>Redis</h4>
+                    <p>Caching<br>Sessions<br>Pub/Sub</p>
+                </div>
+                <div class="small-box">
+                    <h4>InfluxDB</h4>
+                    <p>Real-time<br>Model<br>Metrics</p>
+                </div>
+                <div class="small-box">
+                    <h4>MinIO</h4>
+                    <p>S3-like<br>Object<br>Storage</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vertical-arrow">↓</div>
+        
+        <!-- Infrastructure Layer -->
+        <div class="flow-section">
+            <div class="layer-title">Infrastructure</div>
+            <div class="flow-row">
+                <div class="box">
+                    <h3>Apache Kafka</h3>
+                    <p>Event Streaming<br>Async Processing</p>
+                </div>
+                <span class="arrow">→</span>
+                <div class="box">
+                    <h3>Docker Compose</h3>
+                    <p>Container Orchestration<br>15+ Services</p>
+                </div>
+                <span class="arrow">→</span>
+                <div class="box">
+                    <h3>Nginx</h3>
+                    <p>Reverse Proxy<br>Load Balancer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="vertical-arrow">↓</div>
+        
+        <!-- Monitoring Layer -->
+        <div class="flow-section">
+            <div class="layer-title">Observability</div>
+            <div class="flow-row">
+                <div class="box">
+                    <h3>Prometheus</h3>
+                    <p>Metrics Collection<br>Alerting</p>
+                </div>
+                <span class="arrow">→</span>
+                <div class="box">
+                    <h3>Grafana</h3>
+                    <p>Visualization<br>Dashboards</p>
+                </div>
+                <span class="arrow">→</span>
+                <div class="box">
+                    <h3>InfluxDB</h3>
+                    <p>Time-Series Storage<br>Query Engine</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Flow Notes -->
+        <div style="margin-top: 40px; padding: 20px; background: #f9f9f9; border-left: 3px solid #333;">
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Key Data Flows</h3>
+            <ul style="font-size: 12px; color: #666; line-height: 1.8; margin-left: 20px;">
+                <li>User uploads CSV → Data Processing Service → PostgreSQL + MinIO</li>
+                <li>ML Training job → Kafka queue → Training workers → TimescaleDB metrics</li>
+                <li>Model predictions → Redis cache → Response</li>
+                <li>Dataset changes → Neo4j lineage graph</li>
+                <li>Real-time metrics → InfluxDB → Grafana dashboard</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataFlowHub AI - Technical Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+        
+        .architecture {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .layer {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f7fafc;
+        }
+        
+        .layer-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #cbd5e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .layer-title .badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .component {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            transition: all 0.2s;
+        }
+        
+        .component:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .component-name {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .component-tech {
+            color: #667eea;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .component-desc {
+            color: #718096;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .flow-arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .arrow {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .flow-label {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .color-client { border-left: 4px solid #3182ce; }
+        .color-api { border-left: 4px solid #38a169; }
+        .color-service { border-left: 4px solid #d69e2e; }
+        .color-data { border-left: 4px solid #e53e3e; }
+        .color-infra { border-left: 4px solid #805ad5; }
+        .color-monitor { border-left: 4px solid #dd6b20; }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #4a5568;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .tech-stack {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .tech-stack h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .tech-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .tech-category {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tech-category h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .tech-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .tech-list li {
+            color: #4a5568;
+            font-size: 12px;
+            padding: 4px 0;
+            padding-left: 12px;
+            position: relative;
+        }
+        
+        .tech-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DataFlowHub AI - Technical Architecture</h1>
+        <p class="subtitle">Enterprise AutoML Platform - Microservices Architecture</p>
+        
+        <div class="architecture">
+            
+            <!-- CLIENT LAYER -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 1</span>
+                    CLIENT / PRESENTATION LAYER
+                </div>
+                <div class="components">
+                    <div class="component color-client">
+                        <div class="component-name">React Frontend</div>
+                        <div class="component-tech">React 18 + TypeScript + Vite</div>
+                        <div class="component-desc">
+                            • Lazy-loaded routes with code splitting<br>
+                            • Tailwind CSS + Dark mode support<br>
+                            • React Router v6 nested routing
+                        </div>
+                    </div>
+                    <div class="component color-client">
+                        <div class="component-name">State Management</div>
+                        <div class="component-tech">React Context API</div>
+                        <div class="component-desc">
+                            • MLContext (models, datasets)<br>
+                            • AuthProvider (Supabase Auth)<br>
+                            • UserProvider (profiles, permissions)
+                        </div>
+                    </div>
+                    <div class="component color-client">
+                        <div class="component-name">Visualizations</div>
+                        <div class="component-tech">Chart.js + D3.js + Tremor</div>
+                        <div class="component-desc">
+                            • Real-time charts (Line, Bar, Scatter)<br>
+                            • Force-directed graphs (lineage)<br>
+                            • Interactive heatmaps
+                        </div>
+                    </div>
+                    <div class="component color-client">
+                        <div class="component-name">UI Components</div>
+                        <div class="component-tech">Custom + Lucide Icons</div>
+                        <div class="component-desc">
+                            • Command palette (⌘K)<br>
+                            • Drag-and-drop interfaces<br>
+                            • Product tours (react-joyride)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrows">
+                <span class="arrow">↓</span>
+                <span class="flow-label">HTTP/REST + WebSocket</span>
+                <span class="arrow">↓</span>
+            </div>
+            
+            <!-- API GATEWAY -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 2</span>
+                    API GATEWAY / EDGE FUNCTIONS
+                </div>
+                <div class="components">
+                    <div class="component color-api">
+                        <div class="component-name">FastAPI Server</div>
+                        <div class="component-tech">Python 3.11 + Async/Await</div>
+                        <div class="component-desc">
+                            • RESTful API endpoints<br>
+                            • Custom middleware stack<br>
+                            • CORS, auth, logging, performance
+                        </div>
+                    </div>
+                    <div class="component color-api">
+                        <div class="component-name">Supabase Edge Functions</div>
+                        <div class="component-tech">Deno Runtime</div>
+                        <div class="component-desc">
+                            • ai-chat (OpenAI integration)<br>
+                            • create-checkout-session<br>
+                            • stripe-webhook handler
+                        </div>
+                    </div>
+                    <div class="component color-api">
+                        <div class="component-name">Authentication</div>
+                        <div class="component-tech">Supabase Auth + JWT</div>
+                        <div class="component-desc">
+                            • OAuth (Google, GitHub)<br>
+                            • Row-Level Security (RLS)<br>
+                            • Session management
+                        </div>
+                    </div>
+                    <div class="component color-api">
+                        <div class="component-name">API Router</div>
+                        <div class="component-tech">FastAPI Routers</div>
+                        <div class="component-desc">
+                            • /api/data (datasets)<br>
+                            • /api/ml (training)<br>
+                            • /api/deploy (models)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrows">
+                <span class="arrow">↓</span>
+                <span class="flow-label">Service Mesh Communication</span>
+                <span class="arrow">↓</span>
+            </div>
+            
+            <!-- BACKEND SERVICES -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 3</span>
+                    BACKEND SERVICES / BUSINESS LOGIC
+                </div>
+                <div class="components">
+                    <div class="component color-service">
+                        <div class="component-name">Data Processing Service</div>
+                        <div class="component-tech">Pandas + NumPy</div>
+                        <div class="component-desc">
+                            • CSV/JSON parsing<br>
+                            • Data validation & profiling<br>
+                            • Quality score calculation
+                        </div>
+                    </div>
+                    <div class="component color-service">
+                        <div class="component-name">Feature Engineering</div>
+                        <div class="component-tech">scikit-learn</div>
+                        <div class="component-desc">
+                            • Automated feature generation<br>
+                            • Encoding, scaling, transformations<br>
+                            • Feature importance calculation
+                        </div>
+                    </div>
+                    <div class="component color-service">
+                        <div class="component-name">ML Training Service</div>
+                        <div class="component-tech">TensorFlow + PyTorch</div>
+                        <div class="component-desc">
+                            • Model training orchestration<br>
+                            • Hyperparameter tuning<br>
+                            • Distributed training support
+                        </div>
+                    </div>
+                    <div class="component color-service">
+                        <div class="component-name">Model Evaluation</div>
+                        <div class="component-tech">scikit-learn metrics</div>
+                        <div class="component-desc">
+                            • Confusion matrix generation<br>
+                            • ROC/AUC calculation<br>
+                            • Cross-validation scoring
+                        </div>
+                    </div>
+                    <div class="component color-service">
+                        <div class="component-name">Deployment Service</div>
+                        <div class="component-tech">FastAPI + Docker</div>
+                        <div class="component-desc">
+                            • Model serving endpoints<br>
+                            • Auto-scaling containers<br>
+                            • REST API generation
+                        </div>
+                    </div>
+                    <div class="component color-service">
+                        <div class="component-name">AI Agents</div>
+                        <div class="component-tech">LangChain + LangGraph</div>
+                        <div class="component-desc">
+                            • Multi-agent orchestration<br>
+                            • Data Analyst, Chart Generator<br>
+                            • RAG with conversation memory
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrows">
+                <span class="arrow">↓</span>
+                <span class="flow-label">Database Queries + Event Streams</span>
+                <span class="arrow">↓</span>
+            </div>
+            
+            <!-- DATA LAYER -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 4</span>
+                    DATA PERSISTENCE LAYER
+                </div>
+                <div class="components">
+                    <div class="component color-data">
+                        <div class="component-name">PostgreSQL</div>
+                        <div class="component-tech">Supabase (v15)</div>
+                        <div class="component-desc">
+                            <strong>Primary Database</strong><br>
+                            • datasets, ml_models, projects<br>
+                            • user_profiles, conversations<br>
+                            • RLS policies per table
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">TimescaleDB</div>
+                        <div class="component-tech">PostgreSQL Extension</div>
+                        <div class="component-desc">
+                            <strong>Time-Series Metrics</strong><br>
+                            • Model performance over time<br>
+                            • Training history & epochs<br>
+                            • Hypertable optimization
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">Neo4j</div>
+                        <div class="component-tech">Graph Database</div>
+                        <div class="component-desc">
+                            <strong>Knowledge Graphs</strong><br>
+                            • Dataset lineage tracking<br>
+                            • Feature relationships<br>
+                            • Model provenance
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">InfluxDB</div>
+                        <div class="component-tech">Time-Series DB</div>
+                        <div class="component-desc">
+                            <strong>Real-Time Monitoring</strong><br>
+                            • Live model metrics<br>
+                            • API performance data<br>
+                            • Sub-second queries
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">Redis</div>
+                        <div class="component-tech">In-Memory Cache</div>
+                        <div class="component-desc">
+                            <strong>Caching Layer</strong><br>
+                            • API response cache (5-60min)<br>
+                            • Session storage<br>
+                            • Pub/Sub messaging
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">MinIO</div>
+                        <div class="component-tech">S3-Compatible Storage</div>
+                        <div class="component-desc">
+                            <strong>Object Storage</strong><br>
+                            • Large dataset files<br>
+                            • Model artifacts (.pkl, .h5)<br>
+                            • Backup & versioning
+                        </div>
+                    </div>
+                    <div class="component color-data">
+                        <div class="component-name">IndexedDB</div>
+                        <div class="component-tech">Browser Storage</div>
+                        <div class="component-desc">
+                            <strong>Client-Side Cache</strong><br>
+                            • Offline dataset previews<br>
+                            • UI preferences<br>
+                            • 3s timeout safety
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrows">
+                <span class="arrow">↔</span>
+                <span class="flow-label">Infrastructure Services</span>
+                <span class="arrow">↔</span>
+            </div>
+            
+            <!-- INFRASTRUCTURE -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 5</span>
+                    INFRASTRUCTURE / MESSAGE QUEUES
+                </div>
+                <div class="components">
+                    <div class="component color-infra">
+                        <div class="component-name">Apache Kafka</div>
+                        <div class="component-tech">Event Streaming Platform</div>
+                        <div class="component-desc">
+                            • Dataset events (created, updated)<br>
+                            • Model training pipelines<br>
+                            • Deployment notifications<br>
+                            • 1000+ events/sec throughput
+                        </div>
+                    </div>
+                    <div class="component color-infra">
+                        <div class="component-name">Zookeeper</div>
+                        <div class="component-tech">Coordination Service</div>
+                        <div class="component-desc">
+                            • Kafka broker coordination<br>
+                            • Leader election<br>
+                            • Configuration management
+                        </div>
+                    </div>
+                    <div class="component color-infra">
+                        <div class="component-name">Docker Compose</div>
+                        <div class="component-tech">Container Orchestration</div>
+                        <div class="component-desc">
+                            • 15+ service containers<br>
+                            • Network isolation<br>
+                            • Health checks & auto-restart
+                        </div>
+                    </div>
+                    <div class="component color-infra">
+                        <div class="component-name">Nginx</div>
+                        <div class="component-tech">Reverse Proxy</div>
+                        <div class="component-desc">
+                            • Load balancing<br>
+                            • SSL/TLS termination<br>
+                            • Request routing
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flow-arrows">
+                <span class="arrow">↑</span>
+                <span class="flow-label">Metrics Collection</span>
+                <span class="arrow">↑</span>
+            </div>
+            
+            <!-- MONITORING -->
+            <div class="layer">
+                <div class="layer-title">
+                    <span class="badge">LAYER 6</span>
+                    MONITORING & OBSERVABILITY
+                </div>
+                <div class="components">
+                    <div class="component color-monitor">
+                        <div class="component-name">Prometheus</div>
+                        <div class="component-tech">Metrics Collection</div>
+                        <div class="component-desc">
+                            • Scrapes FastAPI metrics<br>
+                            • Custom application metrics<br>
+                            • Time-series storage
+                        </div>
+                    </div>
+                    <div class="component color-monitor">
+                        <div class="component-name">Grafana</div>
+                        <div class="component-tech">Visualization Platform</div>
+                        <div class="component-desc">
+                            • Real-time dashboards<br>
+                            • Alert configuration<br>
+                            • Multi-source queries
+                        </div>
+                    </div>
+                    <div class="component color-monitor">
+                        <div class="component-name">Error Tracking</div>
+                        <div class="component-tech">React Error Boundary</div>
+                        <div class="component-desc">
+                            • Frontend error capture<br>
+                            • Component-level boundaries<br>
+                            • User-friendly fallbacks
+                        </div>
+                    </div>
+                    <div class="component color-monitor">
+                        <div class="component-name">Logging</div>
+                        <div class="component-tech">Custom Middleware</div>
+                        <div class="component-desc">
+                            • Request/response logging<br>
+                            • Performance tracking<br>
+                            • Error stack traces
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- TECH STACK SUMMARY -->
+        <div class="tech-stack">
+            <h3>Complete Technology Stack</h3>
+            <div class="tech-categories">
+                <div class="tech-category">
+                    <h4>Frontend Technologies</h4>
+                    <ul class="tech-list">
+                        <li>React 18.2.0 (UI Framework)</li>
+                        <li>TypeScript 5.x (Type Safety)</li>
+                        <li>Vite 5.x (Build Tool)</li>
+                        <li>React Router v6 (Routing)</li>
+                        <li>Tailwind CSS 3.4 (Styling)</li>
+                        <li>Chart.js + react-chartjs-2</li>
+                        <li>D3.js v7 (Advanced Viz)</li>
+                        <li>Tremor React (Dashboard UI)</li>
+                        <li>react-dnd (Drag & Drop)</li>
+                        <li>react-joyride (Tours)</li>
+                        <li>Lucide React (Icons)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-category">
+                    <h4>Backend Technologies</h4>
+                    <ul class="tech-list">
+                        <li>FastAPI (Python Web Framework)</li>
+                        <li>Python 3.11+</li>
+                        <li>Pydantic (Validation)</li>
+                        <li>SQLAlchemy (ORM)</li>
+                        <li>AsyncIO (Async Patterns)</li>
+                        <li>Uvicorn (ASGI Server)</li>
+                        <li>Celery (Task Queue)</li>
+                        <li>Pandas + NumPy (Data)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-category">
+                    <h4>ML/AI Stack</h4>
+                    <ul class="tech-list">
+                        <li>TensorFlow 2.x</li>
+                        <li>PyTorch (optional)</li>
+                        <li>scikit-learn (Classical ML)</li>
+                        <li>TensorFlow.js (Client-side)</li>
+                        <li>LangChain (LLM Orchestration)</li>
+                        <li>LangGraph (Agent State)</li>
+                        <li>OpenAI GPT-4 (Chat)</li>
+                        <li>SHAP (Explainability)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-category">
+                    <h4>Databases</h4>
+                    <ul class="tech-list">
+                        <li>PostgreSQL 15 (Primary)</li>
+                        <li>Supabase (Backend-as-a-Service)</li>
+                        <li>TimescaleDB (Time-series)</li>
+                        <li>Neo4j 5.x (Graph)</li>
+                        <li>InfluxDB 2.x (Metrics)</li>
+                        <li>Redis 7.x (Cache)</li>
+                        <li>MinIO (Object Storage)</li>
+                        <li>IndexedDB (Browser)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-category">
+                    <h4>Infrastructure</h4>
+                    <ul class="tech-list">
+                        <li>Docker + Docker Compose</li>
+                        <li>Kafka + Zookeeper</li>
+                        <li>Nginx (Reverse Proxy)</li>
+                        <li>Prometheus (Metrics)</li>
+                        <li>Grafana (Dashboards)</li>
+                        <li>Vercel (Frontend Hosting)</li>
+                        <li>GitHub Actions (CI/CD)</li>
+                    </ul>
+                </div>
+                
+                <div class="tech-category">
+                    <h4>Development Tools</h4>
+                    <ul class="tech-list">
+                        <li>Vitest (Unit Testing)</li>
+                        <li>Cypress (E2E Testing)</li>
+                        <li>ESLint + Prettier</li>
+                        <li>Git + GitHub</li>
+                        <li>VS Code</li>
+                        <li>Postman (API Testing)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LEGEND -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3182ce;"></div>
+                <span>Client Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #38a169;"></div>
+                <span>API Gateway</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d69e2e;"></div>
+                <span>Backend Services</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e53e3e;"></div>
+                <span>Data Layer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #805ad5;"></div>
+                <span>Infrastructure</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #dd6b20;"></div>
+                <span>Monitoring</span>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
