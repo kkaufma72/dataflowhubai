@@ -632,25 +632,25 @@ Parse this command and return JSON:
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleNaturalLanguageCommand("Remove all duplicate rows")}
-                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
+                className="text-xs px-3 py-2 bg-white border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 font-semibold rounded-lg transition-all"
               >
                 Remove Duplicates
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Remove columns with >30% missing values")}
-                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
+                className="text-xs px-3 py-2 bg-white border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 font-semibold rounded-lg transition-all"
               >
                 Clean Missing
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Sort by first numeric column descending")}
-                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
+                className="text-xs px-3 py-2 bg-white border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 font-semibold rounded-lg transition-all"
               >
                 Auto Sort
               </button>
               <button
                 onClick={() => handleNaturalLanguageCommand("Standardize all column names to Title Case")}
-                className="text-xs px-3 py-2 bg-primary/5 text-primary-700 rounded-lg hover:bg-primary/10 transition border border-primary/20"
+                className="text-xs px-3 py-2 bg-white border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 font-semibold rounded-lg transition-all"
               >
                 Format Headers
               </button>
