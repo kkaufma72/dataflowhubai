@@ -5,12 +5,32 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load .env file
+const envPath = path.join(process.cwd(), '.env');
+if (fs.existsSync(envPath)) {
+  const envFile = fs.readFileSync(envPath, 'utf8');
+  envFile.split('\n').forEach(line => {
+    const match = line.match(/^([^=:#]+)=(.*)$/);
+    if (match) {
+      const key = match[1].trim();
+      const value = match[2].trim();
+      if (!process.env[key]) {
+        process.env[key] = value;
+      }
+    }
+  });
+}
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase credentials in environment variables');
+  console.error(`VITE_SUPABASE_URL: ${supabaseUrl ? 'SET' : 'NOT SET'}`);
+  console.error(`VITE_SUPABASE_ANON_KEY: ${supabaseKey ? 'SET' : 'NOT SET'}`);
   process.exit(1);
 }
 

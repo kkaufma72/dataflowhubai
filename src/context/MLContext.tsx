@@ -128,46 +128,56 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         ...remoteDatasets.filter((d: any) => !localIds.has(d.id))
       ];
 
-      setDatasets(mergedDatasets);
+      // Auto-load sample data for new users with no datasets
+      // Check flag BEFORE merging to prevent duplicate seeding
+      const hasSeededKey = `hasSeededDatasets_${user.id}`;
+      const hasSeeded = localStorage.getItem(hasSeededKey);
+      
+      // ONLY seed if: no remote datasets AND flag not set
+      if (remoteDatasets.length === 0 && user?.id && !hasSeeded) {
+        console.log('🎯 New user detected - auto-loading sample data...');
+        try {
+          // Set flag BEFORE seeding to prevent concurrent runs
+          localStorage.setItem(hasSeededKey, 'true');
+          
+          const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
+          // Pass null for project_id since we removed projects
+          await seedEnhancedDatasets(user.id, null);
+          
+          // Refresh datasets after seeding
+          const refreshResponse = await supabaseFetch(
+            `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
+            { method: 'GET' }
+          );
+          
+          if (refreshResponse.ok) {
+            const refreshedDatasets = await refreshResponse.json();
+            // Merge with local datasets
+            const localIds = new Set(localDatasets.map(d => d.id));
+            const finalDatasets = [
+              ...localDatasets,
+              ...refreshedDatasets.filter((d: any) => !localIds.has(d.id))
+            ];
+            setDatasets(finalDatasets);
+            console.log('✅ Sample data loaded for new user');
+          } else {
+            // If refresh failed, just use merged datasets
+            setDatasets(mergedDatasets);
+          }
+        } catch (seedError) {
+          console.warn('Could not auto-load sample data:', seedError);
+          // Remove flag on failure so it can retry next time
+          localStorage.removeItem(hasSeededKey);
+          setDatasets(mergedDatasets);
+        }
+      } else {
+        // User has data or already seeded - just use merged datasets
+        setDatasets(mergedDatasets);
+      }
+      
       setModels(remoteModels);
       setIsLoading(false);
       setHasFetched(true);
-
-      // Auto-load sample data for new users with no datasets
-      // ONLY do this once by checking localStorage flag
-      if (mergedDatasets.length === 0 && user?.id) {
-        const hasSeededKey = `hasSeededDatasets_${user.id}`;
-        const hasSeeded = localStorage.getItem(hasSeededKey);
-        
-        if (!hasSeeded) {
-          console.log('🎯 New user detected - auto-loading sample data...');
-          try {
-            const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
-            // Pass null for project_id since we removed projects
-            await seedEnhancedDatasets(user.id, null);
-            
-            // Mark as seeded to prevent duplicate runs
-            localStorage.setItem(hasSeededKey, 'true');
-            
-            // Refresh datasets after seeding
-            const refreshResponse = await supabaseFetch(
-              `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
-              { method: 'GET' }
-            );
-            
-            if (refreshResponse.ok) {
-              const refreshedDatasets = await refreshResponse.json();
-              setDatasets(refreshedDatasets);
-              console.log('✅ Sample data loaded for new user');
-            }
-          } catch (seedError) {
-            console.warn('Could not auto-load sample data:', seedError);
-            // Don't throw - this is optional
-          }
-        } else {
-          console.log('ℹ️ User already has seeded data flag set');
-        }
-      }
 
     } catch (err) {
       console.error('Error loading initial data:', err);
