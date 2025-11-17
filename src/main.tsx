@@ -17,6 +17,8 @@ import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
 import SupabaseConfigError from './components/common/SupabaseConfigError.tsx';
 import { isSupabaseConfigured } from './lib/supabase.ts';
+import { logStripeConfig } from './lib/stripeConfigCheck.ts';
+import StripeConfigWarning from './components/common/StripeConfigWarning.tsx';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
@@ -106,6 +108,11 @@ function logError(error: Error, info: any) {
   console.error('Error caught by boundary:', error, info);
 }
 
+// Log Stripe configuration on app startup
+if (import.meta.env.DEV) {
+  logStripeConfig();
+}
+
 // Check if Supabase is configured before rendering the full app
 if (!isSupabaseConfigured) {
   ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -158,6 +165,7 @@ if (!isSupabaseConfigured) {
                             },
                           }}
                         />
+                        <StripeConfigWarning />
                         <Suspense fallback={<LoadingFallback />}>
                           <Routes>
                             {/* OAuth callback handler - must be before /app route */}
