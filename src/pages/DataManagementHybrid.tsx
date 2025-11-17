@@ -6,15 +6,13 @@ import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
 import { Dataset, Project } from '../types';
-import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Folders, LayoutGrid } from 'lucide-react';
+import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Folders, LayoutGrid, X, Search } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
-import PageHeader from '../components/common/PageHeader';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import { supabase } from '../lib/supabase';
-import CRMDatabaseHeader from '../components/data/CRMDatabaseHeader';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
 import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 
@@ -33,7 +31,7 @@ const LoadingFallback: React.FC = () => (
 );
 
 const DataManagement: React.FC = () => {
-  const { datasets, currentProject, addDataset } = useMLContext();
+  const { datasets, addDataset } = useMLContext();
   const { user } = useAuth();
   const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
@@ -64,7 +62,7 @@ const DataManagement: React.FC = () => {
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<any>({});
+  const [filters] = useState<any>({});
 
   // FIXED: Filter and search datasets FIRST (before using it in totalPages)
   const filteredDatasets = useMemo(() => {
@@ -83,7 +81,7 @@ const DataManagement: React.FC = () => {
     // Apply file type filter
     if (filters.fileType) {
       result = result.filter(ds => 
-        (ds.file_type || ds.fileType)?.toLowerCase() === filters.fileType.toLowerCase()
+        ds.fileType?.toLowerCase() === filters.fileType.toLowerCase()
       );
     }
 
@@ -91,7 +89,7 @@ const DataManagement: React.FC = () => {
     if (filters.dateRange) {
       const now = new Date();
       result = result.filter(ds => {
-        const uploadDate = new Date(ds.created_at || ds.dateUploaded || '');
+        const uploadDate = new Date(ds.dateUploaded || '');
         switch (filters.dateRange) {
           case 'today':
             return uploadDate.toDateString() === now.toDateString();
@@ -109,21 +107,10 @@ const DataManagement: React.FC = () => {
     }
 
     // Apply size filter
-    if (filters.sizeRange) {
+    if (filters.minRows) {
       result = result.filter(ds => {
-        const rows = ds.row_count || ds.rows || 0;
-        switch (filters.sizeRange) {
-          case 'small':
-            return rows < 1000;
-          case 'medium':
-            return rows >= 1000 && rows < 10000;
-          case 'large':
-            return rows >= 10000 && rows < 100000;
-          case 'xlarge':
-            return rows >= 100000;
-          default:
-            return true;
-        }
+        const rows = ds.rows || 0;
+        return rows >= filters.minRows;
       });
     }
 
@@ -290,11 +277,6 @@ const DataManagement: React.FC = () => {
   }, []);
 
   const handleGenerateSyntheticData = useCallback(async () => {
-    if (!currentProject) {
-      toast.error('Please select a project first');
-      return;
-    }
-
     if (!user) {
       toast.error('You must be logged in');
       return;
@@ -328,7 +310,6 @@ const DataManagement: React.FC = () => {
             columns: columns,
             rows: rows.slice(0, 100)
           },
-          project_id: currentProject.id,
           user_id: user.id
         }])
         .select()
@@ -346,7 +327,7 @@ const DataManagement: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [currentProject, user, generatorType, rowCount]);
+  }, [user, generatorType, rowCount]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -360,49 +341,26 @@ const DataManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header - Improved visibility */}
-      <div className="mb-8">
+      {/* Simplified Header with Prominent Search */}
+      <div className="mb-8 space-y-6">
+        {/* Title Row */}
         <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Database className="w-7 h-7 text-white" />
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Database className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-              Data Management
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 font-medium">
-              Upload, connect, and manage your datasets
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">Data Management</h1>
+            <p className="text-sm text-gray-600">Upload, connect, and manage your datasets</p>
           </div>
         </div>
-      </div>
 
-      {/* CRM-Style Search & Filter Header */}
-      {datasets.length > 0 && (
-        <CRMDatabaseHeader
-          totalCount={filteredDatasets.length}
-          onSearch={setSearchQuery}
-          onUpload={() => setShowUploader(true)}
-          onFilter={setFilters}
-          searchQuery={searchQuery}
-          onBulkAction={(action) => {
-            if (action === 'export') {
-              toast.success('Export feature coming soon!');
-            } else if (action === 'ai-insights') {
-              toast.success('AI bulk insights coming soon!');
-            }
-          }}
-        />
-      )}
-
-      {/* View Mode Toggle & Quick Actions */}
-      <div className="flex flex-wrap gap-3 items-center justify-between">
         {datasets.length === 0 ? (
-          // Show upload buttons when no datasets
+          // Empty State: Show large upload buttons
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => setShowUploader(true)}
               icon={<Upload className="w-4 h-4" />}
+              className="btn-primary-improved"
             >
               Upload Dataset
             </Button>
@@ -422,52 +380,85 @@ const DataManagement: React.FC = () => {
             </Button>
           </div>
         ) : (
-          // Show quick actions when datasets exist
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => setShowConnector(true)}
-              variant="outline"
-              size="sm"
-              icon={<Database className="w-4 h-4" />}
-            >
-              Connect Source
-            </Button>
-            <Button
-              onClick={() => setShowGeneratorModal(true)}
-              variant="outline"
-              size="sm"
-              icon={<Sparkles className="w-4 h-4" />}
-            >
-              Generate Data
-            </Button>
-          </div>
-        )}
+          // Has Datasets: Show search bar + controls
+          <div className="space-y-4">
+            {/* Large Search Bar Row */}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+              {/* Prominent Search Input */}
+              <div className="flex-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search datasets by name, tags, or columns..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
+                />
+              </div>
+              
+              {/* Primary Action Button */}
+              <Button
+                onClick={() => setShowUploader(true)}
+                icon={<Upload className="w-4 h-4" />}
+                className="btn-primary-improved whitespace-nowrap"
+              >
+                Upload Dataset
+              </Button>
+            </div>
 
-        {/* View Mode Toggle */}
-        {datasets.length > 0 && (
-          <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-primary/10 text-primary-700 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              <span className="text-sm">Grid</span>
-            </button>
-            <button
-              onClick={() => setViewMode('organize')}
-              className={`px-3 py-2 rounded flex items-center space-x-2 transition-colors ${
-                viewMode === 'organize'
-                  ? 'bg-primary/10 text-primary-700 font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Folders className="w-4 h-4" />
-              <span className="text-sm">Organize</span>
-            </button>
+            {/* Controls Row */}
+            <div className="flex flex-wrap gap-3 items-center justify-between">
+              {/* Left: Quick Actions */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => setShowConnector(true)}
+                  variant="outline"
+                  size="sm"
+                  icon={<Database className="w-4 h-4" />}
+                >
+                  Connect Source
+                </Button>
+                <Button
+                  onClick={() => setShowGeneratorModal(true)}
+                  variant="outline"
+                  size="sm"
+                  icon={<Sparkles className="w-4 h-4" />}
+                >
+                  Generate Sample
+                </Button>
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium text-gray-700">
+                  {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Right: View Mode Toggle */}
+              <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-50 font-medium'
+                  }`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="text-sm">Grid</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('organize')}
+                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
+                    viewMode === 'organize'
+                      ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-50 font-medium'
+                  }`}
+                >
+                  <Folders className="w-4 h-4" />
+                  <span className="text-sm">Organize</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -617,7 +608,9 @@ const DataManagement: React.FC = () => {
             onPreview={handlePreview}
             onDelete={(dataset) => {
               if (confirm(`Delete "${dataset.name}"?`)) {
-                handleDelete(dataset);
+                if (user) {
+                  deleteDataset(dataset, user.id);
+                }
               }
             }}
           />
@@ -927,7 +920,6 @@ const DataManagement: React.FC = () => {
         isOpen={showMoveModal}
         onClose={handleCloseMoveModal}
         onSelectProject={handleConfirmMove}
-        currentProjectId={currentProject?.id}
         datasetName={datasetToMove?.name || ''}
       />
 
@@ -950,7 +942,8 @@ const DataManagement: React.FC = () => {
               break;
             case 'search':
               // Focus search bar
-              document.querySelector('input[type="text"]')?.focus();
+              const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+              searchInput?.focus();
               break;
           }
         }}

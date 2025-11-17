@@ -110,105 +110,105 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 relative">
-      {/* Actions Menu - Only show if there are actions available */}
-      {(onMove || onDelete || onArchive) && (
-        <div className="absolute top-3 right-3 z-30">
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors shadow-sm border border-gray-300 bg-white"
-              title="More actions"
-            >
-              <MoreVertical className="w-4 h-4 text-gray-600" />
-            </button>
+      {/* Header */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2.5">
+          {/* Icon */}
+          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            <span className="text-xl">{getFileIcon((dataset as any).file_type || (dataset as any).fileType)}</span>
+          </div>
           
-            {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 py-2 z-40">
-                {onMove && (
-                  <button
-                    onClick={() => {
-                      onMove(dataset);
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                  >
-                    <FolderOpen className="w-4 h-4" />
-                    Move to Project
-                  </button>
-                )}
-                {onArchive && (
-                  <button
-                    onClick={() => {
-                      onArchive(dataset);
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                  >
-                    <Archive className="w-4 h-4" />
-                    Archive
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => {
-                      if (confirm(`Delete "${dataset.name}"? It will be moved to trash for 30 days.`)) {
-                        onDelete(dataset);
-                        setShowMenu(false);
-                      }
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
+          {/* Title and Description */}
+          <div className="flex-1 min-w-0 max-w-none">
+            <h3 className="text-base font-semibold text-gray-900 break-words">
+              {dataset.name}
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+              {dataset.description || 'No description provided'}
+            </p>
+          </div>
+
+          {/* Health Badge and Menu in a flex row */}
+          <div className="flex-shrink-0 flex items-center gap-2">
+            {/* Health Score Badge */}
+            <div 
+              className="px-2 py-0.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 border-2"
+              style={{ 
+                backgroundColor: healthResult.color + '15',
+                color: healthResult.color,
+                borderColor: healthResult.color + '40'
+              }}
+              title={`Health Score: ${healthResult.score}/100 - ${badgeProps.label}`}
+            >
+              <span>{badgeProps.emoji}</span>
+              <span>{healthResult.score}</span>
+              <span className="font-extrabold">{healthResult.grade}</span>
+            </div>
+
+            {/* Actions Menu */}
+            {(onMove || onDelete || onArchive) && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="More actions"
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-600" />
+                </button>
+              
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 py-2 z-40">
+                    {onMove && (
+                      <button
+                        onClick={() => {
+                          onMove(dataset);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                      >
+                        <FolderOpen className="w-4 h-4" />
+                        Move to Project
+                      </button>
+                    )}
+                    {onArchive && (
+                      <button
+                        onClick={() => {
+                          onArchive(dataset);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                      >
+                        <Archive className="w-4 h-4" />
+                        Archive
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete "${dataset.name}"? It will be moved to trash for 30 days.`)) {
+                            onDelete(dataset);
+                            setShowMenu(false);
+                          }
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
           </div>
         </div>
-      )}
-
-      {/* Health Score Badge */}
-      <div className="absolute top-3 right-16 z-10">
-        <div 
-          className="px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1.5 border-2"
-          style={{ 
-            backgroundColor: healthResult.color + '15',
-            color: healthResult.color,
-            borderColor: healthResult.color + '40'
-          }}
-          title={`Health Score: ${healthResult.score}/100 - ${badgeProps.label}`}
-        >
-          <span>{badgeProps.emoji}</span>
-          <span>{healthResult.score}</span>
-          <span className="font-extrabold text-sm">{healthResult.grade}</span>
-        </div>
-      </div>
-
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3 pr-16">
-            <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
-              <span className="text-2xl">{getFileIcon((dataset as any).file_type || (dataset as any).fileType)}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">
-                {dataset.name}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                {dataset.description || 'No description provided'}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Stats */}
-      <div className="p-6 space-y-3">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="p-4 space-y-2.5">
+        <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center space-x-2">
-            <Database className="w-4 h-4 text-gray-400" />
+            <Database className="w-3.5 h-3.5 text-gray-400" />
             <div>
               <p className="text-xs text-gray-500">Rows</p>
               <p className="text-sm font-semibold text-gray-900">
@@ -218,7 +218,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <BarChart2 className="w-4 h-4 text-gray-400" />
+            <BarChart2 className="w-3.5 h-3.5 text-gray-400" />
             <div>
               <p className="text-xs text-gray-500">Columns</p>
               <p className="text-sm font-semibold text-gray-900">
@@ -228,9 +228,9 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center space-x-2">
-            <FileText className="w-4 h-4 text-gray-400" />
+            <FileText className="w-3.5 h-3.5 text-gray-400" />
             <div>
               <p className="text-xs text-gray-500">Type</p>
               <p className="text-sm font-semibold text-gray-900 uppercase">
@@ -239,7 +239,7 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <HardDrive className="w-4 h-4 text-gray-400" />
+            <HardDrive className="w-3.5 h-3.5 text-gray-400" />
             <div>
               <p className="text-xs text-gray-500">Size</p>
               <p className="text-sm font-semibold text-gray-900">
@@ -250,19 +250,19 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
         </div>
 
         <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
-          <Calendar className="w-4 h-4 text-gray-400" />
+          <Calendar className="w-3.5 h-3.5 text-gray-400" />
           <p className="text-xs text-gray-500">Uploaded {getUploadedDate()}</p>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="px-6 pb-6 flex flex-wrap gap-2">
+      <div className="px-4 pb-3 flex flex-wrap gap-2">
         <Button
           onClick={() => onPreview(dataset)}
           variant="outline"
           size="sm"
-          icon={<Eye className="w-4 h-4" />}
-          className="flex-1"
+          icon={<Eye className="w-3.5 h-3.5" />}
+          className="flex-1 text-xs"
         >
           Preview
         </Button>
@@ -270,30 +270,38 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
           onClick={() => onQualityCheck(dataset)}
           variant="outline"
           size="sm"
-          icon={<Shield className="w-4 h-4" />}
-          className="flex-1"
+          icon={<Shield className="w-3.5 h-3.5" />}
+          className="flex-1 text-xs"
           data-tour="health-score"
         >
           Quality
         </Button>
       </div>
 
-      <div className="px-6 pb-6 flex flex-wrap gap-2">
+      <div className="px-4 pb-4 flex flex-wrap gap-2">
         <Button
-          onClick={() => onAnalyze(dataset)}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Analyze clicked for:', dataset.name);
+            onAnalyze(dataset);
+          }}
           variant="outline"
           size="sm"
-          icon={<BarChart2 className="w-4 h-4" />}
-          className="flex-1"
+          icon={<BarChart2 className="w-3.5 h-3.5" />}
+          className="flex-1 text-xs"
         >
           Analyze
         </Button>
         <Button
-          onClick={() => onChat(dataset)}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Chat clicked for:', dataset.name);
+            onChat(dataset);
+          }}
           variant="outline"
           size="sm"
-          icon={<MessageSquare className="w-4 h-4" />}
-          className="flex-1"
+          icon={<MessageSquare className="w-3.5 h-3.5" />}
+          className="flex-1 text-xs"
           data-tour="ask-ai"
         >
           Ask AI
@@ -301,13 +309,13 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
       </div>
       
       {onTransform && (
-        <div className="px-6 pb-6">
+        <div className="px-4 pb-4">
           <Button
             onClick={() => onTransform(dataset)}
             variant="primary"
             size="sm"
-            icon={<Sparkles className="w-4 h-4" />}
-            className="w-full bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700"
+            icon={<Sparkles className="w-3.5 h-3.5" />}
+            className="w-full bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-xs"
             data-tour="transform-studio"
           >
             ✨ Transform with AI

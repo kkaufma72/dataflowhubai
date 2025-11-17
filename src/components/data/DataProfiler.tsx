@@ -45,6 +45,12 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const [selectedRecommendations, setSelectedRecommendations] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'columns' | 'issues' | 'recommendations'>('overview');
 
+  // Helper to convert columns array to object for easier lookup
+  const columnProfiles = profile?.columns.reduce((acc, col) => {
+    acc[col.name] = col;
+    return acc;
+  }, {} as Record<string, any>) || {};
+
   useEffect(() => {
     if (dataset && dataset.preview_data) {
       generateProfile();
@@ -53,8 +59,19 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
 
   // OPTIMIZED: Async processing to prevent UI blocking
   const generateProfile = async () => {
+    console.log('🔍 DataProfiler - Generating profile for dataset:', dataset.name);
+    console.log('📊 Dataset structure:', {
+      hasPreviewData: !!dataset.preview_data,
+      previewData: dataset.preview_data
+    });
+    
     // Validate preview_data structure
     if (!dataset.preview_data || !dataset.preview_data.columns || !dataset.preview_data.rows) {
+      console.error('❌ No preview data:', {
+        hasPreviewData: !!dataset.preview_data,
+        hasColumns: dataset.preview_data?.columns,
+        hasRows: dataset.preview_data?.rows
+      });
       toast.error('No preview data available');
       return;
     }
@@ -64,8 +81,16 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     try {
       const { columns, rows } = dataset.preview_data!;
       
+      console.log('✅ Preview data extracted:', {
+        columnsCount: columns.length,
+        rowsCount: rows.length,
+        columnsType: Array.isArray(columns),
+        rowsType: Array.isArray(rows)
+      });
+      
       // Validate rows is an array with data
       if (!Array.isArray(rows) || rows.length === 0) {
+        console.error('❌ Invalid rows:', { isArray: Array.isArray(rows), length: rows?.length });
         toast.error('Dataset contains no data rows');
         setIsLoading(false);
         return;
@@ -336,13 +361,13 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-12">
-          <RefreshCw className="w-8 h-8 text-primary-600 animate-spin mb-4" />
-          <p className="text-gray-700">Generating data profile...</p>
+        <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
+          <RefreshCw className="w-10 h-10 text-blue-400 animate-spin mb-4" />
+          <p className="text-lg font-medium text-gray-300">Generating data profile...</p>
         </div>
       ) : !profile ? (
-        <div className="flex flex-col items-center justify-center p-12">
-          <AlertTriangle className="w-8 h-8 text-amber-500 mb-4" />
+        <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
+          <AlertTriangle className="w-10 h-10 text-amber-400 mb-4" />
           <p className="text-gray-700">No profile generated yet</p>
           <Button
             className="mt-4"
@@ -354,40 +379,40 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
       ) : (
         <>
           <div className="mb-6">
-            <div className="border-b border-gray-200">
+            <div className="border-b border-gray-800">
               <nav className="-mb-px flex space-x-8">
                 <button
                   onClick={() => setActiveTab('overview')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
                     activeTab === 'overview'
-                      ? 'border-primary text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   Overview
                 </button>
                 <button
                   onClick={() => setActiveTab('columns')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
                     activeTab === 'columns'
-                      ? 'border-primary text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   Columns
                 </button>
                 <button
                   onClick={() => setActiveTab('issues')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
                     activeTab === 'issues'
-                      ? 'border-primary text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   <div className="flex items-center">
                     Issues
-                    {profile.dataQualityIssues.length > 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
+                    {profile?.dataQualityIssues && profile.dataQualityIssues.length > 0 && (
+                      <span className="ml-2 px-2 py-1 text-xs font-bold rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-400">
                         {profile.dataQualityIssues.length}
                       </span>
                     )}
@@ -395,16 +420,16 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('recommendations')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
                     activeTab === 'recommendations'
-                      ? 'border-primary text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   <div className="flex items-center">
                     Recommendations
-                    {profile.recommendations.length > 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                    {profile?.recommendations && profile.recommendations.length > 0 && (
+                      <span className="ml-2 px-2 py-1 text-xs font-bold rounded-md bg-emerald-500/20 border border-emerald-500/30 text-emerald-400">
                         {profile.recommendations.length}
                       </span>
                     )}
@@ -417,38 +442,38 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <p className="text-sm font-medium text-gray-500">Rows</p>
-                  <p className="mt-1 text-2xl font-semibold text-gray-900">{profile.rowCount.toLocaleString()}</p>
+                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-gray-700 transition-all">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rows</p>
+                  <p className="mt-2 text-3xl font-bold text-white">{profile.totalRows.toLocaleString()}</p>
                 </div>
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <p className="text-sm font-medium text-gray-500">Columns</p>
-                  <p className="mt-1 text-2xl font-semibold text-gray-900">{Object.keys(profile.columnProfiles).length}</p>
+                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-gray-700 transition-all">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Columns</p>
+                  <p className="mt-2 text-3xl font-bold text-white">{profile.columns.length}</p>
                 </div>
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <p className="text-sm font-medium text-gray-500">Data Quality Issues</p>
-                  <p className="mt-1 text-2xl font-semibold text-gray-900">{profile.dataQualityIssues.length}</p>
+                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-amber-500/30 transition-all">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quality Issues</p>
+                  <p className="mt-2 text-3xl font-bold text-amber-400">{profile.dataQualityIssues?.length || 0}</p>
                 </div>
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <p className="text-sm font-medium text-gray-500">Recommendations</p>
-                  <p className="mt-1 text-2xl font-semibold text-gray-900">{profile.recommendations.length}</p>
+                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-emerald-500/30 transition-all">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Recommendations</p>
+                  <p className="mt-2 text-3xl font-bold text-emerald-400">{profile.recommendations?.length || 0}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Column Types</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <h4 className="text-base font-bold text-white mb-4">Column Types</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   {['numeric', 'categorical', 'datetime', 'boolean', 'text'].map(type => {
-                    const count = Object.values(profile.columnProfiles).filter(col => col.type === type).length;
+                    const count = Object.values(columnProfiles).filter((col: any) => col.type === type).length;
                     if (count === 0) return null;
                     
                     return (
-                      <div key={type} className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                        <div className="flex items-center">
+                      <div key={type} className="p-4 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-blue-500/30 transition-all">
+                        <div className="flex items-center gap-2">
                           {getColumnTypeIcon(type)}
-                          <span className="ml-2 text-sm font-medium text-gray-700 capitalize">{type}</span>
+                          <span className="text-sm font-semibold text-gray-300 capitalize">{type}</span>
                         </div>
-                        <p className="mt-1 text-2xl font-semibold text-gray-900">{count}</p>
+                        <p className="mt-3 text-2xl font-bold text-white">{count}</p>
                       </div>
                     );
                   })}
@@ -460,24 +485,24 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
           {activeTab === 'columns' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <h4 className="text-sm font-medium text-gray-700 mb-4">Select Column</h4>
+                <h4 className="text-base font-bold text-white mb-4">Select Column</h4>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {Object.keys(profile.columnProfiles).map((column) => (
+                  {Object.keys(columnProfiles).map((column) => (
                     <button
                       key={column}
                       onClick={() => setSelectedColumn(column)}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                      className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
                         selectedColumn === column
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                          ? 'border-blue-500 bg-blue-500/10'
+                          : 'border-gray-800 bg-gray-900/50 hover:border-gray-700 hover:bg-gray-900'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-900">{column}</span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded ${
-                          getColumnTypeColor(profile.columnProfiles[column].type)
+                        <span className="font-semibold text-white">{column}</span>
+                        <span className={`px-2 py-1 text-xs font-bold rounded ${
+                          getColumnTypeColor(columnProfiles[column].type)
                         }`}>
-                          {profile.columnProfiles[column].type}
+                          {columnProfiles[column].type}
                         </span>
                       </div>
                     </button>
@@ -485,74 +510,74 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                 </div>
               </div>
 
-              {selectedColumn && profile.columnProfiles[selectedColumn] && (
+              {selectedColumn && columnProfiles[selectedColumn] && (
                 <div className="lg:col-span-2 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Statistics</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">Type</span>
-                          <span className={`px-2 py-1 text-xs font-medium rounded ${
-                            getColumnTypeColor(profile.columnProfiles[selectedColumn].type)
+                    <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800">
+                      <h4 className="text-base font-bold text-white mb-4">Statistics</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-400">Type</span>
+                          <span className={`px-2 py-1 text-xs font-bold rounded ${
+                            getColumnTypeColor(columnProfiles[selectedColumn].type)
                           }`}>
-                            {profile.columnProfiles[selectedColumn].type}
+                            {columnProfiles[selectedColumn].type}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">Count</span>
-                          <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].count}</span>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-400">Count</span>
+                          <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].count}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">Missing</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {profile.columnProfiles[selectedColumn].missing} ({profile.columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-400">Missing</span>
+                          <span className="text-sm font-bold text-white">
+                            {columnProfiles[selectedColumn].missing} ({columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">Unique</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {profile.columnProfiles[selectedColumn].unique} ({profile.columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-400">Unique</span>
+                          <span className="text-sm font-bold text-white">
+                            {columnProfiles[selectedColumn].unique} ({columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
                           </span>
                         </div>
 
-                        {profile.columnProfiles[selectedColumn].type === 'numeric' && (
+                        {columnProfiles[selectedColumn].type === 'numeric' && (
                           <>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Mean</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.mean?.toFixed(2)}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Mean</span>
+                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.mean?.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Median</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.median?.toFixed(2)}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Median</span>
+                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.median?.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Std Dev</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.std?.toFixed(2)}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Std Dev</span>
+                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.std?.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Min</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.min}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Min</span>
+                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.min}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Max</span>
-                              <span className="text-sm font-medium text-gray-900">{profile.columnProfiles[selectedColumn].stats.max}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Max</span>
+                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.max}</span>
                             </div>
                           </>
                         )}
                             
-                        {profile.columnProfiles[selectedColumn].type === 'datetime' && (
+                        {columnProfiles[selectedColumn].type === 'datetime' && (
                           <>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Min Date</span>
-                              <span className="text-sm font-medium text-gray-900">
-                                {new Date(profile.columnProfiles[selectedColumn].stats.min as string).toLocaleDateString()}
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Min Date</span>
+                              <span className="text-sm font-bold text-white">
+                                {new Date(columnProfiles[selectedColumn].stats.min as string).toLocaleDateString()}
                               </span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-500">Max Date</span>
-                              <span className="text-sm font-medium text-gray-900">
-                                {new Date(profile.columnProfiles[selectedColumn].stats.max as string).toLocaleDateString()}
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-400">Max Date</span>
+                              <span className="text-sm font-bold text-white">
+                                {new Date(columnProfiles[selectedColumn].stats.max as string).toLocaleDateString()}
                               </span>
                             </div>
                           </>
@@ -560,16 +585,16 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                       </div>
                     </div>
                     
-                    <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Distribution</h4>
-                      {profile.columnProfiles[selectedColumn].type === 'numeric' ? (
-                        renderColumnHistogram(profile.columnProfiles[selectedColumn])
-                      ) : (profile.columnProfiles[selectedColumn].type === 'categorical' || 
-                           profile.columnProfiles[selectedColumn].type === 'boolean') ? (
-                        renderCategoricalDistribution(profile.columnProfiles[selectedColumn])
+                    <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800">
+                      <h4 className="text-base font-bold text-white mb-4">Distribution</h4>
+                      {columnProfiles[selectedColumn].type === 'numeric' ? (
+                        renderColumnHistogram(columnProfiles[selectedColumn])
+                      ) : (columnProfiles[selectedColumn].type === 'categorical' || 
+                           columnProfiles[selectedColumn].type === 'boolean') ? (
+                        renderCategoricalDistribution(columnProfiles[selectedColumn])
                       ) : (
                         <div className="flex items-center justify-center h-64">
-                          <p className="text-sm text-gray-500">No distribution visualization available for this column type</p>
+                          <p className="text-sm text-gray-400">No distribution visualization available for this column type</p>
                         </div>
                       )}
                     </div>
@@ -581,21 +606,21 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
 
           {activeTab === 'issues' && (
             <div className="space-y-4">
-              {profile.dataQualityIssues.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8">
-                  <Check className="w-12 h-12 text-green-500 mb-4" />
-                  <p className="text-lg font-medium text-gray-900">No data quality issues detected</p>
-                  <p className="text-sm text-gray-500 mt-1">Your dataset looks good!</p>
+              {!profile.dataQualityIssues || profile.dataQualityIssues.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
+                  <Check className="w-16 h-16 text-emerald-400 mb-4" />
+                  <p className="text-xl font-bold text-white">No data quality issues detected</p>
+                  <p className="text-sm text-gray-400 mt-2">Your dataset looks good!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {profile.dataQualityIssues.map((issue, index) => (
-                    <div key={index} className={`p-4 rounded-lg border ${
+                    <div key={index} className={`p-5 rounded-lg border ${
                       issue.severity === 'high' 
-                        ? 'border-red-200 bg-red-50' 
+                        ? 'border-red-500/50 bg-red-500/10' 
                         : issue.severity === 'medium'
-                        ? 'border-amber-200 bg-amber-50'
-                        : 'border-blue-200 bg-blue-50'
+                        ? 'border-amber-500/50 bg-amber-500/10'
+                        : 'border-blue-500/50 bg-blue-500/10'
                     }`}>
                       <div className="flex items-start">
                         <div className="flex-shrink-0">
@@ -603,26 +628,26 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                         </div>
                         <div className="ml-3 flex-1">
                           <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium text-gray-900">{issue.type.replace(/_/g, ' ')}</h4>
-                            <span className={`px-2 py-1 text-xs font-medium rounded ${getIssueTypeColor(issue.severity)}`}>
+                            <h4 className="text-base font-bold text-white">{issue.type.replace(/_/g, ' ')}</h4>
+                            <span className={`px-3 py-1 text-xs font-bold rounded-md ${getIssueTypeColor(issue.severity)}`}>
                               {issue.severity}
                             </span>
                           </div>
                           {issue.column && (
-                            <p className="text-sm font-medium text-gray-700 mt-1">Column: {issue.column}</p>
+                            <p className="text-sm font-semibold text-gray-300 mt-2">Column: {issue.column}</p>
                           )}
-                          <div className={`mt-2 text-sm ${
+                          <div className={`mt-3 text-sm font-medium ${
                             issue.severity === 'high' 
-                              ? 'text-red-700' 
+                              ? 'text-red-300' 
                               : issue.severity === 'medium'
-                              ? 'text-amber-700'
-                              : 'text-blue-700'
+                              ? 'text-amber-300'
+                              : 'text-blue-300'
                           }`}>
                             <p>{issue.description}</p>
                             {issue.affectedRows && (
-                              <p className="mt-1">
+                              <p className="mt-2">
                                 Affects {issue.affectedRows.toLocaleString()} rows 
-                                ({((issue.affectedRows / profile.rowCount) * 100).toFixed(1)}% of data)
+                                ({((issue.affectedRows / profile.totalRows) * 100).toFixed(1)}% of data)
                               </p>
                             )}
                           </div>

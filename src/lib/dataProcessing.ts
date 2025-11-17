@@ -20,6 +20,22 @@ export interface ColumnStats {
     distribution?: Array<{ range: string; count: number }>;
   }
   
+  export interface DataQualityIssue {
+    type: 'error' | 'warning' | 'info';
+    column?: string;
+    description: string;
+    affectedRows?: number;
+    severity: 'high' | 'medium' | 'low';
+  }
+
+  export interface PreprocessingRecommendation {
+    type: 'missing_values' | 'outliers' | 'normalization' | 'encoding' | 'feature_engineering';
+    column?: string;
+    description: string;
+    suggestedMethod: string;
+    priority: 'high' | 'medium' | 'low';
+  }
+
   export interface DataProfile {
     totalRows: number;
     totalColumns: number;
@@ -28,6 +44,8 @@ export interface ColumnStats {
     duplicatePercent: number;
     columns: ColumnStats[];
     correlations?: Array<{ col1: string; col2: string; correlation: number }>;
+    dataQualityIssues: DataQualityIssue[];
+    recommendations: PreprocessingRecommendation[];
   }
   
   /**
@@ -194,7 +212,7 @@ export interface ColumnStats {
     // OPTIMIZATION 1: Skip expensive memory calculation for large datasets
     const memoryBytes = totalRows > 10000 
       ? totalRows * totalColumns * 50  // Rough estimate
-      : JSON.stringify(data.slice(0, 1000)).length * (totalRows / Math.min(1000, totalRows)); // Sample-based
+      : JSON.stringify({ columns, rows: rows.slice(0, 1000) }).length * (totalRows / Math.min(1000, totalRows)); // Sample-based
     const memoryUsage = formatBytes(memoryBytes);
   
     // OPTIMIZATION 2: Skip duplicate detection for large datasets (too expensive)
@@ -246,6 +264,94 @@ export interface ColumnStats {
         }
       }
     }
+
+    // Generate data quality issues
+    const dataQualityIssues: DataQualityIssue[] = [];
+    
+    // Check for high missing values
+    columnStats.forEach(col => {
+      if (col.missingPercent > 50) {
+        dataQualityIssues.push({
+          type: 'error',
+          column: col.name,
+          description: `High missing values (${col.missingPercent.toFixed(1)}%)`,
+          affectedRows: col.missing,
+          severity: 'high'
+        });
+      } else if (col.missingPercent > 20) {
+        dataQualityIssues.push({
+          type: 'warning',
+          column: col.name,
+          description: `Moderate missing values (${col.missingPercent.toFixed(1)}%)`,
+          affectedRows: col.missing,
+          severity: 'medium'
+        });
+      }
+    });
+
+    // Check for duplicate rows
+    if (duplicatePercent > 10) {
+      dataQualityIssues.push({
+        type: 'warning',
+        description: `${duplicatePercent.toFixed(1)}% duplicate rows detected`,
+        affectedRows: duplicateRows,
+        severity: duplicatePercent > 30 ? 'high' : 'medium'
+      });
+    }
+
+    // Generate preprocessing recommendations
+    const recommendations: PreprocessingRecommendation[] = [];
+
+    columnStats.forEach(col => {
+      // Missing values recommendations
+      if (col.missingPercent > 5) {
+        recommendations.push({
+          type: 'missing_values',
+          column: col.name,
+          description: `Handle ${col.missing} missing values in ${col.name}`,
+          suggestedMethod: col.type === 'numeric' ? 'mean/median imputation' : 'mode imputation or drop',
+          priority: col.missingPercent > 20 ? 'high' : 'medium'
+        });
+      }
+
+      // Normalization recommendations for numeric columns
+      if (col.type === 'numeric' && col.std && col.mean) {
+        const cv = col.std / Math.abs(col.mean); // Coefficient of variation
+        if (cv > 1) {
+          recommendations.push({
+            type: 'normalization',
+            column: col.name,
+            description: `High variance detected in ${col.name}`,
+            suggestedMethod: 'StandardScaler or MinMaxScaler',
+            priority: 'medium'
+          });
+        }
+      }
+
+      // Encoding recommendations for categorical columns
+      if (col.type === 'categorical' && col.unique > 2) {
+        recommendations.push({
+          type: 'encoding',
+          column: col.name,
+          description: `Encode categorical column ${col.name} (${col.unique} categories)`,
+          suggestedMethod: col.unique > 10 ? 'Target encoding or embeddings' : 'One-hot encoding',
+          priority: 'high'
+        });
+      }
+    });
+
+    // Feature engineering recommendations for correlated columns
+    if (correlations.length > 0) {
+      const highCorrelations = correlations.filter(c => Math.abs(c.correlation) > 0.8);
+      if (highCorrelations.length > 0) {
+        recommendations.push({
+          type: 'feature_engineering',
+          description: `${highCorrelations.length} highly correlated feature pairs detected`,
+          suggestedMethod: 'Consider feature selection or PCA',
+          priority: 'medium'
+        });
+      }
+    }
   
     return {
       totalRows,
@@ -254,7 +360,12 @@ export interface ColumnStats {
       duplicateRows,
       duplicatePercent,
       columns: columnStats,
-      correlations: correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation)).slice(0, 10)
+      correlations: correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation)).slice(0, 10),
+      dataQualityIssues,
+      recommendations: recommendations.sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      })
     };
   };
   
