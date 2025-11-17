@@ -25,46 +25,68 @@ const PricingPage: React.FC = () => {
       tier: 'free' as const,
       features: [
         '3 datasets',
-        '20 AI questions/month',
-        'Basic visualizations',
-        'CSV export',
+        '100 MB storage',
+        'Basic ML models',
+        'Standard visualizations',
         'Community support',
+        '7-day data retention',
       ],
       ctaText: 'Get Started',
       isFree: true,
     },
     {
+      title: 'Starter',
+      price: 25,
+      tier: 'starter' as const,
+      features: [
+        '25 datasets',
+        '5 GB storage',
+        'Advanced ML models',
+        'Custom visualizations',
+        'Email support',
+        '30-day data retention',
+        'API access',
+        'Export capabilities',
+      ],
+      ctaText: 'Start Free Trial',
+      isPopular: false,
+    },
+    {
       title: 'Professional',
-      price: 49,
+      price: 50,
       tier: 'professional' as const,
       features: [
         'Unlimited datasets',
-        'Unlimited AI questions',
-        'Advanced visualizations',
-        'ML model training',
-        'Natural language transformations',
-        'Voice input',
-        'All export formats',
+        '50 GB storage',
+        'All ML models',
+        'Advanced analytics',
         'Priority support',
+        'Unlimited data retention',
+        'Full API access',
+        'Team collaboration (5 users)',
+        'Custom integrations',
+        'Advanced security',
       ],
-      ctaText: 'Upgrade to Pro',
+      ctaText: 'Start Free Trial',
       isPopular: true,
     },
     {
-      title: 'Team',
-      price: 149,
+      title: 'Enterprise',
+      price: 'Custom' as const,
       tier: 'team' as const,
       features: [
-        'Everything in Pro',
-        'Team collaboration (5 users)',
-        'Shared workspaces',
-        'Admin controls',
-        'SSO integration',
-        'Audit logs',
-        'Custom branding',
+        'Everything in Professional',
+        'Custom storage limits',
+        'Unlimited team members',
         'Dedicated support',
+        'SLA guarantee',
+        'Custom training',
+        'White-label options',
+        'SSO & advanced security',
+        'Custom deployment',
+        'Dedicated account manager',
       ],
-      ctaText: 'Contact Sales',
+      ctaText: 'Talk to Sales',
     },
   ];
 
@@ -81,10 +103,10 @@ const PricingPage: React.FC = () => {
             Simple, Transparent Pricing
           </h1>
           <p className="page-subtitle text-primary-100 mb-4">
-            Start free forever, upgrade when you need more
+            Start free, scale as you grow
           </p>
           <p className="body-text text-primary-200">
-            No credit card required • Free tier always available
+            No credit card required • 14-day free trial on all paid plans
           </p>
           <p className="section-subtitle text-primary-200 mt-3">
             Beta users get grandfathered into special lifetime pricing
@@ -94,7 +116,7 @@ const PricingPage: React.FC = () => {
 
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-4 gap-6 mb-12">
             {pricingPlans.map((plan) => (
               <PricingCard
                 key={plan.tier}
