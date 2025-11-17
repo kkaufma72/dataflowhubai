@@ -113,7 +113,16 @@ Parse this command and return JSON:
         conversationHistory: []
       });
 
-      const parsedCommand = JSON.parse(response.text || '{}');
+      // Strip markdown code blocks if present
+      let jsonText = response.text || '{}';
+      if (jsonText.includes('```json')) {
+        jsonText = jsonText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      } else if (jsonText.includes('```')) {
+        jsonText = jsonText.replace(/```\s*/g, '');
+      }
+      jsonText = jsonText.trim();
+
+      const parsedCommand = JSON.parse(jsonText);
 
       // Execute the transformation
       const result = await executeTransformation(parsedCommand, dataset);
@@ -152,7 +161,16 @@ Parse this command and return JSON:
 
     } catch (error: any) {
       console.error('Transformation error:', error);
-      toast.error(error.message || 'Failed to apply transformation', { id: 'transform' });
+      
+      // Better error messages
+      let errorMessage = 'Failed to apply transformation';
+      if (error.message?.includes('JSON')) {
+        errorMessage = 'Unable to understand command. Please try rephrasing.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage, { id: 'transform' });
     } finally {
       setIsProcessing(false);
     }

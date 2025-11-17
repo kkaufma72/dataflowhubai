@@ -412,23 +412,21 @@ const DataManagement: React.FC = () => {
             <div className="flex flex-wrap gap-3 items-center justify-between">
               {/* Left: Quick Actions */}
               <div className="flex flex-wrap gap-2">
-                <Button
+                <button
                   onClick={() => setShowConnector(true)}
-                  variant="outline"
-                  size="sm"
-                  icon={<Database className="w-4 h-4" />}
+                  className="px-4 py-2 bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
                 >
-                  Connect Source
-                </Button>
-                <Button
+                  <Database className="w-4 h-4" />
+                  <span>Connect Source</span>
+                </button>
+                <button
                   onClick={() => setShowGeneratorModal(true)}
-                  variant="outline"
-                  size="sm"
-                  icon={<Sparkles className="w-4 h-4" />}
+                  className="px-4 py-2 bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
                 >
-                  Generate Sample
-                </Button>
-                <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium text-gray-700">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generate Sample</span>
+                </button>
+                <span className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm font-bold text-gray-900">
                   {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''}
                 </span>
               </div>
