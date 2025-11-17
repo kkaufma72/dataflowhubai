@@ -12,7 +12,6 @@ interface StripeConfigStatus {
   priceIds: {
     starter: { monthly?: string; annual?: string };
     professional: { monthly?: string; annual?: string };
-    team: { monthly?: string; annual?: string };
   };
 }
 
@@ -28,7 +27,7 @@ export function checkStripeConfig(): StripeConfigStatus {
 
   const isTestMode = publishableKey?.includes('test') ?? false;
 
-  // Check all price IDs
+  // Check all price IDs (Enterprise doesn't need price IDs - it's "Talk to Sales")
   const priceIds = {
     starter: {
       monthly: import.meta.env.VITE_STRIPE_STARTER_MONTHLY_PRICE_ID,
@@ -38,10 +37,6 @@ export function checkStripeConfig(): StripeConfigStatus {
       monthly: import.meta.env.VITE_STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID,
       annual: import.meta.env.VITE_STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID,
     },
-    team: {
-      monthly: import.meta.env.VITE_STRIPE_TEAM_MONTHLY_PRICE_ID,
-      annual: import.meta.env.VITE_STRIPE_TEAM_ANNUAL_PRICE_ID,
-    },
   };
 
   // Check for missing price IDs
@@ -49,8 +44,6 @@ export function checkStripeConfig(): StripeConfigStatus {
   if (!priceIds.starter.annual) missingVars.push('VITE_STRIPE_STARTER_ANNUAL_PRICE_ID');
   if (!priceIds.professional.monthly) missingVars.push('VITE_STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID');
   if (!priceIds.professional.annual) missingVars.push('VITE_STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID');
-  if (!priceIds.team.monthly) missingVars.push('VITE_STRIPE_TEAM_MONTHLY_PRICE_ID');
-  if (!priceIds.team.annual) missingVars.push('VITE_STRIPE_TEAM_ANNUAL_PRICE_ID');
 
   // Generate warnings
   if (missingVars.length > 0) {
@@ -104,9 +97,8 @@ export function logStripeConfig(): void {
     'Starter (Annual)': status.priceIds.starter.annual || '❌ Missing',
     'Professional (Monthly)': status.priceIds.professional.monthly || '❌ Missing',
     'Professional (Annual)': status.priceIds.professional.annual || '❌ Missing',
-    'Team (Monthly)': status.priceIds.team.monthly || '❌ Missing',
-    'Team (Annual)': status.priceIds.team.annual || '❌ Missing',
   });
+  console.log('ℹ️ Enterprise plan uses "Talk to Sales" (no price IDs needed)');
 
   if (!status.isConfigured) {
     console.log('\n📖 Setup Instructions:');
