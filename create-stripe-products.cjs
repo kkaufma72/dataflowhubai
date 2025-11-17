@@ -4,15 +4,23 @@ async function createProducts() {
   const products = [
     {
       name: 'DataFlowHub Starter (Monthly)',
-      price: 2500,
+      price: 2500, // $25.00
       interval: 'month',
       tier: 'starter',
       billing: 'monthly',
       trial_days: 14
     },
     {
+      name: 'DataFlowHub Starter (Annual)',
+      price: 25000, // $250.00 (save $50/year)
+      interval: 'year',
+      tier: 'starter',
+      billing: 'annual',
+      trial_days: 14
+    },
+    {
       name: 'DataFlowHub Professional (Monthly)',
-      price: 9900,
+      price: 5000, // $50.00
       interval: 'month',
       tier: 'professional',
       billing: 'monthly',
@@ -20,25 +28,9 @@ async function createProducts() {
     },
     {
       name: 'DataFlowHub Professional (Annual)',
-      price: 99000,
+      price: 50000, // $500.00 (save $100/year)
       interval: 'year',
       tier: 'professional',
-      billing: 'annual',
-      trial_days: 14
-    },
-    {
-      name: 'DataFlowHub Team (Monthly)',
-      price: 29900,
-      interval: 'month',
-      tier: 'team',
-      billing: 'monthly',
-      trial_days: 14
-    },
-    {
-      name: 'DataFlowHub Team (Annual)',
-      price: 299000,
-      interval: 'year',
-      tier: 'team',
       billing: 'annual',
       trial_days: 14
     },
@@ -77,6 +69,14 @@ async function createProducts() {
     }
   }
 
+  console.log('\n' + '='.repeat(80));
+  console.log('📋 Add these to your .env file:');
+  console.log('='.repeat(80) + '\n');
+  
+  for (const [key, value] of Object.entries(priceIds)) {
+    console.log(`${key}=${value}`);
+  }
+  
   console.log('\n' + '='.repeat(80));
   console.log('📋 Copy these commands to set your Supabase secrets:');
   console.log('='.repeat(80) + '\n');

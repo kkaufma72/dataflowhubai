@@ -1,161 +1,21 @@
 import React, { useState } from 'react';
-import { Check, X, Sparkles, Zap, Users, Crown } from 'lucide-react';
-import Button from '../common/Button';
+import { Check, X } from 'lucide-react';
 import { isStripeReady } from '../../lib/stripeConfigCheck';
 
-interface PricingTier {
+interface Tier {
   name: string;
-  tier: 'free' | 'starter' | 'professional' | 'team';
-  icon: React.ReactNode;
+  price: { monthly: number | null; annual: number | null };
   description: string;
-  monthlyPrice: number;
-  annualPrice: number;
-  monthlyPriceDisplay: string;
-  annualPriceDisplay: string;
-  features: {
-    included: string[];
-    notIncluded?: string[];
-  };
+  features: string[];
   limits: {
     datasets: string;
-    models: string;
-    users: string;
     storage: string;
+    models: string;
+    apiCalls: string;
   };
   cta: string;
-  popular?: boolean;
-  comingSoon?: boolean;
+  highlighted: boolean;
 }
-
-const pricingTiers: PricingTier[] = [
-  {
-    name: 'Free',
-    tier: 'free',
-    icon: <Sparkles className="w-6 h-6" />,
-    description: 'Perfect for getting started with AutoML',
-    monthlyPrice: 0,
-    annualPrice: 0,
-    monthlyPriceDisplay: '$0',
-    annualPriceDisplay: '$0',
-    features: {
-      included: [
-        'Up to 3 datasets',
-        'Basic ML models',
-        'Data quality checks',
-        'CSV & Excel upload',
-        'Community support',
-        '500 MB storage',
-      ],
-      notIncluded: [
-        'Advanced models',
-        'API access',
-        'Custom deployments',
-        'Priority support',
-      ],
-    },
-    limits: {
-      datasets: '3',
-      models: '5',
-      users: '1',
-      storage: '500 MB',
-    },
-    cta: 'Get Started Free',
-  },
-  {
-    name: 'Starter',
-    tier: 'starter',
-    icon: <Zap className="w-6 h-6" />,
-    description: 'For individuals and small teams',
-    monthlyPrice: 25,
-    annualPrice: 250,
-    monthlyPriceDisplay: '$25',
-    annualPriceDisplay: '$250',
-    features: {
-      included: [
-        'Up to 25 datasets',
-        'All ML model types',
-        'Advanced data profiling',
-        'API access (1,000 calls/month)',
-        'Email support',
-        '10 GB storage',
-        'Data quality dashboard',
-        'Basic visualizations',
-      ],
-    },
-    limits: {
-      datasets: '25',
-      models: '50',
-      users: '1',
-      storage: '10 GB',
-    },
-    cta: 'Start 14-Day Trial',
-  },
-  {
-    name: 'Professional',
-    tier: 'professional',
-    icon: <Crown className="w-6 h-6" />,
-    description: 'For growing businesses and data teams',
-    monthlyPrice: 99,
-    annualPrice: 990,
-    monthlyPriceDisplay: '$99',
-    annualPriceDisplay: '$990',
-    popular: true,
-    features: {
-      included: [
-        'Unlimited datasets',
-        'Advanced ML models',
-        'AutoML pipeline builder',
-        'API access (10,000 calls/month)',
-        'Priority email & chat support',
-        '100 GB storage',
-        'Real-time monitoring',
-        'Custom deployments',
-        'Advanced visualizations',
-        'Model explainability',
-        'Scheduled retraining',
-      ],
-    },
-    limits: {
-      datasets: 'Unlimited',
-      models: 'Unlimited',
-      users: '3',
-      storage: '100 GB',
-    },
-    cta: 'Start 14-Day Trial',
-  },
-  {
-    name: 'Team',
-    tier: 'team',
-    icon: <Users className="w-6 h-6" />,
-    description: 'For enterprises with advanced needs',
-    monthlyPrice: 299,
-    annualPrice: 2990,
-    monthlyPriceDisplay: '$299',
-    annualPriceDisplay: '$2,990',
-    features: {
-      included: [
-        'Everything in Professional',
-        'Unlimited team members',
-        'API access (100,000 calls/month)',
-        'Dedicated account manager',
-        '1 TB storage',
-        'SSO & advanced security',
-        'Custom integrations',
-        'On-premise deployment option',
-        'SLA guarantee (99.9% uptime)',
-        'Custom training sessions',
-        'White-label options',
-      ],
-    },
-    limits: {
-      datasets: 'Unlimited',
-      models: 'Unlimited',
-      users: 'Unlimited',
-      storage: '1 TB',
-    },
-    cta: 'Start 14-Day Trial',
-  },
-];
 
 interface PricingTableProps {
   onSelectPlan?: (tier: string, billing: 'monthly' | 'annual') => void;
@@ -171,10 +31,111 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const stripeReady = isStripeReady();
 
+  const tiers: Tier[] = [
+    {
+      name: 'Free',
+      price: { monthly: 0, annual: 0 },
+      description: 'Perfect for getting started',
+      features: [
+        '3 datasets',
+        '100 MB storage',
+        'Basic ML models',
+        'Standard visualizations',
+        'Community support',
+        '7-day data retention'
+      ],
+      limits: {
+        datasets: '3',
+        storage: '100 MB',
+        models: '2',
+        apiCalls: '100/month'
+      },
+      cta: 'Get Started',
+      highlighted: false
+    },
+    {
+      name: 'Starter',
+      price: { monthly: 25, annual: 250 },
+      description: 'For individuals and small teams',
+      features: [
+        '25 datasets',
+        '5 GB storage',
+        'Advanced ML models',
+        'Custom visualizations',
+        'Email support',
+        '30-day data retention',
+        'API access',
+        'Export capabilities'
+      ],
+      limits: {
+        datasets: '25',
+        storage: '5 GB',
+        models: '10',
+        apiCalls: '1,000/month'
+      },
+      cta: 'Start Free Trial',
+      highlighted: false
+    },
+    {
+      name: 'Professional',
+      price: { monthly: 50, annual: 500 },
+      description: 'For growing businesses',
+      features: [
+        'Unlimited datasets',
+        '50 GB storage',
+        'All ML models',
+        'Advanced analytics',
+        'Priority support',
+        'Unlimited data retention',
+        'Full API access',
+        'Team collaboration (5 users)',
+        'Custom integrations',
+        'Advanced security'
+      ],
+      limits: {
+        datasets: 'Unlimited',
+        storage: '50 GB',
+        models: 'Unlimited',
+        apiCalls: '10,000/month'
+      },
+      cta: 'Start Free Trial',
+      highlighted: true
+    },
+    {
+      name: 'Enterprise',
+      price: { monthly: null, annual: null },
+      description: 'For large organizations',
+      features: [
+        'Everything in Professional',
+        'Custom storage limits',
+        'Unlimited team members',
+        'Dedicated support',
+        'SLA guarantee',
+        'Custom training',
+        'White-label options',
+        'SSO & advanced security',
+        'Custom deployment',
+        'Dedicated account manager'
+      ],
+      limits: {
+        datasets: 'Unlimited',
+        storage: 'Custom',
+        models: 'Unlimited',
+        apiCalls: 'Unlimited'
+      },
+      cta: 'Talk to Sales',
+      highlighted: false
+    }
+  ];
+
   const handleSelectPlan = (tier: string) => {
-    if (tier === 'free') {
-      // Navigate to sign up for free
+    if (tier === 'Free') {
       window.location.href = '/signin';
+      return;
+    }
+
+    if (tier === 'Enterprise') {
+      window.location.href = 'mailto:sales@dataflow.ai?subject=Enterprise Plan Inquiry';
       return;
     }
 
@@ -186,13 +147,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
     if (onSelectPlan) {
       onSelectPlan(tier, billingPeriod);
     }
-  };
-
-  const getAnnualSavings = (monthly: number, annual: number) => {
-    const monthlyCost = monthly * 12;
-    const savings = monthlyCost - annual;
-    const savingsPercent = Math.round((savings / monthlyCost) * 100);
-    return { savings, savingsPercent };
   };
 
   return (
@@ -220,7 +174,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           >
             Annual
             <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-              Save up to 17%
+              Save 17%
             </span>
           </button>
         </div>
@@ -228,23 +182,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       {/* Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {pricingTiers.map((tier) => {
-          const isCurrentTier = tier.tier === currentTier;
-          const price = billingPeriod === 'monthly' ? tier.monthlyPrice : tier.annualPrice;
-          const priceDisplay = billingPeriod === 'monthly' ? tier.monthlyPriceDisplay : tier.annualPriceDisplay;
-          const savings = billingPeriod === 'annual' ? getAnnualSavings(tier.monthlyPrice, tier.annualPrice) : null;
+        {tiers.map((tier) => {
+          const isCurrentTier = tier.name.toLowerCase() === currentTier.toLowerCase();
 
           return (
             <div
-              key={tier.tier}
+              key={tier.name}
               className={`relative rounded-2xl p-6 ${
-                tier.popular
+                tier.highlighted
                   ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-500 shadow-xl scale-105'
                   : 'bg-white border-2 border-gray-200 hover:border-gray-300 shadow-sm'
               } transition-all duration-200`}
             >
               {/* Popular Badge */}
-              {tier.popular && (
+              {tier.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg">
                     MOST POPULAR
@@ -263,61 +214,59 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
               {/* Header */}
               <div className="mb-6">
-                <div className={`inline-flex p-3 rounded-xl mb-4 ${
-                  tier.popular ? 'bg-indigo-100' : 'bg-gray-100'
-                }`}>
-                  {tier.icon}
-                </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
                 <p className="text-sm text-gray-600">{tier.description}</p>
               </div>
 
-              {/* Pricing */}
+              {/* Price */}
               <div className="mb-6">
-                <div className="flex items-baseline">
-                  <span className="text-4xl font-bold text-gray-900">{priceDisplay}</span>
-                  {price > 0 && (
-                    <span className="ml-2 text-gray-600">
-                      /{billingPeriod === 'monthly' ? 'mo' : 'year'}
-                    </span>
-                  )}
-                </div>
-                {billingPeriod === 'annual' && savings && savings.savings > 0 && (
-                  <p className="mt-2 text-sm text-green-600 font-semibold">
-                    Save ${savings.savings}/year ({savings.savingsPercent}% off)
-                  </p>
+                {tier.price.monthly === null ? (
+                  <div className="text-3xl font-bold text-gray-900">Custom Pricing</div>
+                ) : (
+                  <>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-bold text-gray-900">
+                        ${billingPeriod === 'monthly' ? tier.price.monthly : Math.round(tier.price.annual! / 12)}
+                      </span>
+                      {tier.price.monthly > 0 && (
+                        <span className="text-gray-600">
+                          /{billingPeriod === 'monthly' ? 'mo' : 'year'}
+                        </span>
+                      )}
+                    </div>
+                    {billingPeriod === 'annual' && tier.price.annual! > 0 && (
+                      <p className="text-sm text-green-600 font-medium mt-2">
+                        Save ${tier.price.monthly * 12 - tier.price.annual!}/year
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
               {/* CTA Button */}
-              <Button
-                onClick={() => handleSelectPlan(tier.tier)}
-                className={`w-full mb-6 ${
-                  tier.popular
-                    ? 'btn-primary-improved'
-                    : 'bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold'
-                } ${isCurrentTier ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isCurrentTier}
+              <button
+                onClick={() => handleSelectPlan(tier.name)}
+                disabled={!stripeReady && tier.name !== 'Enterprise' && tier.name !== 'Free'}
+                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 mb-6 ${
+                  tier.highlighted
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                    : 'bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600'
+                } ${!stripeReady && tier.name !== 'Enterprise' && tier.name !== 'Free' ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isCurrentTier ? 'Current Plan' : tier.cta}
-              </Button>
+                {tier.cta}
+              </button>
 
               {/* Features */}
               <div className="space-y-3 mb-6">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                   Key Features
                 </p>
-                {tier.features.included.slice(0, 6).map((feature, idx) => (
+                {tier.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-gray-700">{feature}</span>
                   </div>
                 ))}
-                {tier.features.included.length > 6 && (
-                  <p className="text-xs text-gray-500 italic">
-                    + {tier.features.included.length - 6} more features
-                  </p>
-                )}
               </div>
 
               {/* Limits */}
@@ -335,12 +284,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <span className="ml-1 font-semibold text-gray-900">{tier.limits.models}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Users:</span>
-                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.users}</span>
-                  </div>
-                  <div>
                     <span className="text-gray-500">Storage:</span>
                     <span className="ml-1 font-semibold text-gray-900">{tier.limits.storage}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">API Calls:</span>
+                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.apiCalls}</span>
                   </div>
                 </div>
               </div>
@@ -362,9 +311,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <th className="text-left py-4 px-6 font-semibold text-gray-900 border-b-2 border-gray-200">
                     Feature
                   </th>
-                  {pricingTiers.map((tier) => (
+                  {tiers.map((tier) => (
                     <th
-                      key={tier.tier}
+                      key={tier.name}
                       className="text-center py-4 px-6 font-semibold text-gray-900 border-b-2 border-gray-200"
                     >
                       {tier.name}
@@ -375,33 +324,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <tbody className="divide-y divide-gray-200">
                 <tr>
                   <td className="py-3 px-6 text-sm text-gray-700">Datasets</td>
-                  {pricingTiers.map((tier) => (
-                    <td key={tier.tier} className="py-3 px-6 text-center text-sm font-semibold">
+                  {tiers.map((tier) => (
+                    <td key={tier.name} className="py-3 px-6 text-center text-sm font-semibold">
                       {tier.limits.datasets}
                     </td>
                   ))}
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="py-3 px-6 text-sm text-gray-700">ML Models</td>
-                  {pricingTiers.map((tier) => (
-                    <td key={tier.tier} className="py-3 px-6 text-center text-sm font-semibold">
+                  {tiers.map((tier) => (
+                    <td key={tier.name} className="py-3 px-6 text-center text-sm font-semibold">
                       {tier.limits.models}
                     </td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="py-3 px-6 text-sm text-gray-700">Team Members</td>
-                  {pricingTiers.map((tier) => (
-                    <td key={tier.tier} className="py-3 px-6 text-center text-sm font-semibold">
-                      {tier.limits.users}
+                  <td className="py-3 px-6 text-sm text-gray-700">Storage</td>
+                  {tiers.map((tier) => (
+                    <td key={tier.name} className="py-3 px-6 text-center text-sm font-semibold">
+                      {tier.limits.storage}
                     </td>
                   ))}
                 </tr>
                 <tr className="bg-gray-50">
-                  <td className="py-3 px-6 text-sm text-gray-700">Storage</td>
-                  {pricingTiers.map((tier) => (
-                    <td key={tier.tier} className="py-3 px-6 text-center text-sm font-semibold">
-                      {tier.limits.storage}
+                  <td className="py-3 px-6 text-sm text-gray-700">API Calls</td>
+                  {tiers.map((tier) => (
+                    <td key={tier.name} className="py-3 px-6 text-center text-sm font-semibold">
+                      {tier.limits.apiCalls}
                     </td>
                   ))}
                 </tr>
