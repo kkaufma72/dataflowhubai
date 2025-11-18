@@ -340,6 +340,7 @@ const ModelTraining: React.FC = () => {
           datasets.find((d) => d.id === config.datasetId)?.name || 'dataset'
         }`,
         status: 'training',
+        modelType: config.modelType,
         datasetId: config.datasetId,
         projectId: '1',
         createdAt: new Date().toISOString(),

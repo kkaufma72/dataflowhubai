@@ -13,8 +13,8 @@ interface MLContextType {
   addDataset: (dataset: Dataset) => Promise<Dataset>;
   updateDataset: (id: string, updates: Partial<Dataset>) => Promise<void>;
   deleteDataset: (id: string) => Promise<void>;
-  addModel: (model: MLModel) => void;
-  updateModelStatus: (id: string, status: string, metrics?: Record<string, number>) => void;
+  addModel: (model: MLModel) => Promise<void>;
+  updateModelStatus: (id: string, status: string, metrics?: Record<string, number>) => Promise<void>;
 }
 
 const MLContext = createContext<MLContextType | undefined>(undefined);
@@ -297,19 +297,75 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     }
   }, [user]);
 
-  const addModel = useCallback((model: MLModel) => {
-    setModels(prev => [model, ...prev]);
-  }, []);
+  const addModel = useCallback(async (model: MLModel) => {
+    try {
+      // Save to Supabase if user is authenticated
+      if (user) {
+        const { error } = await supabase
+          .from('models')
+          .insert({
+            id: model.id,
+            name: model.name,
+            description: model.description,
+            model_type: model.modelType || 'classification',
+            status: model.status,
+            dataset_id: model.datasetId,
+            project_id: model.projectId,
+            hyperparameters: model.hyperparameters || {},
+            training_config: model.config || {},
+            metadata: model.metrics ? { metrics: model.metrics } : {},
+            user_id: user.id,
+          });
 
-  const updateModelStatus = useCallback((id: string, status: string, metrics?: Record<string, number>) => {
-    setModels(prev =>
-      prev.map(model =>
-        model.id === id
-          ? { ...model, status: status as MLModel['status'], ...(metrics && { metrics }) }
-          : model
-      )
-    );
-  }, []);
+        if (error) {
+          console.error('Error saving model to Supabase:', error);
+          throw error;
+        }
+      }
+
+      // Update state
+      setModels(prev => [model, ...prev]);
+    } catch (error) {
+      console.error('Error adding model:', error);
+      throw error;
+    }
+  }, [user]);
+
+  const updateModelStatus = useCallback(async (id: string, status: string, metrics?: Record<string, number>) => {
+    try {
+      // Update in Supabase if user is authenticated
+      if (user) {
+        const updateData: any = { status };
+        
+        // If metrics provided, merge with existing metadata
+        if (metrics) {
+          updateData.metadata = { metrics };
+        }
+
+        const { error } = await supabase
+          .from('models')
+          .update(updateData)
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error updating model status in Supabase:', error);
+          throw error;
+        }
+      }
+
+      // Update state
+      setModels(prev =>
+        prev.map(model =>
+          model.id === id
+            ? { ...model, status: status as MLModel['status'], ...(metrics && { metrics }) }
+            : model
+        )
+      );
+    } catch (error) {
+      console.error('Error updating model status:', error);
+      throw error;
+    }
+  }, [user]);
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({

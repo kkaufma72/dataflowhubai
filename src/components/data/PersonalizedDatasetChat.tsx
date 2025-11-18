@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Dataset } from '../../types';
 import { MessageSquare, Send, Sparkles, X, User, Bot, Loader2 } from 'lucide-react';
 import Card from '../common/Card';
@@ -136,12 +136,16 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  }, []);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  };
+  }, [handleSendMessage]);
 
   const suggestedQuestions = getSuggestedQuestions(dataset, userProfile);
 
@@ -257,7 +261,7 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder={`Ask about ${dataset.name}...`}
             disabled={isLoading}

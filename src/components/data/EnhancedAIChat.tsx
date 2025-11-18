@@ -259,12 +259,16 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   }, [input, isLoading, dataset, userProfile, messages]);
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  }, []);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  };
+  }, [handleSendMessage]);
 
   // Quick action buttons (context-aware based on user profile)
   // Memoized to prevent re-creation on every render (which causes input focus loss)
@@ -476,7 +480,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder={isListening ? "Listening..." : `Ask about ${dataset.name}...`}
             disabled={isLoading || isListening}

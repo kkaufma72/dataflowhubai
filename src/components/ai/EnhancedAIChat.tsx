@@ -162,12 +162,6 @@ Help users understand and work with their datasets, build ML models, and extract
       content: systemPrompt
     };
 
-Current context:
-${getDatasetContext()}
-
-Provide clear, actionable insights tailored to the user's use case. When suggesting analyses or visualizations, be specific and explain why they would be useful. If the user asks about operations, guide them on how to perform them in the platform.`,
-    };
-
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
