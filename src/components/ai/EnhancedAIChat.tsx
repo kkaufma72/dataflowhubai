@@ -2,6 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader, Database, Sparkles, TrendingUp, BarChart3, AlertCircle } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
+import { useUser } from '../../context/UserContext';
+import { 
+  getContextualSystemPrompt, 
+  getContextualDataExample, 
+  getContextualWelcomeMessage 
+} from '../../lib/contextualPrompts';
+import { supabase } from '../../lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -29,11 +36,52 @@ const getUseCasePrompt = (useCase: string): string => {
 const EnhancedAIChat: React.FC = () => {
   const { datasets } = useMLContext();
   const { user } = useAuth();
+  const { userProfile } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedDataset, setSelectedDataset] = useState<string>('');
+  const [userContext, setUserContext] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load user context from profile
+  useEffect(() => {
+    const loadUserContext = async () => {
+      if (!user) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('use_case, profession, industry, objectives')
+          .eq('user_id', user.id)
+          .single();
+
+        if (data) {
+          setUserContext({
+            useCase: data.use_case,
+            profession: data.profession,
+            industry: data.industry,
+            objectives: data.objectives || [],
+          });
+        }
+      } catch (error) {
+        console.error('Error loading user context:', error);
+      }
+    };
+
+    loadUserContext();
+  }, [user]);
+
+  // Show welcome message with context
+  useEffect(() => {
+    if (userContext && messages.length === 0) {
+      const welcomeMessage = getContextualWelcomeMessage(userContext);
+      setMessages([{
+        role: 'assistant',
+        content: welcomeMessage
+      }]);
+    }
+  }, [userContext]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,16 +137,30 @@ ${datasets.map(d => `- ${d.name} (${d.rows} rows, ${d.columns} columns)`).join('
 
     const userMessage: Message = { role: 'user', content: textToSend };
     
-    // Get user's use case for personalized prompts
-    const userUseCase = user?.user_metadata?.use_case || 'general';
-    const useCaseGuidance = getUseCasePrompt(userUseCase);
+    // Build contextual system prompt based on user profile
+    let systemPrompt = '';
+    
+    if (userContext) {
+      systemPrompt = getContextualSystemPrompt(userContext);
+      
+      // Add data-specific example if relevant
+      const dataExample = getContextualDataExample(userContext);
+      systemPrompt += `\n\n${dataExample}`;
+    } else {
+      // Fallback to generic prompt
+      systemPrompt = `You are an expert AI assistant for DataFlowHub AI, an enterprise AutoML platform. 
+Help users understand and work with their datasets, build ML models, and extract insights.`;
+    }
+    
+    // Add dataset context
+    const datasetContext = getDatasetContext();
+    systemPrompt += `\n\nCurrent data context:\n${datasetContext}`;
     
     // Add system context about datasets
     const systemContext: Message = {
       role: 'system',
-      content: `You are a specialized data analysis assistant helping users understand and work with their datasets.
-
-Your specialization: ${useCaseGuidance}
+      content: systemPrompt
+    };
 
 Current context:
 ${getDatasetContext()}

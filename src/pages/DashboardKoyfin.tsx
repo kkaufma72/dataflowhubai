@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
+import { supabase } from '../lib/supabase';
 import { 
   TrendingUp, 
   TrendingDown,
@@ -23,6 +24,7 @@ import toast from 'react-hot-toast';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
+const OnboardingQuestionnaire = lazy(() => import('../components/onboarding/OnboardingQuestionnaire'));
 
 // Prediction models configuration (same as DatasetInsights)
 const predictionModels = [
@@ -112,6 +114,7 @@ const DashboardKoyfin: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showMagicMoment, setShowMagicMoment] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
   const [chartsLoaded, setChartsLoaded] = useState(false);
@@ -136,15 +139,39 @@ const DashboardKoyfin: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Magic Moment check
+  // Check if user needs onboarding questionnaire
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!user) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed, onboarding_skipped')
+          .eq('user_id', user.id)
+          .single();
+
+        // Show questionnaire if not completed and not skipped
+        if (data && !data.onboarding_completed) {
+          setTimeout(() => setShowOnboarding(true), 500);
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+      }
+    };
+
+    checkOnboarding();
+  }, [user]);
+
+  // Magic Moment check (only after onboarding)
   useEffect(() => {
     const hasSeenMagicMoment = localStorage.getItem('hasSeenMagicMoment');
     const hasSkipped = localStorage.getItem('hasSkippedMagicMoment');
     
-    if (!hasSeenMagicMoment && !hasSkipped && datasets.length === 0 && !isLoading && user) {
+    if (!hasSeenMagicMoment && !hasSkipped && datasets.length === 0 && !isLoading && user && !showOnboarding) {
       setTimeout(() => setShowMagicMoment(true), 1000);
     }
-  }, [datasets.length, isLoading, user]);
+  }, [datasets.length, isLoading, user, showOnboarding]);
 
   const handleMagicMomentClose = () => {
     setShowMagicMoment(false);
@@ -782,8 +809,18 @@ const DashboardKoyfin: React.FC = () => {
         </div>
       </div>
 
+      {/* Onboarding Questionnaire */}
+      {showOnboarding && user && (
+        <Suspense fallback={null}>
+          <OnboardingQuestionnaire
+            onComplete={() => setShowOnboarding(false)}
+            onSkip={() => setShowOnboarding(false)}
+          />
+        </Suspense>
+      )}
+
       {/* Magic Moment Welcome */}
-      {showMagicMoment && user && (
+      {showMagicMoment && user && !showOnboarding && (
         <Suspense fallback={null}>
           <MagicMomentWelcome
             userProfile={{
