@@ -10,6 +10,8 @@ import { runAgentOrchestrator } from '../../lib/aiAgents';
 import { secureAIChat } from '../../lib/secureAI';
 import { getMarketingQuickActions } from '../../lib/agents/marketingAgentSimple';
 import { saveConversation, loadConversation } from '../../lib/conversationMemory';
+import { getContextualSystemPrompt, getContextualWelcomeMessage } from '../../lib/contextualPrompts';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
 // Local implementation to prevent bundling issues - NO external dependencies
@@ -55,23 +57,53 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile>({});
+  const [userContext, setUserContext] = useState<any>(null);
   const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognition = useRef<any>(null);
 
-  // Load user profile
+  // Load user profile from database
   useEffect(() => {
-    if (user) {
-      setUserProfile({
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-        email: user.email,
-        company: user.user_metadata?.company,
-        job_title: user.user_metadata?.job_title,
-        use_case: user.user_metadata?.use_case || 'general',
-        linkedin_url: user.user_metadata?.linkedin_url,
-      });
-    }
+    const loadUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        // Load from user_profiles table
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('use_case, profession, industry, objectives')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileData) {
+          setUserContext(profileData);
+        }
+
+        // Also set basic user profile
+        setUserProfile({
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+          email: user.email,
+          company: user.user_metadata?.company,
+          job_title: user.user_metadata?.job_title,
+          use_case: profileData?.use_case || user.user_metadata?.use_case || 'general',
+          linkedin_url: user.user_metadata?.linkedin_url,
+        });
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+        // Fallback to user metadata
+        setUserProfile({
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+          email: user.email,
+          company: user.user_metadata?.company,
+          job_title: user.user_metadata?.job_title,
+          use_case: user.user_metadata?.use_case || 'general',
+          linkedin_url: user.user_metadata?.linkedin_url,
+        });
+      }
+    };
+
+    loadUserProfile();
   }, [user]);
 
   // Optional: Only scroll on new messages if user is near bottom
@@ -173,20 +205,29 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   }, []);
 
-  // Welcome message
+  // Show personalized welcome message
   useEffect(() => {
     if (messages.length === 0 && userProfile.full_name) {
-      const firstName = userProfile.full_name.split(' ')[0];
-      const useCase = formatUseCase(userProfile.use_case);
+      let welcomeContent: string;
+      
+      // Use contextual welcome if user has completed onboarding
+      if (userContext && userContext.profession) {
+        welcomeContent = getContextualWelcomeMessage(userContext);
+      } else {
+        // Fallback to simple welcome
+        const firstName = userProfile.full_name.split(' ')[0];
+        const useCase = formatUseCase(userProfile.use_case);
+        welcomeContent = `Hi ${firstName}! 👋 I'm your AI team of data experts, personalized for ${useCase}.\n\nI can analyze "${dataset.name}" and:\n• Find patterns and insights\n• Create perfect visualizations\n• Suggest actions\n• Clean your data\n• Train ML models\n\nWhat would you like to know?`;
+      }
       
       const welcomeMessage: Message = {
         role: 'assistant',
-        content: `Hi ${firstName}! 👋 I'm your AI team of data experts, personalized for ${useCase}.\n\nI can analyze "${dataset.name}" and:\n• Find patterns and insights\n• Create perfect visualizations\n• Suggest actions\n• Clean your data\n• Train ML models\n\nWhat would you like to know?`,
+        content: welcomeContent,
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);
     }
-  }, [userProfile, dataset.name]);
+  }, [userProfile, userContext, dataset.name, messages.length]);
 
   const formatUseCase = (useCase?: string) => {
     if (!useCase || useCase === 'general') return 'data analysis';
