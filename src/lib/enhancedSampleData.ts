@@ -3,15 +3,13 @@
 export const generateEnhancedSampleDatasets = () => {
   // Sales Transaction Dataset - Perfect for business analytics
   const salesDataset = {
-    id: 'sample-sales-2024',
+    id: 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d',
     name: 'Sales Transactions 2024',
     description: 'Comprehensive sales data with customer demographics, product details, and transaction metrics',
     row_count: 5000,
     column_count: 12,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '487 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'transaction_id', 'date', 'customer_id', 'customer_age', 'customer_segment',
@@ -28,25 +26,18 @@ export const generateEnhancedSampleDatasets = () => {
         ['TXN007', '2024-01-18', 'CUST5612', '27', 'Standard', 'Clothing', 'Running Shoes', '2', '79.99', '159.98', 'PayPal', 'South'],
         ['TXN008', '2024-01-18', 'CUST2341', '39', 'Premium', 'Home & Garden', 'Air Purifier', '1', '249.99', '249.99', 'Credit Card', 'North'],
       ]
-    },
-    column_statistics: {
-      total_amount: { min: 15.99, max: 1299.99, mean: 247.85, median: 189.99 },
-      customer_age: { min: 18, max: 75, mean: 38.5, median: 36 },
-      quantity: { min: 1, max: 10, mean: 2.3, median: 2 }
     }
   };
 
   // Customer Churn Dataset - Great for ML models
   const churnDataset = {
-    id: 'sample-customer-churn',
+    id: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
     name: 'Customer Churn Analysis',
     description: 'Customer behavior data for predicting churn with engagement metrics and subscription details',
     row_count: 3000,
     column_count: 15,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '312 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'customer_id', 'tenure_months', 'monthly_charges', 'total_charges',
@@ -64,25 +55,18 @@ export const generateEnhancedSampleDatasets = () => {
         ['C10007', '12', '55.75', '669.00', 'One Year', 'Auto Pay', 'DSL', 'Yes', 'Yes', 'No', '3', '12', '7.5', '105', 'No'],
         ['C10008', '2', '42.00', '84.00', 'Month-to-Month', 'Manual', 'DSL', 'No', 'No', 'No', '15', '67', '3.8', '28', 'Yes'],
       ]
-    },
-    column_statistics: {
-      tenure_months: { min: 1, max: 72, mean: 32.4, median: 29 },
-      monthly_charges: { min: 18.25, max: 118.75, mean: 64.76, median: 70.35 },
-      satisfaction_score: { min: 1.0, max: 10.0, mean: 7.2, median: 7.5 }
     }
   };
 
-  // E-commerce Product Performance
-  const productPerformanceDataset = {
-    id: 'sample-product-performance',
-    name: 'Product Performance Metrics',
+  // Product Performance Dataset
+  const productDataset = {
+    id: 'c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f',
+    name: 'Product Performance Analysis',
     description: 'Detailed product analytics including sales, reviews, inventory, and conversion rates',
     row_count: 850,
     column_count: 14,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '145 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'product_id', 'product_name', 'category', 'subcategory', 'price',
@@ -99,25 +83,18 @@ export const generateEnhancedSampleDatasets = () => {
         ['PRD1007', 'Gaming Mouse RGB', 'Electronics', 'Accessories', '59.99', '25.00', '789', '47332.11', '11240', '7.02', '4.7', '567', '189', '75'],
         ['PRD1008', 'Organic Coffee Beans 1kg', 'Food & Beverage', 'Coffee', '32.99', '14.00', '2103', '69377.97', '19850', '10.59', '4.9', '1456', '678', '300'],
       ]
-    },
-    column_statistics: {
-      conversion_rate: { min: 0.5, max: 15.8, mean: 5.3, median: 4.8 },
-      avg_rating: { min: 2.1, max: 5.0, mean: 4.4, median: 4.5 },
-      revenue: { min: 189.50, max: 187197.66, mean: 25430.12, median: 18920.45 }
     }
   };
 
   // Employee Performance Dataset
   const employeeDataset = {
-    id: 'sample-employee-data',
-    name: 'Employee Performance & HR Analytics',
+    id: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
+    name: 'Employee Performance Metrics',
     description: 'Comprehensive HR data including performance scores, compensation, and departmental metrics',
     row_count: 450,
     column_count: 13,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '98 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'employee_id', 'department', 'job_title', 'hire_date', 'salary',
@@ -134,25 +111,18 @@ export const generateEnhancedSampleDatasets = () => {
         ['EMP007', 'Engineering', 'Lead Architect', '2018-07-22', '145000', '20000', '9.5', '32', '45', '1', '20', '12', 'PhD'],
         ['EMP008', 'Sales', 'Sales Representative', '2023-01-08', '65000', '18000', '7.8', '14', '28', '7', '8', '1', 'Bachelors'],
       ]
-    },
-    column_statistics: {
-      salary: { min: 45000, max: 185000, mean: 87500, median: 82000 },
-      performance_score: { min: 5.2, max: 10.0, mean: 8.1, median: 8.3 },
-      years_experience: { min: 0, max: 25, mean: 6.8, median: 5 }
     }
   };
 
   // Marketing Campaign Dataset
   const marketingDataset = {
-    id: 'sample-marketing-campaigns',
+    id: 'e5f6a7b8-c9d0-4e5f-2a3b-4c5d6e7f8a9b',
     name: 'Marketing Campaign Performance',
     description: 'Multi-channel marketing campaign data with ROI, engagement, and conversion metrics',
     row_count: 120,
     column_count: 16,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '67 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'campaign_id', 'campaign_name', 'channel', 'start_date', 'end_date',
@@ -170,25 +140,18 @@ export const generateEnhancedSampleDatasets = () => {
         ['CMP007', 'Twitter Promoted Tweets', 'Twitter', '2024-06-01', '2024-06-14', '8000', '210000', '6300', '3.00', '315', '5.00', '1.27', '25.40', '25200', '3.15', '25-45 Tech Savvy'],
         ['CMP008', 'Retargeting Campaign', 'Display Network', '2024-05-20', '2024-06-20', '10000', '550000', '11000', '2.00', '550', '5.00', '0.91', '18.18', '49500', '4.95', 'Cart Abandoners'],
       ]
-    },
-    column_statistics: {
-      roi: { min: 0.8, max: 7.5, mean: 4.3, median: 4.1 },
-      conversion_rate: { min: 1.5, max: 10.0, mean: 4.7, median: 4.5 },
-      ctr: { min: 1.2, max: 12.5, mean: 4.1, median: 3.5 }
     }
   };
 
   // Healthcare Patient Data (Anonymized)
   const healthcareDataset = {
-    id: 'sample-patient-outcomes',
+    id: 'f6a7b8c9-d0e1-4f5a-3b4c-5d6e7f8a9b0c',
     name: 'Patient Health Outcomes',
     description: 'Anonymized patient data with treatment outcomes, vitals, and risk factors',
     row_count: 2500,
     column_count: 14,
-    dateUploaded: new Date().toISOString(),
     file_type: 'csv',
     file_size: '289 KB',
-    project_id: '1',
     preview_data: {
       columns: [
         'patient_id', 'age', 'gender', 'bmi', 'blood_pressure_sys', 'blood_pressure_dia',
@@ -205,11 +168,6 @@ export const generateEnhancedSampleDatasets = () => {
         ['P10007', '69', 'M', '30.8', '148', '92', '218', '138', 'Diabetes Type 2', 'Insulin Therapy', '5', 'No', 'Improved', '7.6'],
         ['P10008', '52', 'F', '27.3', '135', '85', '188', '105', 'Hypertension', 'Medication', '1', 'No', 'Improved', '5.8'],
       ]
-    },
-    column_statistics: {
-      age: { min: 18, max: 89, mean: 56.3, median: 57 },
-      bmi: { min: 18.5, max: 42.1, mean: 28.7, median: 27.9 },
-      risk_score: { min: 1.0, max: 10.0, mean: 6.4, median: 6.7 }
     }
   };
 

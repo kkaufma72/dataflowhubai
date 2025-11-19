@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../components/auth/AuthProvider';
-import { Trash2, RefreshCw, AlertCircle, Eye, X, Undo2, Database, Columns, HardDrive, Clock } from 'lucide-react';
+import { Trash2, RefreshCw, AlertCircle, Eye, X, Undo2, Database, Columns, HardDrive, Clock, Download, FileSpreadsheet } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface DatasetInfo {
@@ -43,11 +43,14 @@ export default function DatasetCleanupTool() {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [projectNameConfirm, setProjectNameConfirm] = useState('');
   const [deletedDatasets, setDeletedDatasets] = useState<DeletedDataset[]>([]);
   const [previewingId, setPreviewingId] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  
+  // Derive a project name for confirmation (use first dataset's name pattern or "datasets")
+  const projectIdentifier = duplicates.length > 0 ? duplicates[0].name.split('_')[0] || 'datasets' : 'datasets';
 
   // Auto-cleanup expired undo buffer entries
   useEffect(() => {
@@ -57,6 +60,46 @@ export default function DatasetCleanupTool() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const exportDuplicatesToCSV = () => {
+    const selectedDatasets = duplicates
+      .flatMap(g => g.datasets)
+      .filter(d => selectedIds.has(d.id));
+
+    if (selectedDatasets.length === 0) {
+      toast.error('No datasets selected for export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['ID', 'Name', 'Created At', 'File Size', 'Row Count', 'Column Count'];
+    const rows = selectedDatasets.map(d => [
+      d.id,
+      d.name,
+      new Date(d.created_at).toISOString(),
+      d.file_size || 'N/A',
+      d.row_count?.toString() || 'N/A',
+      d.column_count?.toString() || 'N/A'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Create download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `duplicate_datasets_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${selectedDatasets.length} datasets to CSV`);
+  };
 
   const analyzeDatasets = useCallback(async () => {
     if (!user) {
@@ -139,7 +182,7 @@ export default function DatasetCleanupTool() {
       return;
     }
     setShowReviewModal(true);
-    setDeleteConfirmText('');
+    setProjectNameConfirm('');
   };
 
   const fetchPreview = async (datasetId: string) => {
@@ -180,8 +223,8 @@ export default function DatasetCleanupTool() {
   };
 
   const executeDelete = async () => {
-    if (deleteConfirmText !== 'DELETE') {
-      toast.error('Please type DELETE to confirm');
+    if (projectNameConfirm.toLowerCase() !== projectIdentifier.toLowerCase()) {
+      toast.error(`Please type "${projectIdentifier}" to confirm`);
       return;
     }
 
@@ -214,7 +257,7 @@ export default function DatasetCleanupTool() {
       if (deleteError) throw deleteError;
 
       // Store in undo buffer
-      (datasetsToDelete || []).forEach(dataset => {
+      (datasetsToDelete || []).forEach((dataset: any) => {
         deleted.push({
           dataset,
           deletedAt: now,
@@ -228,7 +271,7 @@ export default function DatasetCleanupTool() {
       // Clear selection and close modal
       setSelectedIds(new Set());
       setShowReviewModal(false);
-      setDeleteConfirmText('');
+      setProjectNameConfirm('');
 
       // Re-analyze
       await analyzeDatasets();
@@ -479,13 +522,18 @@ export default function DatasetCleanupTool() {
           </div>
         )}
 
-        {/* Review Modal */}
+        {/* Enhanced Review Modal */}
         {showReviewModal && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 rounded-xl border border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
               <div className="p-6 border-b border-gray-800">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-white">Review Deletion</h3>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Review Deletion</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Preview and export duplicates before permanent removal
+                    </p>
+                  </div>
                   <button
                     onClick={() => setShowReviewModal(false)}
                     className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -496,59 +544,125 @@ export default function DatasetCleanupTool() {
               </div>
 
               <div className="p-6 overflow-y-auto flex-1">
+                {/* Warning Banner */}
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
-                    <div>
+                    <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
                       <p className="font-semibold text-red-400 mb-1">Confirm Deletion</p>
                       <p className="text-sm text-red-300/80">
-                        You are about to delete {selectedIds.size} dataset{selectedIds.size !== 1 ? 's' : ''}. 
-                        You will have 60 seconds to undo this action.
+                        You are about to permanently delete {selectedIds.size} dataset{selectedIds.size !== 1 ? 's' : ''}. 
+                        <strong className="text-red-400"> You will have 60 seconds to undo this action.</strong>
                       </p>
                     </div>
+                    <button
+                      onClick={exportDuplicatesToCSV}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap"
+                      title="Export selected datasets to CSV before deletion"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export CSV
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
-                  {Array.from(selectedIds).map(id => {
-                    const dataset = duplicates
-                      .flatMap(g => g.datasets)
-                      .find(d => d.id === id);
-                    return dataset ? (
-                      <div key={id} className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
-                        <p className="text-sm font-medium text-white">{dataset.name}</p>
-                        <p className="text-xs text-gray-500 font-mono mt-1">{dataset.id}</p>
-                      </div>
-                    ) : null;
-                  })}
+                {/* Data Preview Table */}
+                <div className="bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden mb-6">
+                  <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-semibold text-gray-300">
+                        Datasets to Delete ({selectedIds.size})
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500">Scroll to view all</span>
+                  </div>
+                  <div className="overflow-auto max-h-80">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-gray-800">
+                        <tr className="border-b border-gray-700">
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300 w-12">#</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">Name</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">Created</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">Rows</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">Cols</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">Size</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-300">ID</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from(selectedIds).map((id, idx) => {
+                          const dataset = duplicates
+                            .flatMap(g => g.datasets)
+                            .find(d => d.id === id);
+                          return dataset ? (
+                            <tr key={id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                              <td className="px-4 py-3 text-gray-500">{idx + 1}</td>
+                              <td className="px-4 py-3 text-white font-medium">{dataset.name}</td>
+                              <td className="px-4 py-3 text-gray-400 text-xs">
+                                {new Date(dataset.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3 text-gray-400">
+                                {dataset.row_count?.toLocaleString() || '—'}
+                              </td>
+                              <td className="px-4 py-3 text-gray-400">
+                                {dataset.column_count || '—'}
+                              </td>
+                              <td className="px-4 py-3 text-gray-400 text-xs">
+                                {dataset.file_size || '—'}
+                              </td>
+                              <td className="px-4 py-3 text-gray-500 font-mono text-xs truncate max-w-xs" title={dataset.id}>
+                                {dataset.id.slice(0, 8)}...
+                              </td>
+                            </tr>
+                          ) : null;
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
 
-                <div>
+                {/* Confirmation Input */}
+                <div className="bg-gray-800/30 rounded-lg border border-gray-700 p-4">
                   <label className="block text-sm font-semibold text-white mb-2">
-                    Type <span className="text-red-400">DELETE</span> to confirm:
+                    Type <span className="text-red-400 font-mono bg-red-500/10 px-2 py-0.5 rounded">{projectIdentifier}</span> to confirm:
                   </label>
                   <input
                     type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="DELETE"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                    value={projectNameConfirm}
+                    onChange={(e) => setProjectNameConfirm(e.target.value)}
+                    placeholder={projectIdentifier}
+                    className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 font-mono"
+                    autoComplete="off"
                   />
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 This safeguard prevents accidental deletions. You'll have 60 seconds to undo after confirming.
+                  </p>
                 </div>
               </div>
 
               <div className="p-6 border-t border-gray-800 flex gap-3">
                 <button
                   onClick={executeDelete}
-                  disabled={deleteConfirmText !== 'DELETE' || loading}
-                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-semibold rounded-lg transition-colors"
+                  disabled={projectNameConfirm.toLowerCase() !== projectIdentifier.toLowerCase() || loading}
+                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
-                  {loading ? 'Deleting...' : 'Confirm Delete'}
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Confirm Delete {selectedIds.size} Dataset{selectedIds.size !== 1 ? 's' : ''}
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => setShowReviewModal(false)}
                   disabled={loading}
-                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 disabled:bg-gray-900 text-gray-300 font-semibold rounded-lg transition-colors"
+                  className="px-6 py-3 bg-gray-800 hover:bg-gray-700 disabled:bg-gray-900 disabled:cursor-not-allowed text-gray-300 font-semibold rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

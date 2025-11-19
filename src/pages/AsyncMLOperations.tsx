@@ -1,15 +1,89 @@
-import React, { useState } from 'react';
-import { Brain, Zap, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Brain, Zap, Activity, AlertCircle } from 'lucide-react';
 import AsyncModelTraining from '../components/ml/AsyncModelTraining';
 import BatchPredictions from '../components/ml/BatchPredictions';
 import ActiveTasksPanel from '../components/ml/ActiveTasksPanel';
+import toast from 'react-hot-toast';
 
 type TabType = 'training' | 'predictions' | 'monitoring';
+
+interface CeleryStatus {
+  isActive: boolean;
+  status: 'healthy' | 'unhealthy' | 'unknown';
+  message?: string;
+  flowerUrl?: string;
+}
 
 export const AsyncMLOperations: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('training');
   const [modelId] = useState('model-' + Date.now());
   const [datasetId] = useState('dataset-' + Date.now());
+  const [celeryStatus, setCeleryStatus] = useState<CeleryStatus>({
+    isActive: false,
+    status: 'unknown',
+    message: 'Checking Celery status...'
+  });
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+
+  // Check Celery and backend health status
+  useEffect(() => {
+    const checkCeleryStatus = async () => {
+      try {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+        const response = await fetch(`${backendUrl}/api/health`);
+        
+        if (!response.ok) {
+          throw new Error('Health check failed');
+        }
+        
+        const healthData = await response.json();
+        
+        // Check if Redis is healthy (Celery requires Redis)
+        const redisHealthy = healthData.services?.redis?.status === 'healthy';
+        const celeryActive = redisHealthy && healthData.status === 'healthy';
+        
+        // Determine Flower URL based on environment
+        let flowerUrl: string | undefined;
+        const flowerUrlEnv = import.meta.env.VITE_FLOWER_URL;
+        
+        if (flowerUrlEnv) {
+          // Production environment with explicit Flower URL
+          flowerUrl = flowerUrlEnv;
+        } else if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+          // Development environment - default to localhost
+          flowerUrl = 'http://localhost:5555';
+        }
+        // In production without VITE_FLOWER_URL, don't show Flower link
+        
+        setCeleryStatus({
+          isActive: celeryActive,
+          status: celeryActive ? 'healthy' : 'unhealthy',
+          message: celeryActive 
+            ? 'Celery workers are active and processing tasks'
+            : 'Celery is not available - async tasks will fail',
+          flowerUrl: celeryActive ? flowerUrl : undefined
+        });
+      } catch (error) {
+        console.error('Failed to check Celery status:', error);
+        setCeleryStatus({
+          isActive: false,
+          status: 'unhealthy',
+          message: 'Unable to connect to backend - async operations unavailable'
+        });
+        toast.error('Backend connection failed - async operations may not work');
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+    
+    // Initial check
+    checkCeleryStatus();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(checkCeleryStatus, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const tabs = [
     { id: 'training' as TabType, label: 'Model Training', icon: Brain },
@@ -32,20 +106,45 @@ export const AsyncMLOperations: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Celery Active
-                </span>
-              </div>
-              <a
-                href="http://localhost:5555"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 text-sm text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-              >
-                Open Flower →
-              </a>
+              {isCheckingStatus ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin" />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Checking status...
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center space-x-1">
+                    {celeryStatus.isActive ? (
+                      <>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        <span className="text-sm text-green-700 dark:text-green-400 font-medium">
+                          Celery Active
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-4 h-4 text-orange-500" />
+                        <span className="text-sm text-orange-700 dark:text-orange-400 font-medium">
+                          Celery Offline
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {celeryStatus.flowerUrl && celeryStatus.isActive && (
+                    <a
+                      href={celeryStatus.flowerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-sm text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                      title="Open Flower monitoring dashboard"
+                    >
+                      Open Flower →
+                    </a>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -77,6 +176,28 @@ export const AsyncMLOperations: React.FC = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Warning Banner when Celery is offline */}
+        {!celeryStatus.isActive && !isCheckingStatus && (
+          <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-300 dark:border-orange-700 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-orange-900 dark:text-orange-200 mb-1">
+                  Async Operations Unavailable
+                </h3>
+                <p className="text-sm text-orange-800 dark:text-orange-300">
+                  {celeryStatus.message || 'Celery workers are not running. Background tasks like model training and batch predictions will fail.'}
+                </p>
+                {import.meta.env.DEV && (
+                  <p className="text-xs text-orange-700 dark:text-orange-400 mt-2">
+                    💡 <strong>Dev Mode:</strong> Start Celery with: <code className="bg-orange-100 dark:bg-orange-800 px-1 py-0.5 rounded">celery -A celery_app worker --loglevel=info</code>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
         {activeTab === 'training' && (
           <div className="space-y-6">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">

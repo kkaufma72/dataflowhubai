@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Upload, FileSpreadsheet, Database, CheckCircle2, Edit3, Check, X } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
@@ -26,9 +26,11 @@ interface DataUploaderProps {
 
 interface ColumnSchema {
   name: string;
+  originalName: string;
   type: 'text' | 'number' | 'boolean' | 'date';
   inferredType: string;
   sampleValues: any[];
+  dropped?: boolean;
 }
 
 interface ParsedData {
@@ -46,16 +48,30 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [parseProgress, setParseProgress] = useState(0);
+  const [rowsProcessed, setRowsProcessed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const workerRef = useRef<Worker | null>(null);
   
   // Schema editor state
   const [showSchemaEditor, setShowSchemaEditor] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedData | null>(null);
   const [editingSchema, setEditingSchema] = useState<ColumnSchema[]>([]);
+  const [editingColumn, setEditingColumn] = useState<number | null>(null);
+  const [columnNameInput, setColumnNameInput] = useState('');
 
   const MAX_NAME_LENGTH = 50;
+
+  // Cleanup worker on unmount
+  useEffect(() => {
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   // Type inference function
   const inferType = (values: any[]): 'text' | 'number' | 'boolean' | 'date' => {
@@ -84,49 +100,88 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     return 'text';
   };
 
-  // Stream parse CSV/TXT with Papa
+  // Parse CSV/TXT with Web Worker for non-blocking parsing
   const streamParseFile = (file: File): Promise<ParsedData> => {
     return new Promise((resolve, reject) => {
-      const rows: any[][] = [];
-      let columns: string[] = [];
-      const columnValues: { [key: string]: any[] } = {};
-      let rowCount = 0;
-      const MAX_ROWS = 10000; // Stream first 10k rows for analysis
+      // Terminate existing worker if any
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
 
+      // Create new worker
+      try {
+        workerRef.current = new Worker(
+          new URL('../../workers/csvParser.worker.ts', import.meta.url),
+          { type: 'module' }
+        );
+      } catch (err) {
+        console.error('Worker creation failed, falling back to main thread:', err);
+        return fallbackParseCSV(file).then(resolve).catch(reject);
+      }
+
+      const worker = workerRef.current;
+
+      worker.onmessage = (e: MessageEvent) => {
+        const message = e.data;
+
+        switch (message.type) {
+          case 'progress':
+            // Update real-time progress
+            const progress = (message.bytesRead / message.totalBytes) * 100;
+            setParseProgress(Math.min(progress, 99)); // Cap at 99% until complete
+            setRowsProcessed(message.rowsProcessed);
+            break;
+
+          case 'complete':
+            setParseProgress(100);
+            // Add originalName to schema
+            const schemaWithOriginal = message.schema.map((col: any) => ({
+              ...col,
+              originalName: col.name
+            }));
+            resolve({
+              ...message,
+              schema: schemaWithOriginal
+            });
+            break;
+
+          case 'error':
+            reject(new Error(message.error));
+            break;
+        }
+      };
+
+      worker.onerror = (error) => {
+        console.error('Worker error:', error);
+        reject(new Error('Worker failed'));
+      };
+
+      // Start parsing
+      worker.postMessage({ type: 'parse', file });
+    });
+  };
+
+  // Fallback to main thread parsing if Worker fails
+  const fallbackParseCSV = (file: File): Promise<ParsedData> => {
+    return new Promise((resolve, reject) => {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: false,
-        chunk: (results: any, parser) => {
-          if (!columns.length && results.meta.fields) {
-            columns = results.meta.fields;
-            columns.forEach(col => columnValues[col] = []);
-          }
-
-          results.data.forEach((row: any) => {
-            if (rowCount < MAX_ROWS) {
-              const rowArray = columns.map(col => row[col] ?? '');
-              rows.push(rowArray);
-              
-              // Collect samples for type inference (first 100 rows)
-              if (rowCount < 100) {
-                columns.forEach(col => {
-                  if (columnValues[col].length < 100) {
-                    columnValues[col].push(row[col]);
-                  }
-                });
-              }
-              
-              rowCount++;
-            } else {
-              parser.abort();
-            }
+        complete: (results: any) => {
+          const columns = results.meta.fields || [];
+          const rows = results.data.slice(0, 10000).map((row: any) => 
+            columns.map((col: string) => row[col] ?? '')
+          );
+          
+          const columnValues: { [key: string]: any[] } = {};
+          columns.forEach((col: string) => {
+            columnValues[col] = results.data.slice(0, 100).map((row: any) => row[col]);
           });
-        },
-        complete: () => {
-          // Infer schema
-          const schema: ColumnSchema[] = columns.map(col => ({
+
+          const schema: ColumnSchema[] = columns.map((col: string) => ({
             name: col,
+            originalName: col,
             type: inferType(columnValues[col]),
             inferredType: inferType(columnValues[col]),
             sampleValues: columnValues[col].slice(0, 5)
@@ -136,13 +191,11 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
             columns,
             rows,
             schema,
-            rowCount,
+            rowCount: results.data.length,
             columnCount: columns.length
           });
         },
-        error: (error: any) => {
-          reject(error);
-        }
+        error: reject
       });
     });
   };
@@ -168,8 +221,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
             columnValues[col] = data.slice(0, 100).map(item => item[col]);
           });
 
-          const schema: ColumnSchema[] = columns.map(col => ({
+          const schema: ColumnSchema[] = columns.map((col: string) => ({
             name: col,
+            originalName: col,
             type: inferType(columnValues[col]),
             inferredType: inferType(columnValues[col]),
             sampleValues: columnValues[col].slice(0, 5)
@@ -246,6 +300,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   const parseAndShowSchema = async (file: File) => {
     setParsing(true);
     setError(null);
+    setParseProgress(0);
+    setRowsProcessed(0);
     
     try {
       const extension = file.name.split('.').pop()?.toLowerCase();
@@ -254,19 +310,23 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       if (extension === 'json') {
         parsed = await parseJSON(file);
       } else {
+        // Use Web Worker for CSV/TXT parsing
         parsed = await streamParseFile(file);
       }
 
       setParsedData(parsed);
       setEditingSchema([...parsed.schema]);
       setShowSchemaEditor(true);
-      toast.success(`Parsed ${parsed.rowCount.toLocaleString()} rows with ${parsed.columnCount} columns`);
+      const activeColumns = parsed.schema.filter(s => !s.dropped).length;
+      toast.success(`Parsed ${parsed.rowCount.toLocaleString()} rows with ${activeColumns} columns`);
     } catch (err: any) {
       console.error('Parse error:', err);
       setError(err.message || 'Failed to parse file');
       toast.error('Failed to parse file');
     } finally {
       setParsing(false);
+      setParseProgress(0);
+      setRowsProcessed(0);
     }
   };
 
@@ -278,18 +338,69 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     });
   };
 
+  const startEditingColumn = (index: number) => {
+    setEditingColumn(index);
+    setColumnNameInput(editingSchema[index].name);
+  };
+
+  const saveColumnName = (index: number) => {
+    if (columnNameInput.trim()) {
+      setEditingSchema(prev => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], name: columnNameInput.trim() };
+        return updated;
+      });
+    }
+    setEditingColumn(null);
+    setColumnNameInput('');
+  };
+
+  const cancelEditingColumn = () => {
+    setEditingColumn(null);
+    setColumnNameInput('');
+  };
+
+  const toggleDropColumn = (index: number) => {
+    setEditingSchema(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], dropped: !updated[index].dropped };
+      return updated;
+    });
+  };
+
   const confirmSchema = () => {
     if (!parsedData) return;
     
+    // Filter out dropped columns
+    const activeSchema = editingSchema.filter(s => !s.dropped);
+    
+    if (activeSchema.length === 0) {
+      toast.error('Cannot upload dataset with no columns');
+      return;
+    }
+    
+    // Apply column renames and removals to data
+    const activeIndices = editingSchema
+      .map((col, idx) => (!col.dropped ? idx : -1))
+      .filter(idx => idx !== -1);
+    
+    const updatedColumns = activeSchema.map(s => s.name);
+    const updatedRows = parsedData.rows.map(row => 
+      activeIndices.map(idx => row[idx])
+    );
+    
     // Update parsed data with confirmed schema
     const updated: ParsedData = {
-      ...parsedData,
-      schema: editingSchema
+      columns: updatedColumns,
+      rows: updatedRows,
+      schema: activeSchema,
+      rowCount: parsedData.rowCount,
+      columnCount: activeSchema.length
     };
     
     setParsedData(updated);
     setShowSchemaEditor(false);
-    toast.success('Schema confirmed! Ready to upload.');
+    toast.success(`Schema confirmed! ${activeSchema.length} columns ready to upload.`);
   };
 
   const cancelSchema = () => {
@@ -546,6 +657,36 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
             )}
           </div>
 
+          {/* Parsing Progress */}
+          {parsing && (
+            <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-white">
+                  Parsing file...
+                </span>
+                <span className="text-xs font-mono text-blue-400">
+                  {parseProgress.toFixed(0)}%
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden mb-2">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-blue-400 rounded-full transition-all duration-300"
+                  style={{ width: `${parseProgress}%` }}
+                ></div>
+              </div>
+              {rowsProcessed > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-xs text-gray-500">
+                    {rowsProcessed.toLocaleString()} rows processed
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Using background processing...
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Upload Progress */}
           {uploading && (
             <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
@@ -663,9 +804,9 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
                 <div className="flex items-start gap-3">
                   <Database className="w-5 h-5 text-blue-400 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-blue-400 mb-1">Column Types Detected</p>
+                    <p className="font-semibold text-blue-400 mb-1">Column Schema Editor</p>
                     <p className="text-sm text-blue-300/80">
-                      Review and adjust the inferred data types before upload. The schema will be saved with your dataset.
+                      Rename columns, adjust data types, or drop unwanted fields before upload. Changes are applied to your dataset.
                     </p>
                   </div>
                 </div>
@@ -673,44 +814,138 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
 
               <div className="space-y-3">
                 {editingSchema.map((col, idx) => (
-                  <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div 
+                    key={idx} 
+                    className={`bg-gray-800/50 rounded-lg p-4 border transition-all ${
+                      col.dropped 
+                        ? 'border-red-500/30 opacity-50' 
+                        : 'border-gray-700 hover:border-gray-600'
+                    }`}
+                  >
                     <div className="flex items-start gap-4">
                       <div className="flex-1 min-w-0">
+                        {/* Column Name with Edit */}
                         <div className="flex items-center gap-2 mb-2">
-                          <Edit3 className="w-4 h-4 text-gray-400" />
-                          <h4 className="text-sm font-semibold text-white truncate">{col.name}</h4>
+                          {editingColumn === idx ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="text"
+                                value={columnNameInput}
+                                onChange={(e) => setColumnNameInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveColumnName(idx);
+                                  if (e.key === 'Escape') cancelEditingColumn();
+                                }}
+                                className="flex-1 px-3 py-1.5 bg-gray-700 border border-gray-600 rounded text-sm text-white focus:outline-none focus:border-blue-500"
+                                placeholder="Column name"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => saveColumnName(idx)}
+                                className="p-1.5 bg-green-600 hover:bg-green-500 text-white rounded transition-colors"
+                                title="Save"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={cancelEditingColumn}
+                                className="p-1.5 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                                title="Cancel"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <Edit3 className="w-4 h-4 text-gray-400" />
+                              <h4 className="text-sm font-semibold text-white truncate">
+                                {col.name}
+                                {col.name !== col.originalName && (
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    (was: {col.originalName})
+                                  </span>
+                                )}
+                              </h4>
+                              <button
+                                onClick={() => startEditingColumn(idx)}
+                                className="ml-auto p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                                title="Rename column"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
+                        
+                        {/* Sample Values */}
                         <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
                           <span>Sample values:</span>
                           <span className="text-gray-400 font-mono">
                             {col.sampleValues.slice(0, 3).map(v => String(v || '—')).join(', ')}
                           </span>
                         </div>
-                        <div className="flex gap-2">
-                          {(['text', 'number', 'boolean', 'date'] as const).map((type) => (
-                            <button
-                              key={type}
-                              onClick={() => updateColumnType(idx, type)}
-                              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                                col.type === type
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                              }`}
-                            >
-                              {type}
-                            </button>
-                          ))}
-                        </div>
+                        
+                        {/* Type Buttons */}
+                        {!col.dropped && (
+                          <div className="flex gap-2">
+                            {(['text', 'number', 'boolean', 'date'] as const).map((type) => (
+                              <button
+                                key={type}
+                                onClick={() => updateColumnType(idx, type)}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                  col.type === type
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                }`}
+                              >
+                                {type}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {col.dropped && (
+                          <div className="text-xs text-red-400 font-medium">
+                            ⚠️ This column will be excluded from upload
+                          </div>
+                        )}
                       </div>
-                      {col.type === col.inferredType && (
-                        <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded">
-                          <Check className="w-3 h-3" />
-                          Auto
-                        </div>
-                      )}
+                      
+                      {/* Status Badges */}
+                      <div className="flex flex-col gap-2">
+                        {col.type === col.inferredType && !col.dropped && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded">
+                            <Check className="w-3 h-3" />
+                            Auto
+                          </div>
+                        )}
+                        <button
+                          onClick={() => toggleDropColumn(idx)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            col.dropped
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              : 'bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30'
+                          }`}
+                          title={col.dropped ? 'Include column' : 'Drop column'}
+                        >
+                          {col.dropped ? 'Restore' : 'Drop'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
+              </div>
+              
+              {/* Active Columns Summary */}
+              <div className="mt-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">
+                    Active columns:
+                  </span>
+                  <span className="font-semibold text-white">
+                    {editingSchema.filter(s => !s.dropped).length} of {editingSchema.length}
+                  </span>
+                </div>
               </div>
             </div>
 

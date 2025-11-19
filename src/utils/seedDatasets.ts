@@ -39,9 +39,16 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
     
     // Insert all datasets
     const datasetsToInsert = datasets.map(dataset => ({
-      ...dataset,
+      id: dataset.id,
+      name: dataset.name,
+      description: dataset.description,
+      file_type: dataset.file_type,
+      file_size: dataset.file_size,
+      row_count: dataset.row_count,
+      column_count: dataset.column_count,
+      preview_data: dataset.preview_data,
       user_id: userId,
-      // Don't include project_id if it's null
+      // Only include project_id if provided and valid
       ...(projectId && { project_id: projectId }),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

@@ -49,7 +49,7 @@ type CrossValidationStats = {
 };
 
 const ModelTraining: React.FC = () => {
-  const { datasets, models, addModel, deleteDataset } = useMLContext();
+  const { datasets, models, addModel, deleteDataset, defaultProjectId } = useMLContext();
   const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
@@ -324,6 +324,11 @@ const ModelTraining: React.FC = () => {
   };
 
   const handleTrainingSubmit = async (config: ModelTrainingConfig) => {
+    if (!defaultProjectId) {
+      toast.error('Project is still initializing. Please wait a moment and try again.');
+      return;
+    }
+    
     try {
       setIsTraining(true);
       setProgress(0);
@@ -331,7 +336,7 @@ const ModelTraining: React.FC = () => {
       toast.loading('Starting model training...', { id: 'training' });
 
       const newModel: MLModel = {
-        id: `model-${Date.now()}`,
+        id: crypto.randomUUID(),
         name: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model (${
           config.algorithms.length > 1 ? 'Ensemble' : config.algorithms[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
         })`,
@@ -341,7 +346,7 @@ const ModelTraining: React.FC = () => {
         status: 'training',
         modelType: config.modelType,
         datasetId: config.datasetId,
-        projectId: '1',
+        projectId: defaultProjectId,
         createdAt: new Date().toISOString(),
       };
 
@@ -530,11 +535,16 @@ const ModelTraining: React.FC = () => {
   };
 
   const handleImportModel = (importedModel: MLModel) => {
+    if (!defaultProjectId) {
+      toast.error('Project is still initializing. Please wait and try again.');
+      return;
+    }
+    
     const newModel: MLModel = {
       ...importedModel,
-      id: `imported-${Date.now()}`,
+      id: crypto.randomUUID(),
       status: 'trained',
-      projectId: '1',
+      projectId: defaultProjectId,
       datasetId: datasets[0]?.id || '',
       createdAt: new Date().toISOString(),
     };
@@ -678,8 +688,13 @@ const ModelTraining: React.FC = () => {
             )}
             {!metricsLoading && !trainingMetricsData && !metricsError && (
               <div className="bg-[#0d1117] border border-gray-800 rounded-lg p-8 mt-4 text-center">
-                <p className="text-sm text-gray-400">No training metrics available yet.</p>
-                <p className="text-xs text-gray-500 mt-2">Start training a model to see live metrics here.</p>
+                <div className="mb-3">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-900/30 text-orange-400 border border-orange-700">
+                    ⚠️ Simulated Data Mode
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400">No live training metrics available yet.</p>
+                <p className="text-xs text-gray-500 mt-2">Start training a model to see real-time metrics here, or charts will show simulated data for demonstration.</p>
               </div>
             )}
             {chartsLoaded && ChartComponents && trainingMetricsData && (
@@ -1263,9 +1278,14 @@ const ModelTraining: React.FC = () => {
         {isTraining && currentTraining && (
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-white">Training in Progress</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+                  <h3 className="text-sm font-semibold text-white">Training in Progress</h3>
+                </div>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-orange-900/30 text-orange-400 border border-orange-700">
+                  ⚠️ Simulated
+                </span>
               </div>
             </div>
             <div className="p-4 space-y-4">
@@ -1292,7 +1312,7 @@ const ModelTraining: React.FC = () => {
                   <BarChart2 className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Training Information</h3>
+                  <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Training Information (Simulated)</h3>
                   <div className="mt-2 text-sm text-gray-300">
                     <ul className="space-y-1 list-disc list-inside">
                       <li>Evaluating multiple algorithms in parallel</li>
@@ -1300,6 +1320,9 @@ const ModelTraining: React.FC = () => {
                       <li>Validation using cross-validation</li>
                       <li>Generating model evaluation metrics</li>
                     </ul>
+                    <p className="mt-2 text-xs text-gray-400">
+                      Note: This is a simulation. Real training will connect to backend API.
+                    </p>
                   </div>
                 </div>
               </div>

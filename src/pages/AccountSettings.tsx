@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
-import { Moon, Sun, Lock, Shield, LogOut, Save, Loader2, Mail, AlertCircle } from 'lucide-react';
+import { Moon, Sun, Lock, LogOut, Save, Loader2, Mail, AlertCircle } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 
@@ -552,9 +552,9 @@ const AccountSettings: React.FC = () => {
               </div>
               
               <div className="pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900">Two-Factor Authentication</h3>
+                <h3 className="text-lg font-medium text-gray-900">Two-Factor Authentication Reminder</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Add an extra layer of security to your account.
+                  Remember to enable 2FA for added security. This is a preference toggle only—actual 2FA must be configured through your authentication provider.
                 </p>
                 
                 <div className="mt-4 flex items-center justify-between">
@@ -564,30 +564,24 @@ const AccountSettings: React.FC = () => {
                       onChange={(checked) => handlePreferenceChange('twoFactorAuth', checked)}
                     />
                     <span className="ml-3 text-sm font-medium text-gray-900">
-                      {preferences.twoFactorAuth ? 'Enabled' : 'Disabled'}
+                      {preferences.twoFactorAuth ? 'Reminder Enabled' : 'Reminder Disabled'}
                     </span>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!preferences.twoFactorAuth}
-                    icon={<Shield className="w-4 h-4" />}
-                  >
-                    Configure
-                  </Button>
                 </div>
                 
-                <div className="mt-4 p-4 bg-yellow-50 rounded-md">
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <AlertCircle className="h-5 w-5 text-yellow-400" />
+                      <AlertCircle className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-yellow-800">Coming Soon</h3>
-                      <div className="mt-2 text-sm text-yellow-700">
+                      <h3 className="text-sm font-medium text-blue-900">Note: Preference Only</h3>
+                      <div className="mt-2 text-sm text-blue-800">
+                        <p className="mb-2">
+                          This toggle is a <strong>reminder preference only</strong> and does not enable actual two-factor authentication.
+                        </p>
                         <p>
-                          Two-factor authentication is coming soon. This feature is currently in development.
+                          To set up real 2FA security, configure MFA in your Supabase authentication settings or contact your administrator.
                         </p>
                       </div>
                     </div>

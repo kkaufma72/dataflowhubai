@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supabase';
-import { Dataset, MLModel } from '../types';
+import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
 import { generateSampleDatasets } from '../lib/sampleData';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -8,6 +9,8 @@ import { useAuth } from '../components/auth/AuthProvider';
 interface MLContextType {
   datasets: Dataset[];
   models: MLModel[];
+  projects: Project[];
+  currentProject: Project | null;
   isLoading: boolean;
   error: string | null;
   addDataset: (dataset: Dataset) => Promise<Dataset>;
@@ -15,9 +18,20 @@ interface MLContextType {
   deleteDataset: (id: string) => Promise<void>;
   addModel: (model: MLModel) => Promise<void>;
   updateModelStatus: (id: string, status: string, metrics?: Record<string, number>) => Promise<void>;
+  setCurrentProject: (project: Project | null) => void;
+  refreshProjects: () => Promise<void>;
 }
 
 const MLContext = createContext<MLContextType | undefined>(undefined);
+
+const DEMO_PROJECT: Project = {
+  id: 'demo-project',
+  name: 'Sample Workspace',
+  description: 'Sample datasets and models',
+  createdAt: new Date().toISOString()
+};
+
+const LAST_PROJECT_KEY = 'dfh-last-project-id';
 
 export const useMLContext = () => {
   const context = useContext(MLContext);
@@ -35,6 +49,8 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const { user } = useAuth();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [models, setModels] = useState<MLModel[]>([]);
+  const [projects, setProjects] = useState<Project[]>([DEMO_PROJECT]);
+  const [currentProject, setCurrentProject] = useState<Project | null>(DEMO_PROJECT);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
@@ -70,6 +86,58 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       return [];
     }
   };
+
+  const loadProjects = useCallback(async () => {
+    if (!user?.id) {
+      setProjects([DEMO_PROJECT]);
+      setCurrentProject(DEMO_PROJECT);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id,name,description,created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = (data || []).map((project) => ({
+        id: project.id,
+        name: project.name,
+        description: project.description || '',
+        createdAt: project.created_at
+      }));
+
+      setProjects(mapped);
+
+      const savedProjectId = localStorage.getItem(LAST_PROJECT_KEY);
+      const savedProject = mapped.find((project) => project.id === savedProjectId);
+
+      if (savedProject) {
+        setCurrentProject(savedProject);
+      } else if (mapped.length > 0) {
+        setCurrentProject(mapped[0]);
+      } else {
+        setCurrentProject(null);
+      }
+    } catch (projectError) {
+      console.error('Error loading projects:', projectError);
+      setProjects([DEMO_PROJECT]);
+      setCurrentProject(DEMO_PROJECT);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
+
+  useEffect(() => {
+    if (currentProject) {
+      localStorage.setItem(LAST_PROJECT_KEY, currentProject.id);
+    }
+  }, [currentProject]);
 
   const loadInitialData = useCallback(async () => {
     // Prevent multiple calls
@@ -118,14 +186,14 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       ]);
 
       // Parse fetch responses
-      const remoteDatasets = datasetsResponse.ok ? await datasetsResponse.json() : [];
-      const remoteModels = modelsResponse.ok ? await modelsResponse.json() : [];
+      const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []) as Dataset[];
+      const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
 
       // Merge local and remote datasets - OPTIMIZED from O(n²) to O(n)
       const localIds = new Set(localDatasets.map(d => d.id));
       const mergedDatasets = [
         ...localDatasets,
-        ...remoteDatasets.filter((d: any) => !localIds.has(d.id))
+        ...remoteDatasets.filter((dataset) => !localIds.has(dataset.id))
       ];
 
       // Auto-load sample data for new users with no datasets
@@ -139,9 +207,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         try {
           // Set flag BEFORE seeding to prevent concurrent runs
           localStorage.setItem(hasSeededKey, 'true');
-          
           const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
-          // Pass null for project_id since we removed projects
           await seedEnhancedDatasets(user.id, null);
           
           // Refresh datasets after seeding
@@ -156,7 +222,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
             const localIds = new Set(localDatasets.map(d => d.id));
             const finalDatasets = [
               ...localDatasets,
-              ...refreshedDatasets.filter((d: any) => !localIds.has(d.id))
+              ...refreshedDatasets.filter((dataset) => !localIds.has(dataset.id))
             ];
             setDatasets(finalDatasets);
             console.log('✅ Sample data loaded for new user');
@@ -197,18 +263,22 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
     // Listen for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      // Reset data when auth state changes
-      if (session) {
-        setHasFetched(false); // Reset to allow refetch
-      } else {
-        setDatasets([]);
-        setModels([]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        if (session) {
+          setHasFetched(false);
+          loadProjects();
+        } else {
+          setDatasets([]);
+          setModels([]);
+          setProjects([DEMO_PROJECT]);
+          setCurrentProject(DEMO_PROJECT);
+        }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loadProjects]);
 
   const addDataset = useCallback(async (dataset: Dataset): Promise<Dataset> => {
     try {
@@ -301,26 +371,39 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     try {
       // Save to Supabase if user is authenticated
       if (user) {
+        const projectId = model.projectId ?? currentProject?.id ?? null;
+
+        const modelData = {
+          id: model.id,
+          name: model.name,
+          description: model.description || '',
+          model_type: model.modelType || 'classification',
+          status: model.status,
+          dataset_id: model.datasetId || null,
+          project_id: projectId,
+          hyperparameters: model.hyperparameters || {},
+          training_config: model.config || {},
+          metadata: model.metrics ? { metrics: model.metrics } : {},
+          user_id: user.id,
+        };
+        
+        console.log('💾 Attempting to save model to Supabase:', modelData);
+        
         const { error } = await supabase
           .from('models')
-          .insert({
-            id: model.id,
-            name: model.name,
-            description: model.description,
-            model_type: model.modelType || 'classification',
-            status: model.status,
-            dataset_id: model.datasetId,
-            project_id: model.projectId,
-            hyperparameters: model.hyperparameters || {},
-            training_config: model.config || {},
-            metadata: model.metrics ? { metrics: model.metrics } : {},
-            user_id: user.id,
-          });
+          .insert(modelData);
 
         if (error) {
-          console.error('Error saving model to Supabase:', error);
+          console.error('❌ Error saving model to Supabase:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           throw error;
         }
+        
+        console.log('✅ Model saved successfully');
       }
 
       // Update state
@@ -329,13 +412,13 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       console.error('Error adding model:', error);
       throw error;
     }
-  }, [user]);
+  }, [user, currentProject?.id]);
 
   const updateModelStatus = useCallback(async (id: string, status: string, metrics?: Record<string, number>) => {
     try {
       // Update in Supabase if user is authenticated
       if (user) {
-        const updateData: any = { status };
+        const updateData: Record<string, unknown> = { status };
         
         // If metrics provided, merge with existing metadata
         if (metrics) {
@@ -371,6 +454,8 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const value = useMemo(() => ({
     datasets,
     models,
+    projects,
+    currentProject,
     isLoading,
     error,
     addDataset,
@@ -378,7 +463,22 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     deleteDataset,
     addModel,
     updateModelStatus,
-  }), [datasets, models, isLoading, error, addDataset, updateDataset, deleteDataset, addModel, updateModelStatus]);
+    setCurrentProject,
+    refreshProjects: loadProjects,
+  }), [
+    datasets,
+    models,
+    projects,
+    currentProject,
+    isLoading,
+    error,
+    addDataset,
+    updateDataset,
+    deleteDataset,
+    addModel,
+    updateModelStatus,
+    loadProjects,
+  ]);
 
   return <MLContext.Provider value={value}>{children}</MLContext.Provider>;
 };

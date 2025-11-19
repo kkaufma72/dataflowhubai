@@ -5,7 +5,6 @@ import {
   Database,
   Settings,
   BarChart3,
-  GitBranch,
   Activity,
   Zap,
   ChevronLeft,
@@ -16,7 +15,8 @@ import {
   LineChart,
   ChevronDown,
   Plus,
-  Check
+  Check,
+  TrendingUp
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
@@ -24,20 +24,63 @@ import { Project } from '../../types';
 import { useSubscription } from '../../hooks/useSubscription';
 import toast from 'react-hot-toast';
 
+const SIDEBAR_STORAGE_KEY = 'sidebar_state';
+
 const Sidebar: React.FC = () => {
   const location = useLocation();
-  const { currentProject, datasets, models, setCurrentProject } = useMLContext();
+  const { datasets, models } = useMLContext();
   const subscription = useSubscription();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // Load collapse state from localStorage
+    try {
+      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+      if (stored) {
+        const state = JSON.parse(stored);
+        return state.isCollapsed ?? false;
+      }
+    } catch (error) {
+      console.error('Failed to load sidebar state:', error);
+    }
+    return false;
+  });
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(() => {
+    // Load dropdown state from localStorage
+    try {
+      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+      if (stored) {
+        const state = JSON.parse(stored);
+        return state.isProjectDropdownOpen ?? false;
+      }
+    } catch (error) {
+      console.error('Failed to load sidebar state:', error);
+    }
+    return false;
+  });
   const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [upgradeFeature, setUpgradeFeature] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load projects from Supabase
   useEffect(() => {
     loadProjects();
   }, []);
+
+  // Persist sidebar state to localStorage
+  useEffect(() => {
+    try {
+      const state = {
+        isCollapsed,
+        isProjectDropdownOpen,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error('Failed to save sidebar state:', error);
+    }
+  }, [isCollapsed, isProjectDropdownOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -65,13 +108,19 @@ const Sidebar: React.FC = () => {
 
       if (error) throw error;
       
-      if (data) {
-        setProjects(data.map((p: any) => ({
+      if (data && data.length > 0) {
+        const projectList = data.map((p: any) => ({
           id: p.id,
           name: p.name,
           description: p.description || '',
           createdAt: p.created_at
-        })));
+        }));
+        setProjects(projectList);
+        
+        // Set first project as current if none selected
+        if (!currentProject) {
+          setCurrentProject(projectList[0]);
+        }
       }
     } catch (error) {
       console.error('Error loading projects:', error);
@@ -85,6 +134,16 @@ const Sidebar: React.FC = () => {
     setCurrentProject(project);
     setIsProjectDropdownOpen(false);
     toast.success(`Switched to ${project.name}`);
+  };
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed((prev: boolean) => !prev);
+  };
+
+  const handlePremiumClick = (e: React.MouseEvent, _feature: string, itemName: string) => {
+    e.preventDefault();
+    setUpgradeFeature(itemName);
+    setShowUpgradePrompt(true);
   };
 
   const isActive = (path: string) => {
@@ -108,6 +167,13 @@ const Sidebar: React.FC = () => {
       description: 'Work with your datasets',
       section: true,
       items: [
+        {
+          name: 'Data Catalog',
+          href: '/app/catalog',
+          icon: Database,
+          description: 'IBM-style data catalog',
+          dataTour: 'sidebar-catalog'
+        },
         {
           name: 'Browse & Upload',
           href: '/app/data',
@@ -246,7 +312,7 @@ const Sidebar: React.FC = () => {
         )}
         
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={handleToggleCollapse}
           className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -380,6 +446,31 @@ const Sidebar: React.FC = () => {
                     const active = isActive(subItem.href);
                     const isPremium = subItem.premium && subscription.tier === 'free';
                     
+                    // If premium and user is free tier, intercept click
+                    if (isPremium) {
+                      return (
+                        <button
+                          key={subItem.name}
+                          onClick={(e) => handlePremiumClick(e, subItem.href, subItem.name)}
+                          data-tour={(subItem as any).dataTour}
+                          className={`w-full group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all text-gray-300 hover:bg-gray-700/50 hover:text-white ${!isCollapsed && 'ml-2'} cursor-pointer`}
+                          title={isCollapsed ? `${subItem.description} (Premium)` : ''}
+                        >
+                          <subItem.icon
+                            className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-4 h-4 mr-3'} text-gray-400 group-hover:text-white`}
+                          />
+                          {!isCollapsed && (
+                            <span className="flex-1 truncate flex items-center gap-2">
+                              {subItem.name}
+                              <span className="text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full font-semibold">
+                                PRO
+                              </span>
+                            </span>
+                          )}
+                        </button>
+                      );
+                    }
+                    
                     return (
                       <Link
                         key={subItem.name}
@@ -389,7 +480,7 @@ const Sidebar: React.FC = () => {
                           active
                             ? 'bg-primary-600 text-white shadow-md'
                             : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                        } ${!isCollapsed && 'ml-2'} ${isPremium ? 'opacity-60' : ''}`}
+                        } ${!isCollapsed && 'ml-2'}`}
                         title={isCollapsed ? subItem.description : ''}
                       >
                         <subItem.icon
@@ -398,13 +489,8 @@ const Sidebar: React.FC = () => {
                           }`}
                         />
                         {!isCollapsed && (
-                          <span className="flex-1 truncate flex items-center gap-2">
+                          <span className="flex-1 truncate">
                             {subItem.name}
-                            {isPremium && (
-                              <span className="text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full font-semibold">
-                                PRO
-                              </span>
-                            )}
                           </span>
                         )}
                       </Link>
@@ -487,6 +573,122 @@ const Sidebar: React.FC = () => {
           <div className="flex items-center justify-center p-2 bg-gray-700/50 rounded-lg" title="Models">
             <Brain className="w-4 h-4 text-primary-400" />
             <span className="ml-1 text-xs font-semibold text-white">{models?.length || 0}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Prompt Modal */}
+      {showUpgradePrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{upgradeFeature}</h2>
+                    <p className="text-sm text-gray-500">Premium Feature</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowUpgradePrompt(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <span className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</span>
+                </button>
+              </div>
+
+              {/* Feature Description */}
+              <div className="mb-6">
+                <p className="text-gray-600 mb-4">
+                  <strong>{upgradeFeature}</strong> is available on our Professional and Team plans.
+                  Upgrade now to unlock this powerful feature and accelerate your ML workflow.
+                </p>
+              </div>
+
+              {/* Benefits Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Advanced ML Tools</h3>
+                    <p className="text-xs text-gray-600 mt-1">AutoML, hyperparameter tuning, and more</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Production Deployment</h3>
+                    <p className="text-xs text-gray-600 mt-1">Deploy models with one click</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+                  <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Activity className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Real-time Monitoring</h3>
+                    <p className="text-xs text-gray-600 mt-1">Track performance and drift</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Unlimited Models</h3>
+                    <p className="text-xs text-gray-600 mt-1">Train as many models as you need</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing Summary */}
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Professional Plan</p>
+                    <p className="text-2xl font-bold text-gray-900">$50<span className="text-sm font-normal text-gray-500">/month</span></p>
+                    <p className="text-xs text-gray-500 mt-1">or $500/year (save $100)</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-green-600 font-semibold mb-1">✓ 14-day free trial</p>
+                    <p className="text-xs text-gray-500">Cancel anytime</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowUpgradePrompt(false);
+                    window.location.href = '/pricing';
+                  }}
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  View All Plans
+                </button>
+                <button
+                  onClick={() => setShowUpgradePrompt(false)}
+                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+
+              {/* Trust Signal */}
+              <p className="text-center text-xs text-gray-500 mt-4">
+                🔒 Secure payment • 💳 Cancel anytime • 🚀 Instant access
+              </p>
+            </div>
           </div>
         </div>
       )}

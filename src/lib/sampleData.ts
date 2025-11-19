@@ -27,7 +27,7 @@ export interface SampleDataset {
     return [
       // 1. CUSTOMER CHURN PREDICTION - High-Value Use Case
       {
-        id: 'sample-churn-prediction',
+        id: '11111111-1111-4111-8111-111111111111',
         name: 'Customer Churn Analysis (SaaS)',
         description: '12,500 B2B SaaS customers with 23% historical churn rate. Predict churn 60 days in advance to save $2.4M annually.',
         row_count: 12500,
@@ -61,7 +61,7 @@ export interface SampleDataset {
 
       // 2. SALES FORECASTING - Revenue Impact
       {
-        id: 'sample-sales-forecast',
+        id: '22222222-2222-4222-8222-222222222222',
         name: 'Enterprise Sales Pipeline',
         description: '8,300 deals worth $124M pipeline. ML forecasting improved accuracy by 34%, reducing missed targets by $8.2M/year.',
         row_count: 8300,
@@ -93,7 +93,7 @@ export interface SampleDataset {
 
       // 3. FRAUD DETECTION - Risk Mitigation
       {
-        id: 'sample-fraud-detection',
+        id: '33333333-3333-4333-8333-333333333333',
         name: 'Payment Fraud Detection',
         description: '245,000 transactions with 2.3% fraud rate. ML model prevented $4.7M in fraud losses with 96.2% accuracy.',
         row_count: 245000,
@@ -126,7 +126,7 @@ export interface SampleDataset {
 
       // 4. PREDICTIVE MAINTENANCE - Cost Savings
       {
-        id: 'sample-predictive-maintenance',
+        id: '44444444-4444-4444-8444-444444444444',
         name: 'Industrial Equipment Monitoring',
         description: '52,000 sensor readings from 340 machines. Predict failures 14 days early, reducing downtime costs by $3.1M/year.',
         row_count: 52000,
@@ -158,7 +158,7 @@ export interface SampleDataset {
 
       // 5. MARKETING CAMPAIGN OPTIMIZATION - ROI Focus
       {
-        id: 'sample-marketing-optimization',
+        id: '55555555-5555-4555-8555-555555555555',
         name: 'Digital Marketing Campaign Performance',
         description: '28,000 campaigns across 5 channels. ML optimization increased ROAS from 3.2x to 5.8x, adding $12M in revenue.',
         row_count: 28000,
@@ -191,7 +191,7 @@ export interface SampleDataset {
 
       // 6. CUSTOMER LIFETIME VALUE - Strategic Planning
       {
-        id: 'sample-customer-ltv',
+        id: '66666666-6666-4666-8666-666666666666',
         name: 'E-commerce Customer Lifetime Value',
         description: '67,500 customers with purchase history. Segment high-LTV customers ($850 avg) vs low-LTV ($120 avg) for targeted retention.',
         row_count: 67500,
@@ -224,7 +224,7 @@ export interface SampleDataset {
 
       // 7. INVENTORY OPTIMIZATION - Supply Chain
       {
-        id: 'sample-inventory-optimization',
+        id: '77777777-7777-4777-8777-777777777777',
         name: 'Retail Inventory & Demand Forecasting',
         description: '15,400 SKUs across 85 locations. ML reduced stockouts by 42% and overstock by 38%, saving $6.8M in holding costs.',
         row_count: 15400,
@@ -256,7 +256,7 @@ export interface SampleDataset {
 
       // 8. EMPLOYEE ATTRITION - HR Analytics
       {
-        id: 'sample-employee-attrition',
+        id: '88888888-8888-4888-8888-888888888888',
         name: 'HR Talent Retention Analysis',
         description: '4,200 employees with 18% annual attrition. Predict departures 90 days early, reducing recruitment costs by $1.2M/year.',
         row_count: 4200,

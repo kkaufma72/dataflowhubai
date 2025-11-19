@@ -9,7 +9,7 @@ import { AuthProvider } from './components/auth/AuthProvider.tsx';
 import { UserProvider } from './context/UserContext.tsx';
 import PrivateRoute from './components/auth/PrivateRoute.tsx';
 import PremiumRoute from './components/auth/PremiumRoute.tsx';
-import AppLayout from './components/layout/AppLayoutKoyfin.tsx'; // Koyfin dark theme
+import AppLayout from './components/layout/AppLayoutKoyfin.tsx'; // Dark Koyfin theme
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from './components/common/NotificationSystem.tsx';
 import { TourProvider } from './components/common/TourProvider.tsx';
@@ -22,8 +22,9 @@ import StripeConfigWarning from './components/common/StripeConfigWarning.tsx';
 
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
-const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Koyfin-style terminal dashboard
+const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Dark terminal-style dashboard
 const DataManagement = lazy(() => import('./pages/DataManagementHybrid.tsx')); // Hybrid: Excel tabs + Quality cards + AI helper
+const DataCatalog = lazy(() => import('./pages/DataCatalog.tsx')); // IBM Watson-inspired data catalog
 const DatasetInsights = lazy(() => import('./pages/DatasetInsights.tsx'));
 const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
 const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
@@ -188,6 +189,7 @@ if (!isSupabaseConfigured) {
                             <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                               <Route index element={<Dashboard />} />
                               <Route path="data" element={<DataManagement />} />
+                              <Route path="catalog" element={<DataCatalog />} />
                               <Route path="insights" element={<DatasetInsights />} />
                               <Route path="dataset-overview" element={<DatasetInsights />} />
                               <Route path="visualizations" element={<DatasetInsights />} />
