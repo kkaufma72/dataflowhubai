@@ -115,6 +115,30 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
         onClose();
       },
       keywords: ['account', 'user']
+    },
+    {
+      id: 'nav-docs-getting-started',
+      title: 'Getting Started Guide',
+      subtitle: 'Learn the basics',
+      category: 'navigation',
+      icon: <Sparkles className="w-5 h-5 text-green-500" />,
+      action: () => {
+        navigate('/app/documentation');
+        onClose();
+      },
+      keywords: ['tutorial', 'guide', 'help', 'onboarding', 'docs']
+    },
+    {
+      id: 'nav-docs-api',
+      title: 'API Documentation',
+      subtitle: 'Integration guides',
+      category: 'navigation',
+      icon: <Settings className="w-5 h-5 text-gray-500" />,
+      action: () => {
+        navigate('/app/documentation');
+        onClose();
+      },
+      keywords: ['api', 'integration', 'developer', 'docs', 'reference']
     }
   ];
 

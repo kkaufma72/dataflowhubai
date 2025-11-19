@@ -3,7 +3,6 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supabase';
 import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
-import { generateSampleDatasets } from '../lib/sampleData';
 import { useAuth } from '../components/auth/AuthProvider';
 
 interface MLContextType {
@@ -54,38 +53,6 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
-
-  const initializeSampleData = async () => {
-    try {
-      let localDatasets = await storage.getAllDatasets();
-      
-      if (localDatasets.length === 0) {
-        console.log('Initializing sample datasets...');
-        const sampleDatasets = generateSampleDatasets();
-        // Convert SampleDataset to Dataset format
-        const convertedDatasets: Dataset[] = sampleDatasets.map(sd => ({
-          id: sd.id,
-          name: sd.name,
-          description: sd.description,
-          rows: sd.row_count,
-          columns: sd.column_count,
-          dateUploaded: sd.dateUploaded,
-          fileType: sd.file_type,
-          fileSize: sd.file_size,
-          projectId: sd.project_id,
-          preview_data: sd.preview_data
-        }));
-        await Promise.all(convertedDatasets.map(dataset => storage.saveDataset(dataset)));
-        localDatasets = convertedDatasets;
-        console.log('Sample datasets initialized:', localDatasets.length);
-      }
-
-      return localDatasets;
-    } catch (error) {
-      console.error('Error initializing sample data:', error);
-      return [];
-    }
-  };
 
   const loadProjects = useCallback(async () => {
     if (!user?.id) {
@@ -173,7 +140,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       const { supabaseFetch } = await import('../lib/supabaseHelpers');
       
       // OPTIMIZATION: Parallel fetch of datasets and models using direct fetch
-      const [datasetsResponse, modelsResponse, localDatasets] = await Promise.all([
+      const [datasetsResponse, modelsResponse] = await Promise.all([
         supabaseFetch(
           `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
           { method: 'GET' }
@@ -181,23 +148,26 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         supabaseFetch(
           `/rest/v1/models?user_id=eq.${user.id}&select=*&order=created_at.desc`,
           { method: 'GET' }
-        ),
-        initializeSampleData()
+        )
       ]);
 
-      // Parse fetch responses
-      const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []) as Dataset[];
+      // Parse fetch responses and transform snake_case to camelCase
+      const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []).map((ds: any) => ({
+        id: ds.id,
+        name: ds.name,
+        description: ds.description,
+        rows: ds.row_count,
+        columns: ds.column_count,
+        dateUploaded: ds.created_at,
+        fileType: ds.file_type,
+        fileSize: ds.file_size,
+        projectId: ds.project_id,
+        preview_data: ds.preview_data,
+      })) as Dataset[];
       const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
 
-      // Merge local and remote datasets - OPTIMIZED from O(n²) to O(n)
-      const localIds = new Set(localDatasets.map(d => d.id));
-      const mergedDatasets = [
-        ...localDatasets,
-        ...remoteDatasets.filter((dataset) => !localIds.has(dataset.id))
-      ];
-
       // Auto-load sample data for new users with no datasets
-      // Check flag BEFORE merging to prevent duplicate seeding
+      // Check flag BEFORE loading to prevent duplicate seeding
       const hasSeededKey = `hasSeededDatasets_${user.id}`;
       const hasSeeded = localStorage.getItem(hasSeededKey);
       
@@ -217,28 +187,33 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           );
           
           if (refreshResponse.ok) {
-            const refreshedDatasets = await refreshResponse.json();
-            // Merge with local datasets
-            const localIds = new Set(localDatasets.map(d => d.id));
-            const finalDatasets = [
-              ...localDatasets,
-              ...refreshedDatasets.filter((dataset) => !localIds.has(dataset.id))
-            ];
-            setDatasets(finalDatasets);
+            const refreshedDatasets = (await refreshResponse.json()).map((ds: any) => ({
+              id: ds.id,
+              name: ds.name,
+              description: ds.description,
+              rows: ds.row_count,
+              columns: ds.column_count,
+              dateUploaded: ds.created_at,
+              fileType: ds.file_type,
+              fileSize: ds.file_size,
+              projectId: ds.project_id,
+              preview_data: ds.preview_data,
+            }));
+            setDatasets(refreshedDatasets);
             console.log('✅ Sample data loaded for new user');
           } else {
-            // If refresh failed, just use merged datasets
-            setDatasets(mergedDatasets);
+            // If refresh failed, just use remote datasets
+            setDatasets(remoteDatasets);
           }
         } catch (seedError) {
           console.warn('Could not auto-load sample data:', seedError);
           // Remove flag on failure so it can retry next time
           localStorage.removeItem(hasSeededKey);
-          setDatasets(mergedDatasets);
+          setDatasets(remoteDatasets);
         }
       } else {
-        // User has data or already seeded - just use merged datasets
-        setDatasets(mergedDatasets);
+        // User has data or already seeded - just use remote datasets
+        setDatasets(remoteDatasets);
       }
       
       setModels(remoteModels);
@@ -282,17 +257,49 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
   const addDataset = useCallback(async (dataset: Dataset): Promise<Dataset> => {
     try {
+      // Save to Supabase first if user is authenticated
+      if (user) {
+        const datasetData = {
+          id: dataset.id,
+          name: dataset.name,
+          description: dataset.description,
+          file_type: dataset.fileType,
+          file_size: dataset.fileSize,
+          row_count: dataset.rows,
+          column_count: dataset.columns,
+          preview_data: dataset.preview_data,
+          user_id: user.id,
+          project_id: currentProject?.id || null,
+          created_at: dataset.dateUploaded || new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+          .from('datasets')
+          .insert(datasetData);
+
+        if (error) {
+          console.error('❌ Error saving dataset to Supabase:', error);
+          throw error;
+        }
+
+        console.log('✅ Dataset saved to Supabase');
+      }
+
       // Try to save to IndexedDB but don't fail if it hangs
-      await storage.saveDataset(dataset);
+      try {
+        await storage.saveDataset(dataset);
+      } catch (error) {
+        console.warn('⚠️ IndexedDB save failed, continuing anyway:', error);
+      }
+      
+      // Always update state
+      setDatasets(prev => [dataset, ...prev]);
+      return dataset;
     } catch (error) {
-      console.warn('⚠️ IndexedDB save failed, continuing anyway:', error);
-      // Don't throw - we still want to add to state
+      console.error('Error adding dataset:', error);
+      throw error;
     }
-    
-    // Always update state regardless of IndexedDB result
-    setDatasets(prev => [dataset, ...prev]);
-    return dataset;
-  }, []);
+  }, [user, currentProject?.id]);
 
   const updateDataset = useCallback(async (id: string, updates: Partial<Dataset>): Promise<void> => {
     try {
@@ -373,6 +380,58 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       if (user) {
         const projectId = model.projectId ?? currentProject?.id ?? null;
 
+        // Verify dataset exists in Supabase before creating model
+        if (model.datasetId) {
+          const { data: datasetCheck, error: checkError } = await supabase
+            .from('datasets')
+            .select('id')
+            .eq('id', model.datasetId)
+            .single();
+
+          if (checkError || !datasetCheck) {
+            console.error('❌ Dataset not found in Supabase:', model.datasetId);
+            
+            // Try to find the dataset in local state and save it
+            const localDataset = datasets.find(d => d.id === model.datasetId);
+            if (localDataset) {
+              console.log('📤 Found dataset in local state, saving to Supabase...');
+              
+              const datasetData = {
+                id: localDataset.id,
+                name: localDataset.name,
+                description: localDataset.description,
+                file_type: localDataset.fileType,
+                file_size: localDataset.fileSize,
+                row_count: localDataset.rows,
+                column_count: localDataset.columns,
+                preview_data: localDataset.preview_data,
+                user_id: user.id,
+                project_id: localDataset.projectId || currentProject?.id || null,
+                created_at: localDataset.dateUploaded || new Date().toISOString(),
+              };
+
+              const { error: insertError } = await supabase
+                .from('datasets')
+                .insert(datasetData);
+
+              if (insertError) {
+                console.error('❌ Failed to save dataset to Supabase:', {
+                  code: insertError.code,
+                  message: insertError.message,
+                  details: insertError.details,
+                  hint: insertError.hint,
+                  datasetData
+                });
+                throw new Error(`Failed to save dataset: ${insertError.message}. ${insertError.details || ''}`);
+              }
+              
+              console.log('✅ Dataset saved to Supabase successfully');
+            } else {
+              throw new Error(`Dataset ${model.datasetId} not found. Please select a valid dataset.`);
+            }
+          }
+        }
+
         const modelData = {
           id: model.id,
           name: model.name,
@@ -394,25 +453,38 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           .insert(modelData);
 
         if (error) {
-          console.error('❌ Error saving model to Supabase:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
-          throw error;
+          // If duplicate key, model already exists - just skip insert
+          if (error.code === '23505') {
+            console.warn('⚠️ Model already exists in database, skipping insert');
+            // Don't throw, just continue to add to state
+          } else {
+            console.error('❌ Error saving model to Supabase:', {
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code
+            });
+            throw error;
+          }
+        } else {
+          console.log('✅ Model saved successfully');
         }
-        
-        console.log('✅ Model saved successfully');
       }
 
-      // Update state
-      setModels(prev => [model, ...prev]);
+      // Update state - check if model already exists
+      setModels(prev => {
+        const exists = prev.some(m => m.id === model.id);
+        if (exists) {
+          console.warn('⚠️ Model already in state, skipping duplicate');
+          return prev;
+        }
+        return [model, ...prev];
+      });
     } catch (error) {
       console.error('Error adding model:', error);
       throw error;
     }
-  }, [user, currentProject?.id]);
+  }, [user, currentProject?.id, datasets]);
 
   const updateModelStatus = useCallback(async (id: string, status: string, metrics?: Record<string, number>) => {
     try {

@@ -174,7 +174,7 @@ export const generateEnhancedSampleDatasets = () => {
   return [
     salesDataset,
     churnDataset,
-    productPerformanceDataset,
+    productDataset,
     employeeDataset,
     marketingDataset,
     healthcareDataset

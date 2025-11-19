@@ -15,6 +15,7 @@ import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import { supabase } from '../lib/supabase';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
 import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
+import DataEmptyState from '../components/data/DataEmptyState';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
@@ -57,12 +58,34 @@ const DataManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(6);
   
-  // View mode state
-  const [viewMode, setViewMode] = useState<'grid' | 'organize'>('grid');
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<'grid' | 'organize'>(() => {
+    const saved = localStorage.getItem('dataManagement_viewMode');
+    return (saved as 'grid' | 'organize') || 'grid';
+  });
   
-  // Search and filter state
-  const [searchQuery, setSearchQuery] = useState('');
+  // Search and filter state with localStorage persistence
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return localStorage.getItem('dataManagement_searchQuery') || '';
+  });
   const [filters] = useState<any>({});
+
+  // Save view mode to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('dataManagement_viewMode', viewMode);
+  }, [viewMode]);
+
+  // Save search query to localStorage when it changes (with debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        localStorage.setItem('dataManagement_searchQuery', searchQuery);
+      } else {
+        localStorage.removeItem('dataManagement_searchQuery');
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // FIXED: Filter and search datasets FIRST (before using it in totalPages)
   const filteredDatasets = useMemo(() => {
@@ -355,30 +378,12 @@ const DataManagement: React.FC = () => {
         </div>
 
         {datasets.length === 0 ? (
-          // Empty State: Show large upload buttons
-          <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => setShowUploader(true)}
-              icon={<Upload className="w-4 h-4" />}
-              className="btn-primary-improved"
-            >
-              Upload Dataset
-            </Button>
-            <Button
-              onClick={() => setShowConnector(true)}
-              variant="outline"
-              icon={<Database className="w-4 h-4" />}
-            >
-              Connect Data Source
-            </Button>
-            <Button
-              onClick={() => setShowGeneratorModal(true)}
-              variant="outline"
-              icon={<Sparkles className="w-4 h-4" />}
-            >
-              Generate Sample Data
-            </Button>
-          </div>
+          // Empty State: Enhanced checklist and CTAs
+          <DataEmptyState
+            onUploadClick={() => setShowUploader(true)}
+            onGenerateSampleClick={() => setShowGeneratorModal(true)}
+            onConnectClick={() => setShowConnector(true)}
+          />
         ) : (
           // Has Datasets: Show search bar + controls
           <div className="space-y-4">

@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { Dataset } from '../../types';
+import { Dataset, MLModel } from '../../types';
 import { buildModel, trainModel, TrainingConfig, TrainingProgress, getModelSummary, preprocessData } from '../../lib/tensorflowClient';
 import Card from '../common/Card';
 import Button from '../common/Button';
@@ -17,9 +17,11 @@ import toast from 'react-hot-toast';
 
 interface TensorFlowTrainerProps {
   dataset: Dataset;
+  onModelTrained?: (model: MLModel) => void;
+  projectId?: string;
 }
 
-const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
+const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset, onModelTrained, projectId }) => {
   const [modelType, setModelType] = useState<'regression' | 'classification'>('classification');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [targetColumn, setTargetColumn] = useState<string>('');
@@ -80,6 +82,34 @@ const TensorFlowTrainer: React.FC<TensorFlowTrainerProps> = ({ dataset }) => {
 
       setTrainedModel(trained);
       toast.success('Model trained successfully!', { id: 'training' });
+      
+      // Create model record and notify parent
+      if (onModelTrained) {
+        const newModel: MLModel = {
+          id: crypto.randomUUID(),
+          name: `TensorFlow ${modelType} Model`,
+          description: `Trained on ${dataset.name} using ${selectedFeatures.length} features`,
+          status: 'trained',
+          modelType,
+          datasetId: dataset.id,
+          projectId: projectId || 'demo-project',
+          createdAt: new Date().toISOString(),
+          metrics: latestProgress ? {
+            accuracy: latestProgress.acc || 0,
+            loss: latestProgress.loss || 0,
+            val_accuracy: latestProgress.val_acc,
+            val_loss: latestProgress.val_loss,
+          } : undefined,
+          hyperparameters: {
+            epochs: 50,
+            batchSize: 32,
+            learningRate: 0.001,
+            features: selectedFeatures,
+            target: targetColumn,
+          },
+        };
+        onModelTrained(newModel);
+      }
     } catch (error: any) {
       console.error('Training error:', error);
       toast.error(error.message || 'Training failed', { id: 'training' });

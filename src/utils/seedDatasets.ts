@@ -5,13 +5,15 @@ import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 
 export const seedEnhancedDatasets = async (userId: string, projectId: string | null = null) => {
   try {
-    // IMPORTANT: Check if this user already has sample datasets to prevent duplicates
+    const datasets = generateEnhancedSampleDatasets();
+    
+    // Check if these specific sample datasets already exist for this user
+    const sampleIds = datasets.map(d => d.id);
     const { data: existingDatasets, error: checkError } = await supabase
       .from('datasets')
       .select('id')
       .eq('user_id', userId)
-      .like('id', 'sample-%')
-      .limit(1);
+      .in('id', sampleIds);
     
     if (checkError) {
       console.warn('Could not check existing datasets:', checkError);
@@ -22,9 +24,44 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       return existingDatasets;
     }
     
-    const datasets = generateEnhancedSampleDatasets();
-    
     console.log('Seeding enhanced sample datasets...');
+    
+    // Ensure we have a valid project_id (database requires it)
+    let validProjectId = projectId;
+    
+    if (!validProjectId) {
+      // Try to get user's default project or create one
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      
+      if (projects && projects.length > 0) {
+        validProjectId = projects[0].id;
+        console.log('✅ Using existing project:', validProjectId);
+      } else {
+        // Create a default project
+        const { data: newProject, error: createError } = await supabase
+          .from('projects')
+          .insert({
+            name: 'Sample Workspace',
+            description: 'Sample datasets and models',
+            user_id: userId,
+            created_at: new Date().toISOString()
+          })
+          .select('id')
+          .single();
+        
+        if (createError) {
+          console.error('Failed to create project:', createError);
+          throw new Error('Could not create default project');
+        }
+        
+        validProjectId = newProject.id;
+        console.log('✅ Created new project:', validProjectId);
+      }
+    }
     
     // Delete existing sample datasets with matching IDs (cleanup safety)
     const { error: deleteError } = await supabase
@@ -48,8 +85,7 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       column_count: dataset.column_count,
       preview_data: dataset.preview_data,
       user_id: userId,
-      // Only include project_id if provided and valid
-      ...(projectId && { project_id: projectId }),
+      project_id: validProjectId, // Always include project_id (required by database)
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));
@@ -78,11 +114,14 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
 // Function to check if sample datasets exist
 export const hasSampleDatasets = async (projectId: string) => {
   try {
+    const datasets = generateEnhancedSampleDatasets();
+    const sampleIds = datasets.map(d => d.id);
+    
     const { data, error } = await supabase
       .from('datasets')
       .select('id')
       .eq('project_id', projectId)
-      .like('id', 'sample-%');
+      .in('id', sampleIds);
     
     if (error) throw error;
     

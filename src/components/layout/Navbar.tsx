@@ -15,6 +15,7 @@ import SkeletonLoader from '../common/SkeletonLoader';
 import ThemeToggle from '../common/ThemeToggle';
 import NewProjectModal from '../common/NewProjectModal';
 import Logo from '../common/Logo';
+import NotificationCenter from '../common/NotificationCenter';
 
 interface NavbarProps {
   onOpenCommandPalette?: () => void;
@@ -82,7 +83,7 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
               <ThemeToggle />
               
               {/* Notifications */}
-              {/* <NotificationCenter /> */}
+              <NotificationCenter />
 
               {/* Settings */}
               <Link

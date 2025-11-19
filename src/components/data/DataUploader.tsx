@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, Upload, FileSpreadsheet, Database, CheckCircle2, Edit3, Check, X } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
+import ProgressStepper, { Step } from '../common/ProgressStepper';
 import { useAuth } from '../auth/AuthProvider';
 import { syncDatasetToNeo4j } from '../../lib/neo4jSync';
 import toast from 'react-hot-toast';
@@ -61,6 +62,14 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   const [editingSchema, setEditingSchema] = useState<ColumnSchema[]>([]);
   const [editingColumn, setEditingColumn] = useState<number | null>(null);
   const [columnNameInput, setColumnNameInput] = useState('');
+  
+  // Progress stepper state
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps: Step[] = [
+    { id: 'upload', label: 'Upload', description: 'Choose your file' },
+    { id: 'review', label: 'Review Schema', description: 'Verify column types' },
+    { id: 'confirm', label: 'Confirm', description: 'Finalize dataset' }
+  ];
 
   const MAX_NAME_LENGTH = 50;
 
@@ -317,6 +326,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       setParsedData(parsed);
       setEditingSchema([...parsed.schema]);
       setShowSchemaEditor(true);
+      setCurrentStep(1); // Move to review step
       const activeColumns = parsed.schema.filter(s => !s.dropped).length;
       toast.success(`Parsed ${parsed.rowCount.toLocaleString()} rows with ${activeColumns} columns`);
     } catch (err: any) {
@@ -400,6 +410,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     
     setParsedData(updated);
     setShowSchemaEditor(false);
+    setCurrentStep(2); // Move to confirm step
     toast.success(`Schema confirmed! ${activeSchema.length} columns ready to upload.`);
   };
 
@@ -408,6 +419,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     setParsedData(null);
     setEditingSchema([]);
     setFile(null);
+    setCurrentStep(0); // Reset to upload step
   };
 
   const truncateFileName = (name: string): string => {
@@ -588,7 +600,14 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
             </div>
           </div>
         </div>
-        <p className="text-gray-400 text-sm">Upload your data files to get started with analysis</p>
+        <p className="text-gray-400 text-sm mb-6">Upload your data files to get started with analysis</p>
+        
+        {/* Progress Stepper */}
+        <ProgressStepper 
+          steps={steps} 
+          currentStep={currentStep}
+          allowSkip={false}
+        />
       </div>
 
       {/* Main Upload Card */}

@@ -530,6 +530,29 @@ const Sidebar: React.FC = () => {
             );
           })}
         </div>
+        
+        {/* Command Palette Hint */}
+        {!isCollapsed && (
+          <div className="px-3 py-3 border-t border-gray-700/50">
+            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="text-xs font-semibold text-blue-400 uppercase tracking-wide">
+                  Quick Tip
+                </span>
+              </div>
+              <p className="text-xs text-gray-300 mb-2">
+                Press{' '}
+                <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-700 rounded text-xs font-mono text-blue-400">
+                  ⌘K
+                </kbd>{' '}
+                to quickly search datasets, models, and navigate anywhere
+              </p>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Bottom Section - Quick Stats */}

@@ -49,7 +49,7 @@ type CrossValidationStats = {
 };
 
 const ModelTraining: React.FC = () => {
-  const { datasets, models, addModel, deleteDataset, defaultProjectId } = useMLContext();
+  const { datasets, models, addModel, updateModelStatus, deleteDataset, currentProject } = useMLContext();
   const { user } = useAuth();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
@@ -324,7 +324,7 @@ const ModelTraining: React.FC = () => {
   };
 
   const handleTrainingSubmit = async (config: ModelTrainingConfig) => {
-    if (!defaultProjectId) {
+    if (!currentProject?.id) {
       toast.error('Project is still initializing. Please wait a moment and try again.');
       return;
     }
@@ -346,7 +346,7 @@ const ModelTraining: React.FC = () => {
         status: 'training',
         modelType: config.modelType,
         datasetId: config.datasetId,
-        projectId: defaultProjectId,
+        projectId: currentProject.id,
         createdAt: new Date().toISOString(),
       };
 
@@ -431,7 +431,8 @@ const ModelTraining: React.FC = () => {
                 },
               };
 
-              addModel(completedModel);
+              // Update model status instead of adding again
+              updateModelStatus(newModel.id, 'trained', completedModel.metrics);
               setIsTraining(false);
               setCurrentTraining(null);
               toast.success('Model training completed successfully!', { id: 'training' });
@@ -535,7 +536,7 @@ const ModelTraining: React.FC = () => {
   };
 
   const handleImportModel = (importedModel: MLModel) => {
-    if (!defaultProjectId) {
+    if (!currentProject?.id) {
       toast.error('Project is still initializing. Please wait and try again.');
       return;
     }
@@ -544,7 +545,7 @@ const ModelTraining: React.FC = () => {
       ...importedModel,
       id: crypto.randomUUID(),
       status: 'trained',
-      projectId: defaultProjectId,
+      projectId: currentProject.id,
       datasetId: datasets[0]?.id || '',
       createdAt: new Date().toISOString(),
     };
@@ -1249,7 +1250,11 @@ const ModelTraining: React.FC = () => {
                       </div>
                       <div className="p-4">
                         <p className="text-sm text-gray-400 mb-4">Train models directly in your browser - no server needed</p>
-                        <TensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                        <TensorFlowTrainer 
+                          dataset={selectedDatasetSafe as Dataset} 
+                          onModelTrained={addModel}
+                          projectId={currentProject?.id}
+                        />
                       </div>
                     </div>
 
@@ -1264,7 +1269,11 @@ const ModelTraining: React.FC = () => {
                         </div>
                         <div className="p-4">
                           <p className="text-sm text-gray-400 mb-4">Server-side training with GPU acceleration</p>
-                          <DockerTensorFlowTrainer dataset={selectedDatasetSafe as Dataset} />
+                          <DockerTensorFlowTrainer 
+                            dataset={selectedDatasetSafe as Dataset} 
+                            onModelTrained={addModel}
+                            projectId={currentProject?.id}
+                          />
                         </div>
                       </div>
                     )}
