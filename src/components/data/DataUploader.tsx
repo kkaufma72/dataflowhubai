@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { AlertCircle, Upload, FileSpreadsheet, Database, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Upload, FileSpreadsheet, Database, CheckCircle2, Edit3, Check, X } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
 import { syncDatasetToNeo4j } from '../../lib/neo4jSync';
@@ -24,17 +24,172 @@ interface DataUploaderProps {
   onClose?: () => void;
 }
 
+interface ColumnSchema {
+  name: string;
+  type: 'text' | 'number' | 'boolean' | 'date';
+  inferredType: string;
+  sampleValues: any[];
+}
+
+interface ParsedData {
+  columns: string[];
+  rows: any[][];
+  schema: ColumnSchema[];
+  rowCount: number;
+  columnCount: number;
+}
+
 const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
   const { addDataset } = useMLContext();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [parsing, setParsing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Schema editor state
+  const [showSchemaEditor, setShowSchemaEditor] = useState(false);
+  const [parsedData, setParsedData] = useState<ParsedData | null>(null);
+  const [editingSchema, setEditingSchema] = useState<ColumnSchema[]>([]);
 
   const MAX_NAME_LENGTH = 50;
+
+  // Type inference function
+  const inferType = (values: any[]): 'text' | 'number' | 'boolean' | 'date' => {
+    const nonEmpty = values.filter(v => v !== null && v !== undefined && v !== '');
+    if (nonEmpty.length === 0) return 'text';
+
+    // Check for boolean
+    const boolCount = nonEmpty.filter(v => 
+      v === true || v === false || 
+      String(v).toLowerCase() === 'true' || 
+      String(v).toLowerCase() === 'false'
+    ).length;
+    if (boolCount / nonEmpty.length > 0.8) return 'boolean';
+
+    // Check for numbers
+    const numCount = nonEmpty.filter(v => !isNaN(Number(v)) && String(v).trim() !== '').length;
+    if (numCount / nonEmpty.length > 0.8) return 'number';
+
+    // Check for dates
+    const dateCount = nonEmpty.filter(v => {
+      const d = new Date(v);
+      return !isNaN(d.getTime()) && String(v).match(/\d{4}|\d{1,2}\/\d{1,2}/);
+    }).length;
+    if (dateCount / nonEmpty.length > 0.8) return 'date';
+
+    return 'text';
+  };
+
+  // Stream parse CSV/TXT with Papa
+  const streamParseFile = (file: File): Promise<ParsedData> => {
+    return new Promise((resolve, reject) => {
+      const rows: any[][] = [];
+      let columns: string[] = [];
+      const columnValues: { [key: string]: any[] } = {};
+      let rowCount = 0;
+      const MAX_ROWS = 10000; // Stream first 10k rows for analysis
+
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        chunk: (results: any, parser) => {
+          if (!columns.length && results.meta.fields) {
+            columns = results.meta.fields;
+            columns.forEach(col => columnValues[col] = []);
+          }
+
+          results.data.forEach((row: any) => {
+            if (rowCount < MAX_ROWS) {
+              const rowArray = columns.map(col => row[col] ?? '');
+              rows.push(rowArray);
+              
+              // Collect samples for type inference (first 100 rows)
+              if (rowCount < 100) {
+                columns.forEach(col => {
+                  if (columnValues[col].length < 100) {
+                    columnValues[col].push(row[col]);
+                  }
+                });
+              }
+              
+              rowCount++;
+            } else {
+              parser.abort();
+            }
+          });
+        },
+        complete: () => {
+          // Infer schema
+          const schema: ColumnSchema[] = columns.map(col => ({
+            name: col,
+            type: inferType(columnValues[col]),
+            inferredType: inferType(columnValues[col]),
+            sampleValues: columnValues[col].slice(0, 5)
+          }));
+
+          resolve({
+            columns,
+            rows,
+            schema,
+            rowCount,
+            columnCount: columns.length
+          });
+        },
+        error: (error: any) => {
+          reject(error);
+        }
+      });
+    });
+  };
+
+  // Parse JSON
+  const parseJSON = (file: File): Promise<ParsedData> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const data = JSON.parse(content);
+          
+          if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('JSON must be a non-empty array of objects');
+          }
+
+          const columns = Object.keys(data[0]);
+          const rows = data.map(item => columns.map(col => item[col] ?? ''));
+          const columnValues: { [key: string]: any[] } = {};
+          
+          columns.forEach(col => {
+            columnValues[col] = data.slice(0, 100).map(item => item[col]);
+          });
+
+          const schema: ColumnSchema[] = columns.map(col => ({
+            name: col,
+            type: inferType(columnValues[col]),
+            inferredType: inferType(columnValues[col]),
+            sampleValues: columnValues[col].slice(0, 5)
+          }));
+
+          resolve({
+            columns,
+            rows,
+            schema,
+            rowCount: data.length,
+            columnCount: columns.length
+          });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -61,7 +216,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     }
   };
 
-  const validateAndSetFile = (file: File) => {
+  const validateAndSetFile = async (file: File) => {
     const validTypes = [
       'text/csv',
       'application/vnd.ms-excel',
@@ -81,6 +236,67 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     
     setFile(file);
     setError(null);
+
+    // Auto-parse and show schema editor for CSV/TXT/JSON
+    if (['csv', 'txt', 'json'].includes(fileExtension || '')) {
+      await parseAndShowSchema(file);
+    }
+  };
+
+  const parseAndShowSchema = async (file: File) => {
+    setParsing(true);
+    setError(null);
+    
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      let parsed: ParsedData;
+
+      if (extension === 'json') {
+        parsed = await parseJSON(file);
+      } else {
+        parsed = await streamParseFile(file);
+      }
+
+      setParsedData(parsed);
+      setEditingSchema([...parsed.schema]);
+      setShowSchemaEditor(true);
+      toast.success(`Parsed ${parsed.rowCount.toLocaleString()} rows with ${parsed.columnCount} columns`);
+    } catch (err: any) {
+      console.error('Parse error:', err);
+      setError(err.message || 'Failed to parse file');
+      toast.error('Failed to parse file');
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const updateColumnType = (index: number, newType: 'text' | 'number' | 'boolean' | 'date') => {
+    setEditingSchema(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], type: newType };
+      return updated;
+    });
+  };
+
+  const confirmSchema = () => {
+    if (!parsedData) return;
+    
+    // Update parsed data with confirmed schema
+    const updated: ParsedData = {
+      ...parsedData,
+      schema: editingSchema
+    };
+    
+    setParsedData(updated);
+    setShowSchemaEditor(false);
+    toast.success('Schema confirmed! Ready to upload.');
+  };
+
+  const cancelSchema = () => {
+    setShowSchemaEditor(false);
+    setParsedData(null);
+    setEditingSchema([]);
+    setFile(null);
   };
 
   const truncateFileName = (name: string): string => {
@@ -93,152 +309,68 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
     return `${nameWithoutExt.slice(0, maxBaseLength)}...${extension}`;
   };
 
-  const parseCSV = (content: string): Promise<{ columns: string[], rows: any[][] }> => {
-    return new Promise((resolve, reject) => {
-      Papa.parse(content, {
-        header: true,
-        skipEmptyLines: true,
-        dynamicTyping: false,
-        complete: (results: any) => {
-          console.log('📊 CSV Parsed:', results);
-          
-          if (results.errors.length > 0) {
-            console.error('CSV parsing errors:', results.errors);
-          }
-          
-          const columns = results.meta.fields || [];
-          const rows = results.data.map((row: any) => 
-            columns.map((col: string) => row[col] ?? '')
-          );
-          
-          console.log('✅ Columns:', columns);
-          console.log('✅ Sample rows:', rows.slice(0, 3));
-          
-          resolve({ columns, rows });
-        },
-        error: (error: any) => {
-          console.error('CSV parsing error:', error);
-          reject(error);
-        }
-      });
-    });
-  };
-
-  const parseJSON = (content: string): { columns: string[], rows: any[][] } => {
-    const data = JSON.parse(content);
-    
-    if (Array.isArray(data) && data.length > 0) {
-      const columns = Object.keys(data[0]);
-      const rows = data.map(item => 
-        columns.map(col => item[col] ?? '')
-      );
-      
-      console.log('✅ JSON Columns:', columns);
-      console.log('✅ JSON Sample rows:', rows.slice(0, 3));
-      
-      return { columns, rows };
-    }
-    
-    throw new Error('JSON must be an array of objects');
-  };
-
-  const parseFile = async (content: string, fileName: string): Promise<{ columns: string[], rows: any[][] }> => {
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    
-    console.log('📄 Parsing file:', fileName, 'Extension:', extension);
-    
-    if (extension === 'csv' || extension === 'txt') {
-      return await parseCSV(content);
-    } else if (extension === 'json') {
-      return parseJSON(content);
-    }
-    
-    throw new Error('Unsupported file format');
-  };
-
   const handleUpload = async () => {
-    console.log('🎯 handleUpload called');
-    
     if (!file || !user) {
-      console.log('❌ Missing requirements:', { file: !!file, user: !!user });
       setError('Missing file or user authentication');
       return;
     }
 
-    console.log('🚀 Starting upload for:', file.name);
+    // If we don't have parsed data yet (Excel files), parse now
+    if (!parsedData) {
+      setError('Please wait for file parsing to complete');
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(0);
     setError(null);
 
     try {
-      // Read file content
-      const fileContent = await file.text();
-      console.log('📖 File content read, length:', fileContent.length);
+      // Use already parsed data - no need to re-read file!
+      const { columns, rows, schema } = parsedData;
       
-      // Parse file
-      const { columns, rows } = await parseFile(fileContent, file.name);
-      
-      if (!columns || columns.length === 0) {
-        throw new Error('No columns found in file');
-      }
-      
-      if (!rows || rows.length === 0) {
-        throw new Error('No data rows found in file');
-      }
-
-      console.log('✅ Parsed successfully:', {
+      console.log('✅ Using pre-parsed data:', {
         columns: columns.length,
         rows: rows.length,
-        sampleColumns: columns.slice(0, 5),
-        sampleRow: rows[0]
+        schema: schema.length
       });
 
       const fileSize = (file.size / 1024).toFixed(1);
       const fileSizeFormatted = file.size < 1024 * 1024 
         ? `${fileSize} KB` 
-        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+        : `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
 
-      // Prepare preview data - take first 100 rows
+      // Prepare preview data with schema metadata
       const previewData = {
         columns: columns,
-        rows: rows.slice(0, 100)
+        rows: rows.slice(0, 100),
+        schema: schema.map(s => ({
+          name: s.name,
+          type: s.type,
+          inferredType: s.inferredType
+        }))
       };
 
-      console.log('💾 Preparing to save to Supabase:', {
-        name: truncateFileName(file.name),
-        columns: columns.length,
-        rows: rows.length,
-        previewRows: previewData.rows.length
-      });
+      setUploadProgress(30);
 
-      // Set initial progress to 10%
-      setUploadProgress(10);
-
-      // Insert into Supabase using direct fetch (Supabase client hangs)
+      // Insert into Supabase
       const { supabaseInsert } = await import('../../lib/supabaseHelpers');
       
       const datasetData = {
         name: truncateFileName(file.name),
-        description: `Uploaded ${file.name.split('.').pop()?.toUpperCase()} file`,
+        description: `Uploaded ${file.name.split('.').pop()?.toUpperCase()} file with ${schema.length} columns`,
         file_type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
         file_size: fileSizeFormatted,
-        row_count: rows.length,
-        column_count: columns.length,
+        row_count: parsedData.rowCount,
+        column_count: parsedData.columnCount,
         preview_data: previewData,
         user_id: user.id
       };
 
-      console.log('💾 Inserting dataset:', datasetData);
-      console.log('📡 About to call supabaseInsert...');
-      
-      // Update progress before insert
-      setUploadProgress(30);
+      setUploadProgress(50);
       
       const { data: insertedDatasets, error: insertError } = await supabaseInsert('datasets', datasetData);
       
-      console.log('📡 supabaseInsert returned:', { data: insertedDatasets, error: insertError });
-
-      // Update progress after insert
       setUploadProgress(80);
 
       if (insertError) {
@@ -272,14 +404,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         preview_data: newDataset.preview_data
       };
       
-      // Update progress before adding to context
       setUploadProgress(90);
       
-      console.log('🔄 About to call addDataset...');
-      console.log('📦 Dataset for context:', datasetForContext);
-      
-      // Try to add to context, but don't block on IndexedDB
-      console.log('⏱️ Starting addDataset with 2s timeout...');
       try {
         const addDatasetPromise = addDataset(datasetForContext);
         const timeoutPromise = new Promise((_, reject) => 
@@ -287,27 +413,21 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         );
         
         await Promise.race([addDatasetPromise, timeoutPromise]);
-        console.log('✅ Dataset added to local context');
       } catch (error) {
         console.warn('⚠️ addDataset failed or timed out:', error);
-        console.warn('⚠️ Continuing anyway - dataset is already in Supabase');
-        // Continue - dataset is already in Supabase and will be reloaded on next page refresh
       }
       
-      console.log('🔄 Setting upload progress to 100...');
       setUploadProgress(100);
-      console.log('✅ Upload complete!');
 
-      // Sync to Neo4j knowledge graph (async, don't wait)
+      // Sync to Neo4j (async, don't wait)
       if (datasetForContext && user?.id) {
         syncDatasetToNeo4j(datasetForContext as any, user.id)
           .then(() => {
-            console.log('🔵 Dataset synced to Neo4j knowledge graph');
+            console.log('🔵 Dataset synced to Neo4j');
             toast.success('Synced to knowledge graph! 🔵', { duration: 2000 });
           })
           .catch((error) => {
             console.warn('Neo4j sync failed (optional):', error);
-            // Don't show error to user - Neo4j sync is optional
           });
       }
       
@@ -318,6 +438,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
 
       // Reset form
       setFile(null);
+      setParsedData(null);
+      setEditingSchema([]);
       setUploading(false);
       setUploadProgress(0);
 
@@ -514,6 +636,101 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           </div>
         </div>
       </div>
+
+      {/* Schema Editor Modal */}
+      {showSchemaEditor && parsedData && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl border border-gray-800 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Review Schema</h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {parsedData.rowCount.toLocaleString()} rows × {parsedData.columnCount} columns detected
+                  </p>
+                </div>
+                <button
+                  onClick={cancelSchema}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <Database className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-blue-400 mb-1">Column Types Detected</p>
+                    <p className="text-sm text-blue-300/80">
+                      Review and adjust the inferred data types before upload. The schema will be saved with your dataset.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {editingSchema.map((col, idx) => (
+                  <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Edit3 className="w-4 h-4 text-gray-400" />
+                          <h4 className="text-sm font-semibold text-white truncate">{col.name}</h4>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                          <span>Sample values:</span>
+                          <span className="text-gray-400 font-mono">
+                            {col.sampleValues.slice(0, 3).map(v => String(v || '—')).join(', ')}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          {(['text', 'number', 'boolean', 'date'] as const).map((type) => (
+                            <button
+                              key={type}
+                              onClick={() => updateColumnType(idx, type)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                                col.type === type
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {col.type === col.inferredType && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded">
+                          <Check className="w-3 h-3" />
+                          Auto
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-800 flex gap-3">
+              <button
+                onClick={confirmSchema}
+                className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors"
+              >
+                Confirm Schema & Continue
+              </button>
+              <button
+                onClick={cancelSchema}
+                className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info Cards */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
