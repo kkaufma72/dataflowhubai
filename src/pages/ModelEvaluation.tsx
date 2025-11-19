@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
+import { useInfluxMetrics } from '../hooks/useInfluxMetrics';
 import {
   Card,
   Title,
@@ -80,6 +82,13 @@ const ModelEvaluationContent = () => {
   const [performanceAnswer, setPerformanceAnswer] = useState<string | null>(null);
   const [predictionQuestion, setPredictionQuestion] = useState('');
   const [predictionAnswer, setPredictionAnswer] = useState<string | null>(null);
+
+  // Fetch live evaluation metrics from InfluxDB
+  const { metrics, loading: metricsLoading, error: metricsError } = useInfluxMetrics(
+    selectedModel?.id,
+    5000,
+    24 // Last 24 hours of evaluation data
+  );
 
   // Smart detection: Determine if model is classification or regression
   const isClassificationModel = useMemo(() => {
@@ -166,6 +175,23 @@ const ModelEvaluationContent = () => {
     if (!selectedModel) {
       return [] as Array<{ date: string; accuracy: number; precision: number; recall: number }>;
     }
+
+    // Use live InfluxDB metrics if available
+    if (metrics && metrics.timestamps && metrics.timestamps.length > 0) {
+      return metrics.timestamps.map((timestamp: Date, index: number) => ({
+        date: new Date(timestamp).toLocaleString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        accuracy: metrics.accuracies[index] || 0,
+        precision: 0, // InfluxDB doesn't track precision yet - fallback
+        recall: 0 // InfluxDB doesn't track recall yet - fallback
+      }));
+    }
+
+    // Fallback to static model metrics if no live data
     const accuracy = selectedModel?.metrics?.accuracy ?? 0.78;
     const precision = selectedModel?.metrics?.precision ?? 0.75;
     const recall = selectedModel?.metrics?.recall ?? 0.73;
@@ -190,7 +216,7 @@ const ModelEvaluationContent = () => {
         recall
       }
     ];
-  }, [selectedModel]);
+  }, [selectedModel, metrics]);
 
   const describeDelta = useCallback((label: string, start: number, end: number) => {
     const delta = (end - start) * 100;
@@ -451,9 +477,9 @@ const ModelEvaluationContent = () => {
     }
 
     const q = prompt.toLowerCase();
-    const auc = selectedModel.metrics?.auc ?? 0.83;
-    const precision = selectedModel.metrics?.precision ?? 0.78;
-    const recall = selectedModel.metrics?.recall ?? 0.76;
+    const auc = selectedModel?.metrics?.auc ?? 0.83;
+    const precision = selectedModel?.metrics?.precision ?? 0.78;
+    const recall = selectedModel?.metrics?.recall ?? 0.76;
     let response = '';
 
     if (q.includes('auc') || q.includes('curve')) {
@@ -1181,21 +1207,54 @@ const ModelEvaluationContent = () => {
             
             {/* Performance Over Time */}
             <Card className="mt-6">
-              <Title>Performance Over Time</Title>
-              <AreaChart
-                className="h-72 mt-4"
-                data={performanceData}
-                index="date"
-                categories={['accuracy', 'precision', 'recall']}
-                colors={['blue', 'cyan', 'indigo']}
-              />
+              <div className="flex items-center justify-between mb-4">
+                <Title>Performance Over Time</Title>
+                {metrics && metrics.timestamps && metrics.timestamps.length > 0 && (
+                  <span className="text-xs text-emerald-500 font-semibold uppercase tracking-wider">● LIVE</span>
+                )}
+              </div>
+              {metricsError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-red-700">Failed to load metrics: {metricsError}</p>
+                </div>
+              )}
+              {metricsLoading && !performanceData.length && (
+                <div className="h-72 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
+                    <p className="text-sm text-gray-500">Loading performance metrics from InfluxDB...</p>
+                  </div>
+                </div>
+              )}
+              {!metricsLoading && performanceData.length === 0 && (
+                <div className="h-72 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">No performance metrics available yet.</p>
+                    <p className="text-xs text-gray-400 mt-2">Metrics will appear as the model is evaluated.</p>
+                  </div>
+                </div>
+              )}
+              {performanceData.length > 0 && (
+                <AreaChart
+                  className="h-72 mt-4"
+                  data={performanceData}
+                  index="date"
+                  categories={['accuracy', 'precision', 'recall']}
+                  colors={['blue', 'cyan', 'indigo']}
+                />
+              )}
 
-              {performanceNarrative && (
+              {performanceNarrative && performanceData.length > 0 && (
                 <div className={`mt-6 ${insightPanelClass} p-4 text-sm text-slate-700 space-y-2`}>
                   <p>{performanceNarrative.accuracyMsg}</p>
                   <p>{performanceNarrative.precisionMsg}</p>
                   <p>{performanceNarrative.recallMsg}</p>
                   <p>{performanceNarrative.stability}</p>
+                  {metrics && metrics.timestamps && metrics.timestamps.length > 0 && (
+                    <p className="text-xs text-emerald-600 mt-2">
+                      📊 Data from InfluxDB: {metrics.timestamps.length} real-time data points
+                    </p>
+                  )}
                 </div>
               )}
 

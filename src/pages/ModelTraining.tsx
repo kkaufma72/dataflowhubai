@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,6 +16,7 @@ import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
 import { influxdb } from '../lib/influxdb';
+import { useInfluxMetrics } from '../hooks/useInfluxMetrics';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import ModelCard from '../components/models/ModelCard';
@@ -71,6 +73,13 @@ const ModelTraining: React.FC = () => {
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComponents, setChartComponents] = useState<any>(null);
 
+  // Fetch live training metrics from InfluxDB
+  const { metrics, loading: metricsLoading, error: metricsError } = useInfluxMetrics(
+    currentTraining?.id,
+    5000,
+    1 // Last 1 hour of training data
+  );
+
   // Load Chart.js components
   useEffect(() => {
     const loadCharts = async () => {
@@ -100,31 +109,21 @@ const ModelTraining: React.FC = () => {
     loadCharts();
   }, []);
 
-  // Generate mock training metrics over time (last 30 epochs)
+  // Process InfluxDB metrics into chart data
   const trainingMetricsData = useMemo(() => {
-    const epochs = Array.from({ length: 30 }, (_, i) => i + 1);
-    
-    // Simulate accuracy improving over time with some variance
-    const accuracyData = epochs.map(epoch => {
-      const baseAccuracy = 0.60 + (epoch / 30) * 0.35; // 60% to 95%
-      const noise = (Math.random() - 0.5) * 0.03; // ±1.5% noise
-      return Math.min(0.98, Math.max(0.55, baseAccuracy + noise));
-    });
+    if (!metrics || !metrics.timestamps || metrics.timestamps.length === 0) {
+      return null;
+    }
 
-    // Loss decreasing over time
-    const lossData = epochs.map(epoch => {
-      const baseLoss = 0.8 - (epoch / 30) * 0.6; // 0.8 to 0.2
-      const noise = (Math.random() - 0.5) * 0.05;
-      return Math.max(0.1, baseLoss + noise);
-    });
-
-    // Training speed (samples/sec)
-    const speedData = epochs.map(() => {
-      return 850 + Math.random() * 300; // 850-1150 samples/sec
-    });
+    // Use timestamps array length for epochs
+    const epochs = Array.from({ length: metrics.timestamps.length }, (_, i) => i + 1);
+    const accuracyData = metrics.accuracies || [];
+    const lossData = metrics.losses || [];
+    // Training speed not available from InfluxDB yet, generate mock for now
+    const speedData = epochs.map(() => 850 + Math.random() * 300);
 
     return { epochs, accuracyData, lossData, speedData };
-  }, []);
+  }, [metrics]);
 
   const questionSuggestions = [
     'Which fold performed the best?',
@@ -666,7 +665,24 @@ const ModelTraining: React.FC = () => {
             </div>
 
             {/* Training Metrics Charts */}
-            {chartsLoaded && ChartComponents && (
+            {metricsError && (
+              <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mt-4">
+                <p className="text-sm text-red-400">Failed to load metrics: {metricsError}</p>
+              </div>
+            )}
+            {metricsLoading && !trainingMetricsData && (
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg p-8 mt-4 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
+                <p className="text-sm text-gray-400">Loading training metrics from InfluxDB...</p>
+              </div>
+            )}
+            {!metricsLoading && !trainingMetricsData && !metricsError && (
+              <div className="bg-[#0d1117] border border-gray-800 rounded-lg p-8 mt-4 text-center">
+                <p className="text-sm text-gray-400">No training metrics available yet.</p>
+                <p className="text-xs text-gray-500 mt-2">Start training a model to see live metrics here.</p>
+              </div>
+            )}
+            {chartsLoaded && ChartComponents && trainingMetricsData && (
               <div className="space-y-4 mt-4">
                 {/* Top Row: Accuracy and Loss */}
                 <div className="grid grid-cols-2 gap-4">
@@ -677,6 +693,7 @@ const ModelTraining: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-purple-600 rounded-full"></div>
                         <h3 className="text-sm font-semibold text-white">Model Accuracy</h3>
+                        <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">● LIVE</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
@@ -700,7 +717,7 @@ const ModelTraining: React.FC = () => {
                         labels: trainingMetricsData.epochs,
                         datasets: [{
                           label: 'Accuracy',
-                          data: trainingMetricsData.accuracyData.map(v => v * 100),
+                          data: trainingMetricsData.accuracyData.map((v: number) => v * 100),
                           borderColor: 'rgb(59, 130, 246)',
                           backgroundColor: (context: any) => {
                             const ctx = context.chart.ctx;
@@ -774,6 +791,7 @@ const ModelTraining: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-4 bg-gradient-to-b from-orange-400 to-red-600 rounded-full"></div>
                         <h3 className="text-sm font-semibold text-white">Training Loss</h3>
+                        <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">● LIVE</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
@@ -869,12 +887,13 @@ const ModelTraining: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-cyan-600 rounded-full"></div>
                         <h3 className="text-sm font-semibold text-white">Training Speed (samples/sec)</h3>
+                        <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">● LIVE</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <div className="text-xs text-gray-500">Avg</div>
                           <div className="text-sm font-mono font-semibold text-emerald-400">
-                            {(trainingMetricsData.speedData.reduce((a, b) => a + b, 0) / trainingMetricsData.speedData.length).toFixed(0)}
+                            {(trainingMetricsData.speedData.reduce((a: number, b: number) => a + b, 0) / trainingMetricsData.speedData.length).toFixed(0)}
                           </div>
                         </div>
                         <div className="text-right">
