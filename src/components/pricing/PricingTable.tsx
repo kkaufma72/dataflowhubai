@@ -78,7 +78,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     },
     {
       name: 'Professional',
-      price: { monthly: 50, annual: 500 },
+      price: { monthly: 49, annual: 490 },
       description: 'For growing businesses',
       features: [
         'Unlimited datasets',

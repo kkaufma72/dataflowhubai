@@ -53,7 +53,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: 'Professional',
-      price: 50,
+      price: 49,
       tier: 'professional' as const,
       features: [
         'Unlimited datasets',
