@@ -20,8 +20,11 @@ const LoadSampleDataButton: React.FC<LoadSampleDataButtonProps> = ({ onSuccess }
 
     setIsLoading(true);
     try {
-      console.log('🚀 Manually loading sample data...');
-      await seedEnhancedDatasets(user.id, null);
+      console.log('🚀 Manually loading sample data for user:', user.id);
+      console.log('👤 User email:', user.email);
+      
+      const result = await seedEnhancedDatasets(user.id, null);
+      console.log('✅ Seed result:', result);
       
       toast.success('Sample data loaded successfully! Refresh the page to see it.');
       
@@ -36,9 +39,15 @@ const LoadSampleDataButton: React.FC<LoadSampleDataButtonProps> = ({ onSuccess }
       setTimeout(() => {
         window.location.reload();
       }, 1500);
-    } catch (error) {
-      console.error('Error loading sample data:', error);
-      toast.error('Failed to load sample data. Check console for details.');
+    } catch (error: any) {
+      console.error('❌ ERROR loading sample data:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error details:', error?.details);
+      console.error('Error hint:', error?.hint);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      
+      const errorMsg = error?.message || error?.details || 'Failed to load sample data';
+      toast.error(`Failed: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }

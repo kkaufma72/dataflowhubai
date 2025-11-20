@@ -118,9 +118,9 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       const isAuthenticated = !!user;
       
       if (!isAuthenticated) {
-        // Not logged in - just load sample data
-        const localDatasets = await initializeSampleData();
-        setDatasets(localDatasets);
+        // Not logged in - no data to load
+        setDatasets([]);
+        setModels([]);
         setIsLoading(false);
         setHasFetched(true);
         return;
