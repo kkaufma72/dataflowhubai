@@ -259,6 +259,40 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     try {
       // Save to Supabase first if user is authenticated
       if (user) {
+        // Ensure we have a valid project_id
+        let validProjectId = currentProject?.id;
+        
+        if (!validProjectId) {
+          // Get or create default project
+          const { data: existingProjects } = await supabase
+            .from('projects')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1);
+          
+          if (existingProjects && existingProjects.length > 0) {
+            validProjectId = existingProjects[0].id;
+          } else {
+            // Create default project
+            const { data: newProject, error: projectError } = await supabase
+              .from('projects')
+              .insert({
+                name: 'Default Workspace',
+                description: 'Default workspace for datasets',
+                user_id: user.id,
+              })
+              .select('id')
+              .single();
+            
+            if (projectError) {
+              console.error('Failed to create project:', projectError);
+              throw new Error('Could not create default project');
+            }
+            
+            validProjectId = newProject.id;
+          }
+        }
+        
         const datasetData = {
           id: dataset.id,
           name: dataset.name,
@@ -269,7 +303,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           column_count: dataset.columns,
           preview_data: dataset.preview_data,
           user_id: user.id,
-          project_id: currentProject?.id || null,
+          project_id: validProjectId, // Always set project_id
           created_at: dataset.dateUploaded || new Date().toISOString(),
         };
 
@@ -279,10 +313,11 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
         if (error) {
           console.error('❌ Error saving dataset to Supabase:', error);
+          console.error('Error details:', JSON.stringify(error, null, 2));
           throw error;
         }
 
-        console.log('✅ Dataset saved to Supabase');
+        console.log('✅ Dataset saved to Supabase with project_id:', validProjectId);
       }
 
       // Try to save to IndexedDB but don't fail if it hangs
