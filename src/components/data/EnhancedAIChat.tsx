@@ -47,6 +47,41 @@ interface EnhancedAIChatProps {
   isModal?: boolean;
 }
 
+const generatePromptSuggestions = (dataset: Dataset): string[] => {
+  const columns = dataset.preview_data?.columns?.map(col => col.toLowerCase()) ?? [];
+  const hasColumn = (keywords: string[]) => columns.some(col => keywords.some(keyword => col.includes(keyword)));
+
+  const suggestions: string[] = [];
+
+  if (hasColumn(['date', 'time', 'month', 'year']) && hasColumn(['revenue', 'sales', 'amount', 'total'])) {
+    suggestions.push('Show monthly revenue trends and highlight any seasonality.');
+  }
+
+  if (hasColumn(['customer', 'segment', 'account'])) {
+    suggestions.push('Which customer segments are growing the fastest?');
+  }
+
+  if (hasColumn(['region', 'country', 'state'])) {
+    suggestions.push('Compare performance by region and identify outliers.');
+  }
+
+  if (hasColumn(['category', 'product', 'sku'])) {
+    suggestions.push('What are the top categories and which ones are underperforming?');
+  }
+
+  if (hasColumn(['cost', 'margin', 'profit'])) {
+    suggestions.push('How are margins trending and where are we losing profitability?');
+  }
+
+  if (suggestions.length < 3) {
+    suggestions.push(`Give me a quick summary of ${dataset.name}.`);
+  }
+
+  suggestions.push('What anomalies or data quality issues should I look into?');
+
+  return Array.from(new Set(suggestions)).slice(0, 4);
+};
+
 const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ 
   dataset, 
   onClose,
@@ -62,6 +97,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognition = useRef<any>(null);
+  const datasetPromptSuggestions = useMemo(() => generatePromptSuggestions(dataset), [dataset]);
 
   // Load user profile from database
   useEffect(() => {
@@ -552,6 +588,24 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             {dataset.rows || 0} rows • {dataset.columns || 0} columns
           </span>
         </div>
+
+        {datasetPromptSuggestions.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {datasetPromptSuggestions.map((suggestion, index) => (
+              <button
+                key={`${suggestion}-${index}`}
+                type="button"
+                onClick={() => {
+                  setInput(suggestion);
+                  inputRef.current?.focus();
+                }}
+                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 text-gray-700 hover:border-primary hover:text-primary transition"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
@@ -576,4 +630,3 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
 };
 
 export default EnhancedAIChat;
-

@@ -51,6 +51,8 @@ import {
   Filler,
 } from 'chart.js';
 import { Line, Bar, Scatter, Bubble } from 'react-chartjs-2';
+import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 import InfluxdbOfflineBanner from '../components/monitoring/InfluxdbOfflineBanner';
 
 // Register Chart.js components
@@ -83,6 +85,9 @@ const ModelEvaluationContent = () => {
   const [performanceAnswer, setPerformanceAnswer] = useState<string | null>(null);
   const [predictionQuestion, setPredictionQuestion] = useState('');
   const [predictionAnswer, setPredictionAnswer] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   // Fetch live evaluation metrics from InfluxDB
   const { metrics, loading: metricsLoading, error: metricsError } = useInfluxMetrics(
@@ -672,6 +677,8 @@ const ModelEvaluationContent = () => {
     answerFeatureQuestion(suggestion);
   };
 
+  const datasetHasPreview = !!selectedDataset?.preview_data?.rows?.length;
+
   const predictionSamples = useMemo(() => {
     if (!selectedDataset?.preview_data?.rows?.length) return [] as { row: string[]; prediction: string; confidence: number; id: string }[];
     return selectedDataset.preview_data.rows.slice(0, 5).map((row, idx) => {
@@ -701,6 +708,151 @@ const ModelEvaluationContent = () => {
         : 'Consider adjusting the threshold or class weights if this skew doesn’t match your domain.',
     };
   }, [predictionSamples]);
+
+  const rocCurveChartData = useMemo(() => {
+    if (!isClassificationModel) return null;
+    const auc = selectedModel?.metrics?.auc ?? 0.82;
+    const basePoints = Array.from({ length: 21 }, (_, idx) => idx / 20);
+    const curveBoost = Math.max(0, auc - 0.5);
+    const exponent = Math.max(0.3, 1.1 - auc * 0.8);
+
+    const rocPoints = basePoints.map((fpr) => {
+      if (fpr === 0) return { x: 0, y: 0 };
+      if (fpr === 1) return { x: 1, y: 1 };
+      const baseline = Math.pow(fpr, exponent);
+      const boosted = Math.min(1, baseline + curveBoost * (1 - fpr));
+      return { x: Number(fpr.toFixed(2)), y: Number(boosted.toFixed(3)) };
+    });
+
+    return {
+      datasets: [
+        {
+          label: 'Model ROC',
+          data: rocPoints,
+          borderColor: 'rgb(79, 70, 229)',
+          backgroundColor: 'rgba(79, 70, 229, 0.15)',
+          pointRadius: 2,
+          pointBackgroundColor: 'rgb(79, 70, 229)',
+          fill: true,
+          parsing: false,
+          tension: 0.35,
+        },
+        {
+          label: 'Random classifier',
+          data: basePoints.map((fpr) => ({ x: Number(fpr.toFixed(2)), y: Number(fpr.toFixed(2)) })),
+          borderColor: '#d1d5db',
+          borderDash: [6, 6],
+          pointRadius: 0,
+          parsing: false,
+          fill: false,
+        },
+      ],
+    };
+  }, [isClassificationModel, selectedModel?.metrics?.auc]);
+
+  const rocCurveOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { intersect: false, mode: 'nearest' as const },
+    scales: {
+      x: {
+        type: 'linear' as const,
+        min: 0,
+        max: 1,
+        title: { display: true, text: 'False Positive Rate' },
+      },
+      y: {
+        type: 'linear' as const,
+        min: 0,
+        max: 1,
+        title: { display: true, text: 'True Positive Rate' },
+      },
+    },
+    plugins: {
+      legend: { position: 'bottom' as const },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const { x, y } = context.parsed;
+            return `TPR ${y?.toFixed?.(2) ?? y} • FPR ${x?.toFixed?.(2) ?? x}`;
+          },
+        },
+      },
+    },
+  }), []);
+
+  const handleLoadPreviewFromSupabase = useCallback(async () => {
+    if (!selectedDataset?.id) return;
+    setIsPreviewLoading(true);
+    setPreviewError(null);
+    try {
+      const { data, error } = await supabase
+        .from('datasets')
+        .select('preview_data')
+        .eq('id', selectedDataset.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data?.preview_data?.rows?.length) {
+        setSelectedDataset((prev) => (prev ? { ...prev, preview_data: data.preview_data } : prev));
+        toast.success('Preview loaded from Supabase.');
+      } else {
+        throw new Error('No preview stored for this dataset yet.');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load preview.';
+      setPreviewError(message);
+      toast.error(message);
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  }, [selectedDataset?.id]);
+
+  const handleGenerateSyntheticPreview = useCallback(() => {
+    if (!selectedDataset) return;
+    setIsGeneratingPreview(true);
+    setPreviewError(null);
+
+    const columnNames =
+      selectedDataset.preview_data?.columns?.length
+        ? selectedDataset.preview_data.columns
+        : Array.from(
+            { length: Math.min(selectedDataset.columns || 5, 6) },
+            (_, idx) => `Feature ${idx + 1}`
+          );
+
+    const syntheticRow = (index: number) =>
+      columnNames.map((column, colIdx) => {
+        const lower = column.toLowerCase();
+        if (lower.includes('date') || lower.includes('time')) {
+          const date = new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 90);
+          return date.toISOString().split('T')[0];
+        }
+        if (lower.includes('amount') || lower.includes('revenue') || lower.includes('price') || lower.includes('total')) {
+          return `$${(Math.random() * 50000 + 100).toFixed(2)}`;
+        }
+        if (lower.includes('percent') || lower.includes('rate')) {
+          return `${(Math.random() * 100).toFixed(1)}%`;
+        }
+        if (lower.includes('id')) {
+          return `ID-${Math.floor(1000 + Math.random() * 9000)}`;
+        }
+        if (lower.includes('score') || lower.includes('age') || lower.includes('count')) {
+          return (Math.random() * 100).toFixed(0);
+        }
+        const categorical = ['North', 'South', 'West', 'Standard', 'Premium', 'Enterprise'];
+        return categorical[(colIdx + index) % categorical.length];
+      });
+
+    const preview = {
+      columns: columnNames,
+      rows: Array.from({ length: 5 }, (_, idx) => syntheticRow(idx)),
+    };
+
+    setSelectedDataset((prev) => (prev ? { ...prev, preview_data: preview } : prev));
+    toast.success('Synthetic preview generated.');
+    setIsGeneratingPreview(false);
+  }, [selectedDataset]);
 
   // Handle model selection from dropdown
   const handleModelSelect = (modelId: string) => {
