@@ -2,8 +2,9 @@
 // Redirects free users to pricing page
 
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '../../hooks/useSubscription';
+import UpgradePrompt from '../common/UpgradePrompt';
 
 interface PremiumRouteProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface PremiumRouteProps {
 
 const PremiumRoute = ({ children, requiredFeature }: PremiumRouteProps) => {
   const subscription = useSubscription();
+  const navigate = useNavigate();
 
   // Show loading state while checking subscription
   if (subscription.isLoading) {
@@ -30,9 +32,24 @@ const PremiumRoute = ({ children, requiredFeature }: PremiumRouteProps) => {
     ? subscription.features[requiredFeature]
     : subscription.tier === 'professional' || subscription.tier === 'team';
 
-  // If free tier, redirect to pricing
+  const featureMap: Record<NonNullable<PremiumRouteProps['requiredFeature']>, 'deploy' | 'monitoring' | 'train_models'> = {
+    canDeploy: 'deploy',
+    canMonitor: 'monitoring',
+    advancedAnalytics: 'train_models'
+  };
+
+  // If free tier, show upgrade prompt modal rather than bouncing to landing
   if (!hasAccess) {
-    return <Navigate to="/pricing" replace />;
+    const feature = requiredFeature ? featureMap[requiredFeature] : 'deploy';
+    return (
+      <>
+        <div className="min-h-[70vh] bg-slate-50" aria-hidden="true" />
+        <UpgradePrompt
+          feature={feature}
+          onClose={() => navigate('/app')}
+        />
+      </>
+    );
   }
 
   // User has access, render the protected content
