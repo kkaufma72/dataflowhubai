@@ -12,7 +12,6 @@ import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
-import { supabase } from '../lib/supabase';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
 import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 import DataEmptyState from '../components/data/DataEmptyState';
@@ -32,7 +31,7 @@ const LoadingFallback: React.FC = () => (
 );
 
 const DataManagement: React.FC = () => {
-  const { datasets, addDataset } = useMLContext();
+  const { datasets, addDataset, currentProject } = useMLContext();
   const { user } = useAuth();
   const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
@@ -319,38 +318,40 @@ const DataManagement: React.FC = () => {
         rowCount 
       );
       const { columns, rows } = result;
-      
-      const { error } = await supabase
-        .from('datasets')
-        .insert([{
-          name: `${generatorType.charAt(0).toUpperCase() + generatorType.slice(1)} Sample Dataset`,
-          description: `Synthetic ${generatorType} dataset with ${rowCount} rows`,
-          file_type: 'csv',
-          file_size: `${(rows.length * columns.length * 10 / 1024).toFixed(2)} KB`,
-          row_count: rows.length,
-          column_count: columns.length,
-          preview_data: {
-            columns: columns,
-            rows: rows.slice(0, 100)
-          },
-          user_id: user.id
-        }])
-        .select()
-        .single();
 
-      if (error) throw error;
+      const datasetName = `${generatorType.charAt(0).toUpperCase() + generatorType.slice(1)} Sample Dataset`;
+      const datasetDescription = `Synthetic ${generatorType} dataset with ${rowCount} rows`;
+      const estimatedSizeKb = `${(rows.length * columns.length * 10 / 1024).toFixed(2)} KB`;
+
+      const datasetPayload: Dataset = {
+        id: crypto.randomUUID?.() ?? `synthetic-${Date.now()}`,
+        name: datasetName,
+        description: datasetDescription,
+        rows: rows.length,
+        columns: columns.length,
+        dateUploaded: new Date().toISOString(),
+        fileType: 'csv',
+        fileSize: estimatedSizeKb,
+        projectId: currentProject?.id,
+        preview_data: {
+          columns,
+          rows: rows.slice(0, 100)
+        }
+      };
+
+      await addDataset(datasetPayload);
 
       toast.success(`Generated ${rowCount} rows of ${generatorType} data!`);
       setShowGeneratorModal(false);
-      window.location.reload();
       
     } catch (error) {
       console.error('Error generating data:', error);
-      toast.error('Failed to generate sample data');
+      const message = error instanceof Error ? error.message : 'Failed to generate sample data';
+      toast.error(message);
     } finally {
       setIsGenerating(false);
     }
-  }, [user, generatorType, rowCount]);
+  }, [user, generatorType, rowCount, addDataset, currentProject?.id]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);

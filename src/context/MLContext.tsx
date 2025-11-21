@@ -12,7 +12,7 @@ interface MLContextType {
   currentProject: Project | null;
   isLoading: boolean;
   error: string | null;
-  addDataset: (dataset: Dataset) => Promise<Dataset>;
+  addDataset: (dataset: Dataset, options?: { persist?: boolean }) => Promise<Dataset>;
   updateDataset: (id: string, updates: Partial<Dataset>) => Promise<void>;
   deleteDataset: (id: string) => Promise<void>;
   addModel: (model: MLModel) => Promise<void>;
@@ -31,6 +31,25 @@ const DEMO_PROJECT: Project = {
 };
 
 const LAST_PROJECT_KEY = 'dfh-last-project-id';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const isValidUUID = (value?: string | null): boolean => {
+  if (!value) return false;
+  return UUID_REGEX.test(value);
+};
+
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for environments without crypto.randomUUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const rand = (Math.random() * 16) | 0;
+    const value = char === 'x' ? rand : (rand & 0x3) | 0x8;
+    return value.toString(16);
+  });
+};
 
 export const useMLContext = () => {
   const context = useContext(MLContext);
@@ -255,12 +274,22 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     return () => subscription.unsubscribe();
   }, [loadProjects]);
 
-  const addDataset = useCallback(async (dataset: Dataset): Promise<Dataset> => {
+  const addDataset = useCallback(async (dataset: Dataset, options?: { persist?: boolean }): Promise<Dataset> => {
+    const shouldPersist = options?.persist !== false;
+    const datasetWithValidId = isValidUUID(dataset.id)
+      ? dataset
+      : { ...dataset, id: generateUUID() };
+
+    const initialProjectId = isValidUUID(datasetWithValidId.projectId || undefined)
+      ? datasetWithValidId.projectId!
+      : null;
+    let resolvedProjectId = initialProjectId;
+
     try {
       // Save to Supabase first if user is authenticated
-      if (user) {
+      if (user && shouldPersist) {
         // Ensure we have a valid project_id
-        let validProjectId = currentProject?.id;
+        let validProjectId = resolvedProjectId || currentProject?.id;
         
         if (!validProjectId) {
           // Get or create default project
@@ -292,19 +321,20 @@ export const MLProvider = ({ children }: MLProviderProps) => {
             validProjectId = newProject.id;
           }
         }
+        resolvedProjectId = validProjectId;
         
         const datasetData = {
-          id: dataset.id,
-          name: dataset.name,
-          description: dataset.description,
-          file_type: dataset.fileType,
-          file_size: dataset.fileSize,
-          row_count: dataset.rows,
-          column_count: dataset.columns,
-          preview_data: dataset.preview_data,
+          id: datasetWithValidId.id,
+          name: datasetWithValidId.name,
+          description: datasetWithValidId.description,
+          file_type: datasetWithValidId.fileType,
+          file_size: datasetWithValidId.fileSize,
+          row_count: datasetWithValidId.rows,
+          column_count: datasetWithValidId.columns,
+          preview_data: datasetWithValidId.preview_data,
           user_id: user.id,
           project_id: validProjectId, // Always set project_id
-          created_at: dataset.dateUploaded || new Date().toISOString(),
+          created_at: datasetWithValidId.dateUploaded || new Date().toISOString(),
         };
 
         const { error } = await supabase
@@ -320,16 +350,20 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         console.log('✅ Dataset saved to Supabase with project_id:', validProjectId);
       }
 
+      const datasetForState = resolvedProjectId
+        ? { ...datasetWithValidId, projectId: resolvedProjectId }
+        : datasetWithValidId;
+
       // Try to save to IndexedDB but don't fail if it hangs
       try {
-        await storage.saveDataset(dataset);
+        await storage.saveDataset(datasetForState);
       } catch (error) {
         console.warn('⚠️ IndexedDB save failed, continuing anyway:', error);
       }
       
       // Always update state
-      setDatasets(prev => [dataset, ...prev]);
-      return dataset;
+      setDatasets(prev => [datasetForState, ...prev]);
+      return datasetForState;
     } catch (error) {
       console.error('Error adding dataset:', error);
       throw error;

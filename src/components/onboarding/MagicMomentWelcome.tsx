@@ -16,7 +16,7 @@ interface MagicMomentWelcomeProps {
 // Sample datasets optimized for quick "wow" moments
 const SAMPLE_DATASETS = [
   {
-    id: 'magic-sales-data',
+    id: 'f1e2d3c4-b5a6-4789-8cde-1f2a3b4c5d6e',
     icon: <TrendingUp className="w-8 h-8" />,
     gradient: 'from-green-400 to-emerald-600',
     title: '📊 Sales Data',
@@ -33,7 +33,7 @@ const SAMPLE_DATASETS = [
       "Which customers are my biggest spenders?"
     ],
     dataset: {
-      id: 'magic-sales-data',
+      id: 'f1e2d3c4-b5a6-4789-8cde-1f2a3b4c5d6e',
       name: 'Sample Sales Data 2024',
       description: 'E-commerce sales transactions with product and customer information',
       rows: 1000,
@@ -55,7 +55,7 @@ const SAMPLE_DATASETS = [
     }
   },
   {
-    id: 'magic-customer-data',
+    id: 'e2f3d4c5-a6b7-4890-9def-2a3b4c5d6e7f',
     icon: <Users className="w-8 h-8" />,
     gradient: 'from-blue-400 to-primary-600',
     title: '👥 Customer Data',
@@ -72,7 +72,7 @@ const SAMPLE_DATASETS = [
       "What patterns predict customer churn?"
     ],
     dataset: {
-      id: 'magic-customer-data',
+      id: 'e2f3d4c5-a6b7-4890-9def-2a3b4c5d6e7f',
       name: 'Sample Customer Data 2024',
       description: 'Customer demographics, purchase history, and engagement data',
       rows: 500,
@@ -94,7 +94,7 @@ const SAMPLE_DATASETS = [
     }
   },
   {
-    id: 'magic-expense-data',
+    id: 'd3e4f5c6-b7a8-4901-0abc-3b4c5d6e7f8g',
     icon: <DollarSign className="w-8 h-8" />,
     gradient: 'from-amber-400 to-orange-600',
     title: '💰 Expense Data',
@@ -111,7 +111,7 @@ const SAMPLE_DATASETS = [
       "Where can I cut costs?"
     ],
     dataset: {
-      id: 'magic-expense-data',
+      id: 'd3e4f5c6-b7a8-4901-0abc-3b4c5d6e7f8g',
       name: 'Sample Business Expenses 2024',
       description: 'Monthly business expenses across all categories',
       rows: 250,

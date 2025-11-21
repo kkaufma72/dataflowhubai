@@ -530,7 +530,7 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       setUploadProgress(90);
       
       try {
-        const addDatasetPromise = addDataset(datasetForContext);
+        const addDatasetPromise = addDataset(datasetForContext, { persist: false });
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('addDataset timeout after 2s')), 2000)
         );
