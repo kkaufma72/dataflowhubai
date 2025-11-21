@@ -4,6 +4,7 @@ import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supaba
 import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
 import { useAuth } from '../components/auth/AuthProvider';
+import toast from 'react-hot-toast';
 
 interface MLContextType {
   datasets: Dataset[];
@@ -270,6 +271,8 @@ export const MLProvider = ({ children }: MLProviderProps) => {
                 localStorage.setItem(hasSeededKey, 'true');
               }
               const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
+              const toastId = 'sample-seed-status';
+              toast.loading('Saving sample datasets to your workspace…', { id: toastId });
               await seedEnhancedDatasets(user.id, null);
 
               const refreshResponse = await withTimeout(
@@ -285,18 +288,23 @@ export const MLProvider = ({ children }: MLProviderProps) => {
                 if (seededDatasets.length > 0) {
                   setDatasets(seededDatasets);
                   console.log('✅ Supabase samples synced');
+                  toast.success('Sample datasets saved to your workspace.', { id: toastId, duration: 4000 });
+                } else {
+                  toast('Samples saved locally—refresh to retry sync.', { id: toastId });
                 }
               } else {
                 console.warn('Sample refresh failed after seeding:', refreshResponse.status);
                 if (hasSeededKey) {
                   localStorage.removeItem(hasSeededKey);
                 }
+                toast.error('Could not refresh saved samples. You can keep exploring locally.', { id: toastId });
               }
             } catch (error) {
               console.warn('Background seeding failed:', error);
               if (hasSeededKey) {
                 localStorage.removeItem(hasSeededKey);
               }
+              toast.error('Saving sample datasets failed. Try again later.', { id: toastId });
             }
           })();
         }
