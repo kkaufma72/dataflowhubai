@@ -87,21 +87,21 @@ const DraggableDatasetCard: React.FC<DraggableDatasetCardProps> = ({
         <div className="flex items-center space-x-4 text-xs text-gray-600">
           <div className="flex items-center space-x-1">
             <BarChart3 className="w-3 h-3" />
-            <span>{dataset.row_count?.toLocaleString() || 0} rows</span>
+            <span>{(dataset.rows || dataset.row_count || 0).toLocaleString()} rows</span>
           </div>
           <div className="flex items-center space-x-1">
             <Calendar className="w-3 h-3" />
-            <span>{new Date(dataset.created_at || dataset.dateUploaded || '').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span>{new Date(dataset.created_at || dataset.dateUploaded || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
           </div>
         </div>
 
         {/* File info */}
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs font-medium text-gray-500 uppercase">
-            {dataset.file_type || 'CSV'}
+            {dataset.fileType || dataset.file_type || 'CSV'}
           </span>
           <span className="text-xs text-gray-500">
-            {dataset.file_size || 'Unknown size'}
+            {dataset.fileSize || dataset.file_size || 'Unknown size'}
           </span>
         </div>
       </div>
