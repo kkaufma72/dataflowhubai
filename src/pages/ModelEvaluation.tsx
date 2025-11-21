@@ -51,6 +51,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line, Bar, Scatter, Bubble } from 'react-chartjs-2';
+import InfluxdbOfflineBanner from '../components/monitoring/InfluxdbOfflineBanner';
 
 // Register Chart.js components
 ChartJS.register(
@@ -832,9 +833,20 @@ const ModelEvaluationContent = () => {
     answerPredictionQuestion(suggestion);
   };
 
+  const metricsUnavailable = !!metricsError && (
+    metricsError.toLowerCase().includes('not allowed') ||
+    metricsError.toLowerCase().includes('cors') ||
+    metricsError.toLowerCase().includes('blocked')
+  );
+
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {metricsUnavailable && (
+          <div className="mb-6">
+            <InfluxdbOfflineBanner onRetry={() => window.location.reload()} />
+          </div>
+        )}
         {/* Page Header - Clean professional style */}
         <div className="mb-8 pb-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -1462,15 +1474,21 @@ const ModelEvaluationContent = () => {
                     Random scatter around zero indicates a good model.
                   </Text>
                   
-                  <ScatterChart
-                    className="h-72 mt-6"
-                    data={residualPlotData}
-                    category="Residual"
-                    x="predicted"
-                    y="residual"
-                    showLegend={false}
-                    colors={['rose']}
-                  />
+                  {metricsUnavailable ? (
+                    <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                      Live residual metrics are unavailable because InfluxDB cannot be reached from this browser.
+                    </div>
+                  ) : (
+                    <ScatterChart
+                      className="h-72 mt-6"
+                      data={residualPlotData}
+                      category="Residual"
+                      x="predicted"
+                      y="residual"
+                      showLegend={false}
+                      colors={['rose']}
+                    />
+                  )}
 
                   <div className={`mt-6 ${insightPanelClass} p-4 space-y-2 text-sm text-slate-700`}>
                     <p>
@@ -1485,16 +1503,6 @@ const ModelEvaluationContent = () => {
                   </div>
                 </Card>
 
-                <Card>
-                  <Title>Regression Metrics</Title>
-                  <div className="mt-6 space-y-4">
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <Text className="text-sm text-gray-600">Mean Absolute Error (MAE)</Text>
-                      <Metric className="mt-1">
-                        {(residualPlotData.reduce((sum, d) => sum + Math.abs(d.residual), 0) / residualPlotData.length).toFixed(2)}
-                      </Metric>
-                      <Text className="text-xs text-gray-500 mt-2">Average prediction error magnitude</Text>
-                    </div>
 
                     <div className="bg-green-50 rounded-lg p-4">
                       <Text className="text-sm text-gray-600">Root Mean Squared Error (RMSE)</Text>

@@ -27,7 +27,13 @@ export const useInfluxMetrics = (
       setMetrics(data);
     } catch (err) {
       console.error('Failed to fetch metrics:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
+      if (err instanceof TypeError && err.message === 'Load failed') {
+        setError('Browser blocked the InfluxDB request (CORS)');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to fetch metrics');
+      }
     } finally {
       setLoading(false);
     }
@@ -68,7 +74,13 @@ export const useAllModelsMetrics = (refreshInterval: number = 10000) => {
       setModels(data);
     } catch (err) {
       console.error('Failed to fetch models:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch models');
+      if (err instanceof TypeError && err.message === 'Load failed') {
+        setError('Browser blocked the InfluxDB request (CORS)');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to fetch models');
+      }
     } finally {
       setLoading(false);
     }
@@ -118,7 +130,13 @@ export const useDatasetQualityTrend = (
       setTrend(data);
     } catch (err) {
       console.error('Failed to fetch dataset trend:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch trend');
+      if (err instanceof TypeError && err.message === 'Load failed') {
+        setError('Browser blocked the InfluxDB request (CORS)');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to fetch trend');
+      }
     } finally {
       setLoading(false);
     }

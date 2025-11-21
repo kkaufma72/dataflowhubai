@@ -659,7 +659,71 @@ const LandingPageLinear: React.FC = () => {
             </p>
           </div>
 
-          <PricingTable onSelectPlan={handlePlanSelect} showComparison={false} />
+          <div className="grid gap-8 lg:grid-cols-[2fr,1fr] items-start">
+            <PricingTable onSelectPlan={handlePlanSelect} showComparison={false} />
+
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-lg p-6">
+              <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-indigo-600">
+                <Sparkles className="w-4 h-4" />
+                Start in 60 seconds
+              </div>
+              <h3 className="mt-2 text-xl font-bold text-gray-900">Launch your workspace in three steps</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                No sales calls. Just follow the checklist and you’ll be exploring sample data with AI in under a minute.
+              </p>
+
+              <ol className="mt-4 space-y-4 text-sm text-gray-900">
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold">
+                    1
+                  </span>
+                  <div>
+                    <p className="font-semibold">Create your account</p>
+                    <p className="text-gray-500">Use email or OAuth. No credit card required.</p>
+                    <Link
+                      to="/signin"
+                      className="mt-2 inline-flex items-center text-indigo-600 font-medium"
+                    >
+                      Sign up free
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold">
+                    2
+                  </span>
+                  <div>
+                    <p className="font-semibold">Load sample data</p>
+                    <p className="text-gray-500">Automatically seeds six clean datasets so you can explore instantly.</p>
+                    <Link
+                      to="/app/data"
+                      className="mt-2 inline-flex items-center text-indigo-600 font-medium"
+                    >
+                      Jump to Data Management
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold">
+                    3
+                  </span>
+                  <div>
+                    <p className="font-semibold">Train your first model</p>
+                    <p className="text-gray-500">Pick the sample dataset, choose a target, and let AutoML do the rest.</p>
+                    <Link
+                      to="/app/train"
+                      className="mt-2 inline-flex items-center text-indigo-600 font-medium"
+                    >
+                      Go to Model Training
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </div>
 
           <div className="mt-16">
             <FeatureComparisonTable />

@@ -16,6 +16,8 @@ import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
 import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 import DataEmptyState from '../components/data/DataEmptyState';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
+import FinishSetupChecklist from '../components/onboarding/FinishSetupChecklist';
+import { useNavigate } from 'react-router-dom';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
@@ -41,9 +43,10 @@ type DatasetFilters = {
 };
 
 const DataManagement: React.FC = () => {
-  const { datasets, addDataset, currentProject } = useMLContext();
+  const { datasets, addDataset, currentProject, models } = useMLContext();
   const { user } = useAuth();
   const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
+  const navigate = useNavigate();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
@@ -78,6 +81,7 @@ const DataManagement: React.FC = () => {
     return localStorage.getItem('dataManagement_searchQuery') || '';
   });
   const [filters] = useState<DatasetFilters>({});
+  const [hasProfiledData, setHasProfiledData] = useState(() => localStorage.getItem('dfh-setup-profiled') === 'true');
   const [showSampleTour, setShowSampleTour] = useState(false);
 
   // Save view mode to localStorage when it changes
@@ -171,6 +175,10 @@ const DataManagement: React.FC = () => {
     [filteredDatasets, startIndex, endIndex]
   );
 
+  const hasConnectedData = datasets.length > 0;
+  const hasTrainedModel = models.some(model => model.status === 'trained' || model.status === 'deployed');
+  const hasDeployedModel = models.some(model => model.status === 'deployed');
+
   // Reset to page 1 when datasets change
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
@@ -219,7 +227,11 @@ const DataManagement: React.FC = () => {
   const handleQualityCheck = useCallback((dataset: Dataset) => {
     setSelectedDataset(dataset);
     setShowQuality(true);
-  }, []);
+    if (!hasProfiledData) {
+      localStorage.setItem('dfh-setup-profiled', 'true');
+      setHasProfiledData(true);
+    }
+  }, [hasProfiledData]);
 
   const openChat = useCallback((dataset: Dataset) => {
     setChatDataset(dataset);
@@ -341,6 +353,27 @@ const DataManagement: React.FC = () => {
   const handleCloseConnector = useCallback(() => {
     setShowConnector(false);
   }, []);
+
+  const handleChecklistConnect = useCallback(() => {
+    setShowUploader(true);
+  }, []);
+
+  const handleChecklistProfile = useCallback(() => {
+    const targetDataset = datasets[0];
+    if (!targetDataset) {
+      toast.error('Add or load a dataset first.');
+      return;
+    }
+    handleQualityCheck(targetDataset);
+  }, [datasets, handleQualityCheck]);
+
+  const handleChecklistTrain = useCallback(() => {
+    navigate('/app/train');
+  }, [navigate]);
+
+  const handleChecklistDeploy = useCallback(() => {
+    navigate('/app/deployment');
+  }, [navigate]);
 
   const handleGenerateSyntheticData = useCallback(async () => {
     if (!user) {
@@ -467,6 +500,19 @@ const DataManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {user && (
+        <FinishSetupChecklist
+          hasConnectedData={hasConnectedData}
+          hasProfiledData={hasProfiledData}
+          hasTrainedModel={hasTrainedModel}
+          hasDeployedModel={hasDeployedModel}
+          onConnect={handleChecklistConnect}
+          onProfile={handleChecklistProfile}
+          onTrain={handleChecklistTrain}
+          onDeploy={handleChecklistDeploy}
+        />
       )}
 
       {/* Simplified Header with Prominent Search */}
@@ -726,20 +772,61 @@ const DataManagement: React.FC = () => {
           // GRID VIEW - Original Layout
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paginatedDatasets.map((dataset) => (
-                <DatasetCard
-                  key={dataset.id}
-                  dataset={dataset}
-                  onPreview={handlePreview}
-                  onAnalyze={handleAnalyze}
-                  onQualityCheck={handleQualityCheck}
-                  onChat={openChat}
-                  onTransform={handleTransform}
-                  onMove={handleMoveDataset}
-                  onDelete={handleDeleteDataset}
-                  onArchive={handleArchiveDataset}
-                />
-              ))}
+              {paginatedDatasets.map((dataset) => {
+                const isSampleDataset = SAMPLE_DATASET_IDS.has(dataset.id);
+                return (
+                  <div key={dataset.id} className="space-y-3">
+                    <DatasetCard
+                      dataset={dataset}
+                      onPreview={handlePreview}
+                      onAnalyze={handleAnalyze}
+                      onQualityCheck={handleQualityCheck}
+                      onChat={openChat}
+                      onTransform={handleTransform}
+                      onMove={handleMoveDataset}
+                      onDelete={handleDeleteDataset}
+                      onArchive={handleArchiveDataset}
+                    />
+                    {isSampleDataset && (
+                      <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-3 text-sm text-indigo-900 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+                              Sample dataset tips
+                            </p>
+                            <p className="text-sm text-indigo-900">
+                              Try these quick actions before uploading your own data.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleQualityCheck(dataset)}
+                          >
+                            Run quality scan
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAnalyze(dataset)}
+                          >
+                            Explore profiling
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openChat(dataset)}
+                          >
+                            Ask AI for insights
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Pagination Controls */}
