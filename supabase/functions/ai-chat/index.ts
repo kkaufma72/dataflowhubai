@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.8';
 import OpenAI from 'npm:openai@4.28.0';
+import { aiLogger } from '../_shared/logger.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,6 +57,13 @@ Deno.serve(async (req) => {
     // Parse request
     const body: AIChatRequest = await req.json();
     const { question, dataset, userProfile, conversationHistory, intent } = body;
+
+    aiLogger.info('Incoming AI chat request', {
+      datasetId: dataset?.id,
+      datasetName: dataset?.name,
+      userEmail: userProfile?.email,
+      conversationLength: conversationHistory?.length || 0,
+    });
 
     // Initialize OpenAI client
     const openai = new OpenAI({ apiKey: openaiKey });
@@ -133,6 +141,11 @@ Be specific, use actual numbers, reference column names.`;
 
     const aiResponse = completion.choices[0]?.message?.content || 'No response generated';
 
+    aiLogger.info('AI chat response generated', {
+      datasetId: dataset?.id,
+      tokenUsage: completion.usage,
+    });
+
     return new Response(
       JSON.stringify({ 
         text: aiResponse,
@@ -147,7 +160,7 @@ Be specific, use actual numbers, reference column names.`;
     );
 
   } catch (error: any) {
-    console.error('AI chat error:', error);
+    aiLogger.error('AI chat error', error);
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Failed to get AI response',

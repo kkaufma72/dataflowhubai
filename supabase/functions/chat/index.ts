@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.8';
 import OpenAI from 'npm:openai@4.28.0';
+import { aiLogger } from '../_shared/logger.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,6 +32,12 @@ Deno.serve(async (req) => {
     const openai = new OpenAI({ apiKey: openaiKey });
 
     const { messages, datasetIds, includeModels }: ChatRequest = await req.json();
+
+    aiLogger.info('Chat orchestration request', {
+      messageCount: messages?.length || 0,
+      datasetIdsCount: datasetIds?.length || 0,
+      includeModels,
+    });
 
     // Fetch selected datasets or all if none specified
     let query = supabase.from('datasets').select('*');
@@ -97,6 +104,10 @@ When answering:
     });
 
     const response = completion.choices[0]?.message?.content || 'No response';
+    aiLogger.info('Chat orchestration response generated', {
+      tokens: completion.usage,
+      datasetsUsed: datasets?.length || 0,
+    });
 
     return new Response(
       JSON.stringify({ response }),
@@ -109,7 +120,7 @@ When answering:
     );
 
   } catch (error: any) {
-    console.error('Chat error:', error);
+    aiLogger.error('Chat error', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
