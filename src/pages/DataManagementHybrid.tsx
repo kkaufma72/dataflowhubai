@@ -15,6 +15,7 @@ import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
 import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 import DataEmptyState from '../components/data/DataEmptyState';
+import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
@@ -29,6 +30,15 @@ const LoadingFallback: React.FC = () => (
     <Loader className="w-8 h-8 text-primary-600 animate-spin" />
   </div>
 );
+
+const SAMPLE_TOUR_STORAGE_KEY = 'dfh-sample-tour-dismissed';
+const SAMPLE_DATASET_IDS = new Set(generateEnhancedSampleDatasets().map(sample => sample.id));
+
+type DatasetFilters = {
+  fileType?: string;
+  dateRange?: 'today' | 'week' | 'month' | 'year';
+  minRows?: number;
+};
 
 const DataManagement: React.FC = () => {
   const { datasets, addDataset, currentProject } = useMLContext();
@@ -67,7 +77,8 @@ const DataManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(() => {
     return localStorage.getItem('dataManagement_searchQuery') || '';
   });
-  const [filters] = useState<any>({});
+  const [filters] = useState<DatasetFilters>({});
+  const [showSampleTour, setShowSampleTour] = useState(false);
 
   // Save view mode to localStorage when it changes
   useEffect(() => {
@@ -185,6 +196,15 @@ const DataManagement: React.FC = () => {
     }
   }, [datasets]);
 
+  useEffect(() => {
+    if (!user || localStorage.getItem(SAMPLE_TOUR_STORAGE_KEY)) return;
+    if (datasets.length === 0) return;
+    const hasSampleDatasets = datasets.some(ds => SAMPLE_DATASET_IDS.has(ds.id));
+    if (hasSampleDatasets) {
+      setShowSampleTour(true);
+    }
+  }, [datasets, user]);
+
   // Memoized callback functions to prevent unnecessary re-renders
   const handlePreview = useCallback((dataset: Dataset) => {
     setSelectedDataset(dataset);
@@ -205,6 +225,30 @@ const DataManagement: React.FC = () => {
     setChatDataset(dataset);
     setShowChat(true);
   }, []);
+
+  const dismissSampleTour = useCallback(() => {
+    localStorage.setItem(SAMPLE_TOUR_STORAGE_KEY, 'true');
+    setShowSampleTour(false);
+  }, []);
+
+  const handleSampleTourAction = useCallback((action: 'profile' | 'chat' | 'graph') => {
+    const sampleDataset = datasets.find(ds => SAMPLE_DATASET_IDS.has(ds.id)) || datasets[0];
+    if (!sampleDataset) return;
+
+    setSelectedDataset(sampleDataset);
+
+    if (action === 'profile') {
+      setShowAnalysis(true);
+      setShowPreview(true);
+    } else if (action === 'chat') {
+      setChatDataset(sampleDataset);
+      setShowChat(true);
+    } else if (action === 'graph') {
+      toast.success('Sample data is syncing with your knowledge graph.');
+    }
+
+    dismissSampleTour();
+  }, [datasets, dismissSampleTour]);
 
   const handleClosePreview = useCallback(() => {
     setShowPreview(false);
@@ -365,6 +409,66 @@ const DataManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Guided sample tour */}
+      {showSampleTour && (
+        <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-purple-50 p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">Start here</p>
+              <h2 className="mt-1 text-2xl font-bold text-gray-900">Explore the sample workspace</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                We’ve loaded curated datasets so you can try profiling, AI conversations, and graph sync before uploading anything.
+              </p>
+            </div>
+            <button
+              onClick={dismissSampleTour}
+              className="text-gray-400 transition hover:text-gray-600"
+              aria-label="Dismiss guided tour"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm">
+              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-900">Profile instantly</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Inspect schema, column stats, and quality findings—see what our profiler surfaces automatically.
+              </p>
+              <Button className="mt-3" size="sm" onClick={() => handleSampleTourAction('profile')}>
+                Open profiling
+              </Button>
+            </div>
+            <div className="rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm">
+              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                <MessageSquare className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-900">Ask the AI</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Launch the assistant with this dataset preloaded and ask for insights, summaries, or anomalies.
+              </p>
+              <Button className="mt-3" size="sm" onClick={() => handleSampleTourAction('chat')}>
+                Chat about this data
+              </Button>
+            </div>
+            <div className="rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm">
+              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <Database className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-900">See graph sync</h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Sample datasets automatically sync to the knowledge graph—no configuration required.
+              </p>
+              <Button className="mt-3" size="sm" onClick={() => handleSampleTourAction('graph')}>
+                View sync status
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Simplified Header with Prominent Search */}
       <div className="mb-8 space-y-6">
         {/* Title Row */}
