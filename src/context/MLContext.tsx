@@ -51,7 +51,7 @@ const generateUUID = () => {
   });
 };
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs = 8000): Promise<T> => {
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 8000): Promise<T> => {
   let timeoutHandle: number;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutHandle = window.setTimeout(() => {
