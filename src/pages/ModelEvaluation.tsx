@@ -1655,7 +1655,12 @@ const ModelEvaluationContent = () => {
                   </div>
                 </Card>
 
-
+                <Card>
+                  <Title>Error Diagnostics</Title>
+                  <Text className="mt-2">
+                    Key regression summary metrics to keep an eye on as you validate the model.
+                  </Text>
+                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     <div className="bg-green-50 rounded-lg p-4">
                       <Text className="text-sm text-gray-600">Root Mean Squared Error (RMSE)</Text>
                       <Metric className="mt-1">
@@ -1667,7 +1672,7 @@ const ModelEvaluationContent = () => {
                     <div className="bg-purple-50 rounded-lg p-4">
                       <Text className="text-sm text-gray-600">R² Score</Text>
                       <Metric className="mt-1">
-                        {selectedModel.metrics?.accuracy ? (selectedModel.metrics.accuracy).toFixed(3) : '0.850'}
+                        {selectedModel.metrics?.accuracy ? selectedModel.metrics.accuracy.toFixed(3) : '0.850'}
                       </Metric>
                       <Text className="text-xs text-gray-500 mt-2">Proportion of variance explained (0-1)</Text>
                     </div>
