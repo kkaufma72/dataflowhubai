@@ -185,10 +185,41 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       })) as Dataset[];
       const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
 
+      const mapRemoteDataset = (ds: any): Dataset => ({
+        id: ds.id,
+        name: ds.name,
+        description: ds.description,
+        rows: ds.row_count,
+        columns: ds.column_count,
+        dateUploaded: ds.created_at,
+        fileType: ds.file_type,
+        fileSize: ds.file_size,
+        projectId: ds.project_id,
+        preview_data: ds.preview_data,
+      });
+
+      const applyLocalSampleDatasets = async (): Promise<Dataset[]> => {
+        const { generateEnhancedSampleDatasets } = await import('../lib/enhancedSampleData');
+        const samples = generateEnhancedSampleDatasets();
+        return samples.map((sample: any) => ({
+          id: sample.id,
+          name: sample.name,
+          description: sample.description,
+          rows: sample.row_count,
+          columns: sample.column_count,
+          dateUploaded: new Date().toISOString(),
+          fileType: sample.file_type,
+          fileSize: sample.file_size,
+          projectId: null,
+          preview_data: sample.preview_data,
+        }));
+      };
+
       // Auto-load sample data for new users with no datasets
       // Check flag BEFORE loading to prevent duplicate seeding
       const hasSeededKey = `hasSeededDatasets_${user.id}`;
       const hasSeeded = localStorage.getItem(hasSeededKey);
+      let datasetsToApply = remoteDatasets;
       
       // ONLY seed if: no remote datasets AND flag not set
       if (remoteDatasets.length === 0 && user?.id && !hasSeeded) {
@@ -206,34 +237,34 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           );
           
           if (refreshResponse.ok) {
-            const refreshedDatasets = (await refreshResponse.json()).map((ds: any) => ({
-              id: ds.id,
-              name: ds.name,
-              description: ds.description,
-              rows: ds.row_count,
-              columns: ds.column_count,
-              dateUploaded: ds.created_at,
-              fileType: ds.file_type,
-              fileSize: ds.file_size,
-              projectId: ds.project_id,
-              preview_data: ds.preview_data,
-            }));
-            setDatasets(refreshedDatasets);
-            console.log('✅ Sample data loaded for new user');
+            const refreshedDatasets = (await refreshResponse.json()).map(mapRemoteDataset);
+            if (refreshedDatasets.length > 0) {
+              datasetsToApply = refreshedDatasets;
+              console.log('✅ Sample data loaded for new user');
+            } else {
+              datasetsToApply = await applyLocalSampleDatasets();
+              console.warn('Sample seeding succeeded but refresh returned empty, using local fallback.');
+            }
           } else {
-            // If refresh failed, just use remote datasets
-            setDatasets(remoteDatasets);
+            datasetsToApply = await applyLocalSampleDatasets();
+            console.warn('Sample refresh failed, using local fallback data.');
           }
         } catch (seedError) {
           console.warn('Could not auto-load sample data:', seedError);
           // Remove flag on failure so it can retry next time
           localStorage.removeItem(hasSeededKey);
-          setDatasets(remoteDatasets);
+          datasetsToApply = await applyLocalSampleDatasets();
         }
       } else {
-        // User has data or already seeded - just use remote datasets
-        setDatasets(remoteDatasets);
+        // User has data or already seeded - just use remote datasets if available
+        if (remoteDatasets.length > 0) {
+          datasetsToApply = remoteDatasets;
+        } else {
+          datasetsToApply = await applyLocalSampleDatasets();
+        }
       }
+
+      setDatasets(datasetsToApply);
       
       setModels(remoteModels);
       setIsLoading(false);
