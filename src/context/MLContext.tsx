@@ -51,6 +51,38 @@ const generateUUID = () => {
   });
 };
 
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs = 8000): Promise<T> => {
+  let timeoutHandle: number;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = window.setTimeout(() => {
+      reject(new Error('Request timed out'));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    window.clearTimeout(timeoutHandle);
+  }
+};
+
+const buildLocalSampleDatasets = async (): Promise<Dataset[]> => {
+  const { generateEnhancedSampleDatasets } = await import('../lib/enhancedSampleData');
+  const samples = generateEnhancedSampleDatasets();
+  return samples.map((sample: any) => ({
+    id: sample.id,
+    name: sample.name,
+    description: sample.description,
+    rows: sample.row_count,
+    columns: sample.column_count,
+    dateUploaded: new Date().toISOString(),
+    fileType: sample.file_type,
+    fileSize: sample.file_size,
+    projectId: null,
+    preview_data: sample.preview_data,
+  }));
+};
+
 export const useMLContext = () => {
   const context = useContext(MLContext);
   if (context === undefined) {
@@ -198,77 +230,62 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         preview_data: ds.preview_data,
       });
 
-      const applyLocalSampleDatasets = async (): Promise<Dataset[]> => {
-        const { generateEnhancedSampleDatasets } = await import('../lib/enhancedSampleData');
-        const samples = generateEnhancedSampleDatasets();
-        return samples.map((sample: any) => ({
-          id: sample.id,
-          name: sample.name,
-          description: sample.description,
-          rows: sample.row_count,
-          columns: sample.column_count,
-          dateUploaded: new Date().toISOString(),
-          fileType: sample.file_type,
-          fileSize: sample.file_size,
-          projectId: null,
-          preview_data: sample.preview_data,
-        }));
+      const applyState = (appliedDatasets: Dataset[]) => {
+        setDatasets(appliedDatasets);
+        setModels(remoteModels);
+        setIsLoading(false);
+        setHasFetched(true);
       };
 
-      // Auto-load sample data for new users with no datasets
-      // Check flag BEFORE loading to prevent duplicate seeding
-      const hasSeededKey = `hasSeededDatasets_${user.id}`;
-      const hasSeeded = localStorage.getItem(hasSeededKey);
-      let datasetsToApply = remoteDatasets;
-      
-      // ONLY seed if: no remote datasets AND flag not set
-      if (remoteDatasets.length === 0 && user?.id && !hasSeeded) {
-        console.log('🎯 New user detected - auto-loading sample data...');
-        try {
-          // Set flag BEFORE seeding to prevent concurrent runs
-          localStorage.setItem(hasSeededKey, 'true');
-          const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
-          await seedEnhancedDatasets(user.id, null);
-          
-          // Refresh datasets after seeding
-          const refreshResponse = await supabaseFetch(
-            `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
-            { method: 'GET' }
-          );
-          
-          if (refreshResponse.ok) {
-            const refreshedDatasets = (await refreshResponse.json()).map(mapRemoteDataset);
-            if (refreshedDatasets.length > 0) {
-              datasetsToApply = refreshedDatasets;
-              console.log('✅ Sample data loaded for new user');
-            } else {
-              datasetsToApply = await applyLocalSampleDatasets();
-              console.warn('Sample seeding succeeded but refresh returned empty, using local fallback.');
-            }
-          } else {
-            datasetsToApply = await applyLocalSampleDatasets();
-            console.warn('Sample refresh failed, using local fallback data.');
-          }
-        } catch (seedError) {
-          console.warn('Could not auto-load sample data:', seedError);
-          // Remove flag on failure so it can retry next time
-          localStorage.removeItem(hasSeededKey);
-          datasetsToApply = await applyLocalSampleDatasets();
-        }
+      // Auto-load sample data behavior
+      const hasSeededKey = user?.id ? `hasSeededDatasets_${user.id}` : null;
+      const hasSeeded = hasSeededKey ? localStorage.getItem(hasSeededKey) : null;
+
+      if (remoteDatasets.length > 0) {
+        applyState(remoteDatasets);
       } else {
-        // User has data or already seeded - just use remote datasets if available
-        if (remoteDatasets.length > 0) {
-          datasetsToApply = remoteDatasets;
-        } else {
-          datasetsToApply = await applyLocalSampleDatasets();
+        const localSamples = await buildLocalSampleDatasets();
+        applyState(localSamples);
+
+        if (user?.id && !hasSeeded) {
+          void (async () => {
+            console.log('🎯 Seeding Supabase sample datasets in background...');
+            try {
+              if (hasSeededKey) {
+                localStorage.setItem(hasSeededKey, 'true');
+              }
+              const { seedEnhancedDatasets } = await import('../utils/seedDatasets');
+              await seedEnhancedDatasets(user.id, null);
+
+              const refreshResponse = await withTimeout(
+                supabaseFetch(
+                  `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
+                  { method: 'GET' }
+                ),
+                8000
+              );
+
+              if (refreshResponse.ok) {
+                const seededDatasets = (await refreshResponse.json()).map(mapRemoteDataset);
+                if (seededDatasets.length > 0) {
+                  setDatasets(seededDatasets);
+                  console.log('✅ Supabase samples synced');
+                }
+              } else {
+                console.warn('Sample refresh failed after seeding:', refreshResponse.status);
+                if (hasSeededKey) {
+                  localStorage.removeItem(hasSeededKey);
+                }
+              }
+            } catch (error) {
+              console.warn('Background seeding failed:', error);
+              if (hasSeededKey) {
+                localStorage.removeItem(hasSeededKey);
+              }
+            }
+          })();
         }
       }
-
-      setDatasets(datasetsToApply);
-      
-      setModels(remoteModels);
-      setIsLoading(false);
-      setHasFetched(true);
 
     } catch (err) {
       console.error('Error loading initial data:', err);
