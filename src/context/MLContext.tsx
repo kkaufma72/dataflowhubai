@@ -66,10 +66,34 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 8000): Promise<T
   }
 };
 
+type SampleDatasetRecord = {
+  id: string;
+  name: string;
+  description: string;
+  row_count: number;
+  column_count: number;
+  file_type: string;
+  file_size: string;
+  preview_data?: Dataset['preview_data'];
+};
+
+type SupabaseDatasetRow = {
+  id: string;
+  name: string;
+  description: string;
+  row_count: number;
+  column_count: number;
+  file_type: string;
+  file_size: string;
+  created_at: string;
+  project_id: string | null;
+  preview_data?: Dataset['preview_data'];
+};
+
 const buildLocalSampleDatasets = async (): Promise<Dataset[]> => {
   const { generateEnhancedSampleDatasets } = await import('../lib/enhancedSampleData');
-  const samples = generateEnhancedSampleDatasets();
-  return samples.map((sample: any) => ({
+  const samples = generateEnhancedSampleDatasets() as SampleDatasetRecord[];
+  return samples.map((sample) => ({
     id: sample.id,
     name: sample.name,
     description: sample.description,
@@ -203,21 +227,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       ]);
 
       // Parse fetch responses and transform snake_case to camelCase
-      const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []).map((ds: any) => ({
-        id: ds.id,
-        name: ds.name,
-        description: ds.description,
-        rows: ds.row_count,
-        columns: ds.column_count,
-        dateUploaded: ds.created_at,
-        fileType: ds.file_type,
-        fileSize: ds.file_size,
-        projectId: ds.project_id,
-        preview_data: ds.preview_data,
-      })) as Dataset[];
-      const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
-
-      const mapRemoteDataset = (ds: any): Dataset => ({
+      const mapSupabaseDatasetRow = (ds: SupabaseDatasetRow): Dataset => ({
         id: ds.id,
         name: ds.name,
         description: ds.description,
@@ -229,6 +239,11 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         projectId: ds.project_id,
         preview_data: ds.preview_data,
       });
+
+      const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []).map(
+        (ds: SupabaseDatasetRow) => mapSupabaseDatasetRow(ds)
+      );
+      const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
 
       const applyState = (appliedDatasets: Dataset[]) => {
         setDatasets(appliedDatasets);
@@ -266,7 +281,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
               );
 
               if (refreshResponse.ok) {
-                const seededDatasets = (await refreshResponse.json()).map(mapRemoteDataset);
+                const seededDatasets = (await refreshResponse.json()).map(mapSupabaseDatasetRow);
                 if (seededDatasets.length > 0) {
                   setDatasets(seededDatasets);
                   console.log('✅ Supabase samples synced');
