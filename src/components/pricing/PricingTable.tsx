@@ -405,4 +405,5 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
 };
 
+export { PricingTable };
 export default PricingTable;
