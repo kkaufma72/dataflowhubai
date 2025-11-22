@@ -1056,7 +1056,7 @@ const ModelEvaluationContent = () => {
         )}
         {/* Page Header - Clean professional style */}
         <div className="mb-8 pb-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-3">
                 Model Evaluation
@@ -1065,35 +1065,23 @@ const ModelEvaluationContent = () => {
                 Analyzing: <span className="font-semibold text-gray-900">{selectedModel.name}</span>
               </p>
             </div>
-
-            {/* Model Selector Dropdown */}
-            {trainedModels.length > 1 && (
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-medium text-gray-900">Switch Model:</label>
-                <select
-                  value={selectedModel.id}
-                  onChange={(e) => handleModelSelect(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-gray-900 font-medium bg-white"
-                >
-                  {trainedModels.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
 
-          {/* Dataset Info */}
+          {/* Dataset Info - Shows which dataset all the data is from */}
           {selectedDataset && (
-            <p className="text-base text-gray-900 font-medium">
-              Trained on <span className="font-semibold text-gray-900">{selectedDataset.name}</span>
-              {' • '}
-              <span className="text-gray-900 font-medium">
-                {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
-              </span>
-            </p>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <p className="text-base text-gray-900 font-medium">
+                <span className="text-blue-600 font-bold">📊 Viewing Dataset:</span>{' '}
+                <span className="font-bold text-gray-900">{selectedDataset.name}</span>
+                {' • '}
+                <span className="text-gray-900 font-medium">
+                  {selectedDataset.rows?.toLocaleString()} rows, {selectedDataset.columns} features
+                </span>
+              </p>
+              <p className="text-sm text-gray-700 mt-1">
+                All charts and metrics below are based on this dataset
+              </p>
+            </div>
           )}
         </div>
 
@@ -1116,6 +1104,16 @@ const ModelEvaluationContent = () => {
 
           <TabPanels className="mt-6">
           <TabPanel>
+            {/* Dataset Context Indicator */}
+            {selectedDataset && (
+              <div className="mb-6 flex items-center gap-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="font-bold text-gray-900">Dataset: {selectedDataset.name}</span>
+                <span className="text-gray-700">• All metrics below reflect this dataset</span>
+              </div>
+            )}
             {/* Overview Tab - Clean summary with just metric cards */}
             <Grid numItems={1} numItemsSm={2} numItemsLg={4} className="gap-6">
               {Object.entries(selectedModel.metrics || {}).map(([key, value]) => (
@@ -1422,6 +1420,16 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
+            {/* Dataset Context Indicator */}
+            {selectedDataset && (
+              <div className="mb-6 flex items-center gap-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="font-bold text-gray-900">Dataset: {selectedDataset.name}</span>
+                <span className="text-gray-700">• Performance metrics for this dataset</span>
+              </div>
+            )}
             {/* Performance Tab - ALL charts and visualizations */}
             
             {/* Performance Over Time */}
@@ -2203,6 +2211,16 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
+            {/* Dataset Context Indicator */}
+            {selectedDataset && (
+              <div className="mb-6 flex items-center gap-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="font-bold text-gray-900">Dataset: {selectedDataset.name}</span>
+                <span className="text-gray-700">• Feature analysis for this dataset</span>
+              </div>
+            )}
             <Card className="mt-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-4 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full"></div>
@@ -2552,6 +2570,16 @@ const ModelEvaluationContent = () => {
           </TabPanel>
 
           <TabPanel>
+            {/* Dataset Context Indicator */}
+            {selectedDataset && (
+              <div className="mb-6 flex items-center gap-2 text-sm bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="font-bold text-gray-900">Dataset: {selectedDataset.name}</span>
+                <span className="text-gray-700">• Sample predictions from this dataset</span>
+              </div>
+            )}
             <Card className="mt-6">
               <Title>Sample Predictions</Title>
               <Table className="mt-4">
