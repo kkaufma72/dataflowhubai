@@ -7,6 +7,7 @@ import { Mail, Lock, Loader2, AlertCircle, User, ArrowLeft, Github } from 'lucid
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 import { AuthChangeEvent } from '@supabase/supabase-js';
+import { POST_AUTH_REDIRECT_KEY } from '../constants/auth';
 
 // Email validation function to prevent fake/test emails
 const isValidEmail = (email: string): boolean => {
@@ -28,6 +29,16 @@ const isValidEmail = (email: string): boolean => {
   const domain = email.split('@')[1]?.toLowerCase();
   
   return emailRegex.test(email) && !fakeDomains.includes(domain);
+};
+
+const clearPostAuthRedirectPath = () => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(POST_AUTH_REDIRECT_KEY);
+};
+
+const storePostAuthRedirectPath = (path: string) => {
+  if (typeof window === 'undefined' || !path) return;
+  window.sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, path);
 };
 
 const SignIn = () => {
@@ -70,6 +81,7 @@ const SignIn = () => {
         if (session) {
           console.log('User already has active session, redirecting to:', from);
           setRedirectInProgress(true);
+          clearPostAuthRedirectPath();
           navigate(from, { replace: true });
         }
       } catch (error) {
@@ -86,6 +98,7 @@ const SignIn = () => {
       if (event === 'SIGNED_IN' && !redirectInProgress) {
         console.log('Signed in event detected, redirecting to:', from);
         setRedirectInProgress(true);
+        clearPostAuthRedirectPath();
         setTimeout(() => {
           navigate(from, { replace: true });
         }, 500);
@@ -134,7 +147,8 @@ const SignIn = () => {
       
       // Successful signin - redirect to dashboard
       toast.success('Signed in successfully!');
-      navigate('/app', { replace: true });
+      clearPostAuthRedirectPath();
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);
@@ -270,7 +284,8 @@ const SignIn = () => {
             
             // Redirect to dashboard
             setTimeout(() => {
-              navigate('/app', { replace: true });
+              clearPostAuthRedirectPath();
+              navigate(from, { replace: true });
             }, 1000);
           }
         } catch (signInErr) {
@@ -294,6 +309,7 @@ const SignIn = () => {
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     try {
       setError('');
+      storePostAuthRedirectPath(from);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

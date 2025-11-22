@@ -2,6 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Loader, CheckCircle } from 'lucide-react';
+import { POST_AUTH_REDIRECT_KEY } from '../../constants/auth';
+
+const resolvePostAuthDestination = () => {
+  if (typeof window === 'undefined') return '/app';
+  const stored = window.sessionStorage.getItem(POST_AUTH_REDIRECT_KEY);
+  if (stored && stored.startsWith('/')) {
+    window.sessionStorage.removeItem(POST_AUTH_REDIRECT_KEY);
+    return stored;
+  }
+  return '/app';
+};
 
 const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -92,7 +103,8 @@ const OAuthCallback: React.FC = () => {
           
           // Short delay to show success message, then redirect
           setTimeout(() => {
-            navigate('/app', { replace: true });
+            const destination = resolvePostAuthDestination();
+            navigate(destination, { replace: true });
           }, 1500);
         } else {
           console.log('⚠️ No session found');
