@@ -529,15 +529,19 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       
       setUploadProgress(90);
       
+      // Update local state - data already saved to Supabase
       try {
-        const addDatasetPromise = addDataset(datasetForContext, { persist: false });
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('addDataset timeout after 2s')), 2000)
-        );
-        
-        await Promise.race([addDatasetPromise, timeoutPromise]);
+        const addedDataset = await addDataset(datasetForContext, { persist: false });
+        console.log('✅ Dataset added to local state:', addedDataset);
       } catch (error) {
-        console.warn('⚠️ addDataset failed or timed out:', error);
+        console.error('❌ addDataset failed:', error);
+        // Even if addDataset fails, the data is in Supabase
+        // Force page refresh to show the dataset
+        toast('Dataset saved! Refreshing page...', { icon: '🔄' });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        return; // Exit early to prevent further execution
       }
       
       setUploadProgress(100);
