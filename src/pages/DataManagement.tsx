@@ -13,6 +13,7 @@ import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import PageHeader from '../components/common/PageHeader';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
+import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import { supabase } from '../lib/supabase';
 import CRMDatabaseHeader from '../components/data/CRMDatabaseHeader';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
@@ -289,6 +290,95 @@ const DataManagement: React.FC = () => {
     setShowConnector(false);
   }, []);
 
+  const handleConnectorImport = useCallback(async (connection: { type: string; name: string; config: Record<string, string> }) => {
+    if (!user) {
+      toast.error('You must be logged in to import datasets.');
+      return;
+    }
+
+    const datasetLocation = (connection.config['Dataset Location'] || connection.config['Bucket Name'] || connection.config['Site URL'] || '').trim();
+    const projectLabel = connection.config['Project ID'] || connection.name;
+    const datasetId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `dataset-${Date.now()}`;
+
+    const toastId = 'connector-import';
+    toast.loading('Syncing dataset from your cloud source…', { id: toastId });
+
+    try {
+      let previewColumns: string[] = [];
+      let previewRows: string[][] = [];
+      let totalRowCount = 0;
+      let sourceLabel = datasetLocation || connection.name;
+      let fileTypeLabel = connection.type.toUpperCase();
+
+      if (connection.type === 'gcp') {
+        if (!datasetLocation) {
+          throw new Error('Please provide a Dataset Location in the format project.dataset.table.');
+        }
+
+        const response = await supabase.functions.invoke('fetch-bigquery', {
+          body: {
+            tablePath: datasetLocation,
+            maxRows: 200,
+          },
+        });
+
+        if (response.error) {
+          const errorMessage = response.error.message || 'BigQuery fetch failed.';
+          throw new Error(errorMessage);
+        }
+
+        if (!response.data) {
+          throw new Error('BigQuery response was empty.');
+        }
+
+        previewColumns = response.data.columns;
+        previewRows = response.data.rows;
+        totalRowCount = response.data.totalRows || previewRows.length;
+        sourceLabel = response.data.tablePath || datasetLocation;
+        fileTypeLabel = 'BIGQUERY';
+      } else {
+        const templates = generateEnhancedSampleDatasets();
+        const templateIndex = connection.type === 'aws' ? 1 : 2;
+        const template = templates[templateIndex] || templates[0];
+        previewColumns = template.preview_data?.columns || [];
+        previewRows = template.preview_data?.rows || [];
+        totalRowCount = template.row_count;
+        sourceLabel = `${connection.name} Sample`;
+      }
+
+      const approxBytes = totalRowCount * Math.max(previewColumns.length, 1) * 12;
+      const fileSizeFormatted = approxBytes > 1024 * 1024
+        ? `${(approxBytes / (1024 * 1024)).toFixed(2)} MB`
+        : `${Math.max(approxBytes / 1024, 0.1).toFixed(2)} KB`;
+
+      const newDataset: Dataset = {
+        id: datasetId,
+        name: `${connection.name} – ${sourceLabel}`,
+        description: `Imported from ${connection.name} (${projectLabel}).`,
+        rows: totalRowCount || previewRows.length,
+        columns: previewColumns.length,
+        dateUploaded: new Date().toISOString(),
+        fileType: fileTypeLabel,
+        fileSize: fileSizeFormatted,
+        projectId: currentProject?.id ?? null,
+        preview_data: {
+          columns: previewColumns,
+          rows: previewRows.slice(0, 100),
+        },
+      };
+
+      await addDataset(newDataset);
+      toast.success(`${connection.name} dataset imported`, { id: toastId });
+      handleCloseConnector();
+    } catch (error) {
+      console.error('Failed to import dataset from connector:', error);
+      const message = error instanceof Error ? error.message : 'Connection succeeded but importing the dataset failed. Please try again.';
+      toast.error(message, { id: toastId });
+    }
+  }, [addDataset, currentProject?.id, handleCloseConnector, user]);
+
   const handleGenerateSyntheticData = useCallback(async () => {
     if (!currentProject) {
       toast.error('Please select a project first');
@@ -506,11 +596,7 @@ const DataManagement: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto p-6">
-              <DataConnector onConnect={(connection) => {
-                console.log('Connected to:', connection);
-                toast.success(`Connected to ${connection.name}`);
-                handleCloseConnector();
-              }} />
+              <DataConnector onConnect={handleConnectorImport} />
             </div>
           </div>
         </div>

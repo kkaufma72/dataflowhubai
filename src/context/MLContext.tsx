@@ -185,6 +185,14 @@ export const MLProvider = ({ children }: MLProviderProps) => {
   const loadInitialData = useCallback(async () => {
     // Prevent multiple calls
     if (hasFetched) return;
+
+    let fallbackTimer: number | undefined;
+    const clearFallbackTimer = () => {
+      if (fallbackTimer !== undefined) {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = undefined;
+      }
+    };
     
     try {
       setIsLoading(true);
@@ -202,15 +210,44 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         return;
       }
 
+      if (!user?.id) {
+        throw new Error('User ID not available');
+      }
+
+      const localSamplesPromise = buildLocalSampleDatasets();
+      let initialDataApplied = false;
+
+      const applyInitialState = (appliedDatasets: Dataset[], modelsToApply: MLModel[]) => {
+        setDatasets(appliedDatasets);
+        setModels(modelsToApply);
+        setIsLoading(false);
+        setHasFetched(true);
+        initialDataApplied = true;
+      };
+
+      const scheduleLocalFallback = () => {
+        fallbackTimer = window.setTimeout(() => {
+          void (async () => {
+            if (initialDataApplied) return;
+            try {
+              const fallbackSamples = await localSamplesPromise;
+              if (!initialDataApplied) {
+                applyInitialState(fallbackSamples, []);
+              }
+            } catch (fallbackError) {
+              console.warn('Failed to prepare fallback sample datasets:', fallbackError);
+            }
+          })();
+        }, 1200);
+      };
+
       // Initialize Supabase connection
       const isConnected = await initializeSupabase();
       if (!isConnected) {
         throw new Error('Failed to connect to database');
       }
 
-      if (!user?.id) {
-        throw new Error('User ID not available');
-      }
+      scheduleLocalFallback();
 
       // OPTIMIZATION: Fetch datasets and models using direct fetch (no project filtering)
       const { supabaseFetch } = await import('../lib/supabaseHelpers');
@@ -226,6 +263,8 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           { method: 'GET' }
         )
       ]);
+
+      clearFallbackTimer();
 
       // Parse fetch responses and transform snake_case to camelCase
       const mapSupabaseDatasetRow = (ds: SupabaseDatasetRow): Dataset => ({
@@ -246,22 +285,25 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       );
       const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
 
-      const applyState = (appliedDatasets: Dataset[]) => {
-        setDatasets(appliedDatasets);
-        setModels(remoteModels);
-        setIsLoading(false);
-        setHasFetched(true);
-      };
-
       // Auto-load sample data behavior
       const hasSeededKey = user?.id ? `hasSeededDatasets_${user.id}` : null;
       const hasSeeded = hasSeededKey ? localStorage.getItem(hasSeededKey) : null;
 
       if (remoteDatasets.length > 0) {
-        applyState(remoteDatasets);
+        if (initialDataApplied) {
+          setDatasets(remoteDatasets);
+          setModels(remoteModels);
+        } else {
+          applyInitialState(remoteDatasets, remoteModels);
+        }
       } else {
-        const localSamples = await buildLocalSampleDatasets();
-        applyState(localSamples);
+        const localSamples = await localSamplesPromise;
+        if (initialDataApplied) {
+          setDatasets(localSamples);
+          setModels(remoteModels);
+        } else {
+          applyInitialState(localSamples, remoteModels);
+        }
 
         if (user?.id && !hasSeeded) {
           void (async () => {
@@ -311,6 +353,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       }
 
     } catch (err) {
+      clearFallbackTimer();
       console.error('Error loading initial data:', err);
       const errorMessage = handleSupabaseError(err);
       setError(errorMessage);
