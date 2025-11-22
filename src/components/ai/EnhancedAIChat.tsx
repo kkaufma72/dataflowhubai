@@ -253,34 +253,42 @@ Help users understand and work with their datasets, build ML models, and extract
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full space-y-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/10 rounded-2xl flex items-center justify-center">
-              <BarChart3 className="w-10 h-10 text-primary-600" />
+          <div className="flex flex-col items-center justify-center h-full space-y-8 py-8">
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center shadow-lg">
+                <BarChart3 className="w-10 h-10 text-indigo-600" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center shadow-md">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
             </div>
-            <div className="text-center max-w-md">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                What would you like to know about your data?
+            <div className="text-center max-w-md space-y-2">
+              <h3 className="text-2xl font-bold text-gray-900">
+                What would you like to know?
               </h3>
-              <p className="text-gray-600 text-sm">
-                Ask questions, get insights, or explore your datasets using natural language
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Ask questions about your data, get insights, or explore datasets using natural language
               </p>
             </div>
 
             {/* Sample Questions */}
-            <div className="w-full max-w-2xl">
-              <p className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-                <Sparkles className="w-4 h-4 mr-2 text-primary" />
+            <div className="w-full max-w-2xl space-y-4">
+              <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-600" />
                 Try asking:
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {sampleQuestions.map((question, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleQuickQuestion(question)}
-                    className="text-left px-4 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-sm text-gray-700 hover:text-primary-700 group"
+                    className="text-left px-4 py-3.5 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all duration-200 text-sm text-gray-700 hover:text-indigo-700 group relative overflow-hidden"
                   >
-                    <TrendingUp className="w-4 h-4 inline mr-2 text-gray-400 group-hover:text-primary" />
-                    {question}
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all duration-200"></div>
+                    <div className="relative flex items-start gap-2">
+                      <TrendingUp className="w-4 h-4 mt-0.5 text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
+                      <span className="leading-snug">{question}</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -292,10 +300,10 @@ Help users understand and work with their datasets, build ML models, and extract
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] px-4 py-3 rounded-2xl shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-br from-primary-600 to-primary-600 text-white'
-                    : 'bg-white text-gray-900 border border-gray-200'
+                    ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-md'
+                    : 'bg-white text-gray-900 border border-gray-200 shadow-sm'
                 }`}>
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</div>
                 </div>
               </div>
             ))}
@@ -317,14 +325,15 @@ Help users understand and work with their datasets, build ML models, and extract
       {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-4 shadow-lg">
         {/* Quick Actions (when chat has started) */}
-        {messages.length > 0 && (
+        {messages.length > 0 && sampleQuestions.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {sampleQuestions.slice(0, 3).map((question, idx) => (
               <button
                 key={idx}
                 onClick={() => handleQuickQuestion(question)}
-                className="px-3 py-1 text-xs bg-gray-100 hover:bg-primary/10 text-gray-700 hover:text-primary-700 rounded-full transition-colors"
+                className="group px-3 py-1.5 text-xs bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 border border-gray-200 hover:border-indigo-300 rounded-full transition-all duration-200 font-medium flex items-center gap-1.5"
               >
+                <Sparkles className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 {question}
               </button>
             ))}
