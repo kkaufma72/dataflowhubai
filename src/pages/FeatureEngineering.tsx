@@ -293,12 +293,18 @@ const FeatureEngineering: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 p-6 space-y-6">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm mb-4">
+        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
+        <span className="text-gray-600">/</span>
+        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Data</span>
+        <span className="text-gray-600">/</span>
+        <span className="text-white font-medium">Feature Engineering</span>
+      </div>
+
       <div className="flex flex-col justify-between mb-6 md:flex-row md:items-center">
         <div>
           <h1 className="saas-h2">Feature Engineering</h1>
-          <p className="mt-2 saas-body text-gray-400">
-            Select, transform, and create features to improve model performance
-          </p>
         </div>
         <div className="mt-4 md:mt-0">
           <button

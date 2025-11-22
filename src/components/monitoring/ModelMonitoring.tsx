@@ -86,12 +86,18 @@ const ModelMonitoring: React.FC = () => {
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metrics}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
                 />
-                <YAxis domain={[0.7, 1]} />
+                <YAxis 
+                  domain={[0.7, 1]} 
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                />
                 <Tooltip
                   labelFormatter={(value) => new Date(value).toLocaleString()}
                   formatter={(value: number) => [value.toFixed(3), 'Accuracy']}
@@ -114,12 +120,18 @@ const ModelMonitoring: React.FC = () => {
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metrics}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
                 />
-                <YAxis domain={[0, 1]} />
+                <YAxis 
+                  domain={[0, 1]} 
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                />
                 <Tooltip
                   labelFormatter={(value) => new Date(value).toLocaleString()}
                   formatter={(value: number) => [value.toFixed(3), 'Drift Score']}
@@ -173,12 +185,17 @@ const ModelMonitoring: React.FC = () => {
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metrics}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
                 />
-                <YAxis />
+                <YAxis 
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                />
                 <Tooltip
                   labelFormatter={(value) => new Date(value).toLocaleString()}
                   formatter={(value: number) => [`${value.toFixed(1)}ms`, 'Latency']}
@@ -201,12 +218,17 @@ const ModelMonitoring: React.FC = () => {
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={metrics}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="timestamp"
                   tickFormatter={(value) => new Date(value).toLocaleTimeString()}
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
                 />
-                <YAxis />
+                <YAxis 
+                  stroke="#6B7280"
+                  tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                />
                 <Tooltip
                   labelFormatter={(value) => new Date(value).toLocaleString()}
                   formatter={(value: number) => [value, 'Requests']}

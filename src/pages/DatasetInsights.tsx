@@ -606,12 +606,12 @@ const DatasetInsights: React.FC = () => {
     <div className="min-h-screen bg-[#0d1117] p-6 space-y-6">
       {/* InfluxDB-Style Header with Breadcrumb */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span className="hover:text-blue-400 cursor-pointer">Home</span>
-          <span>/</span>
-          <span className="hover:text-blue-400 cursor-pointer">Data Explorer</span>
-          <span>/</span>
-          <span className="text-gray-300">Analytics</span>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
+          <span className="text-gray-600">/</span>
+          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Data</span>
+          <span className="text-gray-600">/</span>
+          <span className="text-white font-medium">Insights & Charts</span>
         </div>
         
         <div className="flex items-center justify-between">

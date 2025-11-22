@@ -168,17 +168,10 @@ const Sidebar: React.FC = () => {
       section: true,
       items: [
         {
-          name: 'Data Catalog',
-          href: '/app/catalog',
-          icon: Database,
-          description: 'IBM-style data catalog',
-          dataTour: 'sidebar-catalog'
-        },
-        {
-          name: 'Browse & Upload',
+          name: 'Data Management',
           href: '/app/data',
           icon: Database,
-          description: 'Manage your datasets',
+          description: 'Browse, upload & manage datasets',
           dataTour: 'sidebar-data'
         },
         {

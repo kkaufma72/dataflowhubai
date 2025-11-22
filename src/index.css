@@ -28,7 +28,7 @@
   
   /* IBM Typography Scale */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-900 font-semibold;
+    @apply text-gray-100 font-semibold;
     font-family: 'IBM Plex Sans', sans-serif;
     letter-spacing: -0.01em;
   }
@@ -42,12 +42,12 @@
   
   /* Body text */
   p {
-    @apply text-gray-700 text-sm leading-relaxed;
+    @apply text-gray-400 text-sm leading-relaxed;
   }
   
   /* Labels - IBM style */
   label {
-    @apply text-gray-900 font-medium text-xs uppercase tracking-wider;
+    @apply text-gray-300 font-medium text-xs uppercase tracking-wider;
     letter-spacing: 0.05em;
   }
   
@@ -146,6 +146,45 @@
 /* Chart container - clean light theme */
 .chart-container {
   @apply bg-white border border-gray-200 rounded-lg p-6 shadow-sm;
+}
+
+/* Recharts axis styling - better visibility */
+.recharts-cartesian-axis-tick-value {
+  fill: #374151 !important; /* gray-700 for light backgrounds */
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: #6B7280 !important; /* gray-500 for better visibility */
+  stroke-width: 1.5px !important;
+}
+
+/* Dark theme chart axes */
+.bg-gray-950 .recharts-cartesian-axis-tick-value,
+.bg-gray-900 .recharts-cartesian-axis-tick-value,
+[class*="bg-[#"] .recharts-cartesian-axis-tick-value {
+  fill: #D1D5DB !important; /* gray-300 for dark backgrounds */
+}
+
+.bg-gray-950 .recharts-cartesian-axis-line,
+.bg-gray-900 .recharts-cartesian-axis-line,
+[class*="bg-[#"] .recharts-cartesian-axis-line,
+.bg-gray-950 .recharts-cartesian-axis-tick-line,
+.bg-gray-900 .recharts-cartesian-axis-tick-line,
+[class*="bg-[#"] .recharts-cartesian-axis-tick-line {
+  stroke: #9CA3AF !important; /* gray-400 for dark backgrounds */
+  stroke-width: 1.5px !important;
+}
+
+/* Tremor chart axis styling */
+.tremor-AreaChart-axisLabel,
+.tremor-LineChart-axisLabel,
+.tremor-BarChart-axisLabel {
+  fill: #374151 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
 }
 
 /* Input styles - clean and readable */

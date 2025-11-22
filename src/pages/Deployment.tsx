@@ -339,9 +339,17 @@ print(prediction)`;
 
   return (
     <div>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm mb-6">
+        <span className="text-gray-500 hover:text-blue-600 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
+        <span className="text-gray-400">/</span>
+        <span className="text-gray-500 hover:text-blue-600 cursor-pointer transition-colors">Deploy & Monitor</span>
+        <span className="text-gray-400">/</span>
+        <span className="text-gray-900 font-medium">Deployment</span>
+      </div>
+
       {/* Page Header - Improved visibility */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4">
+      <div className="mb-8">\n        <div className="flex items-center space-x-4">
           <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
             <Rocket className="w-7 h-7 text-white" />
           </div>

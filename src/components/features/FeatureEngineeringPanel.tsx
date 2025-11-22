@@ -189,9 +189,6 @@ const FeatureEngineeringPanel: React.FC<FeatureEngineeringPanelProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-medium text-white">Feature Engineering</h2>
-          <p className="mt-1 text-sm text-white">
-            Select, transform, and optimize features for your model
-          </p>
         </div>
         <div className="flex space-x-3">
           <Button

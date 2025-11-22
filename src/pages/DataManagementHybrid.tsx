@@ -6,14 +6,13 @@ import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
 import { Dataset, Project } from '../types';
-import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Folders, LayoutGrid, X, Search } from 'lucide-react';
+import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Search, X, SortAsc, SortDesc, Calendar, FileType } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
-import DatasetOrganizer from '../components/datasets/DatasetOrganizer';
 import DataEmptyState from '../components/data/DataEmptyState';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import FinishSetupChecklist from '../components/onboarding/FinishSetupChecklist';
@@ -70,10 +69,14 @@ const DataManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(6);
   
-  // View mode state with localStorage persistence
-  const [viewMode, setViewMode] = useState<'grid' | 'organize'>(() => {
-    const saved = localStorage.getItem('dataManagement_viewMode');
-    return (saved as 'grid' | 'organize') || 'grid';
+  // Smart sorting state with localStorage persistence
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'quality'>(() => {
+    const saved = localStorage.getItem('dataManagement_sortBy');
+    return (saved as 'name' | 'date' | 'size' | 'quality') || 'date';
+  });
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+    const saved = localStorage.getItem('dataManagement_sortOrder');
+    return (saved as 'asc' | 'desc') || 'desc';
   });
   
   // Search and filter state with localStorage persistence
@@ -84,10 +87,11 @@ const DataManagement: React.FC = () => {
   const [hasProfiledData, setHasProfiledData] = useState(() => localStorage.getItem('dfh-setup-profiled') === 'true');
   const [showSampleTour, setShowSampleTour] = useState(false);
 
-  // Save view mode to localStorage when it changes
+  // Save sort preferences to localStorage
   useEffect(() => {
-    localStorage.setItem('dataManagement_viewMode', viewMode);
-  }, [viewMode]);
+    localStorage.setItem('dataManagement_sortBy', sortBy);
+    localStorage.setItem('dataManagement_sortOrder', sortOrder);
+  }, [sortBy, sortOrder]);
 
   // Save search query to localStorage when it changes (with debounce)
   useEffect(() => {
@@ -151,8 +155,33 @@ const DataManagement: React.FC = () => {
       });
     }
 
+    // Smart sorting
+    result.sort((a, b) => {
+      let compareValue = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          compareValue = a.name.localeCompare(b.name);
+          break;
+        case 'date':
+          compareValue = new Date(b.dateUploaded || 0).getTime() - new Date(a.dateUploaded || 0).getTime();
+          break;
+        case 'size':
+          compareValue = (b.rows || 0) - (a.rows || 0);
+          break;
+        case 'quality':
+          // Calculate simple quality score based on available data
+          const qualityA = a.preview_data?.rows?.length ? 100 : 50;
+          const qualityB = b.preview_data?.rows?.length ? 100 : 50;
+          compareValue = qualityB - qualityA;
+          break;
+      }
+      
+      return sortOrder === 'asc' ? -compareValue : compareValue;
+    });
+
     return result;
-  }, [datasets, searchQuery, filters]);
+  }, [datasets, searchQuery, filters, sortBy, sortOrder]);
 
   // FIXED: Calculate pagination values AFTER filteredDatasets is defined
   const totalPages = useMemo(() => 
@@ -515,6 +544,15 @@ const DataManagement: React.FC = () => {
         />
       )}
 
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm mb-4">
+        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
+        <span className="text-gray-600">/</span>
+        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Data</span>
+        <span className="text-gray-600">/</span>
+        <span className="text-white font-medium">Data Management</span>
+      </div>
+
       {/* Simplified Header with Prominent Search */}
       <div className="mb-8 space-y-6">
         {/* Title Row */}
@@ -523,8 +561,8 @@ const DataManagement: React.FC = () => {
             <Database className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Data Management</h1>
-            <p className="text-sm text-gray-600">Upload, connect, and manage your datasets</p>
+            <h1 className="text-2xl font-bold text-gray-100">Data Management</h1>
+            <p className="text-sm text-gray-400">Upload, connect, and manage your datasets</p>
           </div>
         </div>
 
@@ -587,29 +625,25 @@ const DataManagement: React.FC = () => {
                 </span>
               </div>
 
-              {/* Right: View Mode Toggle */}
-              <div className="flex items-center bg-white rounded-lg border-2 border-gray-300 p-1 shadow-sm">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
-                    viewMode === 'grid'
-                      ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50 font-medium'
-                  }`}
+              {/* Right: Smart Sort Controls */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-300">Sort by:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'name' | 'date' | 'size' | 'quality')}
+                  className="px-3 py-2 bg-gray-900 border border-gray-700 text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                 >
-                  <LayoutGrid className="w-4 h-4" />
-                  <span className="text-sm">Grid</span>
-                </button>
+                  <option value="date">📅 Recent</option>
+                  <option value="name">🔤 Name</option>
+                  <option value="size">📊 Size</option>
+                  <option value="quality">✨ Quality</option>
+                </select>
                 <button
-                  onClick={() => setViewMode('organize')}
-                  className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-all ${
-                    viewMode === 'organize'
-                      ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-50 font-medium'
-                  }`}
+                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="p-2 bg-gray-900 border border-gray-700 hover:border-cyan-500 text-gray-100 rounded-lg transition-all"
+                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                 >
-                  <Folders className="w-4 h-4" />
-                  <span className="text-sm">Organize</span>
+                  {sortOrder === 'asc' ? '↑' : '↓'}
                 </button>
               </div>
             </div>
@@ -807,21 +841,8 @@ const DataManagement: React.FC = () => {
               </p>
             </div>
           </Card>
-        ) : viewMode === 'organize' ? (
-          // ORGANIZE VIEW - Drag and Drop Buckets
-          <DatasetOrganizer
-            datasets={filteredDatasets}
-            onPreview={handlePreview}
-            onDelete={(dataset) => {
-              if (confirm(`Delete "${dataset.name}"?`)) {
-                if (user) {
-                  deleteDataset(dataset, user.id);
-                }
-              }
-            }}
-          />
         ) : (
-          // GRID VIEW - Original Layout
+          // SMART GRID VIEW - Automatically sorted and organized
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedDatasets.map((dataset) => {
@@ -1178,7 +1199,10 @@ const DataManagement: React.FC = () => {
               setShowUploader(true);
               break;
             case 'organize':
-              setViewMode('organize');
+              // Auto-organize by quality (highest quality first)
+              setSortBy('quality');
+              setSortOrder('desc');
+              toast.success('Sorted by data quality');
               break;
             case 'analyze':
               if (datasets.length > 0) {

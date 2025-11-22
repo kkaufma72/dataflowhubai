@@ -23,8 +23,7 @@ import StripeConfigWarning from './components/common/StripeConfigWarning.tsx';
 // Lazy load all pages for better code splitting and performance
 const Documentation = lazy(() => import('./pages/Documentation.tsx'));
 const Dashboard = lazy(() => import('./pages/DashboardKoyfin.tsx')); // Dark terminal-style dashboard
-const DataManagement = lazy(() => import('./pages/DataManagementHybrid.tsx')); // Hybrid: Excel tabs + Quality cards + AI helper
-const DataCatalog = lazy(() => import('./pages/DataCatalog.tsx')); // IBM Watson-inspired data catalog
+const DataManagement = lazy(() => import('./pages/DataManagementHybrid.tsx')); // Unified: Data catalog + browse + upload + quality
 const DatasetInsights = lazy(() => import('./pages/DatasetInsights.tsx'));
 const FeatureEngineering = lazy(() => import('./pages/FeatureEngineering.tsx'));
 const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
@@ -189,7 +188,6 @@ if (!isSupabaseConfigured) {
                             <Route path="/app" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
                               <Route index element={<Dashboard />} />
                               <Route path="data" element={<DataManagement />} />
-                              <Route path="catalog" element={<DataCatalog />} />
                               <Route path="insights" element={<DatasetInsights />} />
                               <Route path="dataset-overview" element={<DatasetInsights />} />
                               <Route path="visualizations" element={<DatasetInsights />} />

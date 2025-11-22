@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { useInfluxMetrics, useAllModelsMetrics } from '../hooks/useInfluxMetrics';
 import { Activity, TrendingUp, TrendingDown, Database, RefreshCw, Clock, Zap } from 'lucide-react';
 
 const MetricsDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedModelId, setSelectedModelId] = useState<string | undefined>(undefined);
   const [refreshInterval, setRefreshInterval] = useState(5000); // 5 seconds default
   const [timeRange, setTimeRange] = useState(24); // 24 hours default
@@ -154,6 +156,15 @@ const MetricsDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0d1117] p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm mb-6">
+          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Home</span>
+          <span className="text-gray-600">/</span>
+          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Deploy & Monitor</span>
+          <span className="text-gray-600">/</span>
+          <span className="text-white font-medium">Monitoring</span>
+        </div>
+
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">

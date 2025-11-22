@@ -261,6 +261,13 @@ const DashboardKoyfin: React.FC = () => {
       {/* Modern SaaS Header Bar */}
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
         <div className="px-6 py-4">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm mb-4">
+            <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Home</span>
+            <span className="text-gray-600">/</span>
+            <span className="text-white font-medium">Dashboard</span>
+          </div>
+
           <div className="flex items-center justify-between">
             {/* Left - User info */}
             <div className="flex items-center gap-6">
