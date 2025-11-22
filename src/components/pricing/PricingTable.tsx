@@ -77,7 +77,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       highlighted: false
     },
     {
-      name: 'Professional',
+      name: 'Pro',
       price: { monthly: 49, annual: 490 },
       description: 'For growing businesses',
       features: [
@@ -181,14 +181,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 items-stretch">
         {tiers.map((tier) => {
           const isCurrentTier = tier.name.toLowerCase() === currentTier.toLowerCase();
 
           return (
             <div
               key={tier.name}
-              className={`relative rounded-2xl p-6 ${
+              className={`relative rounded-2xl p-6 flex flex-col ${
                 tier.highlighted
                   ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-500 shadow-xl scale-105'
                   : 'bg-white border-2 border-gray-200 hover:border-gray-300 shadow-sm'
@@ -197,9 +197,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               {/* Popular Badge */}
               {tier.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg">
-                    MOST POPULAR
-                  </span>
                 </div>
               )}
 
@@ -257,7 +254,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </button>
 
               {/* Features */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6 flex-grow">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                   Key Features
                 </p>
@@ -271,25 +268,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
               {/* Limits */}
               <div className="pt-4 border-t border-gray-200">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">
                   Usage Limits
                 </p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-500">Datasets:</span>
-                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.datasets}</span>
+                    <span className="font-semibold text-gray-900">{tier.limits.datasets}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-500">Models:</span>
-                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.models}</span>
+                    <span className="font-semibold text-gray-900">{tier.limits.models}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-500">Storage:</span>
-                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.storage}</span>
+                    <span className="font-semibold text-gray-900">{tier.limits.storage}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-500">API Calls:</span>
-                    <span className="ml-1 font-semibold text-gray-900">{tier.limits.apiCalls}</span>
+                    <span className="font-semibold text-gray-900">{tier.limits.apiCalls}</span>
                   </div>
                 </div>
               </div>
