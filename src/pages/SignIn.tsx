@@ -7,7 +7,11 @@ import { Mail, Lock, Loader2, AlertCircle, User, ArrowLeft, Github } from 'lucid
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 import { AuthChangeEvent } from '@supabase/supabase-js';
-import { POST_AUTH_REDIRECT_KEY } from '../constants/auth';
+import { 
+  storePostAuthRedirectPath,
+  clearPostAuthRedirectPath,
+  getPostAuthRedirectPath 
+} from '../constants/auth';
 
 // Email validation function to prevent fake/test emails
 const isValidEmail = (email: string): boolean => {
@@ -31,20 +35,12 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email) && !fakeDomains.includes(domain);
 };
 
-const clearPostAuthRedirectPath = () => {
-  if (typeof window === 'undefined') return;
-  window.sessionStorage.removeItem(POST_AUTH_REDIRECT_KEY);
-};
-
-const storePostAuthRedirectPath = (path: string) => {
-  if (typeof window === 'undefined' || !path) return;
-  window.sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, path);
-};
-
 const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from || '/app';
+  const locationStateFrom = (location.state as any)?.from;
+  const storedRedirect = getPostAuthRedirectPath();
+  const from = locationStateFrom || storedRedirect || '/app';
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +54,12 @@ const SignIn = () => {
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
+
+  useEffect(() => {
+    if (from) {
+      storePostAuthRedirectPath(from);
+    }
+  }, [from]);
 
   // Check for email verification success
   useEffect(() => {
@@ -109,7 +111,7 @@ const SignIn = () => {
       console.log('SignIn component unmounting, cleaning up subscription');
       subscription.unsubscribe();
     };
-  }, [navigate, from, redirectInProgress]);
+  }, [navigate, from, redirectInProgress, locationStateFrom, storedRedirect]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
