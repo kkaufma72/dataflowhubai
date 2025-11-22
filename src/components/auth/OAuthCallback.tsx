@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Loader, CheckCircle } from 'lucide-react';
 
 const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
 
   useEffect(() => {
@@ -12,6 +13,32 @@ const OAuthCallback: React.FC = () => {
       try {
         console.log('🔄 Handling OAuth callback...');
         setStatus('processing');
+        const params = new URLSearchParams(location.search);
+        const code = params.get('code');
+        const errorDescription = params.get('error_description') || params.get('error');
+
+        if (errorDescription) {
+          console.error('❌ OAuth provider returned an error:', errorDescription);
+          setStatus('error');
+          setTimeout(() => navigate(`/signin?error=${encodeURIComponent(errorDescription)}`), 2000);
+          return;
+        }
+
+        if (code) {
+          console.log('🔑 Exchanging OAuth code for Supabase session...');
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            console.error('❌ Error exchanging code for session:', exchangeError);
+            setStatus('error');
+            setTimeout(() => navigate('/signin?error=oauth_exchange_failed'), 2000);
+            return;
+          }
+
+          // Clean code from URL to prevent accidental re-use on refresh
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          console.warn('⚠️ No OAuth code found in callback URL, checking existing session');
+        }
         
         // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -80,7 +107,7 @@ const OAuthCallback: React.FC = () => {
     };
 
     handleOAuthCallback();
-  }, [navigate]);
+  }, [navigate, location.search]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -122,4 +149,3 @@ const OAuthCallback: React.FC = () => {
 };
 
 export default OAuthCallback;
-
