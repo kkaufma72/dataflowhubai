@@ -75,7 +75,7 @@ const DatasetBrowseUpload: React.FC = () => {
 
     // Filter by selected projects (if any selected)
     if (selectedProjectIds.length > 0) {
-      result = result.filter(ds => selectedProjectIds.includes(ds.projectId));
+      result = result.filter(ds => ds.projectId && selectedProjectIds.includes(ds.projectId));
     }
 
     // Sort datasets
@@ -87,7 +87,7 @@ const DatasetBrowseUpload: React.FC = () => {
           return parseFloat(b.fileSize) - parseFloat(a.fileSize);
         case 'date':
         default:
-          return new Date(b.dateUploaded).getTime() - new Date(a.dateUploaded).getTime();
+          return new Date(b.dateUploaded || 0).getTime() - new Date(a.dateUploaded || 0).getTime();
       }
     });
 

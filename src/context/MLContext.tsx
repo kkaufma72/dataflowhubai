@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supabase';
 import { Dataset, MLModel, Project } from '../types';
@@ -53,7 +53,7 @@ const generateUUID = () => {
 };
 
 const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 8000): Promise<T> => {
-  let timeoutHandle: number;
+  let timeoutHandle: number | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutHandle = window.setTimeout(() => {
       reject(new Error('Request timed out'));
@@ -63,7 +63,9 @@ const withTimeout = async <T,>(promise: Promise<T>, timeoutMs = 8000): Promise<T
   try {
     return await Promise.race([promise, timeoutPromise]);
   } finally {
-    window.clearTimeout(timeoutHandle);
+    if (timeoutHandle !== undefined) {
+      window.clearTimeout(timeoutHandle);
+    }
   }
 };
 
@@ -146,7 +148,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
       if (error) throw error;
 
-      const mapped = (data || []).map((project) => ({
+      const mapped = (data || []).map((project: any) => ({
         id: project.id,
         name: project.name,
         description: project.description || '',
@@ -156,7 +158,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       setProjects(mapped);
 
       const savedProjectId = localStorage.getItem(LAST_PROJECT_KEY);
-      const savedProject = mapped.find((project) => project.id === savedProjectId);
+      const savedProject = mapped.find((project: Project) => project.id === savedProjectId);
 
       if (savedProject) {
         setCurrentProject(savedProject);
@@ -339,14 +341,14 @@ export const MLProvider = ({ children }: MLProviderProps) => {
                 if (hasSeededKey) {
                   localStorage.removeItem(hasSeededKey);
                 }
-                toast.error('Could not refresh saved samples. You can keep exploring locally.', { id: toastId });
+                toast.error('Could not refresh saved samples. You can keep exploring locally.');
               }
             } catch (error) {
               console.warn('Background seeding failed:', error);
               if (hasSeededKey) {
                 localStorage.removeItem(hasSeededKey);
               }
-              toast.error('Saving sample datasets failed. Try again later.', { id: toastId });
+              toast.error('Saving sample datasets failed. Try again later.');
             }
           })();
         }
@@ -435,7 +437,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
             validProjectId = newProject.id;
           }
         }
-        resolvedProjectId = validProjectId;
+        resolvedProjectId = validProjectId || null;
         
         const datasetData = {
           id: datasetWithValidId.id,
@@ -447,7 +449,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           column_count: datasetWithValidId.columns,
           preview_data: datasetWithValidId.preview_data,
           user_id: user.id,
-          project_id: validProjectId, // Always set project_id
+          project_id: validProjectId as string | null, // Always set project_id
           created_at: datasetWithValidId.dateUploaded || new Date().toISOString(),
         };
 
@@ -624,7 +626,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
           dataset_id: model.datasetId || null,
           project_id: projectId,
           hyperparameters: model.hyperparameters || {},
-          training_config: model.config || {},
+          training_config: {},
           metadata: model.metrics ? { metrics: model.metrics } : {},
           user_id: user.id,
         };

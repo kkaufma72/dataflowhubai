@@ -1,32 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
-import { 
-  BarChart2, 
-  PieChart, 
-  Activity, 
-  AlertTriangle, 
-  Check, 
-  Download, 
+import {
+  BarChart2,
+  PieChart,
+  AlertTriangle,
+  Check,
+  Download,
   RefreshCw,
-  Filter,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Info,
   Zap,
   Clock,
   FileText
 } from 'lucide-react';
 import Button from '../common/Button';
 import { Dataset } from '../../types';
-import { 
-  profileDataset, 
-  DataProfile, 
-  ColumnProfile, 
-  DataQualityIssue,
+import {
+  profileDataset,
+  DataProfile,
+  ColumnStats,
   PreprocessingRecommendation
 } from '../../lib/dataProcessing';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 
 interface DataProfilerProps {
@@ -41,7 +34,6 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const [profile, setProfile] = useState<DataProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
-  const [showAllIssues, setShowAllIssues] = useState(false);
   const [selectedRecommendations, setSelectedRecommendations] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'columns' | 'issues' | 'recommendations'>('overview');
 
@@ -174,7 +166,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     }
   };
 
-  const getIssueTypeIcon = (type: string) => {
+  const getIssueTypeIcon = () => {
     return <AlertTriangle className="w-4 h-4 text-amber-500" />;
   };
 
@@ -204,64 +196,25 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     }
   };
 
-  const renderColumnHistogram = (column: ColumnProfile) => {
-    if (column.type !== 'numeric' || !column.stats.histogram) return null;
-    
-    const data = {
-      labels: column.stats.histogram.map(h => h.bin.toFixed(2)),
-      datasets: [
-        {
-          label: 'Frequency',
-          data: column.stats.histogram.map(h => h.count),
-          backgroundColor: 'rgba(79, 70, 229, 0.6)',
-          borderColor: 'rgba(79, 70, 229, 1)',
-          borderWidth: 1,
-        },
-      ],
-    };
-    
-    const options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Value',
-          },
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Frequency',
-          },
-        },
-      },
-    };
-    
+  const renderColumnHistogram = () => {
+    // Histogram data not available in current ColumnStats structure
     return (
-      <div className="h-64">
-        <Bar data={data} options={options} />
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400">Histogram visualization coming soon</p>
       </div>
     );
   };
 
-  const renderCategoricalDistribution = (column: ColumnProfile) => {
-    if ((column.type !== 'categorical' && column.type !== 'boolean') || !column.distribution) return null;
+  const renderCategoricalDistribution = (column: ColumnStats) => {
+    if ((column.type !== 'categorical' && column.type !== 'boolean') || !column.topValues || column.topValues.length === 0) return null;
     
-    const entries = Object.entries(column.distribution);
-    const topEntries = entries.sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const topEntries = column.topValues.slice(0, 10);
     
     const data = {
-      labels: topEntries.map(([category]) => category),
+      labels: topEntries.map(item => String(item.value)),
       datasets: [
         {
-          data: topEntries.map(([, count]) => count * 100),
+          data: topEntries.map(item => item.percent),
           backgroundColor: [
             'rgba(79, 70, 229, 0.6)',
             'rgba(16, 185, 129, 0.6)',
@@ -588,7 +541,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                     <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800">
                       <h4 className="text-base font-bold text-white mb-4">Distribution</h4>
                       {columnProfiles[selectedColumn].type === 'numeric' ? (
-                        renderColumnHistogram(columnProfiles[selectedColumn])
+                        renderColumnHistogram()
                       ) : (columnProfiles[selectedColumn].type === 'categorical' || 
                            columnProfiles[selectedColumn].type === 'boolean') ? (
                         renderCategoricalDistribution(columnProfiles[selectedColumn])
@@ -624,7 +577,7 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                     }`}>
                       <div className="flex items-start">
                         <div className="flex-shrink-0">
-                          {getIssueTypeIcon(issue.type)}
+                          {getIssueTypeIcon()}
                         </div>
                         <div className="ml-3 flex-1">
                           <div className="flex items-center justify-between">
@@ -651,17 +604,6 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                               </p>
                             )}
                           </div>
-                          {issue.recommendation && (
-                            <div className={`mt-2 text-sm font-medium ${
-                              issue.severity === 'high' 
-                                ? 'text-red-800' 
-                                : issue.severity === 'medium'
-                                ? 'text-amber-800'
-                                : 'text-blue-800'
-                            }`}>
-                              Recommendation: {issue.recommendation}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -731,8 +673,8 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
                           <div className="ml-3 flex-1">
                             <div className="flex items-center justify-between">
                               <h4 className="text-sm font-medium text-gray-900">{rec.type.replace(/_/g, ' ')}</h4>
-                              <span className={`px-2 py-1 text-xs font-medium rounded ${getRecommendationImpactColor(rec.impact)}`}>
-                                {rec.impact} impact
+                              <span className={`px-2 py-1 text-xs font-medium rounded ${getRecommendationImpactColor(rec.priority)}`}>
+                                {rec.priority} priority
                               </span>
                             </div>
                             {rec.column && (

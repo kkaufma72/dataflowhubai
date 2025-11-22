@@ -118,7 +118,7 @@ const DataManagement: React.FC = () => {
     // Apply file type filter
     if (filters.fileType) {
       result = result.filter(ds => 
-        ds.fileType?.toLowerCase() === filters.fileType.toLowerCase()
+        ds.fileType?.toLowerCase() === filters.fileType?.toLowerCase()
       );
     }
 
@@ -144,10 +144,10 @@ const DataManagement: React.FC = () => {
     }
 
     // Apply size filter
-    if (filters.minRows) {
+    if (filters.minRows !== undefined) {
       result = result.filter(ds => {
         const rows = ds.rows || 0;
-        return rows >= filters.minRows;
+        return rows >= (filters.minRows || 0);
       });
     }
 

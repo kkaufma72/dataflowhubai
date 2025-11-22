@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, ChevronRight, CheckCircle, Menu, X } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, CheckCircle, Menu, X } from 'lucide-react';
 import InteractiveLiveDemo from '../components/landing/InteractiveLiveDemo';
 import LiveTransformationDemo from '../components/data/LiveTransformationDemo';
 import { useStripeCheckout } from '../hooks/useStripeCheckout';
