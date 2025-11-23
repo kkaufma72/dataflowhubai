@@ -47,7 +47,8 @@ const AccountSettings: React.FC = () => {
   const [preferences, setPreferences] = useState({
     theme: userProfile?.preferences?.theme || 'system',
     emailNotifications: userProfile?.preferences?.emailNotifications || true,
-    twoFactorAuth: userProfile?.preferences?.twoFactorAuth || false
+    twoFactorAuth: userProfile?.preferences?.twoFactorAuth || false,
+    linkedinAdsTrackingUrl: userProfile?.preferences?.linkedinAdsTrackingUrl || ''
   });
 
   // Handle preference changes
@@ -435,6 +436,31 @@ const AccountSettings: React.FC = () => {
                     </Button>
                   </div>
                 </form>
+              </div>
+              
+              <div className="pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">LinkedIn Ads Tracking</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Enter the URL you want to track visits to from your LinkedIn ads.
+                </p>
+                
+                <div className="mt-4">
+                  <label htmlFor="linkedinAdsTrackingUrl" className="block text-sm font-medium text-gray-700">
+                    Tracking URL
+                  </label>
+                  <input
+                    type="url"
+                    id="linkedinAdsTrackingUrl"
+                    name="linkedinAdsTrackingUrl"
+                    value={preferences.linkedinAdsTrackingUrl}
+                    onChange={(e) => handlePreferenceChange('linkedinAdsTrackingUrl', e.target.value)}
+                    placeholder="https://yourdomain.com/landing-page"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    This URL will be used to track conversions and visits from your LinkedIn advertising campaigns.
+                  </p>
+                </div>
               </div>
               
               <div className="pt-6 border-t border-gray-200">
