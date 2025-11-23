@@ -10,7 +10,8 @@ describe('Button component', () => {
   it('renders correctly with default props', () => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole('button')).toHaveTextContent('Click me');
-    expect(screen.getByRole('button')).toHaveClass('bg-primary-600');
+    expect(screen.getByRole('button')).toHaveAttribute('type', 'button');
+    expect(screen.getByRole('button')).toHaveClass('bg-gradient-to-r');
   });
 
   it('calls onClick handler when clicked', () => {
@@ -33,34 +34,54 @@ describe('Button component', () => {
 
   it('renders with different variants', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-primary-600');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-gradient-to-r');
+
     rerender(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-gray-100');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-slate-900');
+
     rerender(<Button variant="outline">Outline</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-white');
-    
+    expect(screen.getByRole('button')).toHaveClass('border');
+
     rerender(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-red-600');
+    expect(screen.getByRole('button')).toHaveClass('from-rose-500');
+
+    rerender(<Button variant="success">Success</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-emerald-600');
+
+    rerender(<Button variant="ghost">Ghost</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent');
   });
 
   it('renders with different sizes', () => {
     const { rerender } = render(<Button size="sm">Small</Button>);
-    expect(screen.getByRole('button')).toHaveClass('px-3 py-1.5 text-sm');
-    
+    expect(screen.getByRole('button')).toHaveClass('h-9 px-3 text-sm');
+
     rerender(<Button size="md">Medium</Button>);
-    expect(screen.getByRole('button')).toHaveClass('px-4 py-2 text-sm');
-    
+    expect(screen.getByRole('button')).toHaveClass('h-10 px-4 text-sm');
+
     rerender(<Button size="lg">Large</Button>);
-    expect(screen.getByRole('button')).toHaveClass('px-5 py-2.5 text-base');
+    expect(screen.getByRole('button')).toHaveClass('h-12 px-5 text-base');
   });
 
   it('renders with loading state', () => {
     render(<Button isLoading>Loading</Button>);
     expect(screen.getByRole('button')).toBeDisabled();
     expect(screen.getByText('Loading')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveClass('opacity-60 cursor-not-allowed');
+    expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('renders with right positioned icon and full width layout', () => {
+    const TestIcon = () => <svg data-testid="right-icon" />;
+    render(
+      <Button iconPosition="right" icon={<TestIcon />} fullWidth>
+        Download
+      </Button>
+    );
+
+    const button = screen.getByRole('button');
+    expect(button).toHaveClass('w-full');
+    const svg = screen.getByTestId('right-icon');
+    expect(svg.parentElement).toHaveClass('order-last');
   });
 
   it('applies custom className', () => {
