@@ -2,6 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, BrainCircuit, Rocket, LogIn } from 'lucide-react';
 
+const whyUsPhotos = [
+  {
+    src: '/images/why-us-1.jpg',
+    alt: 'Product leaders reviewing live analytics together',
+    label: 'Strategy in sync',
+    detail: 'Ops + Rev teams build roadmaps off one live source of truth.'
+  },
+  {
+    src: '/images/why-us-2.jpg',
+    alt: 'Engineer automating dashboards on multiple devices',
+    label: 'Automation first',
+    detail: 'AI agents ship pipelines, dashboards, and alerts on autopilot.'
+  },
+  {
+    src: '/images/why-us-3.jpg',
+    alt: 'Executive presenting a modern data story to the board',
+    label: 'Decisions with confidence',
+    detail: 'Leaders walk into every meeting with story-ready visuals.'
+  }
+];
+
 const LandingPage: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -93,6 +114,61 @@ const LandingPage: React.FC = () => {
                 Deploy your data applications with a single click. Our managed infrastructure automatically scales to meet your demands.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Us Video + Photos */}
+      <section id="why-us" className="py-24 bg-slate-900 text-white">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-blue-300">Why Us?</p>
+              <h2 className="mt-4 text-4xl font-bold leading-tight">
+                From chaotic dashboards to one narrative in 30 seconds.
+              </h2>
+              <p className="mt-4 text-slate-200">
+                Press play to see how DataflowHub AI unifies ingestion, modeling, and storytelling—complete with a cinematic score.
+              </p>
+              <ul className="mt-6 space-y-3 text-slate-100">
+                <li>• Generated marketing spot with integrated music, ready for social launch.</li>
+                <li>• Real product photography to anchor trust in real-world outcomes.</li>
+                <li>• CTA-friendly ending that mirrors the messaging across the site.</li>
+              </ul>
+            </div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-800/60">
+              <video
+                className="w-full h-full object-cover"
+                src="/media/dataflowhubai_campaign.mp4"
+                controls
+                playsInline
+                poster="/images/why-us-2.jpg"
+              >
+                Your browser does not support the video tag.
+              </video>
+              <div className="absolute top-4 left-4 bg-black/60 text-xs uppercase tracking-wide px-3 py-1 rounded-full">
+                Music on · Use controls
+              </div>
+            </div>
+          </div>
+          <div className="mt-16 grid gap-6 sm:grid-cols-3">
+            {whyUsPhotos.map((photo) => (
+              <figure
+                key={photo.src}
+                className="group relative overflow-hidden rounded-2xl shadow-lg border border-white/10"
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <figcaption className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/10 to-transparent p-5">
+                  <p className="text-sm uppercase text-blue-300 tracking-wide">{photo.label}</p>
+                  <p className="text-lg font-semibold">{photo.detail}</p>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
