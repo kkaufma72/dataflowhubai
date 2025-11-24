@@ -412,7 +412,7 @@ const ModelTraining: React.FC = () => {
           
           if (newProgress >= 100) {
             clearInterval(interval);
-            setTimeout(() => {
+            setTimeout(async () => {
               const completedModel: MLModel = {
                 ...newModel,
                 status: 'trained',
