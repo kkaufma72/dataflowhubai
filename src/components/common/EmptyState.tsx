@@ -18,7 +18,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon,
   title,
   description,
@@ -73,4 +73,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   );
 };
 
+// Export both named and default
+export { EmptyState };
 export default EmptyState;
