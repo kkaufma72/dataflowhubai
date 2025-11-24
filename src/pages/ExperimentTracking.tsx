@@ -229,18 +229,9 @@ const ExperimentTracking: React.FC = () => {
           </table>
         </div>
 
-        {/* Scenario Builder (if model selected) */}
-        {selectedModel && (
-          <div className="mt-8">
-            <ScenarioBuilder
-              model={selectedModel}
-              baselineInputs={baselineInputs}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-export default ScenarioTesting;
+export default ExperimentTracking;
