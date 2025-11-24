@@ -14,7 +14,6 @@ import toast from 'react-hot-toast';
 import { TrustBadges } from '../components/common/TrustBadges';
 import { testimonials } from '../data/testimonials';
 import { TestimonialCard } from '../components/social/TestimonialCard';
-import { VideoHeroDemo } from '../components/landing/VideoHeroDemo';
 
 const LandingPageLinear: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -285,25 +284,8 @@ const LandingPageLinear: React.FC = () => {
           </p>
         </div>
 
-        {/* Video Demo - Shown First */}
-        <div className="relative max-w-5xl mx-auto mt-16">
-          <VideoHeroDemo
-            videoUrl="" // TODO: Add your YouTube embed URL after recording
-            thumbnailUrl="/demo-thumbnail.jpg"
-            title="See DataFlowHub Build ML Models in 3 Minutes"
-          />
-        </div>
-
-        {/* Interactive Demo - Below Video */}
-        <div className="relative max-w-6xl mx-auto mt-24">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
-              Or Try It Yourself (Interactive)
-            </h2>
-            <p className="text-lg text-gray-600">
-              Click through our live demo - no sign-up required
-            </p>
-          </div>
+        {/* Interactive Demo */}
+        <div className="relative max-w-6xl mx-auto mt-16">
           <InteractiveLiveDemo />
         </div>
       </section>
