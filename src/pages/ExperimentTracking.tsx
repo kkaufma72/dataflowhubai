@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
 import { experimentTracker, Experiment } from '../lib/experimentTracking';
-import { TestTube, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search } from 'lucide-react';
+import { TestTube, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search, Plus, Brain, Package2 } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import Button from '../components/common/Button';
