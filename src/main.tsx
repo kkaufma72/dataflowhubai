@@ -50,6 +50,9 @@ const OAuthCallback = lazy(() => import('./components/auth/OAuthCallback.tsx'));
 const AsyncMLOperations = lazy(() => import('./pages/AsyncMLOperations.tsx')); // Celery async operations
 const MetricsDashboard = lazy(() => import('./pages/MetricsDashboard.tsx')); // Real-time InfluxDB metrics
 const DatasetCleanup = lazy(() => import('./pages/DatasetCleanup.tsx')); // Dataset cleanup utility
+const ScenarioTesting = lazy(() => import('./pages/ScenarioTesting.tsx')); // What-if scenario builder
+const ExperimentTracking = lazy(() => import('./pages/ExperimentTracking.tsx')); // MLflow-style experiment tracking
+const ModelMarketplace = lazy(() => import('./pages/ModelMarketplace.tsx')); // Pre-trained model marketplace
 
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {

@@ -16,7 +16,9 @@ import {
   ChevronDown,
   Plus,
   Check,
-  TrendingUp
+  TrendingUp,
+  Flask,
+  Store
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
@@ -248,6 +250,33 @@ const Sidebar: React.FC = () => {
           icon: Zap,
           description: 'Background tasks',
           premium: true
+        }
+      ]
+    },
+    {
+      name: 'Advanced Features',
+      icon: Sparkles,
+      badge: 'NEW',
+      description: 'Unique features that set us apart',
+      section: true,
+      items: [
+        {
+          name: 'Scenario Testing',
+          href: '/app/scenarios',
+          icon: TrendingUp,
+          description: 'What-if analysis'
+        },
+        {
+          name: 'Experiments',
+          href: '/app/experiments',
+          icon: Flask,
+          description: 'Track all training runs'
+        },
+        {
+          name: 'Model Marketplace',
+          href: '/app/marketplace',
+          icon: Store,
+          description: 'Pre-trained models'
         }
       ]
     }
