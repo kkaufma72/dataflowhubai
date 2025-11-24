@@ -17,8 +17,8 @@ import {
   Plus,
   Check,
   TrendingUp,
-  Flask,
-  Store
+  TestTube,
+  ShoppingCart
 } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
@@ -269,13 +269,13 @@ const Sidebar: React.FC = () => {
         {
           name: 'Experiments',
           href: '/app/experiments',
-          icon: Flask,
+          icon: TestTube,
           description: 'Track all training runs'
         },
         {
           name: 'Model Marketplace',
           href: '/app/marketplace',
-          icon: Store,
+          icon: ShoppingCart,
           description: 'Pre-trained models'
         }
       ]

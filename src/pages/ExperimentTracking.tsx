@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
 import { experimentTracker, Experiment } from '../lib/experimentTracking';
-import { Flask, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search } from 'lucide-react';
+import { TestTube, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import Button from '../components/common/Button';
@@ -78,7 +78,7 @@ const ExperimentTracking: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <EmptyState
-          icon={Flask}
+          icon={TestTube}
           title="No experiments yet"
           description="Experiments are automatically tracked when you train models. Every training run is logged for reproducibility and comparison."
           actions={[
