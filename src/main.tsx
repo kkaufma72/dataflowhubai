@@ -210,6 +210,11 @@ if (!isSupabaseConfigured) {
                               <Route path="metrics" element={<PremiumRoute requiredFeature="canMonitor"><MetricsDashboard /></PremiumRoute>} />
                               <Route path="async-ml" element={<PremiumRoute requiredFeature="advancedAnalytics"><AsyncMLOperations /></PremiumRoute>} />
                               
+                              {/* Advanced Features (NEW!) */}
+                              <Route path="scenarios" element={<ScenarioTesting />} />
+                              <Route path="experiments" element={<ExperimentTracking />} />
+                              <Route path="marketplace" element={<ModelMarketplace />} />
+                              
                               {/* User Account & Settings */}
                               <Route path="profile" element={<UserProfile />} />
                               <Route path="settings" element={<AccountSettings />} />
