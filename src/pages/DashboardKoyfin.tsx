@@ -21,6 +21,8 @@ import {
   Loader
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { EmptyState } from '../components/common/EmptyState';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
@@ -247,10 +249,14 @@ const DashboardKoyfin: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-950">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-          <p className="text-gray-400">Loading dashboard...</p>
+      <div className="space-y-6 min-h-screen bg-gray-950 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <LoadingSkeleton variant="card" count={3} />
+        </div>
+        <LoadingSkeleton variant="chart" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LoadingSkeleton variant="list" count={4} />
+          <LoadingSkeleton variant="card" count={2} />
         </div>
       </div>
     );

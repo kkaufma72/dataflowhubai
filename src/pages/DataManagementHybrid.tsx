@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
-import DataUploader from '../components/data/DataUploader';
 import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
@@ -17,6 +16,8 @@ import DataEmptyState from '../components/data/DataEmptyState';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import FinishSetupChecklist from '../components/onboarding/FinishSetupChecklist';
 import { useNavigate } from 'react-router-dom';
+import { EnhancedDataUploader } from '../components/data/EnhancedDataUploader';
+import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
@@ -27,9 +28,7 @@ const DataTransformationStudio = lazy(() => import('../components/data/DataTrans
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
-  <div className="flex items-center justify-center py-12">
-    <Loader className="w-8 h-8 text-primary-600 animate-spin" />
-  </div>
+  <LoadingSkeleton variant="card" count={3} />
 );
 
 const SAMPLE_TOUR_STORAGE_KEY = 'dfh-sample-tour-dismissed';

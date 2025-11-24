@@ -277,10 +277,21 @@ const FeatureEngineering: React.FC = () => {
         <div className="saas-icon-blue w-20 h-20">
           <Database className="w-10 h-10" />
         </div>
-        <h3 className="mt-6 saas-h3">No datasets available</h3>
-        <p className="mt-2 saas-body text-gray-400">
-          Upload a dataset first to perform feature engineering
-        </p>
+        <EmptyState
+          icon={Layers}
+          title="No datasets available"
+          description="Upload a dataset to start extracting and engineering features for better model performance. Feature engineering can improve model accuracy by 10-30%."
+          actions={[
+            {
+              label: 'Upload Dataset',
+              onClick: () => navigate('/app/data'),
+              variant: 'primary',
+              icon: Upload
+            }
+          ]}
+          tip="Try our sample datasets to explore feature engineering without uploading your own data"
+          className="bg-gray-900/50 text-gray-300"
+        />
         <button 
           className="mt-6 saas-btn-primary saas-btn-md" 
           onClick={() => navigate('/app/data')}

@@ -24,6 +24,8 @@ import { MLModel, DeploymentConfig } from '../types';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import DeploymentStatusMonitor from '../components/monitoring/DeploymentStatusMonitor';
+import { EmptyState } from '../components/common/EmptyState';
+import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 
 const DeploymentPage: React.FC = () => {
   const { models, updateModelStatus } = useMLContext();
@@ -322,18 +324,26 @@ print(prediction)`;
 
   if (models.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
-          <Rocket className="w-6 h-6 text-indigo-600" />
-        </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for deployment</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Train a model first to deploy it and make it available as an API
-        </p>
-        <Button className="mt-4" onClick={() => navigate('/app/train')}>
-          Train New Model
-        </Button>
-      </div>
+      <EmptyState
+        icon={Rocket}
+        title="No models available for deployment"
+        description="Train your first machine learning model to deploy it as an API endpoint. Once trained, you can deploy models to production with just one click."
+        actions={[
+          {
+            label: 'Train a Model',
+            onClick: () => navigate('/app/train'),
+            variant: 'primary',
+            icon: Brain
+          },
+          {
+            label: 'View Training Guide',
+            onClick: () => navigate('/documentation'),
+            variant: 'secondary',
+            icon: Package2
+          }
+        ]}
+        tip="Models must be in 'trained' status before they can be deployed"
+      />
     );
   }
 

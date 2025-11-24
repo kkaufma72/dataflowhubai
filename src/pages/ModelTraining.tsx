@@ -28,6 +28,9 @@ import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
+import { ModelTrainingProgress } from '../components/ml/ModelTrainingProgress';
+import { EmptyState } from '../components/common/EmptyState';
+import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import toast from 'react-hot-toast';
 
 type CrossValidationResult = {
@@ -56,6 +59,7 @@ const ModelTraining: React.FC = () => {
   const [isTraining, setIsTraining] = useState(false);
   const [currentTraining, setCurrentTraining] = useState<MLModel | null>(null);
   const [progress, setProgress] = useState(0);
+  const [trainingStatus, setTrainingStatus] = useState<'idle' | 'preprocessing' | 'feature_engineering' | 'training' | 'tuning' | 'validating' | 'complete' | 'error'>('idle');
   const navigate = useNavigate();
   const [clusteredDatasets, setClusteredDatasets] = useState<Dataset[]>([]);
   const [isClusterTraining, setIsClusterTraining] = useState(false);
@@ -332,6 +336,7 @@ const ModelTraining: React.FC = () => {
     try {
       setIsTraining(true);
       setProgress(0);
+      setTrainingStatus('preprocessing');
 
       toast.loading('Starting model training...', { id: 'training' });
 
@@ -357,6 +362,17 @@ const ModelTraining: React.FC = () => {
       const interval = setInterval(() => {
         setProgress((prev) => {
           const newProgress = prev + Math.random() * 5;
+          
+          // Update training status based on progress
+          if (newProgress >= 10 && newProgress < 25) {
+            setTrainingStatus('feature_engineering');
+          } else if (newProgress >= 25 && newProgress < 65) {
+            setTrainingStatus('training');
+          } else if (newProgress >= 65 && newProgress < 90) {
+            setTrainingStatus('tuning');
+          } else if (newProgress >= 90 && newProgress < 100) {
+            setTrainingStatus('validating');
+          }
           
           // Log metrics to InfluxDB periodically
           if (newProgress < 100 && influxdb.isAvailable()) {
@@ -433,6 +449,7 @@ const ModelTraining: React.FC = () => {
 
               // Update model status instead of adding again
               updateModelStatus(newModel.id, 'trained', completedModel.metrics);
+              setTrainingStatus('complete');
               setIsTraining(false);
               setCurrentTraining(null);
               toast.success('Model training completed successfully!', { id: 'training' });
@@ -1378,10 +1395,20 @@ const ModelTraining: React.FC = () => {
             <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
               <Layers className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-white">No models trained yet</h3>
-            <p className="mt-1 text-sm text-gray-400">
-              Start training your first model to see it here
-            </p>
+            <EmptyState
+              icon={Brain}
+              title="No models trained yet"
+              description="Select a dataset and configure training settings to train your first machine learning model. Our AutoML will find the best algorithm for your data."
+              actions={[
+                {
+                  label: 'Train First Model',
+                  onClick: () => setActiveTab('train'),
+                  variant: 'primary',
+                  icon: Play
+                }
+              ]}
+              className="bg-[#161b22] text-white"
+            />
             {datasets.length > 0 && !selectedDataset && (
               <Button
                 className="mt-4"
