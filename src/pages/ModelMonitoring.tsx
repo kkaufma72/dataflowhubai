@@ -133,10 +133,26 @@ const ModelMonitoringContent: React.FC = () => {
         <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-lg">
           <Activity className="w-6 h-6 text-indigo-600" />
         </div>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No models available for monitoring</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Deploy a model first to monitor its performance (Pro feature)
-        </p>
+        <EmptyState
+          icon={Activity}
+          title="No models deployed yet"
+          description="Deploy your trained models to production to monitor their performance, detect drift, and set up alerts. Real-time monitoring helps maintain model accuracy over time."
+          actions={[
+            {
+              label: 'Deploy a Model',
+              onClick: () => navigate('/app/deploy'),
+              variant: 'primary',
+              icon: Rocket
+            },
+            {
+              label: 'Train a Model',
+              onClick: () => navigate('/app/train'),
+              variant: 'secondary',
+              icon: Brain
+            }
+          ]}
+          tip="Model monitoring is a Professional feature. Upgrade to track drift and set up automated alerts."
+        />
         <Button 
           className="mt-4" 
           onClick={() => startCheckout({ tier: 'professional', billing: 'monthly' })}

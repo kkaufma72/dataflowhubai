@@ -902,8 +902,8 @@ const DatasetInsights: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <Loader className="w-6 h-6 animate-spin text-cyan-400" />
+                        <div className="h-full flex items-center justify-center p-4">
+                          <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                       )}
                     </div>
