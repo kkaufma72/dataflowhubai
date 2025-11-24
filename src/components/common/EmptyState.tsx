@@ -1,110 +1,74 @@
-// Empty State Component - Professional UX
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { LucideIcon } from 'lucide-react';
+import Button from './Button';
 
-interface EmptyStateProps {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  actionLabel?: string;
-  actionHref?: string;
-  onAction?: () => void;
-  secondaryActionLabel?: string;
-  secondaryActionHref?: string;
-  onSecondaryAction?: () => void;
-  variant?: 'default' | 'minimal' | 'gradient';
+interface EmptyStateAction {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+  icon?: LucideIcon;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
+interface EmptyStateProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  actions?: EmptyStateAction[];
+  tip?: string;
+  className?: string;
+}
+
+export const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon,
   title,
   description,
-  actionLabel,
-  actionHref,
-  onAction,
-  secondaryActionLabel,
-  secondaryActionHref,
-  onSecondaryAction,
-  variant = 'default'
+  actions = [],
+  tip,
+  className = ''
 }) => {
-  const renderPrimaryAction = () => {
-    if (!actionLabel) return null;
-
-    const buttonClasses = variant === 'gradient'
-      ? 'px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-700 hover:to-primary-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105'
-      : 'px-6 py-3 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-all shadow-md hover:shadow-lg';
-
-    if (actionHref) {
-      return (
-        <Link to={actionHref} className={buttonClasses}>
-          {actionLabel}
-        </Link>
-      );
-    }
-
-    return (
-      <button onClick={onAction} className={buttonClasses}>
-        {actionLabel}
-      </button>
-    );
-  };
-
-  const renderSecondaryAction = () => {
-    if (!secondaryActionLabel) return null;
-
-    const buttonClasses = 'px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-gray-900 hover:bg-gray-50 transition-all';
-
-    if (secondaryActionHref) {
-      return (
-        <Link to={secondaryActionHref} className={buttonClasses}>
-          {secondaryActionLabel}
-        </Link>
-      );
-    }
-
-    return (
-      <button onClick={onSecondaryAction} className={buttonClasses}>
-        {secondaryActionLabel}
-      </button>
-    );
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+    <div className={`text-center py-16 px-6 ${className}`}>
       {/* Icon */}
-      <div className={`mb-6 ${
-        variant === 'gradient' 
-          ? 'w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/10 rounded-2xl flex items-center justify-center'
-          : 'w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center'
-      }`}>
-        <Icon className={`${
-          variant === 'gradient' ? 'w-10 h-10 text-primary-600' : 'w-8 h-8 text-gray-400'
-        }`} />
+      <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <Icon className="w-10 h-10 text-indigo-600" />
       </div>
 
       {/* Title */}
-      <h3 className={`mb-2 ${
-        variant === 'gradient'
-          ? 'text-2xl font-bold text-gray-900'
-          : 'text-xl font-semibold text-gray-900'
-      }`}>
+      <h3 className="text-2xl font-bold text-gray-900 mb-3">
         {title}
       </h3>
 
       {/* Description */}
-      <p className={`mb-8 max-w-md ${
-        variant === 'gradient'
-          ? 'text-lg text-gray-600'
-          : 'text-base text-gray-500'
-      }`}>
+      <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
         {description}
       </p>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-        {renderPrimaryAction()}
-        {renderSecondaryAction()}
-      </div>
+      {actions.length > 0 && (
+        <div className="flex gap-3 justify-center flex-wrap">
+          {actions.map((action, idx) => (
+            <Button
+              key={idx}
+              onClick={action.onClick}
+              variant={action.variant || (idx === 0 ? 'primary' : 'secondary')}
+              size="lg"
+            >
+              {action.icon && <action.icon className="w-4 h-4 mr-2" />}
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Tip */}
+      {tip && (
+        <div className="mt-6 inline-flex items-start gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-left">
+          <span className="text-amber-600 text-sm">💡</span>
+          <p className="text-sm text-amber-800 font-medium">
+            <strong>Tip:</strong> {tip}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

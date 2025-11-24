@@ -4,8 +4,13 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import { OnboardingChecklist } from '../onboarding/OnboardingChecklist';
+import { KeyboardShortcuts } from '../common/KeyboardShortcuts';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 
 const AppLayoutKoyfin: React.FC = () => {
+  const { showHelp, setShowHelp } = useKeyboardShortcuts();
+
   return (
     <div className="flex h-screen bg-gray-950 overflow-hidden">
       {/* Sidebar */}
@@ -20,6 +25,12 @@ const AppLayoutKoyfin: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Onboarding Checklist (shows for new users) */}
+      <OnboardingChecklist />
+
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcuts isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </div>
   );
 };
