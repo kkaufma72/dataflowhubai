@@ -31,6 +31,7 @@ import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
 import { ModelTrainingProgress } from '../components/ml/ModelTrainingProgress';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { experimentTracker } from '../lib/experimentTracking';
 import toast from 'react-hot-toast';
 
 type CrossValidationResult = {
@@ -340,6 +341,20 @@ const ModelTraining: React.FC = () => {
 
       toast.loading('Starting model training...', { id: 'training' });
 
+      // Start experiment tracking
+      const experimentId = await experimentTracker.startExperiment({
+        modelName: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model`,
+        datasetId: config.datasetId,
+        userId: user?.id || '',
+        parameters: {
+          algorithms: config.algorithms,
+          modelType: config.modelType,
+          targetColumn: config.targetColumn,
+          features: config.features
+        },
+        tags: [config.modelType, ...config.algorithms]
+      });
+
       const newModel: MLModel = {
         id: crypto.randomUUID(),
         name: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model (${
@@ -452,6 +467,16 @@ const ModelTraining: React.FC = () => {
               setTrainingStatus('complete');
               setIsTraining(false);
               setCurrentTraining(null);
+              
+              // Complete experiment tracking
+              await experimentTracker.completeExperiment(experimentId, {
+                accuracy: completedModel.metrics?.accuracy || 0,
+                precision: completedModel.metrics?.precision || 0,
+                recall: completedModel.metrics?.recall || 0,
+                f1_score: completedModel.metrics?.f1Score || 0,
+                auc: completedModel.metrics?.auc || 0
+              });
+              
               toast.success('Model training completed successfully!', { id: 'training' });
               
               // Log final metrics to InfluxDB

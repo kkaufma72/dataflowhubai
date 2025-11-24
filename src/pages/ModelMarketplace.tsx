@@ -345,7 +345,11 @@ const MarketplaceModelCard: React.FC<{
           </Button>
           {model.demoUrl && (
             <button
-              onClick={() => window.open(model.demoUrl, '_blank')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(model.demoUrl, '_blank', 'noopener,noreferrer');
+              }}
               className="p-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               title="View demo"
             >
