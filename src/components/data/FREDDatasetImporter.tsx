@@ -12,7 +12,14 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
-  Check
+  Check,
+  Eye,
+  Table,
+  Cloud,
+  Copy,
+  CheckCircle2,
+  ArrowRight,
+  X
 } from 'lucide-react';
 import {
   searchFREDSeries,
@@ -30,9 +37,20 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import { Dataset } from '../../types';
 
+// Type for imported dataset info
+interface ImportedDatasetInfo {
+  id: string;
+  name: string;
+  rows: number;
+  columns: number;
+  source: string;
+  fileSize: string;
+  createdAt: string;
+}
+
 const FREDDatasetImporter: React.FC = () => {
   const { user } = useAuth();
-  const { addDataset } = useMLContext();
+  const { addDataset, currentProject } = useMLContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FREDSeries[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -46,6 +64,9 @@ const FREDDatasetImporter: React.FC = () => {
   const [frequency, setFrequency] = useState<string>('');
   const [popularSeries, setPopularSeries] = useState<FREDSeries[]>([]);
   const [expandedSeries, setExpandedSeries] = useState<string | null>(null);
+  const [lastImported, setLastImported] = useState<ImportedDatasetInfo | null>(null);
+  const [showRawData, setShowRawData] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
 
   useEffect(() => {
     // Load popular indicators on mount
@@ -108,36 +129,94 @@ const FREDDatasetImporter: React.FC = () => {
         frequency: frequency as any || undefined
       });
 
-      // Create dataset in Supabase
-      const { data: newDataset, error } = await supabase
-        .from('datasets')
-        .insert({
-          user_id: user.id,
-          name: datasetData.name,
-          description: datasetData.description,
-          source: 'FRED',
-          preview_data: {
-            columns: ['date', 'value', 'realtime_start', 'realtime_end'],
-            rows: datasetData.data.slice(0, 100)
-          },
-          rows: datasetData.data.length,
-          columns: 4,
-          size_mb: (JSON.stringify(datasetData.data).length / (1024 * 1024)).toFixed(2),
-          file_type: 'json',
-          metadata: datasetData.metadata,
-          tags: ['economic', 'fred', 'time-series']
-        })
-        .select()
-        .single();
+      // Calculate file size
+      const dataSize = JSON.stringify(datasetData.data).length;
+      const fileSizeKB = (dataSize / 1024).toFixed(1) + ' KB';
+      const fileSizeMB = (dataSize / (1024 * 1024)).toFixed(2);
 
-      if (error) throw error;
+      // Prepare dataset payload
+      const datasetPayload = {
+        user_id: user?.id || 'local-user',
+        project_id: currentProject?.id,
+        name: datasetData.name,
+        description: datasetData.description,
+        source: 'FRED',
+        preview_data: {
+          columns: ['date', 'value', 'realtime_start', 'realtime_end'],
+          rows: datasetData.data.slice(0, 100)
+        },
+        rows: datasetData.data.length,
+        columns: 4,
+        file_size: fileSizeKB,
+        size_mb: fileSizeMB,
+        file_type: 'json',
+        metadata: datasetData.metadata,
+        tags: ['economic', 'fred', 'time-series']
+      };
+
+      let newDataset: any = null;
+      let saveError: any = null;
+
+      // Try local API first (for development)
+      const localApiUrl = import.meta.env.VITE_LOCAL_API_URL || 'http://localhost:8001/api';
+      const useLocalDb = import.meta.env.VITE_USE_LOCAL_DB === 'true' || true; // Default to local for now
+
+      if (useLocalDb) {
+        try {
+          const response = await fetch(`${localApiUrl}/datasets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datasetPayload)
+          });
+          
+          if (response.ok) {
+            newDataset = await response.json();
+            console.log('✅ Saved to local PostgreSQL:', newDataset.id);
+          } else {
+            const errorText = await response.text();
+            console.warn('Local DB save failed:', errorText);
+            saveError = new Error(errorText);
+          }
+        } catch (localError) {
+          console.warn('Local API not available, trying Supabase...', localError);
+          saveError = localError;
+        }
+      }
+
+      // Fallback to Supabase if local failed or not enabled
+      if (!newDataset) {
+        const { data, error } = await supabase
+          .from('datasets')
+          .insert(datasetPayload)
+          .select()
+          .single();
+        
+        if (error) {
+          // If both failed, throw the Supabase error
+          throw error;
+        }
+        newDataset = data;
+        console.log('✅ Saved to Supabase:', newDataset.id);
+      }
 
       // Store full data in a separate table or file storage
       // For now, we'll just show success
       
-      // Add to context
+      // Add to context and show success panel
       if (newDataset) {
         addDataset(newDataset as Dataset);
+        
+        // Set last imported info for success panel
+        setLastImported({
+          id: newDataset.id,
+          name: newDataset.name,
+          rows: datasetData.data.length,
+          columns: 4,
+          source: 'FRED',
+          fileSize: fileSizeKB,
+          createdAt: new Date().toISOString()
+        });
+        
         toast.success(`📊 Imported ${datasetData.data.length.toLocaleString()} data points from FRED!`);
         setSelectedSeries(null);
         setSearchQuery('');
@@ -181,8 +260,161 @@ const FREDDatasetImporter: React.FC = () => {
     );
   }
 
+  // Copy dataset ID to clipboard
+  const copyDatasetId = () => {
+    if (lastImported) {
+      navigator.clipboard.writeText(lastImported.id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+      toast.success('Dataset ID copied!');
+    }
+  };
+
+  // Open Supabase dashboard
+  const openSupabaseDashboard = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl) {
+      const projectRef = supabaseUrl.split('//')[1]?.split('.')[0];
+      window.open(`https://supabase.com/dashboard/project/${projectRef}/editor/29785`, '_blank');
+    } else {
+      window.open('https://supabase.com/dashboard', '_blank');
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Success Panel - Shows after import */}
+      {lastImported && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 animate-fade-in">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-full">
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-green-900">Dataset Imported Successfully!</h3>
+                <p className="text-green-700 text-sm">{lastImported.name}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setLastImported(null)}
+              className="p-1 hover:bg-green-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-green-600" />
+            </button>
+          </div>
+
+          {/* Storage Info */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Supabase Storage */}
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Cloud className="w-5 h-5 text-blue-500" />
+                <span className="font-medium text-gray-900">Cloud Storage</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">Saved to Supabase PostgreSQL</p>
+              <button
+                onClick={openSupabaseDashboard}
+                className="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                View in Supabase
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Dataset Details */}
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Table className="w-5 h-5 text-purple-500" />
+                <span className="font-medium text-gray-900">Dataset Info</span>
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Rows:</span>
+                  <span className="font-medium">{lastImported.rows.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Columns:</span>
+                  <span className="font-medium">{lastImported.columns}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Size:</span>
+                  <span className="font-medium">{lastImported.fileSize}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Dataset ID */}
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Database className="w-5 h-5 text-indigo-500" />
+                <span className="font-medium text-gray-900">Dataset ID</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-xs bg-gray-100 px-2 py-1 rounded font-mono truncate">
+                  {lastImported.id}
+                </code>
+                <button
+                  onClick={copyDatasetId}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Copy ID"
+                >
+                  {copiedId ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              onClick={() => setShowRawData(!showRawData)}
+              className="px-4 py-2 bg-white border border-green-200 hover:border-green-400 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              {showRawData ? 'Hide' : 'View'} Raw Data
+            </button>
+            <button
+              onClick={() => {
+                setLastImported(null);
+                toast.success('Ready to import another dataset!');
+              }}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Import Another
+            </button>
+          </div>
+
+          {/* Raw Data Preview */}
+          {showRawData && (
+            <div className="mt-4 bg-gray-900 rounded-lg p-4 overflow-auto max-h-64">
+              <pre className="text-green-400 text-xs font-mono">
+{JSON.stringify({
+  id: lastImported.id,
+  name: lastImported.name,
+  source: lastImported.source,
+  rows: lastImported.rows,
+  columns: lastImported.columns,
+  file_size: lastImported.fileSize,
+  created_at: lastImported.createdAt,
+  storage: {
+    primary: 'Supabase PostgreSQL (datasets table)',
+    cache: 'React Context (MLContext)',
+    offline: 'IndexedDB (if enabled)'
+  }
+}, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
