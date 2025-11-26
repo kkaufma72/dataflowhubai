@@ -40,6 +40,7 @@ import {
   DatasetStory,
   ColumnDefinition
 } from '../../lib/datasetKnowledge';
+import { indexDatasetKnowledge } from '../../lib/embeddingService';
 import toast from 'react-hot-toast';
 
 interface DatasetKnowledgePanelProps {
@@ -139,7 +140,20 @@ const DatasetKnowledgePanel: React.FC<DatasetKnowledgePanelProps> = ({ dataset, 
         domain,
         tags
       });
-      toast.success('Knowledge saved!');
+      
+      // Re-index for semantic search
+      if (knowledge) {
+        toast.loading('Indexing for semantic search...', { id: 'indexing' });
+        await indexDatasetKnowledge(dataset.id, {
+          businessContext,
+          stories: knowledge.stories,
+          dataDictionary: knowledge.dataDictionary,
+          analysisHistory: knowledge.analysisHistory
+        });
+        toast.dismiss('indexing');
+      }
+      
+      toast.success('Knowledge saved & indexed!');
     } catch (error) {
       toast.error('Failed to save');
     }
