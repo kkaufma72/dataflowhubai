@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import DataUploader from '../components/data/DataUploader';
@@ -25,6 +25,12 @@ const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
 const DatasetHealthCard = lazy(() => import('../components/data/DatasetHealthCard'));
 const DataTransformationStudio = lazy(() => import('../components/data/DataTransformationStudio'));
 const FREDDatasetImporter = lazy(() => import('../components/data/FREDDatasetImporter'));
+const FREDSmartSuggestions = lazy(() => import('../components/data/FREDSmartSuggestions'));
+const FREDQuickInsights = lazy(() => import('../components/data/FREDQuickInsights'));
+
+// Import UX enhancement components
+import KeyboardShortcuts from '../components/common/KeyboardShortcuts';
+import FeatureTooltip from '../components/common/FeatureTooltip';
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -47,6 +53,7 @@ const DataManagement: React.FC = () => {
   const { user } = useAuth();
   const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const navigate = useNavigate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
@@ -473,6 +480,14 @@ const DataManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Global Keyboard Shortcuts */}
+      <KeyboardShortcuts
+        onSearch={() => searchInputRef.current?.focus()}
+        onUpload={() => setShowUploader(true)}
+        onFRED={() => setShowFREDImporter(true)}
+        onChat={() => chatDataset ? setShowChat(true) : toast('Select a dataset first to chat with AI')}
+      />
+
       {/* Guided sample tour */}
       {showSampleTour && (
         <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-purple-50 p-6 shadow-sm">
@@ -586,8 +601,9 @@ const DataManagement: React.FC = () => {
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search datasets by name, tags, or columns..."
+                  placeholder="Search datasets by name, tags, or columns... (⌘/)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
@@ -622,13 +638,23 @@ const DataManagement: React.FC = () => {
                   <Sparkles className="w-4 h-4" />
                   <span>Generate Sample</span>
                 </button>
-                <button
-                  onClick={() => setShowFREDImporter(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md"
+                <FeatureTooltip
+                  featureKey="fred-integration"
+                  title="✨ New: FRED Economic Data"
+                  description="Import 800,000+ economic datasets from the Federal Reserve! Perfect for market analysis and forecasting."
+                  actionLabel="Try it now"
+                  onAction={() => setShowFREDImporter(true)}
+                  position="bottom"
                 >
-                  <TrendingUp className="w-4 h-4" />
-                  <span>FRED Economic Data</span>
-                </button>
+                  <button
+                    onClick={() => setShowFREDImporter(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    <span>FRED Economic Data</span>
+                    <kbd className="ml-1 px-1 py-0.5 text-xs bg-white/20 rounded">⌘E</kbd>
+                  </button>
+                </FeatureTooltip>
                 <span className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm font-bold text-gray-900">
                   {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''}
                 </span>
@@ -861,6 +887,26 @@ const DataManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Smart FRED Suggestions - Show when user has datasets */}
+      {datasets.length > 0 && (
+        <Suspense fallback={<LoadingFallback />}>
+          <FREDSmartSuggestions
+            userDatasets={datasets}
+            onSuggestClick={(seriesId, name) => {
+              toast.success(`Opening FRED to import ${name}...`);
+              setShowFREDImporter(true);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Quick Insights for selected FRED dataset */}
+      {selectedDataset && (selectedDataset.source === 'FRED' || selectedDataset.metadata?.source === 'FRED') && (
+        <Suspense fallback={<LoadingFallback />}>
+          <FREDQuickInsights dataset={selectedDataset} />
+        </Suspense>
       )}
 
       {/* Datasets Grid with Pagination OR Organize View */}
