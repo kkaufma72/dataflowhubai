@@ -52,7 +52,124 @@ interface EnhancedAIChatProps {
   isModal?: boolean;
 }
 
+// Check if dataset is from FRED
+const isFREDDataset = (dataset: Dataset): boolean => {
+  return dataset.source === 'FRED' || 
+         dataset.metadata?.source === 'FRED' ||
+         dataset.tags?.includes('fred') ||
+         dataset.tags?.includes('economic');
+};
+
+// Get FRED-specific context for the AI
+const getFREDContext = (dataset: Dataset): string => {
+  const metadata = dataset.metadata || {};
+  const seriesInfo = metadata.series || {};
+  
+  let context = `\n\n## FRED Economic Dataset Information\n`;
+  context += `- **Series ID**: ${seriesInfo.id || metadata.series_id || 'Unknown'}\n`;
+  context += `- **Title**: ${seriesInfo.title || dataset.name}\n`;
+  
+  if (seriesInfo.units || metadata.units) {
+    context += `- **Units**: ${seriesInfo.units || metadata.units}\n`;
+  }
+  if (seriesInfo.frequency || metadata.frequency) {
+    context += `- **Frequency**: ${seriesInfo.frequency || metadata.frequency}\n`;
+  }
+  if (seriesInfo.seasonal_adjustment || metadata.seasonal_adjustment) {
+    context += `- **Seasonal Adjustment**: ${seriesInfo.seasonal_adjustment || metadata.seasonal_adjustment}\n`;
+  }
+  if (seriesInfo.notes || metadata.notes) {
+    context += `- **Notes**: ${(seriesInfo.notes || metadata.notes).substring(0, 500)}...\n`;
+  }
+  if (metadata.observation_start) {
+    context += `- **Date Range**: ${metadata.observation_start} to ${metadata.observation_end || 'present'}\n`;
+  }
+  
+  context += `\n### Economic Data Analysis Guidelines:\n`;
+  context += `- This is official Federal Reserve economic data from FRED (Federal Reserve Economic Data)\n`;
+  context += `- When analyzing trends, consider economic cycles, recessions (shaded in FRED charts), and policy changes\n`;
+  context += `- Key economic indicators to reference: GDP, inflation (CPI), unemployment rate, interest rates (Fed Funds)\n`;
+  context += `- Consider seasonal patterns and year-over-year comparisons for accurate analysis\n`;
+  context += `- Be specific about time periods when discussing changes or trends\n`;
+  
+  return context;
+};
+
+// Generate FRED-specific prompt suggestions
+const generateFREDPromptSuggestions = (dataset: Dataset): string[] => {
+  const metadata = dataset.metadata || {};
+  const seriesId = metadata.series?.id || metadata.series_id || '';
+  const seriesTitle = metadata.series?.title || dataset.name;
+  
+  const suggestions: string[] = [];
+  
+  // Common economic indicators with specific questions
+  const economicQuestions: Record<string, string[]> = {
+    'GDP': [
+      'What is the current GDP growth rate and how does it compare to historical averages?',
+      'Identify recession periods and their impact on GDP',
+      'What factors are driving current GDP trends?'
+    ],
+    'CPI': [
+      'What is the current inflation rate and is it above the Fed target of 2%?',
+      'Which periods showed the highest inflation and what caused them?',
+      'How has inflation trended over the past year?'
+    ],
+    'UNRATE': [
+      'What is the current unemployment rate compared to natural rate of unemployment?',
+      'How does this compare to pre-pandemic levels?',
+      'What trends do you see in the labor market?'
+    ],
+    'FEDFUNDS': [
+      'What is the current federal funds rate and recent Fed policy direction?',
+      'How have interest rate changes correlated with economic conditions?',
+      'What does the rate trajectory suggest about Fed policy?'
+    ],
+    'DGS10': [
+      'What is the current 10-year Treasury yield indicating about market expectations?',
+      'Is there an inverted yield curve (compare to 2-year)?',
+      'What does this suggest about future economic conditions?'
+    ],
+    'HOUST': [
+      'What are current housing starts indicating about the real estate market?',
+      'How does this compare to pre-2008 levels?',
+      'What seasonal patterns exist in housing starts?'
+    ],
+    'RETAIL': [
+      'What are the trends in retail sales and consumer spending?',
+      'How has e-commerce affected retail patterns?',
+      'What seasonal adjustments should be considered?'
+    ]
+  };
+  
+  // Check if series ID matches known indicators
+  for (const [key, questions] of Object.entries(economicQuestions)) {
+    if (seriesId.toUpperCase().includes(key) || seriesTitle.toUpperCase().includes(key)) {
+      suggestions.push(...questions.slice(0, 2));
+      break;
+    }
+  }
+  
+  // Generic FRED questions if no specific match
+  if (suggestions.length === 0) {
+    suggestions.push(`What are the key trends in ${seriesTitle}?`);
+    suggestions.push('How has this indicator performed during recessions?');
+    suggestions.push('What seasonal patterns exist in this data?');
+  }
+  
+  // Always add these
+  suggestions.push('Calculate the year-over-year percent change');
+  suggestions.push('What economic factors influence this indicator?');
+  
+  return suggestions.slice(0, 4);
+};
+
 const generatePromptSuggestions = (dataset: Dataset): string[] => {
+  // Check if this is a FRED dataset
+  if (isFREDDataset(dataset)) {
+    return generateFREDPromptSuggestions(dataset);
+  }
+  
   const columns = dataset.preview_data?.columns?.map(col => col.toLowerCase()) ?? [];
   const hasColumn = (keywords: string[]) => columns.some(col => keywords.some(keyword => col.includes(keyword)));
 

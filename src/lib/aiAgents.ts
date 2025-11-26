@@ -105,6 +105,49 @@ export interface AgentResponse {
 }
 
 /**
+ * Check if dataset is from FRED
+ */
+const isFREDDataset = (dataset: Dataset): boolean => {
+  return dataset.source === 'FRED' || 
+         dataset.metadata?.source === 'FRED' ||
+         dataset.tags?.includes('fred') ||
+         dataset.tags?.includes('economic');
+};
+
+/**
+ * Build FRED-specific context for AI
+ */
+const buildFREDContext = (dataset: Dataset): string => {
+  const metadata = dataset.metadata || {};
+  const series = metadata.series || {};
+  
+  let context = `\n\n## FRED Economic Dataset Context\n`;
+  context += `This is official Federal Reserve Economic Data (FRED) from the St. Louis Federal Reserve.\n\n`;
+  context += `**Series**: ${series.id || metadata.series_id || dataset.name}\n`;
+  context += `**Title**: ${series.title || dataset.name}\n`;
+  
+  if (series.units || metadata.units) context += `**Units**: ${series.units || metadata.units}\n`;
+  if (series.frequency || metadata.frequency) context += `**Frequency**: ${series.frequency || metadata.frequency}\n`;
+  if (series.seasonal_adjustment) context += `**Seasonal Adjustment**: ${series.seasonal_adjustment}\n`;
+  if (metadata.observation_start) context += `**Date Range**: ${metadata.observation_start} to ${metadata.observation_end || 'present'}\n`;
+  
+  context += `\n**Analysis Guidelines for Economic Data**:\n`;
+  context += `- Reference historical economic events (recessions, policy changes) when relevant\n`;
+  context += `- Consider seasonal patterns and year-over-year comparisons\n`;
+  context += `- Note the data frequency and units when discussing values\n`;
+  context += `- Relate to other key indicators (GDP, CPI, unemployment) when appropriate\n`;
+  context += `- Be specific about time periods when discussing trends\n`;
+  context += `- Explain economic terminology in accessible language\n`;
+  
+  // Add notes if available (truncated)
+  if (series.notes) {
+    context += `\n**Series Notes**: ${series.notes.substring(0, 800)}...\n`;
+  }
+  
+  return context;
+};
+
+/**
  * Main orchestrator that coordinates all agents
  * 
  * SECURITY: All AI calls now go through secure Supabase Edge Function
@@ -121,6 +164,14 @@ export const runAgentOrchestrator = async (
 
   // Route to appropriate agents
   const responses: any[] = [];
+
+  // Build enhanced question with FRED context if applicable
+  let enhancedQuestion = question;
+  if (isFREDDataset(dataset)) {
+    const fredContext = buildFREDContext(dataset);
+    enhancedQuestion = `${question}\n${fredContext}`;
+    intent.isFREDData = true;
+  }
 
   // Call secure backend Edge Function instead of client-side OpenAI API
   try {
@@ -140,7 +191,7 @@ export const runAgentOrchestrator = async (
         'apikey': supabaseAnonKey
       },
       body: JSON.stringify({
-        question,
+        question: enhancedQuestion,
         dataset,
         userProfile,
         conversationHistory: conversationHistory.map(m => ({ role: m.role, content: m.content })),
