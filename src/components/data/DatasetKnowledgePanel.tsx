@@ -28,7 +28,9 @@ import {
   Trash2,
   Edit2,
   Check,
-  X
+  X,
+  Crown,
+  Lock
 } from 'lucide-react';
 import { Dataset } from '../../types';
 import { 
@@ -41,6 +43,8 @@ import {
   ColumnDefinition
 } from '../../lib/datasetKnowledge';
 import { indexDatasetKnowledge } from '../../lib/embeddingService';
+import { useFeatureAccess } from '../../hooks/useFeatureAccess';
+import { UpgradePrompt } from '../common/UpgradePrompt';
 import toast from 'react-hot-toast';
 
 interface DatasetKnowledgePanelProps {
@@ -63,9 +67,11 @@ const DOMAINS = [
 ];
 
 const DatasetKnowledgePanel: React.FC<DatasetKnowledgePanelProps> = ({ dataset, onClose }) => {
+  const { tier, canUseKnowledgeBase, shouldShowUpgrade } = useFeatureAccess();
   const [knowledge, setKnowledge] = useState<DatasetKnowledge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'dictionary' | 'stories' | 'history'>('overview');
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   
   // Form states
   const [businessContext, setBusinessContext] = useState('');
@@ -86,6 +92,9 @@ const DatasetKnowledgePanel: React.FC<DatasetKnowledgePanelProps> = ({ dataset, 
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [columnDescription, setColumnDescription] = useState('');
   const [columnBusinessMeaning, setColumnBusinessMeaning] = useState('');
+
+  // Check if knowledge base is a pro feature for this user
+  const isPro = tier === 'pro' || tier === 'team' || tier === 'enterprise' || tier === 'starter';
   
   const [expandedSections, setExpandedSections] = useState({
     context: true,
@@ -248,6 +257,69 @@ const DatasetKnowledgePanel: React.FC<DatasetKnowledgePanelProps> = ({ dataset, 
     return colors[category] || colors.note;
   };
 
+  // Show upgrade prompt for free users
+  if (!isPro && shouldShowUpgrade('knowledge_base')) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-white" />
+              <div>
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  Dataset Knowledge
+                  <Lock className="w-4 h-4 text-white/70" />
+                </h2>
+                <p className="text-indigo-200 text-sm">{dataset.name}</p>
+              </div>
+            </div>
+            {onClose && (
+              <button onClick={onClose} className="text-white/80 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Upgrade Prompt */}
+        <div className="p-6">
+          <UpgradePrompt
+            feature="knowledge_base"
+            tier="starter"
+            variant="inline"
+          />
+
+          {/* Preview of what they get */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <Crown className="w-4 h-4 text-amber-500" />
+              What you'll unlock:
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                Add business context so AI understands your data
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                Define column meanings for accurate analysis
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                Keep notes and stories about your datasets
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                Get smarter, context-aware AI responses
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden max-h-[80vh] flex flex-col">
       {/* Header */}
@@ -256,7 +328,15 @@ const DatasetKnowledgePanel: React.FC<DatasetKnowledgePanelProps> = ({ dataset, 
           <div className="flex items-center gap-3">
             <BookOpen className="w-6 h-6 text-white" />
             <div>
-              <h2 className="text-lg font-semibold text-white">Dataset Knowledge</h2>
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                Dataset Knowledge
+                {isPro && (
+                  <span className="px-2 py-0.5 text-xs font-bold bg-amber-400 text-amber-900 rounded-full flex items-center gap-1">
+                    <Crown className="w-3 h-3" />
+                    PRO
+                  </span>
+                )}
+              </h2>
               <p className="text-indigo-200 text-sm">{dataset.name}</p>
             </div>
           </div>

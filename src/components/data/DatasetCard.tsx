@@ -13,10 +13,12 @@ import {
   Trash2,
   Archive,
   MoreVertical,
-  FolderOpen
+  FolderOpen,
+  Brain
 } from 'lucide-react';
 import Button from '../common/Button';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../../utils/datasetHealthScore';
+import KnowledgeInsightsBadge from '../common/KnowledgeInsightsBadge';
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -128,8 +130,11 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
             </p>
           </div>
 
-          {/* Health Badge and Menu in a flex row */}
+          {/* Health Badge, Knowledge Badge, and Menu in a flex row */}
           <div className="flex-shrink-0 flex items-center gap-2">
+            {/* Knowledge Badge */}
+            <KnowledgeInsightsBadge dataset={dataset} variant="inline" />
+            
             {/* Health Score Badge */}
             <div 
               className="px-2 py-0.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 border-2"

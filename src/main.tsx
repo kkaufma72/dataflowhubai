@@ -16,6 +16,7 @@ import { NotificationProvider } from './components/common/NotificationSystem.tsx
 import { TourProvider } from './components/common/TourProvider.tsx';
 import { AIChatProvider } from './components/ai/GlobalAIAssistant.tsx';
 import { DemoProvider } from './context/DemoContext.tsx';
+import { KnowledgeProvider } from './context/KnowledgeContext.tsx';
 import SupabaseConfigError from './components/common/SupabaseConfigError.tsx';
 import { isSupabaseConfigured } from './lib/supabase.ts';
 import { logStripeConfig } from './lib/stripeConfigCheck.ts';
@@ -133,9 +134,10 @@ if (!isSupabaseConfigured) {
             <UserProvider>
               <MLProvider>
                 <DemoProvider>
-                  <AIChatProvider>
-                    <NotificationProvider>
-                      <TourProvider>
+                  <KnowledgeProvider>
+                    <AIChatProvider>
+                      <NotificationProvider>
+                        <TourProvider>
                         <Toaster
                           position="top-right"
                           toastOptions={{
@@ -222,8 +224,9 @@ if (!isSupabaseConfigured) {
                           </Routes>
                         </Suspense>
                       </TourProvider>
-                    </NotificationProvider>
-                  </AIChatProvider>
+                      </NotificationProvider>
+                    </AIChatProvider>
+                  </KnowledgeProvider>
                 </DemoProvider>
               </MLProvider>
             </UserProvider>

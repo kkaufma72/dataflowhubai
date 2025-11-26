@@ -9,6 +9,8 @@ import {
   Brain,
   Zap,
   Play,
+  Crown,
+  Lock,
 } from 'lucide-react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -28,6 +30,10 @@ import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
+import KnowledgeRecommendations from '../components/ai/KnowledgeRecommendations';
+import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
+import { useFeatureAccess } from '../hooks/useFeatureAccess';
+import { UpgradePrompt } from '../components/common/UpgradePrompt';
 import toast from 'react-hot-toast';
 
 type CrossValidationResult = {
@@ -51,6 +57,7 @@ type CrossValidationStats = {
 const ModelTraining: React.FC = () => {
   const { datasets, models, addModel, updateModelStatus, deleteDataset, currentProject } = useMLContext();
   const { user } = useAuth();
+  const { canUseSmartRecommendations, tier } = useFeatureAccess();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
   const [isTraining, setIsTraining] = useState(false);
@@ -1010,18 +1017,72 @@ const ModelTraining: React.FC = () => {
         )}
 
         {selectedDataset && (
-          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-white">Train New Model - {selectedDatasetSafe?.name ?? ''}</h3>
+          <div className="grid grid-cols-3 gap-4">
+            {/* Training Form */}
+            <div className="col-span-2 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-white">Train New Model - {selectedDatasetSafe?.name ?? ''}</h3>
+                  </div>
+                  <KnowledgeInsightsBadge dataset={selectedDatasetSafe as Dataset} variant="compact" />
+                </div>
+              </div>
+              <div className="p-4">
+                <ModelTrainingForm 
+                  dataset={selectedDatasetSafe as Dataset} 
+                  onSubmit={handleTrainingSubmit} 
+                />
               </div>
             </div>
-            <div className="p-4">
-              <ModelTrainingForm 
-                dataset={selectedDatasetSafe as Dataset} 
-                onSubmit={handleTrainingSubmit} 
-              />
+
+            {/* Knowledge-Based Recommendations */}
+            <div className="col-span-1 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    Smart Recommendations
+                    {!canUseSmartRecommendations && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-black rounded flex items-center gap-0.5">
+                        <Crown className="w-2.5 h-2.5" />
+                        PRO
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-4">
+                {canUseSmartRecommendations ? (
+                  <KnowledgeRecommendations 
+                    dataset={selectedDatasetSafe as Dataset}
+                    context="training"
+                    maxRecommendations={4}
+                    onApplyRecommendation={(rec) => {
+                      toast.success(`Applied: ${rec.title}`);
+                    }}
+                    className="bg-transparent border-0"
+                  />
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <h4 className="text-white font-medium mb-2">Unlock Smart Recommendations</h4>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Get AI-powered suggestions based on your data's knowledge base.
+                    </p>
+                    <button
+                      onClick={() => navigate('/pricing')}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all flex items-center gap-2 mx-auto"
+                    >
+                      <Crown className="w-4 h-4" />
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

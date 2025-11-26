@@ -1,13 +1,16 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useMLContext } from '../context/MLContext';
-import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Share2 } from 'lucide-react';
+import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Share2, Brain, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
 import QueryBuilderModal from '../components/data/QueryBuilderModal';
+import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
+import { useDatasetKnowledge } from '../hooks/useDatasetKnowledge';
 
 // Lazy load Neo4j graph visualization
 const DatasetGraphVisualization = lazy(() => import('../components/graphs/DatasetGraphVisualization'));
 const WarehouseAnalyticsDashboard = lazy(() => import('../components/analytics/WarehouseAnalyticsDashboard'));
+const DatasetKnowledgePanel = lazy(() => import('../components/data/DatasetKnowledgePanel'));
 
 // Dynamic import for Chart.js
 let ChartComponents: any = null;
@@ -689,6 +692,18 @@ const DatasetInsights: React.FC = () => {
           >
             <PieChart className="w-5 h-5" />
             Detailed Visualizations
+          </button>
+          {/* Knowledge Base Tab */}
+          <button
+            onClick={() => setActiveTab('knowledge')}
+            className={`${
+              activeTab === 'knowledge'
+                ? 'border-blue-500 text-blue-400'
+                : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium saas-caption flex items-center gap-2 transition-colors`}
+          >
+            <Brain className="w-5 h-5" />
+            Knowledge Base
           </button>
           {/* Knowledge Graph - Only show in development (Neo4j Desktop) */}
           {import.meta.env.DEV && (
@@ -1686,6 +1701,76 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Knowledge Base Tab */}
+      {activeTab === 'knowledge' && (
+        <div className="space-y-6">
+          {selectedDataset ? (
+            <Suspense fallback={
+              <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 text-center">
+                <Loader className="w-12 h-12 text-blue-400 animate-spin mx-auto mb-4" />
+                <p className="text-sm text-gray-400">Loading knowledge panel...</p>
+              </div>
+            }>
+              <DatasetKnowledgePanel 
+                datasetId={selectedDataset.id}
+                datasetName={selectedDataset.name}
+              />
+            </Suspense>
+          ) : (
+            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 text-center">
+              <div className="w-14 h-14 bg-purple-500/10 border border-purple-500/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Brain className="w-7 h-7 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Select a Dataset</h3>
+              <p className="text-sm text-gray-400">
+                Choose a dataset from the dropdown to view and manage its knowledge base.
+              </p>
+            </div>
+          )}
+
+          {/* Knowledge Base Guide */}
+          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                <h3 className="text-sm font-semibold text-white">About Knowledge Base</h3>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-blue-400" />
+                    Business Context
+                  </h4>
+                  <p className="text-sm text-gray-400">
+                    Add context about what this data represents, its business purpose, and how it should be interpreted.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                    <Database className="w-4 h-4 text-green-400" />
+                    Data Dictionary
+                  </h4>
+                  <p className="text-sm text-gray-400">
+                    Define column meanings, data types, and business rules for each field in your dataset.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-purple-400" />
+                    AI Learning
+                  </h4>
+                  <p className="text-sm text-gray-400">
+                    The AI assistant uses this knowledge to provide more accurate and contextual responses.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
