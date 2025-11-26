@@ -13,6 +13,9 @@ import { saveConversation, loadConversation } from '../../lib/conversationMemory
 import { getContextualSystemPrompt, getContextualWelcomeMessage } from '../../lib/contextualPrompts';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
+import { StreamingMessage } from '../chat/StreamingMessage';
+import { EnhancedLoadingIndicator } from '../chat/EnhancedLoadingIndicator';
+import '../../styles/chat-animations.css';
 
 // Local implementation to prevent bundling issues - NO external dependencies
 const isMarketingUser = (userProfile: UserProfile): boolean => {
@@ -39,6 +42,8 @@ interface Message {
   charts?: any[];
   insights?: string[];
   actions?: any[];
+  isStreaming?: boolean;
+  streamComplete?: boolean;
 }
 
 interface EnhancedAIChatProps {
@@ -290,7 +295,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     const text = messageText || input.trim();
     if (!text || isLoading) return;
 
-    // Add user message
+    // Add user message with animation
     const userMessage: Message = {
       role: 'user',
       content: text,
@@ -309,17 +314,26 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         messages
       );
 
-      // Add AI message with potential charts/insights/actions
+      // Add AI message with streaming enabled
       const assistantMessage: Message = {
         role: 'assistant',
         content: response.text,
         timestamp: new Date(),
         charts: response.charts,
         insights: response.insights,
-        actions: response.actions
+        actions: response.actions,
+        isStreaming: true,
+        streamComplete: false
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Play subtle notification sound (optional)
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTWH0fPTgjMGHm7A7+OZTA0PV6vn77BdGAg+ldb0y3MlBSp+zPDblzwKFlyx6OylUhILTKXh8bllHAU7j9X0z3opBSl9zPDemEAMFV2y6OynVRQMUKjj8bllHAU7j9X0z3opBSl9zPDemEAMFV2y6OynVRQMUKjj8bllHAU7j9X0z3opBSl9zPDemEAM'); 
+        audio.volume = 0.2;
+        audio.play().catch(() => {}); // Ignore errors if autoplay blocked
+      } catch (e) {}
 
     } catch (error: any) {
       console.error('Error calling AI agents:', error);
@@ -328,7 +342,9 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
       const errorMessage: Message = {
         role: 'assistant',
         content: `I'm having trouble right now. ${error.message || 'Please try again in a moment.'}`,
-        timestamp: new Date()
+        timestamp: new Date(),
+        isStreaming: false,
+        streamComplete: true
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -409,7 +425,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         {messages.map((message, idx) => (
           <div
             key={idx}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-popIn`}
           >
             <div className={`flex items-start space-x-2 max-w-[85%] ${
               message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
@@ -428,85 +444,45 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
               </div>
 
               {/* Message Content */}
-              <div>
-                <div className={`rounded-xl px-4 py-3 shadow-sm ${
-                  message.role === 'user'
-                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white'
-                    : 'bg-white text-gray-900 border border-gray-200'
-                }`}>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                  
-                  {/* Insights */}
-                  {message.insights && message.insights.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs font-semibold text-primary-600 mb-2">💡 Key Insights:</p>
-                      <ul className="space-y-1">
-                        {message.insights.map((insight, i) => (
-                          <li key={i} className="text-xs text-gray-700">• {insight}</li>
-                        ))}
-                      </ul>
+              <div className="flex-1">
+                {message.role === 'user' ? (
+                  // User message - simple display
+                  <>
+                    <div className="rounded-xl px-4 py-3 shadow-sm bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
-                  )}
-
-                  {/* Charts */}
-                  {message.charts && message.charts.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs font-semibold text-primary-600 mb-2">📊 Generated Charts:</p>
-                      {message.charts.map((chart, i) => (
-                        <div key={i} className="mt-2 p-2 bg-gray-50 rounded">
-                          <p className="text-xs text-gray-600">{chart.title || `Chart ${i + 1}`}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  {message.actions && message.actions.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {message.actions.map((action, i) => (
-                        <button
-                          key={i}
-                          onClick={() => toast.success(`Executing: ${action.label}`)}
-                          className="text-xs px-3 py-1.5 bg-primary/10 text-primary-700 rounded-full hover:bg-indigo-200 transition"
-                        >
-                          {action.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                <p className={`text-xs mt-1 px-1 ${
-                  message.role === 'user' ? 'text-gray-400 text-right' : 'text-gray-400'
-                }`}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
+                    <p className="text-xs mt-1 px-1 text-gray-400 text-right">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </>
+                ) : (
+                  // Assistant message - with streaming effect
+                  <>
+                    <StreamingMessage
+                      content={message.content}
+                      insights={message.insights}
+                      charts={message.charts}
+                      actions={message.actions}
+                      speed={60} // Characters per second
+                      onComplete={() => {
+                        // Mark as complete
+                        setMessages(prev => prev.map((m, i) => 
+                          i === idx ? { ...m, streamComplete: true } : m
+                        ));
+                      }}
+                    />
+                    <p className="text-xs mt-1 px-1 text-gray-400">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
         ))}
 
-        {/* Loading indicator with agent status */}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="flex items-start space-x-2">
-              <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-primary via-primary-600 to-blue-600 shadow-sm">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200 max-w-xs">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 text-primary-600 animate-spin" />
-                  <div>
-                    <p className="text-sm text-gray-900 font-medium">AI Team Working...</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Analyzing data, finding insights, creating charts
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Enhanced Loading indicator */}
+        {isLoading && <EnhancedLoadingIndicator />}
 
         <div ref={messagesEndRef} />
       </div>

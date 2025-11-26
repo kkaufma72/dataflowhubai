@@ -11,6 +11,9 @@ import { PricingTable } from '../components/pricing/PricingTable';
 import { FeatureComparisonTable } from '../components/pricing/FeatureComparisonTable';
 import { useAuth } from '../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
+import { TrustBadges } from '../components/common/TrustBadges';
+import { testimonials } from '../data/testimonials';
+import { TestimonialCard } from '../components/social/TestimonialCard';
 
 const LandingPageLinear: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -265,6 +268,11 @@ const LandingPageLinear: React.FC = () => {
             </Link>
           </div>
 
+          {/* Trust Badges */}
+          <div className="mb-8">
+            <TrustBadges variant="compact" className="justify-center" />
+          </div>
+
           {/* Trust Signals */}
           <p className="text-sm text-gray-500 mb-4">
             ✓ No credit card required  •  ✓ Free 14-day trial  •  ✓ Cancel anytime
@@ -516,74 +524,35 @@ const LandingPageLinear: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Trusted by data professionals worldwide
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 mb-6">
               See how teams are transforming their data workflows
             </p>
+            {/* Note about testimonials */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              <span className="font-medium">📝 Want to share your story?</span>
+              <a href="mailto:success@dataflowhub.ai" className="underline font-bold">Contact us</a>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Testimonial 1 */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
-                "DataFlowHub AI reduced our data analysis time from hours to minutes. The natural language queries are game-changing."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">SM</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Sarah Mitchell</p>
-                  <p className="text-gray-500 text-xs">Data Analyst, TechCorp</p>
-                </div>
-              </div>
-            </div>
+            {testimonials.slice(0, 3).map((testimonial) => (
+              <TestimonialCard 
+                key={testimonial.id} 
+                testimonial={testimonial}
+                variant="default"
+              />
+            ))}
+          </div>
 
-            {/* Testimonial 2 */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
-                "Finally, a tool that lets me focus on insights instead of wrestling with complex queries. Absolutely love it!"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">MJ</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Mike Johnson</p>
-                  <p className="text-gray-500 text-xs">Marketing Director, StartupXYZ</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400 text-sm">⭐</span>
-                ))}
-              </div>
-              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
-                "The AI-powered data quality scoring saved us weeks of manual data cleaning. ROI was immediate."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">AL</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Alex Lee</p>
-                  <p className="text-gray-500 text-xs">Chief Data Officer, FinanceInc</p>
-                </div>
-              </div>
-            </div>
+          {/* Call to Action */}
+          <div className="text-center mt-12">
+            <Link
+              to="/case-studies"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-all"
+            >
+              Read Customer Success Stories
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
@@ -817,6 +786,8 @@ const LandingPageLinear: React.FC = () => {
             <div className="flex gap-8 text-sm text-gray-600">
               <Link to="/pricing" className="hover:text-gray-900 transition-colors">Pricing</Link>
               <Link to="/documentation" className="hover:text-gray-900 transition-colors">Docs</Link>
+              <Link to="/security" className="hover:text-gray-900 transition-colors">Security</Link>
+              <Link to="/privacy" className="hover:text-gray-900 transition-colors">Privacy</Link>
               <a href="mailto:hello@dataflowhub.ai" className="hover:text-gray-900 transition-colors">Contact</a>
             </div>
           </div>

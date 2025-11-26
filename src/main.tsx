@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
+import './styles/chat-animations.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AlertCircle } from 'lucide-react';
 import { MLProvider } from './context/MLContext.tsx';
@@ -33,6 +34,9 @@ const ModelMonitoring = lazy(() => import('./pages/ModelMonitoring.tsx'));
 const SignIn = lazy(() => import('./pages/SignIn.tsx'));
 const LandingPage = lazy(() => import('./pages/LandingPageLinear.tsx')); // Linear-style minimalist landing
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
+const SecurityPage = lazy(() => import('./pages/SecurityPage.tsx')); // Security & compliance
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage.tsx')); // Privacy policy
+const CaseStudiesPage = lazy(() => import('./pages/CaseStudiesPage.tsx')); // Customer success stories
 const UserProfile = lazy(() => import('./pages/UserProfile.tsx'));
 const AccountSettings = lazy(() => import('./pages/AccountSettings.tsx'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset.tsx'));
@@ -177,6 +181,9 @@ if (!isSupabaseConfigured) {
                             <Route path="/features" element={<div>Features Page</div>} />
                             <Route path="/pricing" element={<PricingPage />} />
                             <Route path="/documentation" element={<Documentation />} />
+                            <Route path="/security" element={<SecurityPage />} />
+                            <Route path="/privacy" element={<PrivacyPage />} />
+                            <Route path="/case-studies" element={<CaseStudiesPage />} />
                             <Route path="/api-reference" element={<APIReference />} />
                             <Route path="/signin" element={<SignIn />} />
                             <Route path="/password-reset" element={<PasswordReset />} />
