@@ -222,12 +222,12 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
                       />
                     ) : (
                       <div className="rounded-lg px-4 py-3 bg-white text-gray-900 shadow-sm border border-gray-200">
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       </div>
                     )}
                     <p className="text-xs mt-1 text-gray-400 px-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
                   </>
                 )}
               </div>
