@@ -16,6 +16,9 @@
     "test:a11y": "vitest run --config vitest.a11y.config.ts",
     "stripe:setup": "node scripts/setup-stripe-products.mjs"
   },
+  "overrides": {
+    "parse5": "^7.1.2"
+  },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.53",
     "@ai-sdk/react": "^2.0.80",
@@ -29,7 +32,7 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.76.1",
     "@tensorflow/tfjs": "^4.15.0",
-    "@tensorflow/tfjs-vis": "^1.5.1",
+    "@tensorflow/tfjs-vis": "^1.1.0",
     "@tremor/react": "^3.14.1",
     "ai": "^5.0.80",
     "chart.js": "^4.4.1",
@@ -37,8 +40,8 @@
     "file-saver": "^2.0.5",
     "idb": "^8.0.0",
     "jszip": "^3.10.1",
-    "log4js": "^6.9.1",
     "langchain": "^1.0.1",
+    "log4js": "^6.9.1",
     "lucide-react": "^0.344.0",
     "mathjs": "^15.0.0",
     "neo4j-driver": "^6.0.0",
@@ -89,10 +92,7 @@
     "tailwindcss": "^3.4.18",
     "typescript": "^5.2.2",
     "typescript-eslint": "^7.18.0",
-    "vite": "^5.1.4",
-    "vitest": "^1.6.1"
-  },
-  "overrides": {
-    "parse5": "^7.1.2"
+    "vite": "^7.2.4",
+    "vitest": "^4.0.14"
   }
 }

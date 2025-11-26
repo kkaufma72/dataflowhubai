@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, CheckCircle, Menu, X } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, BarChart3, MessageSquare, CheckCircle, Menu, X, Database } from 'lucide-react';
 import InteractiveLiveDemo from '../components/landing/InteractiveLiveDemo';
 import LiveTransformationDemo from '../components/data/LiveTransformationDemo';
 import { useStripeCheckout } from '../hooks/useStripeCheckout';
@@ -14,12 +14,16 @@ import toast from 'react-hot-toast';
 import { TrustBadges } from '../components/common/TrustBadges';
 import { testimonials } from '../data/testimonials';
 import { TestimonialCard } from '../components/social/TestimonialCard';
+import FREDLandingDemo from '../components/landing/FREDLandingDemo';
+import { ExitIntentPopup, useExitIntent } from '../components/landing/ExitIntentPopup';
+import SocialProofNotification from '../components/landing/SocialProofNotification';
 
 const LandingPageLinear: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { startCheckout } = useStripeCheckout();
   const { user } = useAuth();
+  const { showPopup: showExitPopup, setShowPopup: setShowExitPopup } = useExitIntent();
 
   const handlePlanSelect = useCallback(async (tier: string, billing: 'monthly' | 'annual') => {
     const normalizedTier = tier.toLowerCase();
@@ -287,6 +291,27 @@ const LandingPageLinear: React.FC = () => {
         {/* Interactive Demo */}
         <div className="relative max-w-6xl mx-auto mt-16">
           <InteractiveLiveDemo />
+        </div>
+      </section>
+
+      {/* FRED Demo - Try Before Signup (Top Priority) */}
+      <section className="py-16 px-6 bg-gradient-to-b from-indigo-50/50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold mb-4">
+              <Database className="w-4 h-4" />
+              Try It Now — No Signup Required
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              See the AI in action with real data
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Import economic data from the Federal Reserve and ask our AI questions.
+              <span className="font-semibold text-indigo-600"> 1 free dataset + 3 free questions.</span>
+            </p>
+          </div>
+
+          <FREDLandingDemo />
         </div>
       </section>
 
@@ -797,6 +822,14 @@ const LandingPageLinear: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Social Proof Notifications */}
+      <SocialProofNotification />
+
+      {/* Exit Intent Popup */}
+      {showExitPopup && (
+        <ExitIntentPopup onClose={() => setShowExitPopup(false)} />
+      )}
     </div>
   );
 };

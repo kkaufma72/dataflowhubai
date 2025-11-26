@@ -18,15 +18,19 @@ import {
   ArrowUpRight,
   Circle,
   Sparkles,
-  Loader
+  Loader,
+  BookOpen,
+  Lightbulb
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
-import { EmptyState } from '../components/common/EmptyState';
+import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
+import { useKnowledge } from '../context/KnowledgeContext';
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
 const OnboardingQuestionnaire = lazy(() => import('../components/onboarding/OnboardingQuestionnaire'));
+const OnboardingChecklist = lazy(() => import('../components/onboarding/OnboardingChecklist'));
+const StrategicUpgradePrompt = lazy(() => import('../components/onboarding/StrategicUpgradePrompt'));
 
 // Prediction models configuration (same as DatasetInsights)
 const predictionModels = [
@@ -117,6 +121,8 @@ const DashboardKoyfin: React.FC = () => {
   const navigate = useNavigate();
   const [showMagicMoment, setShowMagicMoment] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [upgradePromptTrigger, setUpgradePromptTrigger] = useState<'milestone_complete' | 'time_based'>('time_based');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
   const [chartsLoaded, setChartsLoaded] = useState(false);
@@ -249,14 +255,10 @@ const DashboardKoyfin: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 min-h-screen bg-gray-950 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <LoadingSkeleton variant="card" count={3} />
-        </div>
-        <LoadingSkeleton variant="chart" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <LoadingSkeleton variant="list" count={4} />
-          <LoadingSkeleton variant="card" count={2} />
+      <div className="flex items-center justify-center min-h-screen bg-gray-950">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+          <p className="text-gray-400">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -617,8 +619,9 @@ const DashboardKoyfin: React.FC = () => {
                           <Database className="w-5 h-5" />
                         </div>
                         <div className="text-left flex-1">
-                          <div className="saas-body font-semibold text-white">
+                          <div className="saas-body font-semibold text-white flex items-center gap-2">
                             {dataset.name}
+                            <KnowledgeInsightsBadge dataset={dataset} variant="inline" />
                           </div>
                           <div className="saas-caption font-mono">
                             {(dataset.rows || 0).toLocaleString()} rows • {dataset.columns || 0} cols
@@ -774,6 +777,65 @@ const DashboardKoyfin: React.FC = () => {
           </button>
         </div>
 
+        {/* Knowledge Insights Row */}
+        <div className="saas-card">
+          <div className="saas-card-header">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-400" />
+                <h3 className="saas-h4">Knowledge Base Insights</h3>
+              </div>
+              <button
+                onClick={() => navigate('/app/insights?tab=knowledge')}
+                className="saas-btn-ghost saas-btn-sm flex items-center gap-1"
+              >
+                Manage Knowledge
+                <ArrowUpRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+          <div className="saas-card-body">
+            {datasets.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="saas-caption">Upload datasets to build your knowledge base</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {datasets.slice(0, 3).map((dataset) => (
+                  <div 
+                    key={dataset.id} 
+                    className="p-4 rounded-lg bg-gray-800/30 border border-gray-700/50 hover:border-purple-500/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Database className="w-4 h-4 text-blue-400" />
+                        <span className="saas-body font-medium text-white truncate max-w-[150px]">
+                          {dataset.name}
+                        </span>
+                      </div>
+                      <KnowledgeInsightsBadge dataset={dataset} variant="inline" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Lightbulb className="w-3 h-3 text-yellow-400" />
+                        <span className="text-gray-400">Add business context for better AI</span>
+                      </div>
+                      <button
+                        onClick={() => navigate('/app/insights?tab=knowledge')}
+                        className="w-full mt-2 px-3 py-1.5 text-xs bg-purple-500/10 text-purple-400 rounded hover:bg-purple-500/20 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <BookOpen className="w-3 h-3" />
+                        Add Knowledge
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Bottom Row - System Status Board */}
         <div className="saas-card">
           <div className="saas-card-header">
@@ -849,6 +911,23 @@ const DashboardKoyfin: React.FC = () => {
           />
         </Suspense>
       )}
+
+      {/* Strategic Upgrade Prompt */}
+      {showUpgradePrompt && (
+        <Suspense fallback={null}>
+          <StrategicUpgradePrompt
+            trigger={upgradePromptTrigger}
+            onClose={() => setShowUpgradePrompt(false)}
+          />
+        </Suspense>
+      )}
+
+      {/* Floating Onboarding Checklist */}
+      <div className="fixed bottom-4 right-4 z-30 w-72">
+        <Suspense fallback={null}>
+          <OnboardingChecklist variant="sidebar" />
+        </Suspense>
+      </div>
 
     </div>
   );

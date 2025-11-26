@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from 'react';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import DataConnector from '../components/data/DataConnector';
 import DatasetCard from '../components/data/DatasetCard';
 import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
 import { Dataset, Project } from '../types';
-import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Search, X, SortAsc, SortDesc, Calendar, FileType } from 'lucide-react';
+import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Search, X, SortAsc, SortDesc, Calendar, FileType, TrendingUp } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
@@ -25,6 +25,13 @@ const DataQualityDashboard = lazy(() => import('../components/data/DataQualityDa
 const EnhancedAIChat = lazy(() => import('../components/data/EnhancedAIChat'));
 const DatasetHealthCard = lazy(() => import('../components/data/DatasetHealthCard'));
 const DataTransformationStudio = lazy(() => import('../components/data/DataTransformationStudio'));
+const FREDDatasetImporter = lazy(() => import('../components/data/FREDDatasetImporter'));
+const FREDSmartSuggestions = lazy(() => import('../components/data/FREDSmartSuggestions'));
+const FREDQuickInsights = lazy(() => import('../components/data/FREDQuickInsights'));
+
+// Import UX enhancement components
+import KeyboardShortcuts from '../components/common/KeyboardShortcuts';
+import FeatureTooltip from '../components/common/FeatureTooltip';
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -45,10 +52,12 @@ const DataManagement: React.FC = () => {
   const { user } = useAuth();
   const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const navigate = useNavigate();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
   const [showGeneratorModal, setShowGeneratorModal] = useState(false);
+  const [showFREDImporter, setShowFREDImporter] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showQuality, setShowQuality] = useState(false);
@@ -470,6 +479,14 @@ const DataManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Global Keyboard Shortcuts */}
+      <KeyboardShortcuts
+        onSearch={() => searchInputRef.current?.focus()}
+        onUpload={() => setShowUploader(true)}
+        onFRED={() => setShowFREDImporter(true)}
+        onChat={() => chatDataset ? setShowChat(true) : toast('Select a dataset first to chat with AI')}
+      />
+
       {/* Guided sample tour */}
       {showSampleTour && (
         <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-purple-50 p-6 shadow-sm">
@@ -583,8 +600,9 @@ const DataManagement: React.FC = () => {
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Search datasets by name, tags, or columns..."
+                  placeholder="Search datasets by name, tags, or columns... (⌘/)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
@@ -619,6 +637,23 @@ const DataManagement: React.FC = () => {
                   <Sparkles className="w-4 h-4" />
                   <span>Generate Sample</span>
                 </button>
+                <FeatureTooltip
+                  featureKey="fred-integration"
+                  title="✨ New: FRED Economic Data"
+                  description="Import 800,000+ economic datasets from the Federal Reserve! Perfect for market analysis and forecasting."
+                  actionLabel="Try it now"
+                  onAction={() => setShowFREDImporter(true)}
+                  position="bottom"
+                >
+                  <button
+                    onClick={() => setShowFREDImporter(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    <span>FRED Economic Data</span>
+                    <kbd className="ml-1 px-1 py-0.5 text-xs bg-white/20 rounded">⌘E</kbd>
+                  </button>
+                </FeatureTooltip>
                 <span className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm font-bold text-gray-900">
                   {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''}
                 </span>
@@ -665,6 +700,31 @@ const DataManagement: React.FC = () => {
             </div>
             <div className="flex-1 overflow-auto p-6">
               <DataUploader onClose={handleCloseUploader} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FRED Economic Data Importer Modal */}
+      {showFREDImporter && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Import Economic Data from FRED</h3>
+              </div>
+              <button
+                onClick={() => setShowFREDImporter(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6">
+              <Suspense fallback={<LoadingFallback />}>
+                <FREDDatasetImporter />
+              </Suspense>
             </div>
           </div>
         </div>
@@ -826,6 +886,26 @@ const DataManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Smart FRED Suggestions - Show when user has datasets */}
+      {datasets.length > 0 && (
+        <Suspense fallback={<LoadingFallback />}>
+          <FREDSmartSuggestions
+            userDatasets={datasets}
+            onSuggestClick={(seriesId, name) => {
+              toast.success(`Opening FRED to import ${name}...`);
+              setShowFREDImporter(true);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Quick Insights for selected FRED dataset */}
+      {selectedDataset && (selectedDataset.source === 'FRED' || selectedDataset.metadata?.source === 'FRED') && (
+        <Suspense fallback={<LoadingFallback />}>
+          <FREDQuickInsights dataset={selectedDataset} />
+        </Suspense>
       )}
 
       {/* Datasets Grid with Pagination OR Organize View */}

@@ -1,134 +1,224 @@
-import React, { useState, useEffect } from 'react';
-import { X, Command, Search, Upload, Zap, Rocket, Users, Sidebar } from 'lucide-react';
+// Global Keyboard Shortcuts Component
+import React, { useEffect, useState } from 'react';
+import { Keyboard, X, Command, Search, Upload, Database, MessageSquare, TrendingUp } from 'lucide-react';
+
+interface KeyboardShortcutsProps {
+  onCommandPalette?: () => void;
+  onSearch?: () => void;
+  onUpload?: () => void;
+  onFRED?: () => void;
+  onChat?: () => void;
+  onHelp?: () => void;
+}
 
 interface Shortcut {
   keys: string[];
-  description: string;
-  icon?: React.ReactNode;
+  label: string;
+  icon: React.ReactNode;
+  action: () => void;
+  category: 'navigation' | 'actions' | 'help';
 }
 
-interface KeyboardShortcutsProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+export const KeyboardShortcuts: React.FC<KeyboardShortcutsProps> = ({
+  onCommandPalette,
+  onSearch,
+  onUpload,
+  onFRED,
+  onChat,
+  onHelp
+}) => {
+  const [showHelp, setShowHelp] = useState(false);
 
-export const KeyboardShortcuts: React.FC<KeyboardShortcutsProps> = ({ isOpen, onClose }) => {
   const shortcuts: Shortcut[] = [
-    { keys: ['⌘', 'K'], description: 'Open command palette', icon: <Command className="w-4 h-4" /> },
-    { keys: ['⌘', 'U'], description: 'Upload dataset', icon: <Upload className="w-4 h-4" /> },
-    { keys: ['⌘', 'T'], description: 'Train new model', icon: <Zap className="w-4 h-4" /> },
-    { keys: ['⌘', 'D'], description: 'Deploy model', icon: <Rocket className="w-4 h-4" /> },
-    { keys: ['⌘', 'B'], description: 'Toggle sidebar', icon: <Sidebar className="w-4 h-4" /> },
-    { keys: ['⌘', '/'], description: 'Show keyboard shortcuts' },
-    { keys: ['/'], description: 'Focus search', icon: <Search className="w-4 h-4" /> },
-    { keys: ['ESC'], description: 'Close modal/dialog' },
-    { keys: ['⌘', '1-9'], description: 'Navigate to dashboard sections' },
-    { keys: ['⌘', 'Z'], description: 'Undo transformation' },
-    { keys: ['⌘', '⇧', 'Z'], description: 'Redo transformation' },
+    {
+      keys: ['⌘', 'K'],
+      label: 'Open Command Palette',
+      icon: <Command className="w-4 h-4" />,
+      action: onCommandPalette || (() => {}),
+      category: 'navigation'
+    },
+    {
+      keys: ['⌘', '/'],
+      label: 'Focus Search',
+      icon: <Search className="w-4 h-4" />,
+      action: onSearch || (() => {}),
+      category: 'navigation'
+    },
+    {
+      keys: ['⌘', 'U'],
+      label: 'Upload Dataset',
+      icon: <Upload className="w-4 h-4" />,
+      action: onUpload || (() => {}),
+      category: 'actions'
+    },
+    {
+      keys: ['⌘', 'E'],
+      label: 'FRED Economic Data',
+      icon: <TrendingUp className="w-4 h-4" />,
+      action: onFRED || (() => {}),
+      category: 'actions'
+    },
+    {
+      keys: ['⌘', 'J'],
+      label: 'Open AI Assistant',
+      icon: <MessageSquare className="w-4 h-4" />,
+      action: onChat || (() => {}),
+      category: 'actions'
+    },
+    {
+      keys: ['?'],
+      label: 'Show Keyboard Shortcuts',
+      icon: <Keyboard className="w-4 h-4" />,
+      action: () => setShowHelp(true),
+      category: 'help'
+    }
   ];
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for modifier keys
+      const isMod = e.metaKey || e.ctrlKey;
+      
+      // ⌘/Ctrl + K → Command Palette
+      if (isMod && e.key === 'k') {
+        e.preventDefault();
+        onCommandPalette?.();
+      }
+      
+      // ⌘/Ctrl + / → Focus Search
+      if (isMod && e.key === '/') {
+        e.preventDefault();
+        onSearch?.();
+      }
+      
+      // ⌘/Ctrl + U → Upload
+      if (isMod && e.key === 'u') {
+        e.preventDefault();
+        onUpload?.();
+      }
+      
+      // ⌘/Ctrl + E → FRED
+      if (isMod && e.key === 'e') {
+        e.preventDefault();
+        onFRED?.();
+      }
+      
+      // ⌘/Ctrl + J → AI Chat
+      if (isMod && e.key === 'j') {
+        e.preventDefault();
+        onChat?.();
+      }
+      
+      // ? → Show shortcuts help (without modifier)
+      if (e.key === '?' && !isMod && !e.shiftKey) {
+        e.preventDefault();
+        setShowHelp(prev => !prev);
+      }
+      
+      // Escape → Close help
+      if (e.key === 'Escape') {
+        setShowHelp(false);
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onCommandPalette, onSearch, onUpload, onFRED, onChat, onHelp]);
 
-  if (!isOpen) return null;
+  if (!showHelp) return null;
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <Command className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Keyboard Shortcuts</h2>
-                <p className="text-sm text-indigo-100">Work faster with hotkeys</p>
-              </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-popIn">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary-100 rounded-xl">
+              <Keyboard className="w-5 h-5 text-primary-600" />
             </div>
-            <button
-              onClick={onClose}
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Keyboard Shortcuts</h2>
+              <p className="text-sm text-gray-500">Speed up your workflow</p>
+            </div>
           </div>
+          <button
+            onClick={() => setShowHelp(false)}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
 
-          {/* Shortcuts List */}
-          <div className="p-6 overflow-y-auto max-h-[60vh]">
-            <div className="space-y-3">
-              {shortcuts.map((shortcut, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors group"
-                >
-                  {/* Description */}
-                  <div className="flex items-center gap-3">
-                    {shortcut.icon && (
-                      <div className="text-gray-500 group-hover:text-indigo-600 transition-colors">
-                        {shortcut.icon}
-                      </div>
-                    )}
-                    <span className="text-gray-700 font-medium">
-                      {shortcut.description}
-                    </span>
-                  </div>
-
-                  {/* Keys */}
-                  <div className="flex items-center gap-1">
-                    {shortcut.keys.map((key, keyIdx) => (
-                      <React.Fragment key={keyIdx}>
-                        <kbd className="px-3 py-1.5 bg-white border-2 border-gray-300 rounded-lg text-sm font-mono font-bold text-gray-700 shadow-sm">
-                          {key}
-                        </kbd>
-                        {keyIdx < shortcut.keys.length - 1 && (
-                          <span className="text-gray-400 mx-1">+</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
+        {/* Shortcuts List */}
+        <div className="p-6 space-y-6">
+          {/* Navigation */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Navigation
+            </h3>
+            <div className="space-y-2">
+              {shortcuts.filter(s => s.category === 'navigation').map((shortcut, idx) => (
+                <ShortcutRow key={idx} shortcut={shortcut} />
               ))}
             </div>
+          </div>
 
-            {/* Tip */}
-            <div className="mt-6 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-900">
-                <strong className="font-bold">💡 Pro tip:</strong> Press{' '}
-                <kbd className="px-2 py-1 bg-white border border-amber-300 rounded text-xs font-mono">
-                  ⌘ /
-                </kbd>{' '}
-                anytime to see this dialog. On Windows, use{' '}
-                <kbd className="px-2 py-1 bg-white border border-amber-300 rounded text-xs font-mono">
-                  Ctrl
-                </kbd>{' '}
-                instead of{' '}
-                <kbd className="px-2 py-1 bg-white border border-amber-300 rounded text-xs font-mono">
-                  ⌘
-                </kbd>
-              </p>
+          {/* Actions */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              {shortcuts.filter(s => s.category === 'actions').map((shortcut, idx) => (
+                <ShortcutRow key={idx} shortcut={shortcut} />
+              ))}
+            </div>
+          </div>
+
+          {/* Help */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Help
+            </h3>
+            <div className="space-y-2">
+              {shortcuts.filter(s => s.category === 'help').map((shortcut, idx) => (
+                <ShortcutRow key={idx} shortcut={shortcut} />
+              ))}
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-gray-50 border-t border-gray-200">
+          <p className="text-xs text-center text-gray-500">
+            Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-gray-700 font-mono">Esc</kbd> to close
+          </p>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
+const ShortcutRow: React.FC<{ shortcut: Shortcut }> = ({ shortcut }) => (
+  <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
+    <div className="flex items-center gap-3">
+      <span className="text-gray-400">{shortcut.icon}</span>
+      <span className="text-sm text-gray-700">{shortcut.label}</span>
+    </div>
+    <div className="flex items-center gap-1">
+      {shortcut.keys.map((key, idx) => (
+        <React.Fragment key={idx}>
+          <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono text-gray-700 shadow-sm">
+            {key}
+          </kbd>
+          {idx < shortcut.keys.length - 1 && (
+            <span className="text-gray-400 text-xs">+</span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  </div>
+);
+
 export default KeyboardShortcuts;
+

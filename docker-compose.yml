@@ -14,6 +14,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./local-db-init.sql:/docker-entrypoint-initdb.d/00-schema.sql
       - ./warehouse-init.sql:/docker-entrypoint-initdb.d/01-warehouse.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dataflow_user -d dataflow_hub"]

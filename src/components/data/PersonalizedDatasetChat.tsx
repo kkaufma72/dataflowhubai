@@ -17,6 +17,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 }
 
 interface PersonalizedDatasetChatProps {
@@ -112,11 +113,12 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
       // Format response based on user profile
       const formattedResponse = formatAIResponse(aiResponse, userProfile);
 
-      // Add AI message
+      // Add AI message with streaming
       const assistantMessage: Message = {
         role: 'assistant',
         content: formattedResponse,
-        timestamp: new Date()
+        timestamp: new Date(),
+        isStreaming: true
       };
       setMessages(prev => [...prev, assistantMessage]);
 
@@ -180,7 +182,7 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
         {messages.map((message, idx) => (
           <div
             key={idx}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-popIn`}
           >
             <div className={`flex items-start space-x-2 max-w-[80%] ${
               message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
@@ -198,39 +200,43 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
                 )}
               </div>
 
-              {/* Message bubble */}
-              <div className={`rounded-lg px-4 py-3 ${
-                message.role === 'user'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-white text-gray-900 shadow-sm border border-gray-200'
-              }`}>
+              {/* Message content */}
+              <div className="flex-1">
+                {message.role === 'user' ? (
+                  // User message - simple display
+                  <>
+                    <div className="rounded-lg px-4 py-3 bg-primary-600 text-white">
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    <p className="text-xs mt-1 text-gray-400 text-right px-1">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </>
+                ) : (
+                  // Assistant message - with streaming
+                  <>
+                    {message.isStreaming ? (
+                      <StreamingMessage 
+                        content={message.content}
+                        speed={50}
+                      />
+                    ) : (
+                      <div className="rounded-lg px-4 py-3 bg-white text-gray-900 shadow-sm border border-gray-200">
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                <p className={`text-xs mt-1 ${
-                  message.role === 'user' ? 'text-primary/20' : 'text-gray-400'
-                }`}>
+                      </div>
+                    )}
+                    <p className="text-xs mt-1 text-gray-400 px-1">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
         ))}
 
-        {/* Loading indicator */}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="flex items-start space-x-2">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-primary to-primary-600">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="bg-white rounded-lg px-4 py-3 shadow-sm border border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 text-primary-600 animate-spin" />
-                  <span className="text-sm text-gray-600">Thinking...</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Enhanced Loading indicator */}
+        {isLoading && <EnhancedLoadingIndicator />}
 
         <div ref={messagesEndRef} />
       </div>

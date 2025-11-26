@@ -9,6 +9,8 @@ import {
   Brain,
   Zap,
   Play,
+  Crown,
+  Lock,
 } from 'lucide-react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -28,10 +30,10 @@ import ModelVersioning from '../components/models/ModelVersioning';
 import ModelExportImport from '../components/models/ModelExportImport';
 import TensorFlowTrainer from '../components/ml/TensorFlowTrainer';
 import DockerTensorFlowTrainer from '../components/ml/DockerTensorFlowTrainer';
-import { ModelTrainingProgress } from '../components/ml/ModelTrainingProgress';
-import { EmptyState } from '../components/common/EmptyState';
-import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
-import { experimentTracker } from '../lib/experimentTracking';
+import KnowledgeRecommendations from '../components/ai/KnowledgeRecommendations';
+import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
+import { useFeatureAccess } from '../hooks/useFeatureAccess';
+import { UpgradePrompt } from '../components/common/UpgradePrompt';
 import toast from 'react-hot-toast';
 
 type CrossValidationResult = {
@@ -55,12 +57,12 @@ type CrossValidationStats = {
 const ModelTraining: React.FC = () => {
   const { datasets, models, addModel, updateModelStatus, deleteDataset, currentProject } = useMLContext();
   const { user } = useAuth();
+  const { canUseSmartRecommendations, tier } = useFeatureAccess();
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
   const [isTraining, setIsTraining] = useState(false);
   const [currentTraining, setCurrentTraining] = useState<MLModel | null>(null);
   const [progress, setProgress] = useState(0);
-  const [trainingStatus, setTrainingStatus] = useState<'idle' | 'preprocessing' | 'feature_engineering' | 'training' | 'tuning' | 'validating' | 'complete' | 'error'>('idle');
   const navigate = useNavigate();
   const [clusteredDatasets, setClusteredDatasets] = useState<Dataset[]>([]);
   const [isClusterTraining, setIsClusterTraining] = useState(false);
@@ -337,23 +339,8 @@ const ModelTraining: React.FC = () => {
     try {
       setIsTraining(true);
       setProgress(0);
-      setTrainingStatus('preprocessing');
 
       toast.loading('Starting model training...', { id: 'training' });
-
-      // Start experiment tracking
-      const experimentId = await experimentTracker.startExperiment({
-        modelName: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model`,
-        datasetId: config.datasetId,
-        userId: user?.id || '',
-        parameters: {
-          algorithms: config.algorithms,
-          modelType: config.modelType,
-          targetColumn: config.targetColumn,
-          features: config.features
-        },
-        tags: [config.modelType, ...config.algorithms]
-      });
 
       const newModel: MLModel = {
         id: crypto.randomUUID(),
@@ -378,17 +365,6 @@ const ModelTraining: React.FC = () => {
         setProgress((prev) => {
           const newProgress = prev + Math.random() * 5;
           
-          // Update training status based on progress
-          if (newProgress >= 10 && newProgress < 25) {
-            setTrainingStatus('feature_engineering');
-          } else if (newProgress >= 25 && newProgress < 65) {
-            setTrainingStatus('training');
-          } else if (newProgress >= 65 && newProgress < 90) {
-            setTrainingStatus('tuning');
-          } else if (newProgress >= 90 && newProgress < 100) {
-            setTrainingStatus('validating');
-          }
-          
           // Log metrics to InfluxDB periodically
           if (newProgress < 100 && influxdb.isAvailable()) {
             const currentEpoch = Math.floor(newProgress / 10) + 1;
@@ -412,7 +388,7 @@ const ModelTraining: React.FC = () => {
           
           if (newProgress >= 100) {
             clearInterval(interval);
-            setTimeout(async () => {
+            setTimeout(() => {
               const completedModel: MLModel = {
                 ...newModel,
                 status: 'trained',
@@ -464,19 +440,8 @@ const ModelTraining: React.FC = () => {
 
               // Update model status instead of adding again
               updateModelStatus(newModel.id, 'trained', completedModel.metrics);
-              setTrainingStatus('complete');
               setIsTraining(false);
               setCurrentTraining(null);
-              
-              // Complete experiment tracking
-              await experimentTracker.completeExperiment(experimentId, {
-                accuracy: completedModel.metrics?.accuracy || 0,
-                precision: completedModel.metrics?.precision || 0,
-                recall: completedModel.metrics?.recall || 0,
-                f1_score: completedModel.metrics?.f1Score || 0,
-                auc: completedModel.metrics?.auc || 0
-              });
-              
               toast.success('Model training completed successfully!', { id: 'training' });
               
               // Log final metrics to InfluxDB
@@ -1052,18 +1017,72 @@ const ModelTraining: React.FC = () => {
         )}
 
         {selectedDataset && (
-          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-white">Train New Model - {selectedDatasetSafe?.name ?? ''}</h3>
+          <div className="grid grid-cols-3 gap-4">
+            {/* Training Form */}
+            <div className="col-span-2 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold text-white">Train New Model - {selectedDatasetSafe?.name ?? ''}</h3>
+                  </div>
+                  <KnowledgeInsightsBadge dataset={selectedDatasetSafe as Dataset} variant="compact" />
+                </div>
+              </div>
+              <div className="p-4">
+                <ModelTrainingForm 
+                  dataset={selectedDatasetSafe as Dataset} 
+                  onSubmit={handleTrainingSubmit} 
+                />
               </div>
             </div>
-            <div className="p-4">
-              <ModelTrainingForm 
-                dataset={selectedDatasetSafe as Dataset} 
-                onSubmit={handleTrainingSubmit} 
-              />
+
+            {/* Knowledge-Based Recommendations */}
+            <div className="col-span-1 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    Smart Recommendations
+                    {!canUseSmartRecommendations && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-black rounded flex items-center gap-0.5">
+                        <Crown className="w-2.5 h-2.5" />
+                        PRO
+                      </span>
+                    )}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-4">
+                {canUseSmartRecommendations ? (
+                  <KnowledgeRecommendations 
+                    dataset={selectedDatasetSafe as Dataset}
+                    context="training"
+                    maxRecommendations={4}
+                    onApplyRecommendation={(rec) => {
+                      toast.success(`Applied: ${rec.title}`);
+                    }}
+                    className="bg-transparent border-0"
+                  />
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <h4 className="text-white font-medium mb-2">Unlock Smart Recommendations</h4>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Get AI-powered suggestions based on your data's knowledge base.
+                    </p>
+                    <button
+                      onClick={() => navigate('/pricing')}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all flex items-center gap-2 mx-auto"
+                    >
+                      <Crown className="w-4 h-4" />
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1420,20 +1439,10 @@ const ModelTraining: React.FC = () => {
             <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg">
               <Layers className="w-6 h-6 text-primary" />
             </div>
-            <EmptyState
-              icon={Brain}
-              title="No models trained yet"
-              description="Select a dataset and configure training settings to train your first machine learning model. Our AutoML will find the best algorithm for your data."
-              actions={[
-                {
-                  label: 'Train First Model',
-                  onClick: () => setActiveTab('train'),
-                  variant: 'primary',
-                  icon: Play
-                }
-              ]}
-              className="bg-[#161b22] text-white"
-            />
+            <h3 className="mt-4 text-lg font-semibold text-white">No models trained yet</h3>
+            <p className="mt-1 text-sm text-gray-400">
+              Start training your first model to see it here
+            </p>
             {datasets.length > 0 && !selectedDataset && (
               <Button
                 className="mt-4"

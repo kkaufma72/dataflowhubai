@@ -1,250 +1,268 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { X, CheckCircle, Upload, Sparkles, Zap, Rocket, Users, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '../auth/AuthProvider';
+/**
+ * Onboarding Checklist Component
+ * 
+ * Shows user their activation progress with:
+ * - Visual progress bar
+ * - Milestone checklist
+ * - Next action recommendation
+ * - Celebration on completion
+ */
 
-interface Task {
-  id: string;
-  label: string;
-  description: string;
-  route: string;
-  icon: React.ElementType;
-  complete: boolean;
+import React, { useState, useEffect } from 'react';
+import { 
+  CheckCircle2, 
+  Circle, 
+  ChevronDown, 
+  ChevronUp,
+  Sparkles,
+  Gift,
+  ArrowRight,
+  X,
+  Trophy,
+  Rocket
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+  getMilestonesWithStatus, 
+  getActivationStatus,
+  getNextAction,
+  ActivationMilestone 
+} from '../../lib/activationTracking';
+
+interface OnboardingChecklistProps {
+  variant?: 'sidebar' | 'modal' | 'banner';
+  onClose?: () => void;
 }
 
-export const OnboardingChecklist: React.FC = () => {
-  const { user } = useAuth();
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+export const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({ 
+  variant = 'sidebar',
+  onClose 
+}) => {
+  const [milestones, setMilestones] = useState<ActivationMilestone[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [activation, setActivation] = useState(getActivationStatus());
 
-  // Check localStorage for completed tasks
-  const getCompletedTasks = () => {
-    const stored = localStorage.getItem(`onboarding_${user?.id}`);
-    return stored ? JSON.parse(stored) : {};
+  useEffect(() => {
+    setMilestones(getMilestonesWithStatus());
+    setActivation(getActivationStatus());
+  }, []);
+
+  const completedCount = milestones.filter(m => m.completed).length;
+  const totalCount = milestones.length;
+  const progressPercent = Math.round((completedCount / totalCount) * 100);
+  const nextAction = getNextAction();
+
+  // Don't show if all complete and dismissed
+  if (completedCount === totalCount && localStorage.getItem('dfh_checklist_dismissed')) {
+    return null;
+  }
+
+  // Milestone action links
+  const getMilestoneLink = (milestoneId: string): string => {
+    const links: Record<string, string> = {
+      'signup_complete': '/app',
+      'first_dataset': '/app/data',
+      'first_ai_question': '/app/data',
+      'first_insight': '/app/data',
+      'first_model': '/app/models',
+      'share_or_export': '/app/data',
+    };
+    return links[milestoneId] || '/app';
   };
 
-  const [completedTasks, setCompletedTasks] = useState(getCompletedTasks());
-
-  const tasks: Task[] = [
-    {
-      id: 'upload_dataset',
-      label: 'Upload your first dataset',
-      description: 'Import data to start analyzing',
-      route: '/app/data',
-      icon: Upload,
-      complete: completedTasks.upload_dataset || false
-    },
-    {
-      id: 'ask_ai',
-      label: 'Ask AI a question',
-      description: 'Try natural language queries',
-      route: '/app/insights',
-      icon: Sparkles,
-      complete: completedTasks.ask_ai || false
-    },
-    {
-      id: 'train_model',
-      label: 'Train your first model',
-      description: 'One-click AutoML training',
-      route: '/app/train',
-      icon: Zap,
-      complete: completedTasks.train_model || false
-    },
-    {
-      id: 'deploy_model',
-      label: 'Deploy to production',
-      description: 'Get your API endpoint',
-      route: '/app/deploy',
-      icon: Rocket,
-      complete: completedTasks.deploy_model || false
-    },
-    {
-      id: 'invite_team',
-      label: 'Invite a team member',
-      description: 'Collaborate with your team',
-      route: '/app/settings',
-      icon: Users,
-      complete: completedTasks.invite_team || false
-    }
-  ];
-
-  const progress = tasks.filter(t => t.complete).length;
-  const total = tasks.length;
-  const percentage = Math.round((progress / total) * 100);
-  const isComplete = progress === total;
-
-  // Auto-dismiss when complete (after 5 seconds)
-  useEffect(() => {
-    if (isComplete) {
-      const timer = setTimeout(() => {
-        setIsDismissed(true);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [isComplete]);
-
-  // Save to localStorage when tasks complete
-  useEffect(() => {
-    if (user?.id) {
-      localStorage.setItem(`onboarding_${user.id}`, JSON.stringify(completedTasks));
-    }
-  }, [completedTasks, user?.id]);
-
-  // Check if dismissed permanently
-  useEffect(() => {
-    const dismissed = localStorage.getItem(`onboarding_dismissed_${user?.id}`);
-    if (dismissed === 'true') {
-      setIsDismissed(true);
-    }
-  }, [user?.id]);
-
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    if (user?.id) {
-      localStorage.setItem(`onboarding_dismissed_${user.id}`, 'true');
-    }
-  };
-
-  const handleTaskClick = (taskId: string) => {
-    // Mark task as complete when clicked
-    setCompletedTasks((prev: any) => ({
-      ...prev,
-      [taskId]: true
-    }));
-  };
-
-  if (isDismissed) return null;
-
-  return (
-    <div className="fixed bottom-4 right-4 w-80 bg-white rounded-xl shadow-2xl border-2 border-indigo-200 z-50 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">
-                {progress}/{total}
-              </span>
+  if (variant === 'banner') {
+    return (
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Rocket className="w-5 h-5" />
+              <span className="font-medium">Getting Started: {completedCount}/{totalCount} complete</span>
             </div>
-            <div>
-              <p className="font-bold text-white">Getting Started</p>
-              <p className="text-xs text-indigo-100">{percentage}% complete</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="text-white/80 hover:text-white transition-colors p-1"
-              title={isMinimized ? 'Expand' : 'Minimize'}
-            >
-              {isMinimized ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="text-white/80 hover:text-white transition-colors p-1"
-              title="Dismiss"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        {!isMinimized && (
-          <div className="mt-3">
-            <div className="w-full bg-white/20 rounded-full h-2">
-              <div
-                className="bg-white h-2 rounded-full transition-all duration-500"
-                style={{ width: `${percentage}%` }}
+            <div className="w-32 h-2 bg-white/20 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white rounded-full transition-all"
+                style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
-        )}
+          {nextAction && (
+            <Link
+              to={getMilestoneLink(nextAction.id)}
+              className="flex items-center gap-2 text-sm font-medium hover:underline"
+            >
+              Next: {nextAction.label}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
+        </div>
       </div>
+    );
+  }
 
-      {/* Task List */}
-      {!isMinimized && (
-        <div className="p-4">
-          {isComplete ? (
-            // Celebration View
-            <div className="text-center py-6">
-              <div className="text-6xl mb-3">🎉</div>
-              <p className="text-xl font-bold text-gray-900 mb-2">
-                Awesome! You're all set!
-              </p>
-              <p className="text-sm text-gray-600 mb-4">
-                You've completed the getting started guide. You're ready to build amazing models!
-              </p>
-              <button
-                onClick={handleDismiss}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
-              >
-                Start Building
+  if (variant === 'modal') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-popIn">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 text-white relative">
+            {onClose && (
+              <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white">
+                <X className="w-5 h-5" />
               </button>
+            )}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                {completedCount === totalCount ? (
+                  <Trophy className="w-6 h-6" />
+                ) : (
+                  <Rocket className="w-6 h-6" />
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">
+                  {completedCount === totalCount ? 'All Done! 🎉' : 'Quick Start Guide'}
+                </h2>
+                <p className="text-indigo-200 text-sm">{completedCount}/{totalCount} steps complete</p>
+              </div>
             </div>
-          ) : (
-            // Task List View
-            <div className="space-y-2">
-              {tasks.map(task => (
+          </div>
+
+          <div className="p-6">
+            {/* Progress Bar */}
+            <div className="mb-6">
+              <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2 text-center">{progressPercent}% complete</p>
+            </div>
+
+            {/* Milestones */}
+            <div className="space-y-3 mb-6">
+              {milestones.map((milestone, idx) => (
                 <Link
-                  key={task.id}
-                  to={task.route}
-                  onClick={() => handleTaskClick(task.id)}
-                  className={`
-                    flex items-start gap-3 p-3 rounded-lg transition-all group
-                    ${task.complete
-                      ? 'bg-green-50 border border-green-200'
-                      : 'bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200'
-                    }
-                  `}
+                  key={milestone.id}
+                  to={getMilestoneLink(milestone.id)}
+                  className={`flex items-center gap-3 p-3 rounded-lg transition ${
+                    milestone.completed 
+                      ? 'bg-green-50' 
+                      : idx === completedCount 
+                        ? 'bg-indigo-50 ring-2 ring-indigo-500'
+                        : 'bg-gray-50'
+                  }`}
                 >
-                  {/* Icon/Checkbox */}
-                  <div className="flex-shrink-0 mt-0.5">
-                    {task.complete ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <div className="w-5 h-5 border-2 border-gray-300 rounded-full group-hover:border-indigo-400 transition-colors" />
-                    )}
-                  </div>
-
-                  {/* Task Icon */}
-                  <div className={`
-                    w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
-                    ${task.complete ? 'bg-green-100' : 'bg-indigo-100 group-hover:bg-indigo-200'}
-                    transition-colors
-                  `}>
-                    <task.icon className={`w-4 h-4 ${task.complete ? 'text-green-600' : 'text-indigo-600'}`} />
-                  </div>
-
-                  {/* Task Details */}
-                  <div className="flex-1 min-w-0">
-                    <p className={`
-                      text-sm font-medium
-                      ${task.complete ? 'text-gray-500 line-through' : 'text-gray-900'}
-                    `}>
-                      {task.label}
+                  {milestone.completed ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  ) : (
+                    <Circle className={`w-5 h-5 flex-shrink-0 ${
+                      idx === completedCount ? 'text-indigo-600' : 'text-gray-300'
+                    }`} />
+                  )}
+                  <div className="flex-1">
+                    <p className={`font-medium ${milestone.completed ? 'text-green-700' : 'text-gray-900'}`}>
+                      {milestone.label}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {task.description}
-                    </p>
+                    <p className="text-xs text-gray-500">{milestone.description}</p>
                   </div>
+                  {!milestone.completed && idx === completedCount && (
+                    <ArrowRight className="w-4 h-4 text-indigo-600" />
+                  )}
                 </Link>
               ))}
             </div>
-          )}
 
-          {/* Footer Tip */}
-          {!isComplete && (
-            <div className="mt-4 pt-3 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center">
-                💡 Click any task to get started
-              </p>
-            </div>
+            {/* CTA */}
+            {completedCount < totalCount && nextAction && (
+              <Link
+                to={getMilestoneLink(nextAction.id)}
+                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition flex items-center justify-center gap-2"
+              >
+                {nextAction.label}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+
+            {completedCount === totalCount && (
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium mb-4">
+                  <Gift className="w-4 h-4" />
+                  You're all set!
+                </div>
+                <p className="text-sm text-gray-600">
+                  You've completed the getting started guide. Explore all features!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Sidebar variant (default)
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <Rocket className="w-4 h-4 text-indigo-600" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-gray-900">Getting Started</p>
+            <p className="text-xs text-gray-500">{completedCount}/{totalCount} complete</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-indigo-600 rounded-full"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-400" />
           )}
+        </div>
+      </button>
+
+      {/* Content */}
+      {isExpanded && (
+        <div className="p-4 space-y-2">
+          {milestones.map((milestone, idx) => (
+            <Link
+              key={milestone.id}
+              to={getMilestoneLink(milestone.id)}
+              className={`flex items-center gap-3 p-2 rounded-lg transition text-sm ${
+                milestone.completed 
+                  ? 'text-green-700' 
+                  : idx === completedCount 
+                    ? 'text-indigo-700 bg-indigo-50'
+                    : 'text-gray-500'
+              }`}
+            >
+              {milestone.completed ? (
+                <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+              ) : (
+                <Circle className={`w-4 h-4 flex-shrink-0 ${
+                  idx === completedCount ? 'text-indigo-600' : 'text-gray-300'
+                }`} />
+              )}
+              <span className={milestone.completed ? 'line-through' : ''}>
+                {milestone.label}
+              </span>
+              {milestone.completed && milestone.reward && (
+                <span className="text-xs">{milestone.reward}</span>
+              )}
+            </Link>
+          ))}
         </div>
       )}
     </div>
@@ -252,3 +270,4 @@ export const OnboardingChecklist: React.FC = () => {
 };
 
 export default OnboardingChecklist;
+
