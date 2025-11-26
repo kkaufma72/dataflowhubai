@@ -294,6 +294,27 @@ const LandingPageLinear: React.FC = () => {
         </div>
       </section>
 
+      {/* FRED Demo - Try Before Signup (Top Priority) */}
+      <section className="py-16 px-6 bg-gradient-to-b from-indigo-50/50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold mb-4">
+              <Database className="w-4 h-4" />
+              Try It Now — No Signup Required
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              See the AI in action with real data
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Import economic data from the Federal Reserve and ask our AI questions.
+              <span className="font-semibold text-indigo-600"> 1 free dataset + 3 free questions.</span>
+            </p>
+          </div>
+
+          <FREDLandingDemo />
+        </div>
+      </section>
+
       {/* Features Section - Linear Grid Style */}
       <section id="features" className="py-32 px-6 bg-gray-50/50">
         <div className="max-w-6xl mx-auto">
@@ -616,33 +637,6 @@ const LandingPageLinear: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive FRED Demo Section */}
-      <section className="py-24 px-6 bg-gradient-to-b from-white to-indigo-50/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold mb-4">
-              <Database className="w-4 h-4" />
-              Try It Now — No Signup Required
-            </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              See the AI in action
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Import real economic data from the Federal Reserve and ask our AI questions. 
-              <span className="font-semibold text-indigo-600"> Get 1 free dataset + 3 free questions</span> to experience the platform.
-            </p>
-          </div>
-
-          <FREDLandingDemo />
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              💡 This is just a taste! Sign up for unlimited datasets, ML model training, and advanced analytics.
-            </p>
           </div>
         </div>
       </section>
