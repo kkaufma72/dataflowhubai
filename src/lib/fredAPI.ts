@@ -1,8 +1,12 @@
 // FRED API Integration - Federal Reserve Economic Data
 // API Documentation: https://fred.stlouisfed.org/docs/api/fred/
 
+import { supabase } from './supabase';
+
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY || '';
 const FRED_BASE_URL = 'https://api.stlouisfed.org/fred';
+const USE_PROXY = import.meta.env.VITE_USE_FRED_PROXY === 'true'; // Use Supabase Edge Function to bypass CORS
+const CORS_PROXY = 'https://corsproxy.io/?'; // Development fallback
 
 export interface FREDSeries {
   id: string;
@@ -49,6 +53,46 @@ export const isFREDConfigured = (): boolean => {
 };
 
 /**
+ * Helper function to call FRED API (with proxy support for CORS)
+ */
+const callFREDAPI = async (endpoint: string, params: Record<string, any> = {}): Promise<any> => {
+  if (USE_PROXY) {
+    // Use Supabase Edge Function to bypass CORS
+    try {
+      const { data, error } = await supabase.functions.invoke('fred-proxy', {
+        body: { endpoint, params }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.warn('Edge Function failed, falling back to CORS proxy:', error);
+      // Fall through to CORS proxy fallback
+    }
+  }
+  
+  // Use CORS proxy for development
+  const url = new URL(`${FRED_BASE_URL}${endpoint}`);
+  url.searchParams.append('api_key', FRED_API_KEY);
+  url.searchParams.append('file_type', 'json');
+  
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.append(key, String(value));
+  });
+
+  const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(url.toString())}`;
+  
+  const response = await fetch(proxiedUrl);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`FRED API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+};
+
+/**
  * Search FRED database for series
  */
 export const searchFREDSeries = async (
@@ -75,29 +119,20 @@ export const searchFREDSeries = async (
     filterValue
   } = options;
 
-  const params = new URLSearchParams({
-    api_key: FRED_API_KEY,
-    file_type: 'json',
+  const params: Record<string, any> = {
     search_text: query,
     limit: limit.toString(),
     offset: offset.toString(),
     order_by: orderBy,
     sort_order: sortOrder
-  });
+  };
 
   if (filterVariable && filterValue) {
-    params.append('filter_variable', filterVariable);
-    params.append('filter_value', filterValue);
+    params.filter_variable = filterVariable;
+    params.filter_value = filterValue;
   }
 
-  const response = await fetch(`${FRED_BASE_URL}/series/search?${params}`);
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`FRED API error: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
+  const data = await callFREDAPI('/series/search', params);
   return data;
 };
 
@@ -109,19 +144,7 @@ export const getFREDSeries = async (seriesId: string): Promise<FREDSeries> => {
     throw new Error('FRED API key not configured.');
   }
 
-  const params = new URLSearchParams({
-    api_key: FRED_API_KEY,
-    file_type: 'json',
-    series_id: seriesId
-  });
-
-  const response = await fetch(`${FRED_BASE_URL}/series?${params}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch series: ${response.status}`);
-  }
-
-  const data = await response.json();
+  const data = await callFREDAPI('/series', { series_id: seriesId });
   return data.seriess[0];
 };
 
@@ -152,26 +175,18 @@ export const getFREDObservations = async (
     limit = 100000
   } = options;
 
-  const params = new URLSearchParams({
-    api_key: FRED_API_KEY,
-    file_type: 'json',
+  const params: Record<string, any> = {
     series_id: seriesId,
     units,
     aggregation_method: aggregationMethod,
     limit: limit.toString()
-  });
+  };
 
-  if (observationStart) params.append('observation_start', observationStart);
-  if (observationEnd) params.append('observation_end', observationEnd);
-  if (frequency) params.append('frequency', frequency);
+  if (observationStart) params.observation_start = observationStart;
+  if (observationEnd) params.observation_end = observationEnd;
+  if (frequency) params.frequency = frequency;
 
-  const response = await fetch(`${FRED_BASE_URL}/series/observations?${params}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch observations: ${response.status}`);
-  }
-
-  const data = await response.json();
+  const data = await callFREDAPI('/series/observations', params);
   return data.observations;
 };
 
