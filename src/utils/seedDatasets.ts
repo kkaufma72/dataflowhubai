@@ -20,11 +20,9 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
     }
     
     if (existingDatasets && existingDatasets.length > 0) {
-      console.log('ℹ️ User already has sample datasets, skipping seed');
+      // User already has sample datasets - skip silently
       return existingDatasets;
     }
-    
-    console.log('Seeding enhanced sample datasets...');
     
     // Ensure we have a valid project_id (database requires it)
     let validProjectId = projectId;
@@ -39,7 +37,6 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       
       if (projects && projects.length > 0) {
         validProjectId = projects[0].id;
-        console.log('✅ Using existing project:', validProjectId);
       } else {
         // Create a default project
         const { data: newProject, error: createError } = await supabase
@@ -59,7 +56,6 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
         }
         
         validProjectId = newProject.id;
-        console.log('✅ Created new project:', validProjectId);
       }
     }
     
@@ -96,17 +92,19 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       .select();
     
     if (error) {
-      console.error('Error seeding datasets:', error);
+      // Silently handle conflict errors (datasets already exist)
+      if (error.code === '23505') {
+        return [];
+      }
       throw error;
     }
     
-    console.log(`✅ Successfully seeded ${data?.length || 0} datasets for user ${userId}`);
-    // Toast notification removed per user request
-    
     return data;
-  } catch (error) {
-    console.error('Error in seedEnhancedDatasets:', error);
-    // Toast notification removed per user request
+  } catch (error: any) {
+    // Silently handle conflict errors
+    if (error?.code === '23505') {
+      return [];
+    }
     throw error;
   }
 };

@@ -1,0 +1,32 @@
+date,product,category,region,units_sold,revenue,cost,profit,customer_type
+2024-01-01,Widget A,Electronics,North,150,4500,2250,2250,Business
+2024-01-01,Widget B,Electronics,South,89,2670,1335,1335,Consumer
+2024-01-01,Gadget X,Home,East,234,7020,3510,3510,Business
+2024-01-02,Widget A,Electronics,West,178,5340,2670,2670,Consumer
+2024-01-02,Widget C,Electronics,North,56,1680,840,840,Business
+2024-01-02,Gadget Y,Home,South,312,9360,4680,4680,Consumer
+2024-01-03,Widget A,Electronics,East,201,6030,3015,3015,Business
+2024-01-03,Widget B,Electronics,West,145,4350,2175,2175,Consumer
+2024-01-03,Gadget X,Home,North,189,5670,2835,2835,Business
+2024-01-04,Widget C,Electronics,South,267,8010,4005,4005,Consumer
+2024-01-04,Gadget Y,Home,East,98,2940,1470,1470,Business
+2024-01-04,Widget A,Electronics,North,334,10020,5010,5010,Consumer
+2024-01-05,Widget B,Electronics,South,156,4680,2340,2340,Business
+2024-01-05,Gadget X,Home,West,278,8340,4170,4170,Consumer
+2024-01-05,Widget A,Electronics,East,189,5670,2835,2835,Business
+2024-01-06,Widget C,Electronics,North,445,13350,6675,6675,Consumer
+2024-01-06,Gadget Y,Home,South,123,3690,1845,1845,Business
+2024-01-06,Widget B,Electronics,West,234,7020,3510,3510,Consumer
+2024-01-07,Widget A,Electronics,North,567,17010,8505,8505,Business
+2024-01-07,Gadget X,Home,East,189,5670,2835,2835,Consumer
+2024-01-07,Widget C,Electronics,South,145,4350,2175,2175,Business
+2024-01-08,Gadget Y,Home,West,398,11940,5970,5970,Consumer
+2024-01-08,Widget A,Electronics,North,234,7020,3510,3510,Business
+2024-01-08,Widget B,Electronics,East,167,5010,2505,2505,Consumer
+2024-01-09,Gadget X,Home,South,289,8670,4335,4335,Business
+2024-01-09,Widget C,Electronics,West,178,5340,2670,2670,Consumer
+2024-01-09,Widget A,Electronics,North,456,13680,6840,6840,Business
+2024-01-10,Gadget Y,Home,East,134,4020,2010,2010,Consumer
+2024-01-10,Widget B,Electronics,South,267,8010,4005,4005,Business
+2024-01-10,Widget A,Electronics,West,389,11670,5835,5835,Consumer
+

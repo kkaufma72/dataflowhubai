@@ -309,7 +309,6 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
         if (user?.id && !hasSeeded) {
           void (async () => {
-            console.log('🎯 Seeding Supabase sample datasets in background...');
             try {
               if (hasSeededKey) {
                 localStorage.setItem(hasSeededKey, 'true');
@@ -344,11 +343,10 @@ export const MLProvider = ({ children }: MLProviderProps) => {
                 toast.error('Could not refresh saved samples. You can keep exploring locally.');
               }
             } catch (error) {
-              console.warn('Background seeding failed:', error);
+              // Silently handle seeding errors - not critical
               if (hasSeededKey) {
                 localStorage.removeItem(hasSeededKey);
               }
-              toast.error('Saving sample datasets failed. Try again later.');
             }
           })();
         }

@@ -13,8 +13,7 @@ import {
   Trash2,
   Archive,
   MoreVertical,
-  FolderOpen,
-  Brain
+  FolderOpen
 } from 'lucide-react';
 import Button from '../common/Button';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../../utils/datasetHealthScore';
@@ -46,16 +45,6 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
   const [showMenu, setShowMenu] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   
-  // Debug: Log when handlers are available (remove this in production)
-  React.useEffect(() => {
-    console.log('DatasetCard handlers:', { 
-      onMove: !!onMove, 
-      onDelete: !!onDelete, 
-      onArchive: !!onArchive,
-      datasetName: dataset.name 
-    });
-  }, [onMove, onDelete, onArchive, dataset.name]);
-
   // Close menu when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -52,15 +52,6 @@ export const calculateDatasetHealth = (dataset: Dataset): HealthScoreResult => {
     checks.uniqueness.score
   );
 
-  // Debug logging
-  console.log('Health calculation for', dataset.name, {
-    completeness: checks.completeness.score,
-    consistency: checks.consistency.score,
-    validity: checks.validity.score,
-    uniqueness: checks.uniqueness.score,
-    total: totalScore
-  });
-
   // Determine grade
   let grade: 'A' | 'B' | 'C' | 'D' | 'F';
   let color: string;
