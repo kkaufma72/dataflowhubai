@@ -193,7 +193,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [handleAuthError, clearLocalData, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - do NOT depend on user?.id
 
   // Sign in with email and password
   const signIn = useCallback(async (email: string, password: string) => {

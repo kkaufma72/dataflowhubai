@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../components/auth/AuthProvider';
 import Card from '../components/common/Card';
 import Logo from '../components/common/Logo';
 import { Mail, Lock, Loader2, AlertCircle, User, ArrowLeft, Github } from 'lucide-react';
 import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
-import { AuthChangeEvent } from '@supabase/supabase-js';
 import { 
   storePostAuthRedirectPath,
   clearPostAuthRedirectPath,
@@ -38,13 +38,13 @@ const isValidEmail = (email: string): boolean => {
 const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const locationStateFrom = (location.state as any)?.from;
-  const storedRedirect = getPostAuthRedirectPath();
-  const from = locationStateFrom || storedRedirect || '/app';
-  const [redirectInProgress, setRedirectInProgress] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Use ref to prevent multiple redirects
+  const hasRedirected = useRef(false);
   
   // Form state
   const [email, setEmail] = useState('');
@@ -55,13 +55,32 @@ const SignIn = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
 
-  useEffect(() => {
-    if (from) {
-      storePostAuthRedirectPath(from);
-    }
-  }, [from]);
+  // Compute redirect destination once
+  const getRedirectDestination = useCallback(() => {
+    const locationStateFrom = (location.state as { from?: string })?.from;
+    const storedRedirect = getPostAuthRedirectPath();
+    return locationStateFrom || storedRedirect || '/app';
+  }, [location.state]);
 
-  // Check for email verification success
+  // Stable redirect function
+  const performRedirect = useCallback(() => {
+    if (hasRedirected.current) return;
+    hasRedirected.current = true;
+    
+    const destination = getRedirectDestination();
+    clearPostAuthRedirectPath();
+    navigate(destination, { replace: true });
+  }, [navigate, getRedirectDestination]);
+
+  // Store redirect path on mount (only once)
+  useEffect(() => {
+    const destination = getRedirectDestination();
+    if (destination && destination !== '/app') {
+      storePostAuthRedirectPath(destination);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check for email verification success (only once)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('verified') === 'true') {
@@ -69,49 +88,21 @@ const SignIn = () => {
         duration: 5000,
         icon: '✅'
       });
-      window.history.replaceState({}, '', '/signin');
+      // Use replaceState without triggering re-render
+      window.history.replaceState({}, document.title, '/signin');
     }
-  }, [location.search]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle auth state changes and redirection
+  // Redirect if user is already authenticated (uses AuthProvider state)
   useEffect(() => {
-    console.log('SignIn component mounted, destination:', from);
+    // Wait for auth to finish loading before checking
+    if (authLoading) return;
     
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          console.log('User already has active session, redirecting to:', from);
-          setRedirectInProgress(true);
-          clearPostAuthRedirectPath();
-          navigate(from, { replace: true });
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      }
-    };
-    
-    checkSession();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
-      console.log('Auth state change in SignIn:', event);
-      
-      // Redirect on any SIGNED_IN event (including after signup)
-      if (event === 'SIGNED_IN' && !redirectInProgress) {
-        console.log('Signed in event detected, redirecting to:', from);
-        setRedirectInProgress(true);
-        clearPostAuthRedirectPath();
-        setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 500);
-      }
-    });
-
-    return () => {
-      console.log('SignIn component unmounting, cleaning up subscription');
-      subscription.unsubscribe();
-    };
-  }, [navigate, from, redirectInProgress, locationStateFrom, storedRedirect]);
+    // If user is authenticated, redirect
+    if (user && !hasRedirected.current) {
+      performRedirect();
+    }
+  }, [user, authLoading, performRedirect]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +132,6 @@ const SignIn = () => {
           throw new Error('Invalid email or password. Please try again or reset your password.');
         }
         if (error.message === 'Email not confirmed') {
-          // Give user instructions to disable email confirmation in Supabase
           throw new Error('Email verification is required. Please check Supabase settings and disable email confirmation for development, or check your email for the verification link.');
         }
         throw error;
@@ -149,8 +139,10 @@ const SignIn = () => {
       
       // Successful signin - redirect to dashboard
       toast.success('Signed in successfully!');
+      hasRedirected.current = true;
+      const destination = getRedirectDestination();
       clearPostAuthRedirectPath();
-      navigate(from, { replace: true });
+      navigate(destination, { replace: true });
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);
@@ -284,11 +276,13 @@ const SignIn = () => {
               duration: 3000,
             });
             
-            // Redirect to dashboard
+            // Redirect to dashboard immediately - don't wait for effect
+            hasRedirected.current = true;
+            const destination = getRedirectDestination();
+            clearPostAuthRedirectPath();
             setTimeout(() => {
-              clearPostAuthRedirectPath();
-              navigate(from, { replace: true });
-            }, 1000);
+              navigate(destination, { replace: true });
+            }, 500);
           }
         } catch (signInErr) {
           console.error('Auto sign-in failed:', signInErr);
@@ -311,7 +305,8 @@ const SignIn = () => {
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     try {
       setError('');
-      storePostAuthRedirectPath(from);
+      const destination = getRedirectDestination();
+      storePostAuthRedirectPath(destination);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

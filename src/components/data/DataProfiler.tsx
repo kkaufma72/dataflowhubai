@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   BarChart2,
-  PieChart,
   AlertTriangle,
   Check,
   Download,
   RefreshCw,
   Zap,
-  Clock,
-  FileText
+  FileText,
+  Hash,
+  Type,
+  Calendar,
+  ToggleLeft,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  Target
 } from 'lucide-react';
 import Button from '../common/Button';
 import { Dataset } from '../../types';
@@ -19,7 +25,7 @@ import {
   ColumnStats,
   PreprocessingRecommendation
 } from '../../lib/dataProcessing';
-import { Pie } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import toast from 'react-hot-toast';
 
 interface DataProfilerProps {
@@ -38,10 +44,26 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const [activeTab, setActiveTab] = useState<'overview' | 'columns' | 'issues' | 'recommendations'>('overview');
 
   // Helper to convert columns array to object for easier lookup
-  const columnProfiles = profile?.columns.reduce((acc, col) => {
-    acc[col.name] = col;
-    return acc;
-  }, {} as Record<string, any>) || {};
+  const columnProfiles = useMemo(() => {
+    return profile?.columns.reduce((acc, col) => {
+      acc[col.name] = col;
+      return acc;
+    }, {} as Record<string, ColumnStats>) || {};
+  }, [profile]);
+
+  // Calculate overall data quality score
+  const qualityScore = useMemo(() => {
+    if (!profile) return 0;
+    const issueCount = profile.dataQualityIssues?.length || 0;
+    const colCount = profile.columns.length;
+    const avgMissing = profile.columns.reduce((sum, col) => sum + col.missingPercent, 0) / colCount;
+    
+    // Score based on issues and missing data
+    let score = 100;
+    score -= issueCount * 5; // -5 per issue
+    score -= avgMissing * 0.5; // -0.5 per % missing
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }, [profile]);
 
   useEffect(() => {
     if (dataset && dataset.preview_data) {
@@ -49,21 +71,8 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     }
   }, [dataset]);
 
-  // OPTIMIZED: Async processing to prevent UI blocking
   const generateProfile = async () => {
-    console.log('🔍 DataProfiler - Generating profile for dataset:', dataset.name);
-    console.log('📊 Dataset structure:', {
-      hasPreviewData: !!dataset.preview_data,
-      previewData: dataset.preview_data
-    });
-    
-    // Validate preview_data structure
     if (!dataset.preview_data || !dataset.preview_data.columns || !dataset.preview_data.rows) {
-      console.error('❌ No preview data:', {
-        hasPreviewData: !!dataset.preview_data,
-        hasColumns: dataset.preview_data?.columns,
-        hasRows: dataset.preview_data?.rows
-      });
       toast.error('No preview data available');
       return;
     }
@@ -73,41 +82,23 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     try {
       const { columns, rows } = dataset.preview_data!;
       
-      console.log('✅ Preview data extracted:', {
-        columnsCount: columns.length,
-        rowsCount: rows.length,
-        columnsType: Array.isArray(columns),
-        rowsType: Array.isArray(rows)
-      });
-      
-      // Validate rows is an array with data
       if (!Array.isArray(rows) || rows.length === 0) {
-        console.error('❌ Invalid rows:', { isArray: Array.isArray(rows), length: rows?.length });
         toast.error('Dataset contains no data rows');
         setIsLoading(false);
         return;
       }
       
-      // OPTIMIZATION: Use requestIdleCallback or setTimeout to prevent blocking
-      // This allows the UI to stay responsive during heavy computation
       await new Promise(resolve => setTimeout(resolve, 0));
       
-      // FIXED: Pass correct argument format
       const dataProfile = profileDataset({ columns, rows });
       setProfile(dataProfile);
       setIsLoading(false);
       
-      // Select first column by default
       if (columns.length > 0 && !selectedColumn) {
         setSelectedColumn(columns[0]);
       }
       
-      const rowCount = rows.length;
-      toast.success(
-        rowCount > 10000 
-          ? `Profile generated (sampled from ${rowCount.toLocaleString()} rows)`
-          : 'Data profile generated successfully'
-      );
+      toast.success('Data profile generated successfully');
     } catch (error) {
       console.error('Error generating profile:', error);
       setIsLoading(false);
@@ -139,95 +130,61 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
   const getColumnTypeIcon = (type: string) => {
     switch (type) {
       case 'numeric':
-        return <BarChart2 className="w-4 h-4 text-blue-500" />;
+        return <Hash className="w-4 h-4" />;
       case 'categorical':
-        return <PieChart className="w-4 h-4 text-green-500" />;
+        return <Type className="w-4 h-4" />;
       case 'datetime':
-        return <Clock className="w-4 h-4 text-primary" />;
+        return <Calendar className="w-4 h-4" />;
       case 'boolean':
-        return <Check className="w-4 h-4 text-amber-500" />;
+        return <ToggleLeft className="w-4 h-4" />;
       default:
-        return <FileText className="w-4 h-4 text-gray-500" />;
+        return <FileText className="w-4 h-4" />;
     }
   };
 
-  const getColumnTypeColor = (type: string) => {
+  const getColumnTypeConfig = (type: string) => {
     switch (type) {
       case 'numeric':
-        return 'bg-blue-100 text-blue-800';
+        return { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', icon: 'text-blue-400' };
       case 'categorical':
-        return 'bg-green-100 text-green-800';
+        return { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', icon: 'text-emerald-400' };
       case 'datetime':
-        return 'bg-primary/10 text-primary-800';
+        return { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', icon: 'text-purple-400' };
       case 'boolean':
-        return 'bg-amber-100 text-amber-800';
+        return { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: 'text-amber-400' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bg: 'bg-gray-500/10', border: 'border-gray-500/30', text: 'text-gray-400', icon: 'text-gray-400' };
     }
   };
 
-  const getIssueTypeIcon = () => {
-    return <AlertTriangle className="w-4 h-4 text-amber-500" />;
-  };
-
-  const getIssueTypeColor = (severity: string) => {
-    switch (severity) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-amber-100 text-amber-800';
-      case 'low':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getRecommendationImpactColor = (impact: string) => {
-    switch (impact) {
-      case 'high':
-        return 'bg-green-100 text-green-800';
-      case 'medium':
-        return 'bg-blue-100 text-blue-800';
-      case 'low':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const renderColumnHistogram = () => {
-    // Histogram data not available in current ColumnStats structure
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-sm text-gray-400">Histogram visualization coming soon</p>
-      </div>
-    );
+  const getQualityScoreColor = (score: number) => {
+    if (score >= 80) return { text: 'text-emerald-400', bg: 'bg-emerald-500', ring: 'ring-emerald-500/20' };
+    if (score >= 60) return { text: 'text-amber-400', bg: 'bg-amber-500', ring: 'ring-amber-500/20' };
+    return { text: 'text-red-400', bg: 'bg-red-500', ring: 'ring-red-500/20' };
   };
 
   const renderCategoricalDistribution = (column: ColumnStats) => {
     if ((column.type !== 'categorical' && column.type !== 'boolean') || !column.topValues || column.topValues.length === 0) return null;
     
-    const topEntries = column.topValues.slice(0, 10);
+    const topEntries = column.topValues.slice(0, 8);
     
     const data = {
-      labels: topEntries.map(item => String(item.value)),
+      labels: topEntries.map(item => String(item.value).slice(0, 15)),
       datasets: [
         {
           data: topEntries.map(item => item.percent),
           backgroundColor: [
-            'rgba(79, 70, 229, 0.6)',
-            'rgba(16, 185, 129, 0.6)',
-            'rgba(245, 158, 11, 0.6)',
-            'rgba(239, 68, 68, 0.6)',
-            'rgba(139, 92, 246, 0.6)',
-            'rgba(236, 72, 153, 0.6)',
-            'rgba(6, 182, 212, 0.6)',
-            'rgba(249, 115, 22, 0.6)',
-            'rgba(168, 85, 247, 0.6)',
-            'rgba(59, 130, 246, 0.6)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(236, 72, 153, 0.8)',
+            'rgba(6, 182, 212, 0.8)',
+            'rgba(249, 115, 22, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
           ],
-          borderWidth: 1,
+          borderWidth: 0,
+          borderRadius: 4,
         },
       ],
     };
@@ -235,465 +192,589 @@ const DataProfiler: React.FC<DataProfilerProps> = ({
     const options = {
       responsive: true,
       maintainAspectRatio: false,
+      indexAxis: 'y' as const,
       plugins: {
-        legend: {
-          position: 'right' as const,
-        },
+        legend: { display: false },
         tooltip: {
+          backgroundColor: 'rgba(17, 24, 39, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#9ca3af',
+          borderColor: 'rgba(75, 85, 99, 0.3)',
+          borderWidth: 1,
+          padding: 12,
           callbacks: {
             label: function(context: any) {
-              return `${context.label}: ${context.raw.toFixed(1)}%`;
+              return `${context.raw.toFixed(1)}%`;
             }
           }
         }
       },
+      scales: {
+        x: {
+          grid: { color: 'rgba(75, 85, 99, 0.2)' },
+          ticks: { color: '#9ca3af' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#e5e7eb' }
+        }
+      }
     };
     
     return (
-      <div className="h-64">
-        <Pie data={data} options={options} />
+      <div className="h-48">
+        <Bar data={data} options={options} />
       </div>
     );
   };
 
   if (!dataset.preview_data) {
     return (
-      <Card>
-        <div className="flex items-center justify-center p-8">
-          <AlertTriangle className="w-8 h-8 text-amber-500 mr-2" />
-          <p className="text-lg text-gray-700">No data available for profiling</p>
+      <div className="bg-[#0a0f1a] rounded-2xl border border-gray-800 p-12">
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4">
+            <AlertTriangle className="w-8 h-8 text-amber-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">No Data Available</h3>
+          <p className="text-gray-400">This dataset doesn't have preview data for profiling</p>
         </div>
-      </Card>
+      </div>
     );
   }
 
+  const scoreColors = getQualityScoreColor(qualityScore);
+
   return (
-    <Card>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
-            <BarChart2 className="w-6 h-6 text-primary-600" />
+    <div className="bg-[#0a0f1a] rounded-2xl border border-gray-800 overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 border-b border-gray-800 bg-gradient-to-r from-[#0a0f1a] to-[#111827]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <BarChart2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Data Profile</h2>
+              <p className="text-sm text-gray-400 mt-0.5">{dataset.name}</p>
+            </div>
           </div>
-          <div className="ml-4">
-            <h3 className="text-sm font-medium text-gray-900">Data Profile</h3>
-            <p className="mt-1 text-xs text-gray-500">
-              Comprehensive analysis of your dataset
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={generateProfile}
-            disabled={isLoading}
-            icon={isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          >
-            {isLoading ? 'Generating...' : 'Refresh'}
-          </Button>
-          {profile && (
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
-              icon={<Download className="w-4 h-4" />}
-              onClick={() => {
-                const json = JSON.stringify(profile, null, 2);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${dataset.name}-profile.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
+              onClick={generateProfile}
+              disabled={isLoading}
+              className="border-gray-700 hover:border-gray-600 text-gray-300"
             >
-              Export
+              {isLoading ? (
+                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              {isLoading ? 'Analyzing...' : 'Refresh'}
             </Button>
-          )}
+            {profile && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gray-700 hover:border-gray-600 text-gray-300"
+                onClick={() => {
+                  const json = JSON.stringify(profile, null, 2);
+                  const blob = new Blob([json], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${dataset.name}-profile.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
-          <RefreshCw className="w-10 h-10 text-blue-400 animate-spin mb-4" />
-          <p className="text-lg font-medium text-gray-300">Generating data profile...</p>
+        <div className="p-16 flex flex-col items-center justify-center">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full border-4 border-gray-800 border-t-blue-500 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-blue-400 animate-pulse" />
+            </div>
+          </div>
+          <p className="text-lg font-medium text-white mt-6">Analyzing your data...</p>
+          <p className="text-sm text-gray-500 mt-2">This may take a moment for large datasets</p>
         </div>
       ) : !profile ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
-          <AlertTriangle className="w-10 h-10 text-amber-400 mb-4" />
-          <p className="text-gray-700">No profile generated yet</p>
-          <Button
-            className="mt-4"
-            onClick={generateProfile}
-          >
+        <div className="p-16 flex flex-col items-center justify-center">
+          <div className="w-20 h-20 rounded-2xl bg-gray-800/50 flex items-center justify-center mb-6">
+            <Target className="w-10 h-10 text-gray-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Ready to Analyze</h3>
+          <p className="text-gray-400 mb-6">Generate a comprehensive profile of your dataset</p>
+          <Button onClick={generateProfile} className="bg-blue-600 hover:bg-blue-500">
+            <Zap className="w-4 h-4 mr-2" />
             Generate Profile
           </Button>
         </div>
       ) : (
         <>
-          <div className="mb-6">
-            <div className="border-b border-gray-800">
-              <nav className="-mb-px flex space-x-8">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
-                    activeTab === 'overview'
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('columns')}
-                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
-                    activeTab === 'columns'
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  Columns
-                </button>
-                <button
-                  onClick={() => setActiveTab('issues')}
-                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
-                    activeTab === 'issues'
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    Issues
-                    {profile?.dataQualityIssues && profile.dataQualityIssues.length > 0 && (
-                      <span className="ml-2 px-2 py-1 text-xs font-bold rounded-md bg-amber-500/20 border border-amber-500/30 text-amber-400">
-                        {profile.dataQualityIssues.length}
-                      </span>
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('recommendations')}
-                  className={`py-4 px-1 border-b-2 font-semibold text-sm transition-colors ${
-                    activeTab === 'recommendations'
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    Recommendations
-                    {profile?.recommendations && profile.recommendations.length > 0 && (
-                      <span className="ml-2 px-2 py-1 text-xs font-bold rounded-md bg-emerald-500/20 border border-emerald-500/30 text-emerald-400">
-                        {profile.recommendations.length}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              </nav>
-            </div>
-          </div>
-
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-gray-700 transition-all">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rows</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{profile.totalRows.toLocaleString()}</p>
-                </div>
-                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-gray-700 transition-all">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Columns</p>
-                  <p className="mt-2 text-3xl font-bold text-white">{profile.columns.length}</p>
-                </div>
-                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-amber-500/30 transition-all">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quality Issues</p>
-                  <p className="mt-2 text-3xl font-bold text-amber-400">{profile.dataQualityIssues?.length || 0}</p>
-                </div>
-                <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-emerald-500/30 transition-all">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Recommendations</p>
-                  <p className="mt-2 text-3xl font-bold text-emerald-400">{profile.recommendations?.length || 0}</p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-base font-bold text-white mb-4">Column Types</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  {['numeric', 'categorical', 'datetime', 'boolean', 'text'].map(type => {
-                    const count = Object.values(columnProfiles).filter((col: any) => col.type === type).length;
-                    if (count === 0) return null;
-                    
-                    return (
-                      <div key={type} className="p-4 bg-gray-900/50 rounded-lg border border-gray-800 hover:border-blue-500/30 transition-all">
-                        <div className="flex items-center gap-2">
-                          {getColumnTypeIcon(type)}
-                          <span className="text-sm font-semibold text-gray-300 capitalize">{type}</span>
-                        </div>
-                        <p className="mt-3 text-2xl font-bold text-white">{count}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'columns' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <h4 className="text-base font-bold text-white mb-4">Select Column</h4>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {Object.keys(columnProfiles).map((column) => (
-                    <button
-                      key={column}
-                      onClick={() => setSelectedColumn(column)}
-                      className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
-                        selectedColumn === column
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : 'border-gray-800 bg-gray-900/50 hover:border-gray-700 hover:bg-gray-900'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-white">{column}</span>
-                        <span className={`px-2 py-1 text-xs font-bold rounded ${
-                          getColumnTypeColor(columnProfiles[column].type)
-                        }`}>
-                          {columnProfiles[column].type}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {selectedColumn && columnProfiles[selectedColumn] && (
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800">
-                      <h4 className="text-base font-bold text-white mb-4">Statistics</h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-400">Type</span>
-                          <span className={`px-2 py-1 text-xs font-bold rounded ${
-                            getColumnTypeColor(columnProfiles[selectedColumn].type)
-                          }`}>
-                            {columnProfiles[selectedColumn].type}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-400">Count</span>
-                          <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].count}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-400">Missing</span>
-                          <span className="text-sm font-bold text-white">
-                            {columnProfiles[selectedColumn].missing} ({columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-400">Unique</span>
-                          <span className="text-sm font-bold text-white">
-                            {columnProfiles[selectedColumn].unique} ({columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
-                          </span>
-                        </div>
-
-                        {columnProfiles[selectedColumn].type === 'numeric' && (
-                          <>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Mean</span>
-                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.mean?.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Median</span>
-                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.median?.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Std Dev</span>
-                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.std?.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Min</span>
-                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.min}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Max</span>
-                              <span className="text-sm font-bold text-white">{columnProfiles[selectedColumn].stats.max}</span>
-                            </div>
-                          </>
-                        )}
-                            
-                        {columnProfiles[selectedColumn].type === 'datetime' && (
-                          <>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Min Date</span>
-                              <span className="text-sm font-bold text-white">
-                                {new Date(columnProfiles[selectedColumn].stats.min as string).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-400">Max Date</span>
-                              <span className="text-sm font-bold text-white">
-                                {new Date(columnProfiles[selectedColumn].stats.max as string).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="p-5 bg-gray-900/50 rounded-lg border border-gray-800">
-                      <h4 className="text-base font-bold text-white mb-4">Distribution</h4>
-                      {columnProfiles[selectedColumn].type === 'numeric' ? (
-                        renderColumnHistogram()
-                      ) : (columnProfiles[selectedColumn].type === 'categorical' || 
-                           columnProfiles[selectedColumn].type === 'boolean') ? (
-                        renderCategoricalDistribution(columnProfiles[selectedColumn])
-                      ) : (
-                        <div className="flex items-center justify-center h-64">
-                          <p className="text-sm text-gray-400">No distribution visualization available for this column type</p>
-                        </div>
-                      )}
-                    </div>
+          {/* Quality Score Banner */}
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-900/50 to-transparent border-b border-gray-800/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                {/* Quality Score Circle */}
+                <div className={`relative w-16 h-16 rounded-full ${scoreColors.ring} ring-4`}>
+                  <svg className="w-16 h-16 transform -rotate-90">
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      className="text-gray-800"
+                    />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeDasharray={`${qualityScore * 1.76} 176`}
+                      className={scoreColors.text}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={`text-lg font-bold ${scoreColors.text}`}>{qualityScore}</span>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'issues' && (
-            <div className="space-y-4">
-              {!profile.dataQualityIssues || profile.dataQualityIssues.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-gray-900/50 rounded-lg border border-gray-800">
-                  <Check className="w-16 h-16 text-emerald-400 mb-4" />
-                  <p className="text-xl font-bold text-white">No data quality issues detected</p>
-                  <p className="text-sm text-gray-400 mt-2">Your dataset looks good!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {profile.dataQualityIssues.map((issue, index) => (
-                    <div key={index} className={`p-5 rounded-lg border ${
-                      issue.severity === 'high' 
-                        ? 'border-red-500/50 bg-red-500/10' 
-                        : issue.severity === 'medium'
-                        ? 'border-amber-500/50 bg-amber-500/10'
-                        : 'border-blue-500/50 bg-blue-500/10'
-                    }`}>
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0">
-                          {getIssueTypeIcon()}
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-base font-bold text-white">{issue.type.replace(/_/g, ' ')}</h4>
-                            <span className={`px-3 py-1 text-xs font-bold rounded-md ${getIssueTypeColor(issue.severity)}`}>
-                              {issue.severity}
-                            </span>
-                          </div>
-                          {issue.column && (
-                            <p className="text-sm font-semibold text-gray-300 mt-2">Column: {issue.column}</p>
-                          )}
-                          <div className={`mt-3 text-sm font-medium ${
-                            issue.severity === 'high' 
-                              ? 'text-red-300' 
-                              : issue.severity === 'medium'
-                              ? 'text-amber-300'
-                              : 'text-blue-300'
-                          }`}>
-                            <p>{issue.description}</p>
-                            {issue.affectedRows && (
-                              <p className="mt-2">
-                                Affects {issue.affectedRows.toLocaleString()} rows 
-                                ({((issue.affectedRows / profile.totalRows) * 100).toFixed(1)}% of data)
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'recommendations' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-medium text-gray-700">Preprocessing Recommendations</h4>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedRecommendations(
-                      profile.recommendations.map(rec => `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`)
-                    )}
-                  >
-                    Select All
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleApplyRecommendations}
-                    disabled={selectedRecommendations.length === 0 || !onApplyRecommendations}
-                    icon={<Zap className="w-4 h-4" />}
-                  >
-                    Apply Selected ({selectedRecommendations.length})
-                  </Button>
+                <div>
+                  <p className="text-sm font-medium text-gray-400">Data Quality Score</p>
+                  <p className={`text-lg font-semibold ${scoreColors.text}`}>
+                    {qualityScore >= 80 ? 'Excellent' : qualityScore >= 60 ? 'Good' : 'Needs Attention'}
+                  </p>
                 </div>
               </div>
               
-              {profile.recommendations.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8">
-                  <Check className="w-12 h-12 text-green-500 mb-4" />
-                  <p className="text-lg font-medium text-gray-900">No preprocessing recommendations</p>
-                  <p className="text-sm text-gray-500 mt-1">Your dataset is ready for modeling!</p>
+              {/* Quick Stats */}
+              <div className="flex items-center gap-8">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{profile.totalRows.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">Rows</p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {profile.recommendations.map((rec, index) => {
-                    const recId = `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`;
-                    const isSelected = selectedRecommendations.includes(recId);
-                    
-                    return (
-                      <div
-                        key={index}
-                        onClick={() => toggleRecommendation(rec)}
-                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                          isSelected
-                            ? 'border-primary bg-primary/5'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 mt-0.5">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected
-                                ? 'border-primary bg-primary'
-                                : 'border-gray-300'
-                            }`}>
-                              {isSelected && <Check className="w-3 h-3 text-white" />}
-                            </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-white">{profile.columns.length}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">Columns</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-amber-400">{profile.dataQualityIssues?.length || 0}</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">Issues</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="px-6 border-b border-gray-800">
+            <nav className="flex gap-1">
+              {[
+                { id: 'overview', label: 'Overview', icon: BarChart2 },
+                { id: 'columns', label: 'Columns', icon: FileText },
+                { id: 'issues', label: 'Issues', icon: AlertCircle, count: profile.dataQualityIssues?.length },
+                { id: 'recommendations', label: 'Recommendations', icon: Sparkles, count: profile.recommendations?.length }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                      tab.id === 'issues' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Column Type Distribution */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Column Types</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {['numeric', 'categorical', 'datetime', 'boolean', 'text'].map(type => {
+                      const count = Object.values(columnProfiles).filter((col: ColumnStats) => col.type === type).length;
+                      if (count === 0) return null;
+                      const config = getColumnTypeConfig(type);
+                      
+                      return (
+                        <div key={type} className={`p-4 rounded-xl ${config.bg} border ${config.border}`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={config.icon}>{getColumnTypeIcon(type)}</span>
+                            <span className={`text-sm font-medium ${config.text} capitalize`}>{type}</span>
                           </div>
-                          <div className="ml-3 flex-1">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-sm font-medium text-gray-900">{rec.type.replace(/_/g, ' ')}</h4>
-                              <span className={`px-2 py-1 text-xs font-medium rounded ${getRecommendationImpactColor(rec.priority)}`}>
-                                {rec.priority} priority
-                              </span>
-                            </div>
-                            {rec.column && (
-                              <p className="text-sm font-medium text-gray-700 mt-1">Column: {rec.column}</p>
-                            )}
-                            <p className="text-sm text-gray-600 mt-2">{rec.description}</p>
-                            <p className="text-sm font-medium text-primary-600 mt-2">Method: {rec.suggestedMethod}</p>
+                          <p className="text-2xl font-bold text-white">{count}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Column Overview Table */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Column Overview</h3>
+                  <div className="overflow-x-auto rounded-xl border border-gray-800">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-900/50 border-b border-gray-800">
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Column</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Missing</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Unique</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Sample Values</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {Object.entries(columnProfiles).map(([name, col]) => {
+                          const config = getColumnTypeConfig(col.type);
+                          return (
+                            <tr key={name} className="hover:bg-gray-900/30 transition-colors">
+                              <td className="px-4 py-3">
+                                <span className="text-sm font-medium text-white">{name}</span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${config.bg} ${config.text} ${config.border} border`}>
+                                  {getColumnTypeIcon(col.type)}
+                                  {col.type}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${col.missingPercent > 10 ? 'bg-red-500' : col.missingPercent > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                      style={{ width: `${Math.min(100, col.missingPercent)}%` }}
+                                    />
+                                  </div>
+                                  <span className={`text-xs font-medium ${col.missingPercent > 10 ? 'text-red-400' : col.missingPercent > 0 ? 'text-amber-400' : 'text-gray-400'}`}>
+                                    {col.missingPercent.toFixed(1)}%
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-sm text-gray-300">{col.unique.toLocaleString()}</span>
+                                <span className="text-xs text-gray-500 ml-1">({col.uniquePercent.toFixed(0)}%)</span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-1.5">
+                                  {col.topValues?.slice(0, 3).map((v, i) => (
+                                    <span key={i} className="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-300 truncate max-w-[80px]">
+                                      {String(v.value)}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'columns' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Column Selector */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Select Column</h3>
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                    {Object.keys(columnProfiles).map((column) => {
+                      const col = columnProfiles[column];
+                      const config = getColumnTypeConfig(col.type);
+                      return (
+                        <button
+                          key={column}
+                          onClick={() => setSelectedColumn(column)}
+                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                            selectedColumn === column
+                              ? 'border-blue-500 bg-blue-500/10'
+                              : 'border-gray-800 bg-gray-900/30 hover:border-gray-700 hover:bg-gray-900/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-white truncate">{column}</span>
+                            <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${config.bg} ${config.text}`}>
+                              {getColumnTypeIcon(col.type)}
+                              {col.type}
+                            </span>
                           </div>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                            <span>{col.count} values</span>
+                            <span>{col.missingPercent.toFixed(1)}% missing</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Column Details */}
+                {selectedColumn && columnProfiles[selectedColumn] && (
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Statistics Card */}
+                      <div className="p-5 bg-gray-900/30 rounded-xl border border-gray-800">
+                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Statistics</h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                            <span className="text-sm text-gray-400">Type</span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getColumnTypeConfig(columnProfiles[selectedColumn].type).bg} ${getColumnTypeConfig(columnProfiles[selectedColumn].type).text}`}>
+                              {columnProfiles[selectedColumn].type}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                            <span className="text-sm text-gray-400">Count</span>
+                            <span className="text-sm font-semibold text-white">{columnProfiles[selectedColumn].count.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                            <span className="text-sm text-gray-400">Missing</span>
+                            <span className={`text-sm font-semibold ${columnProfiles[selectedColumn].missingPercent > 10 ? 'text-red-400' : 'text-white'}`}>
+                              {columnProfiles[selectedColumn].missing.toLocaleString()} ({columnProfiles[selectedColumn].missingPercent.toFixed(1)}%)
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                            <span className="text-sm text-gray-400">Unique</span>
+                            <span className="text-sm font-semibold text-white">
+                              {columnProfiles[selectedColumn].unique.toLocaleString()} ({columnProfiles[selectedColumn].uniquePercent.toFixed(1)}%)
+                            </span>
+                          </div>
+
+                          {columnProfiles[selectedColumn].type === 'numeric' && columnProfiles[selectedColumn].mean !== undefined && (
+                            <>
+                              <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                                <span className="text-sm text-gray-400">Mean</span>
+                                <span className="text-sm font-semibold text-blue-400">{columnProfiles[selectedColumn].mean?.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                                <span className="text-sm text-gray-400">Median</span>
+                                <span className="text-sm font-semibold text-blue-400">{columnProfiles[selectedColumn].median?.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2 border-b border-gray-800/50">
+                                <span className="text-sm text-gray-400">Std Dev</span>
+                                <span className="text-sm font-semibold text-white">{columnProfiles[selectedColumn].std?.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-2">
+                                <span className="text-sm text-gray-400">Range</span>
+                                <span className="text-sm font-semibold text-white">
+                                  {columnProfiles[selectedColumn].min} → {columnProfiles[selectedColumn].max}
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+                      
+                      {/* Distribution Card */}
+                      <div className="p-5 bg-gray-900/30 rounded-xl border border-gray-800">
+                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Distribution</h4>
+                        {(columnProfiles[selectedColumn].type === 'categorical' || columnProfiles[selectedColumn].type === 'boolean') ? (
+                          renderCategoricalDistribution(columnProfiles[selectedColumn])
+                        ) : columnProfiles[selectedColumn].type === 'numeric' ? (
+                          <div className="h-48 flex flex-col items-center justify-center text-center">
+                            <TrendingUp className="w-10 h-10 text-gray-700 mb-3" />
+                            <p className="text-sm text-gray-500">Numeric distribution</p>
+                            <p className="text-xs text-gray-600 mt-1">
+                              Min: {columnProfiles[selectedColumn].min} | Max: {columnProfiles[selectedColumn].max}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="h-48 flex items-center justify-center">
+                            <p className="text-sm text-gray-500">No visualization available</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'issues' && (
+              <div className="space-y-4">
+                {!profile.dataQualityIssues || profile.dataQualityIssues.length === 0 ? (
+                  <div className="p-12 flex flex-col items-center justify-center text-center rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">No Issues Detected</h3>
+                    <p className="text-gray-400">Your dataset looks clean and ready for analysis!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {profile.dataQualityIssues.map((issue, index) => {
+                      const severityConfig = {
+                        high: { bg: 'bg-red-500/10', border: 'border-red-500/30', icon: 'text-red-400', text: 'text-red-300' },
+                        medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', icon: 'text-amber-400', text: 'text-amber-300' },
+                        low: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', icon: 'text-blue-400', text: 'text-blue-300' }
+                      }[issue.severity] || { bg: 'bg-gray-500/10', border: 'border-gray-500/30', icon: 'text-gray-400', text: 'text-gray-300' };
+                      
+                      return (
+                        <div key={index} className={`p-5 rounded-xl ${severityConfig.bg} border ${severityConfig.border}`}>
+                          <div className="flex items-start gap-4">
+                            <div className={`p-2 rounded-lg ${severityConfig.bg}`}>
+                              <AlertTriangle className={`w-5 h-5 ${severityConfig.icon}`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-base font-semibold text-white capitalize">
+                                  {issue.type.replace(/_/g, ' ')}
+                                </h4>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${severityConfig.bg} ${severityConfig.icon} border ${severityConfig.border}`}>
+                                  {issue.severity}
+                                </span>
+                              </div>
+                              {issue.column && (
+                                <p className="text-sm text-gray-400 mb-2">
+                                  Column: <span className="font-medium text-white">{issue.column}</span>
+                                </p>
+                              )}
+                              <p className={`text-sm ${severityConfig.text}`}>{issue.description}</p>
+                              {issue.affectedRows && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Affects {issue.affectedRows.toLocaleString()} rows ({((issue.affectedRows / profile.totalRows) * 100).toFixed(1)}% of data)
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'recommendations' && (
+              <div className="space-y-4">
+                {profile.recommendations.length === 0 ? (
+                  <div className="p-12 flex flex-col items-center justify-center text-center rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Ready for Modeling</h3>
+                    <p className="text-gray-400">Your dataset doesn't need any preprocessing!</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-gray-400">
+                        Select recommendations to apply automated preprocessing
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-700 text-gray-300"
+                          onClick={() => setSelectedRecommendations(
+                            profile.recommendations.map(rec => `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`)
+                          )}
+                        >
+                          Select All
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleApplyRecommendations}
+                          disabled={selectedRecommendations.length === 0 || !onApplyRecommendations}
+                          className="bg-blue-600 hover:bg-blue-500"
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          Apply ({selectedRecommendations.length})
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {profile.recommendations.map((rec, index) => {
+                        const recId = `${rec.type}-${rec.column || 'global'}-${rec.suggestedMethod}`;
+                        const isSelected = selectedRecommendations.includes(recId);
+                        
+                        return (
+                          <div
+                            key={index}
+                            onClick={() => toggleRecommendation(rec)}
+                            className={`p-5 rounded-xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-500/10'
+                                : 'border-gray-800 bg-gray-900/30 hover:border-gray-700'
+                            }`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                                isSelected
+                                  ? 'border-blue-500 bg-blue-500'
+                                  : 'border-gray-600'
+                              }`}>
+                                {isSelected && <Check className="w-4 h-4 text-white" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="text-base font-semibold text-white capitalize">
+                                    {rec.type.replace(/_/g, ' ')}
+                                  </h4>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    rec.priority === 'high' ? 'bg-emerald-500/20 text-emerald-400' :
+                                    rec.priority === 'medium' ? 'bg-blue-500/20 text-blue-400' :
+                                    'bg-gray-500/20 text-gray-400'
+                                  }`}>
+                                    {rec.priority} priority
+                                  </span>
+                                </div>
+                                {rec.column && (
+                                  <p className="text-sm text-gray-400 mb-1">
+                                    Column: <span className="font-medium text-white">{rec.column}</span>
+                                  </p>
+                                )}
+                                <p className="text-sm text-gray-400">{rec.description}</p>
+                                <div className="mt-3 flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">Method:</span>
+                                  <span className="px-2 py-0.5 bg-gray-800 rounded text-xs font-medium text-blue-400">
+                                    {rec.suggestedMethod}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
-    </Card>
+    </div>
   );
 };
 
