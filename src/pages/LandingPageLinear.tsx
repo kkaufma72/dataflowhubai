@@ -26,7 +26,12 @@ const LandingPageLinear: React.FC = () => {
   const { showPopup: showExitPopup, setShowPopup: setShowExitPopup } = useExitIntent();
 
   const handlePlanSelect = useCallback(async (tier: string, billing: 'monthly' | 'annual') => {
-    const normalizedTier = tier.toLowerCase();
+    let normalizedTier = tier.toLowerCase();
+
+    // Map 'pro' to 'professional' for Stripe price lookup
+    if (normalizedTier === 'pro') {
+      normalizedTier = 'professional';
+    }
 
     if (normalizedTier === 'free') {
       window.location.href = '/signin';
