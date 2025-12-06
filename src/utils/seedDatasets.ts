@@ -111,4 +111,3 @@ export const hasSampleDatasets = async (projectId: string) => {
     return false;
   }
 };
-};
