@@ -4,46 +4,38 @@ import { supabase } from '../lib/supabase';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 
 export const seedEnhancedDatasets = async (userId: string, projectId: string | null = null) => {
+  console.log('⏱️ Starting sample data seed...');
+  const startTime = Date.now();
+  
   try {
     const datasets = generateEnhancedSampleDatasets();
+    console.log(`📊 Generated ${datasets.length} sample datasets locally`);
     
-    // Check if these specific sample datasets already exist for this user
-    const sampleIds = datasets.map(d => d.id);
-    const { data: existingDatasets, error: checkError } = await supabase
-      .from('datasets')
-      .select('id')
-      .eq('user_id', userId)
-      .in('id', sampleIds);
-    
-    if (checkError) {
-      console.warn('Could not check existing datasets:', checkError);
-    }
-    
-    if (existingDatasets && existingDatasets.length > 0) {
-      // User already has sample datasets - skip silently
-      return existingDatasets;
-    }
-    
-    // Ensure we have a valid project_id (database requires it)
+    // Get or create project in a single efficient query
     let validProjectId = projectId;
     
     if (!validProjectId) {
-      // Try to get user's default project or create one
-      const { data: projects } = await supabase
+      console.log('🔍 Looking for existing project...');
+      const { data: projects, error: projError } = await supabase
         .from('projects')
         .select('id')
         .eq('user_id', userId)
         .limit(1);
       
+      if (projError) {
+        console.error('Project query error:', projError);
+      }
+      
       if (projects && projects.length > 0) {
         validProjectId = projects[0].id;
+        console.log('✅ Found existing project:', validProjectId);
       } else {
-        // Create a default project
+        console.log('📁 Creating new project...');
         const { data: newProject, error: createError } = await supabase
           .from('projects')
           .insert({
-            name: 'Sample Workspace',
-            description: 'Sample datasets and models',
+            name: 'My Workspace',
+            description: 'Default workspace for datasets and models',
             user_id: userId,
             created_at: new Date().toISOString()
           })
@@ -56,23 +48,14 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
         }
         
         validProjectId = newProject.id;
+        console.log('✅ Created new project:', validProjectId);
       }
     }
     
-    // Delete existing sample datasets with matching IDs (cleanup safety)
-    const { error: deleteError } = await supabase
-      .from('datasets')
-      .delete()
-      .eq('user_id', userId)
-      .in('id', datasets.map(d => d.id));
-    
-    if (deleteError) {
-      console.warn('Could not delete existing samples:', deleteError);
-    }
-    
-    // Insert all datasets
-    const datasetsToInsert = datasets.map(dataset => ({
-      id: dataset.id,
+    // Prepare datasets with unique IDs to avoid conflicts
+    const timestamp = Date.now();
+    const datasetsToInsert = datasets.map((dataset, index) => ({
+      id: `sample-${userId.slice(0, 8)}-${index}-${timestamp}`,
       name: dataset.name,
       description: dataset.description,
       file_type: dataset.file_type,
@@ -81,30 +64,29 @@ export const seedEnhancedDatasets = async (userId: string, projectId: string | n
       column_count: dataset.column_count,
       preview_data: dataset.preview_data,
       user_id: userId,
-      project_id: validProjectId, // Always include project_id (required by database)
+      project_id: validProjectId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));
     
+    console.log('💾 Inserting datasets into Supabase...');
     const { data, error } = await supabase
       .from('datasets')
       .insert(datasetsToInsert)
       .select();
     
     if (error) {
-      // Silently handle conflict errors (datasets already exist)
-      if (error.code === '23505') {
-        return [];
-      }
+      console.error('Insert error:', error);
       throw error;
     }
     
+    const duration = Date.now() - startTime;
+    console.log(`✅ Sample data loaded in ${duration}ms`);
+    
     return data;
   } catch (error: any) {
-    // Silently handle conflict errors
-    if (error?.code === '23505') {
-      return [];
-    }
+    const duration = Date.now() - startTime;
+    console.error(`❌ Sample data failed after ${duration}ms:`, error);
     throw error;
   }
 };
@@ -128,4 +110,5 @@ export const hasSampleDatasets = async (projectId: string) => {
     console.error('Error checking sample datasets:', error);
     return false;
   }
+};
 };
