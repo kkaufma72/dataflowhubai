@@ -18,6 +18,7 @@ import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
 import { influxdb } from '../lib/influxdb';
+import { experimentTracker } from '../lib/experimentTracking';
 import { useInfluxMetrics } from '../hooks/useInfluxMetrics';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -342,11 +343,13 @@ const ModelTraining: React.FC = () => {
 
       toast.loading('Starting model training...', { id: 'training' });
 
+      const modelName = `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model (${
+        config.algorithms.length > 1 ? 'Ensemble' : config.algorithms[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+      })`;
+
       const newModel: MLModel = {
         id: crypto.randomUUID(),
-        name: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} Model (${
-          config.algorithms.length > 1 ? 'Ensemble' : config.algorithms[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-        })`,
+        name: modelName,
         description: `${config.modelType === 'classification' ? 'Classification' : 'Regression'} model trained on ${
           datasets.find((d) => d.id === config.datasetId)?.name || 'dataset'
         }`,
@@ -356,6 +359,29 @@ const ModelTraining: React.FC = () => {
         projectId: currentProject.id,
         createdAt: new Date().toISOString(),
       };
+
+      // Start experiment tracking
+      let experimentId: string | null = null;
+      try {
+        experimentId = await experimentTracker.startExperiment({
+          modelName: modelName,
+          datasetId: config.datasetId,
+          userId: user?.id || '',
+          parameters: {
+            modelType: config.modelType,
+            algorithms: config.algorithms,
+            features: config.features,
+            targetColumn: config.targetColumn,
+          },
+          tags: [config.modelType, ...config.algorithms],
+        });
+        console.log('📊 Started experiment:', experimentId);
+      } catch (err) {
+        console.warn('Could not start experiment tracking:', err);
+      }
+
+      // Store experiment ID on the model for later reference
+      (newModel as any).experimentId = experimentId;
 
       await addModel(newModel);
       setCurrentTraining(newModel);
@@ -443,6 +469,19 @@ const ModelTraining: React.FC = () => {
               setIsTraining(false);
               setCurrentTraining(null);
               toast.success('Model training completed successfully!', { id: 'training' });
+              
+              // Complete experiment tracking
+              const expId = (newModel as any).experimentId;
+              if (expId && completedModel.metrics) {
+                experimentTracker.completeExperiment(expId, {
+                  accuracy: completedModel.metrics.accuracy || 0,
+                  precision: completedModel.metrics.precision || 0,
+                  recall: completedModel.metrics.recall || 0,
+                  f1_score: completedModel.metrics.f1Score || 0,
+                  auc: completedModel.metrics.auc || 0,
+                }).catch(err => console.warn('Could not complete experiment:', err));
+                console.log('✅ Completed experiment:', expId);
+              }
               
               // Log final metrics to InfluxDB
               if (influxdb.isAvailable() && completedModel.metrics) {
