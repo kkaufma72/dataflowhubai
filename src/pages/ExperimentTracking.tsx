@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/auth/AuthProvider';
 import { experimentTracker, Experiment } from '../lib/experimentTracking';
-import { TestTube, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search, Plus, Brain, Package2 } from 'lucide-react';
+import { TestTube, TrendingUp, Clock, GitBranch, Copy, Eye, Download, Filter, Search, Plus, Brain, Package2, X } from 'lucide-react';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import Button from '../components/common/Button';
+import toast from 'react-hot-toast';
 
 const ExperimentTracking: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const ExperimentTracking: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'running' | 'failed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedExperiment, setSelectedExperiment] = useState<Experiment | null>(null);
 
   useEffect(() => {
     loadExperiments();
@@ -208,14 +210,24 @@ const ExperimentTracking: React.FC = () => {
                   <td className="px-6 py-4 text-right">
                     <div className="flex gap-2 justify-end">
                       <button
-                        onClick={() => console.log('View experiment:', exp.id)}
+                        onClick={() => setSelectedExperiment(exp)}
                         className="p-1 text-gray-400 hover:text-indigo-600 transition-colors"
                         title="View details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => console.log('Reproduce experiment:', exp.id)}
+                        onClick={() => {
+                          // Navigate to training with pre-filled parameters
+                          toast.success('Reproducing experiment - navigating to training...');
+                          navigate('/app/train', { 
+                            state: { 
+                              reproduce: true,
+                              datasetId: exp.dataset_id,
+                              parameters: exp.parameters 
+                            } 
+                          });
+                        }}
                         className="p-1 text-gray-400 hover:text-indigo-600 transition-colors"
                         title="Reproduce"
                       >
@@ -230,6 +242,114 @@ const ExperimentTracking: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Experiment Details Modal */}
+      {selectedExperiment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Experiment Details</h2>
+              <button 
+                onClick={() => setSelectedExperiment(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Model Info */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Model</h3>
+                <p className="text-lg font-semibold text-gray-900">{selectedExperiment.model_name}</p>
+                <div className="flex gap-2 mt-2">
+                  {selectedExperiment.tags.map(tag => (
+                    <span key={tag} className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Metrics */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Metrics</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(selectedExperiment.metrics).map(([key, value]) => (
+                    <div key={key} className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 capitalize">{key.replace('_', ' ')}</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {typeof value === 'number' ? (value * 100).toFixed(1) + '%' : value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Parameters */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Parameters</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <pre className="text-sm text-gray-700 overflow-auto">
+                    {JSON.stringify(selectedExperiment.parameters, null, 2)}
+                  </pre>
+                </div>
+              </div>
+
+              {/* Timestamps */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Started</h3>
+                  <p className="text-sm text-gray-900">
+                    {new Date(selectedExperiment.started_at).toLocaleString()}
+                  </p>
+                </div>
+                {selectedExperiment.completed_at && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Completed</h3>
+                    <p className="text-sm text-gray-900">
+                      {new Date(selectedExperiment.completed_at).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Notes */}
+              {selectedExperiment.notes && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase mb-2">Notes</h3>
+                  <p className="text-sm text-gray-700">{selectedExperiment.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex gap-3">
+              <Button
+                onClick={() => {
+                  toast.success('Reproducing experiment...');
+                  navigate('/app/train', { 
+                    state: { 
+                      reproduce: true,
+                      datasetId: selectedExperiment.dataset_id,
+                      parameters: selectedExperiment.parameters 
+                    } 
+                  });
+                }}
+                className="flex-1"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Reproduce Experiment
+              </Button>
+              <button
+                onClick={() => setSelectedExperiment(null)}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
