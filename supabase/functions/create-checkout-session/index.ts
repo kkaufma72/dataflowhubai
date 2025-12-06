@@ -1,11 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,111 +9,62 @@ const corsHeaders = {
 interface CheckoutRequest {
   tier: 'starter' | 'professional' | 'team';
   billing: 'monthly' | 'annual';
-  email?: string; // Optional email for unauthenticated users
+  email?: string;
 }
 
 serve(async (req) => {
+  console.log('🚀 Checkout function invoked');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Parse request body first
-    const { tier, billing, email: providedEmail }: CheckoutRequest = await req.json();
+    // Initialize Stripe
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error('STRIPE_SECRET_KEY not configured');
+    }
+    
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
+    
+    console.log('✅ Stripe initialized');
+
+    // Parse request body
+    const { tier, billing, email }: CheckoutRequest = await req.json();
+    console.log('📦 Request:', { tier, billing, email });
 
     if (!tier || !billing) {
       throw new Error('Missing tier or billing period');
     }
 
-    // Get the authorization header (optional for signup flow)
-    const authHeader = req.headers.get('Authorization');
-
-    let user = null;
-    let userEmail = providedEmail;
-
-    // Try to get authenticated user if header exists
-    if (authHeader) {
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        {
-          global: {
-            headers: { Authorization: authHeader },
-          },
-        }
-      );
-
-      const { data: { user: authUser } } = await supabaseClient.auth.getUser();
-      if (authUser) {
-        user = authUser;
-        userEmail = authUser.email!;
-      }
-    }
-
-    // For unauthenticated users, email is required
-    if (!user && !userEmail) {
+    if (!email) {
       throw new Error('Email is required for checkout');
     }
 
     // Get price ID from environment variables
     const priceIdKey = `VITE_STRIPE_${tier.toUpperCase()}_${billing.toUpperCase()}_PRICE_ID`;
     const priceId = Deno.env.get(priceIdKey);
+    
+    console.log('🔑 Looking for price ID:', priceIdKey);
+    console.log('💰 Found price ID:', priceId ? 'Yes' : 'No');
 
     if (!priceId) {
-      throw new Error(`Price ID not found for ${tier} ${billing}`);
+      throw new Error(`Price ID not found for ${tier} ${billing}. Expected env var: ${priceIdKey}`);
     }
-
-    // Check if customer already exists (only for authenticated users)
-    let customerId: string | undefined;
-
-    if (user) {
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        {
-          global: {
-            headers: { Authorization: authHeader! },
-          },
-        }
-      );
-
-      const { data: existingCustomer } = await supabaseClient
-        .from('stripe_customers')
-        .select('stripe_customer_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingCustomer) {
-        customerId = existingCustomer.stripe_customer_id;
-      } else {
-        // Create new Stripe customer for authenticated user
-        const customer = await stripe.customers.create({
-          email: userEmail!,
-          metadata: {
-            supabase_user_id: user.id,
-          },
-        });
-
-        customerId = customer.id;
-
-        // Store customer in database
-        await supabaseClient.from('stripe_customers').insert({
-          user_id: user.id,
-          stripe_customer_id: customer.id,
-          email: userEmail!,
-        });
-      }
-    }
-    // For unauthenticated users, we'll create the customer during checkout
 
     // Get the origin for success and cancel URLs
-    // Use environment variable for production, fallback to origin header or localhost
-    const productionUrl = Deno.env.get('PRODUCTION_URL');
-    const origin = productionUrl || req.headers.get('origin') || 'http://localhost:5173';
+    const origin = req.headers.get('origin') || 'http://localhost:5173';
+    console.log('🌐 Origin:', origin);
 
-    // Prepare checkout session options
-    const sessionOptions: any = {
+    // Create checkout session (simplified - no customer lookup)
+    console.log('💳 Creating Stripe checkout session...');
+    
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
@@ -128,54 +73,24 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
+      customer_email: email,
       allow_promotion_codes: true,
-      billing_address_collection: 'auto',
-      phone_number_collection: {
-        enabled: true,
+      success_url: `${origin}/app?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing?canceled=true`,
+      metadata: {
+        tier,
+        billing,
+        email,
       },
-    };
-
-    // Different flow for authenticated vs unauthenticated users
-    if (user && customerId) {
-      // Authenticated user - use existing customer
-      sessionOptions.customer = customerId;
-      sessionOptions.success_url = `${origin}/app?success=true&session_id={CHECKOUT_SESSION_ID}`;
-      sessionOptions.cancel_url = `${origin}/pricing?canceled=true`;
-      sessionOptions.metadata = {
-        user_id: user.id,
-        tier,
-        billing,
-      };
-      sessionOptions.subscription_data = {
-        metadata: {
-          user_id: user.id,
-          tier,
-          billing,
-        },
-      };
-    } else {
-      // Unauthenticated user - create new customer and trigger account creation
-      sessionOptions.customer_email = userEmail;
-      sessionOptions.success_url = `${origin}/signup-complete?success=true&session_id={CHECKOUT_SESSION_ID}`;
-      sessionOptions.cancel_url = `${origin}/pricing?canceled=true`;
-      sessionOptions.client_reference_id = userEmail; // Use email as reference
-      sessionOptions.metadata = {
-        tier,
-        billing,
-        new_signup: 'true',
-        email: userEmail,
-      };
-      sessionOptions.subscription_data = {
+      subscription_data: {
         metadata: {
           tier,
           billing,
-          new_signup: 'true',
         },
-      };
-    }
+      },
+    });
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create(sessionOptions);
+    console.log('✅ Checkout session created:', session.id);
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),
@@ -185,7 +100,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('❌ Checkout error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
