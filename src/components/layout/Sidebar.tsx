@@ -18,8 +18,10 @@ import {
   Check,
   TrendingUp,
   TestTube,
-  ShoppingCart
+  ShoppingCart,
+  LogOut
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useMLContext } from '../../context/MLContext';
 import { supabase } from '../../lib/supabase';
 import { Project } from '../../types';
@@ -30,6 +32,7 @@ const SIDEBAR_STORAGE_KEY = 'sidebar_state';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { datasets, models } = useMLContext();
   const subscription = useSubscription();
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -146,6 +149,17 @@ const Sidebar: React.FC = () => {
     e.preventDefault();
     setUpgradeFeature(itemName);
     setShowUpgradePrompt(true);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+    }
   };
 
   const isActive = (path: string) => {
@@ -621,6 +635,20 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Sign Out Button */}
+      <div className={`px-3 py-3 border-t border-gray-700 ${isCollapsed ? '' : 'bg-gray-800/30'}`}>
+        <button
+          onClick={handleSignOut}
+          className={`w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors text-gray-400 hover:bg-red-500/10 hover:text-red-400 ${
+            isCollapsed ? 'justify-center' : ''
+          }`}
+          title={isCollapsed ? 'Sign Out' : ''}
+        >
+          <LogOut className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-5 h-5 mr-3'}`} />
+          {!isCollapsed && <span>Sign Out</span>}
+        </button>
+      </div>
 
       {/* Upgrade Prompt Modal */}
       {showUpgradePrompt && (
