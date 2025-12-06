@@ -157,47 +157,18 @@ const FREDDatasetImporter: React.FC = () => {
       let newDataset: any = null;
       let saveError: any = null;
 
-      // Try local API first (for development)
-      const localApiUrl = import.meta.env.VITE_LOCAL_API_URL || 'http://localhost:8001/api';
-      const useLocalDb = import.meta.env.VITE_USE_LOCAL_DB === 'true' || true; // Default to local for now
-
-      if (useLocalDb) {
-        try {
-          const response = await fetch(`${localApiUrl}/datasets`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datasetPayload)
-          });
-          
-          if (response.ok) {
-            newDataset = await response.json();
-            console.log('✅ Saved to local PostgreSQL:', newDataset.id);
-          } else {
-            const errorText = await response.text();
-            console.warn('Local DB save failed:', errorText);
-            saveError = new Error(errorText);
-          }
-        } catch (localError) {
-          console.warn('Local API not available, trying Supabase...', localError);
-          saveError = localError;
-        }
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('datasets')
+        .insert(datasetPayload)
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
       }
-
-      // Fallback to Supabase if local failed or not enabled
-      if (!newDataset) {
-        const { data, error } = await supabase
-          .from('datasets')
-          .insert(datasetPayload)
-          .select()
-          .single();
-        
-        if (error) {
-          // If both failed, throw the Supabase error
-          throw error;
-        }
-        newDataset = data;
-        console.log('✅ Saved to Supabase:', newDataset.id);
-      }
+      newDataset = data;
+      console.log('✅ Saved to Supabase:', newDataset.id);
 
       // Store full data in a separate table or file storage
       // For now, we'll just show success
