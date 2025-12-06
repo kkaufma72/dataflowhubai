@@ -91,6 +91,9 @@ type SupabaseDatasetRow = {
   created_at: string;
   project_id: string | null;
   preview_data?: Dataset['preview_data'];
+  source?: string;
+  metadata?: Record<string, any>;
+  tags?: string[];
 };
 
 const buildLocalSampleDatasets = async (): Promise<Dataset[]> => {
@@ -257,7 +260,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       // OPTIMIZATION: Parallel fetch of datasets and models using direct fetch
       const [datasetsResponse, modelsResponse] = await Promise.all([
         supabaseFetch(
-          `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
+          `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data,source,metadata,tags&order=created_at.desc`,
           { method: 'GET' }
         ),
         supabaseFetch(
@@ -280,6 +283,9 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         fileSize: ds.file_size,
         projectId: ds.project_id,
         preview_data: ds.preview_data,
+        source: ds.source,
+        metadata: ds.metadata,
+        tags: ds.tags,
       });
 
       const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []).map(
@@ -320,7 +326,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
               const refreshResponse = await withTimeout(
                 supabaseFetch(
-                  `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data&order=created_at.desc`,
+                  `/rest/v1/datasets?user_id=eq.${user.id}&select=id,name,description,row_count,column_count,file_type,file_size,created_at,user_id,preview_data,source,metadata,tags&order=created_at.desc`,
                   { method: 'GET' }
                 ),
                 8000

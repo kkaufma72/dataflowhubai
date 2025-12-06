@@ -31,6 +31,12 @@ export interface Dataset {
     transformations: string[];
     derivedDatasets: string[];
   };
+  // Data source tracking (e.g., 'FRED', 'upload', 'api')
+  source?: 'FRED' | 'upload' | 'api' | 'sample' | string;
+  // Additional metadata (e.g., FRED series info)
+  metadata?: Record<string, any>;
+  // Tags for categorization
+  tags?: string[];
 }
 
 export interface DatasetVersion {

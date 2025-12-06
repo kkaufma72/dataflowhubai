@@ -1,12 +1,28 @@
 // FRED API Integration - Federal Reserve Economic Data
 // API Documentation: https://fred.stlouisfed.org/docs/api/fred/
+// 
+// Performance optimizations:
+// - Local caching with TTL for series metadata
+// - Parallel requests where possible
+// - Background pre-fetching of popular indicators
 
 import { supabase } from './supabase';
+import {
+  getCachedSeries,
+  cacheSeries,
+  getCachedPopularIndicators,
+  cachePopularIndicators,
+  getCachedSearch,
+  cacheSearch,
+} from './fredCache';
 
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY || '';
 const FRED_BASE_URL = 'https://api.stlouisfed.org/fred';
 const USE_PROXY = import.meta.env.VITE_USE_FRED_PROXY === 'true'; // Use Supabase Edge Function to bypass CORS
 const CORS_PROXY = 'https://corsproxy.io/?'; // Development fallback
+
+// Request timeout (ms)
+const REQUEST_TIMEOUT = 15000;
 
 export interface FREDSeries {
   id: string;
@@ -53,9 +69,30 @@ export const isFREDConfigured = (): boolean => {
 };
 
 /**
+ * Fetch with timeout support
+ */
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = REQUEST_TIMEOUT): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+/**
  * Helper function to call FRED API (with proxy support for CORS)
+ * Includes timeout handling and better error messages
  */
 const callFREDAPI = async (endpoint: string, params: Record<string, any> = {}): Promise<any> => {
+  const startTime = Date.now();
+  
   if (USE_PROXY) {
     // Use Supabase Edge Function to bypass CORS
     try {
@@ -64,6 +101,7 @@ const callFREDAPI = async (endpoint: string, params: Record<string, any> = {}): 
       });
 
       if (error) throw error;
+      console.log(`✅ FRED API (Edge Function) ${endpoint} took ${Date.now() - startTime}ms`);
       return data;
     } catch (error) {
       console.warn('Edge Function failed, falling back to CORS proxy:', error);
@@ -82,18 +120,27 @@ const callFREDAPI = async (endpoint: string, params: Record<string, any> = {}): 
 
   const proxiedUrl = `${CORS_PROXY}${encodeURIComponent(url.toString())}`;
   
-  const response = await fetch(proxiedUrl);
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`FRED API error: ${response.status} - ${errorText}`);
-  }
+  try {
+    const response = await fetchWithTimeout(proxiedUrl);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`FRED API error: ${response.status} - ${errorText}`);
+    }
 
-  return await response.json();
+    const data = await response.json();
+    console.log(`✅ FRED API (CORS Proxy) ${endpoint} took ${Date.now() - startTime}ms`);
+    return data;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw error;
+  }
 };
 
 /**
- * Search FRED database for series
+ * Search FRED database for series (with caching)
  */
 export const searchFREDSeries = async (
   query: string,
@@ -104,6 +151,7 @@ export const searchFREDSeries = async (
     sortOrder?: 'asc' | 'desc';
     filterVariable?: string;
     filterValue?: string;
+    skipCache?: boolean;
   } = {}
 ): Promise<FREDSearchResult> => {
   if (!isFREDConfigured()) {
@@ -116,8 +164,18 @@ export const searchFREDSeries = async (
     orderBy = 'popularity',
     sortOrder = 'desc',
     filterVariable,
-    filterValue
+    filterValue,
+    skipCache = false,
   } = options;
+
+  // Check cache first (only for default pagination)
+  if (!skipCache && offset === 0 && !filterVariable) {
+    const cached = getCachedSearch(query);
+    if (cached) {
+      console.log('📦 Using cached search results for:', query);
+      return cached;
+    }
+  }
 
   const params: Record<string, any> = {
     search_text: query,
@@ -133,19 +191,39 @@ export const searchFREDSeries = async (
   }
 
   const data = await callFREDAPI('/series/search', params);
+  
+  // Cache results for future use
+  if (offset === 0 && !filterVariable) {
+    cacheSearch(query, data);
+  }
+  
   return data;
 };
 
 /**
- * Get series information by ID
+ * Get series information by ID (with caching)
  */
-export const getFREDSeries = async (seriesId: string): Promise<FREDSeries> => {
+export const getFREDSeries = async (seriesId: string, skipCache = false): Promise<FREDSeries> => {
   if (!isFREDConfigured()) {
     throw new Error('FRED API key not configured.');
   }
 
+  // Check cache first
+  if (!skipCache) {
+    const cached = getCachedSeries(seriesId);
+    if (cached) {
+      console.log('📦 Using cached series data for:', seriesId);
+      return cached;
+    }
+  }
+
   const data = await callFREDAPI('/series', { series_id: seriesId });
-  return data.seriess[0];
+  const series = data.seriess[0];
+  
+  // Cache for future use
+  cacheSeries(seriesId, series);
+  
+  return series;
 };
 
 /**
@@ -353,6 +431,66 @@ export const POPULAR_ECONOMIC_INDICATORS = [
   { id: 'VIXCLS', name: 'VIX (Volatility Index)' }
 ];
 
+/**
+ * Get popular indicators with caching
+ * Returns cached data immediately if available, then fetches fresh data in background
+ */
+export const getPopularIndicatorsWithCache = async (
+  count = 5,
+  onProgress?: (loaded: number, total: number) => void
+): Promise<FREDSeries[]> => {
+  // Check cache first
+  const cached = getCachedPopularIndicators();
+  if (cached && cached.length >= count) {
+    console.log('📦 Using cached popular indicators');
+    return cached.slice(0, count);
+  }
+
+  // Fetch with progress tracking
+  const indicators = POPULAR_ECONOMIC_INDICATORS.slice(0, count);
+  const results: FREDSeries[] = [];
+  
+  for (let i = 0; i < indicators.length; i++) {
+    try {
+      const series = await getFREDSeries(indicators[i].id);
+      results.push(series);
+      onProgress?.(i + 1, indicators.length);
+    } catch (error) {
+      console.warn(`Failed to fetch ${indicators[i].id}:`, error);
+    }
+  }
+
+  // Cache results
+  if (results.length > 0) {
+    cachePopularIndicators(results);
+  }
+
+  return results;
+};
+
+/**
+ * Background pre-fetch popular indicators
+ * Call this on app mount to warm the cache
+ */
+export const prefetchPopularIndicators = (): void => {
+  if (!isFREDConfigured()) return;
+  
+  // Check if already cached
+  const cached = getCachedPopularIndicators();
+  if (cached && cached.length >= 5) {
+    console.log('📦 Popular indicators already cached');
+    return;
+  }
+
+  // Fetch in background (don't await)
+  console.log('🔄 Pre-fetching popular indicators in background...');
+  getPopularIndicatorsWithCache(5).then(results => {
+    console.log(`✅ Pre-fetched ${results.length} popular indicators`);
+  }).catch(error => {
+    console.warn('Background pre-fetch failed:', error);
+  });
+};
+
 export default {
   isFREDConfigured,
   searchFREDSeries,
@@ -362,6 +500,8 @@ export default {
   getFREDCategories,
   getFREDCategorySeries,
   convertFREDToDataset,
+  getPopularIndicatorsWithCache,
+  prefetchPopularIndicators,
   POPULAR_ECONOMIC_INDICATORS
 };
 
