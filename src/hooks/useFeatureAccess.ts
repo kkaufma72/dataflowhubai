@@ -146,14 +146,20 @@ export const useFeatureAccess = (): FeatureAccess => {
 
       try {
         // First try to get tier from subscriptions table (more accurate for Stripe)
-        const { data: subscription } = await supabase
+        // Use maybeSingle() to return null when no rows found instead of throwing
+        const { data: subscription, error: subError } = await supabase
           .from('subscriptions')
           .select('tier, status')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
+
+        // Only log actual errors, not "no rows found"
+        if (subError) {
+          console.warn('Error fetching subscription:', subError.message);
+        }
 
         if (subscription?.tier) {
           // Normalize 'professional' to 'pro' for internal use
@@ -163,11 +169,16 @@ export const useFeatureAccess = (): FeatureAccess => {
         }
 
         // Fallback to user_profiles table
-        const { data: profile } = await supabase
+        // Use maybeSingle() for consistency
+        const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
           .select('subscription_tier, subscription_status')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
+
+        if (profileError) {
+          console.warn('Error fetching user profile:', profileError.message);
+        }
 
         if (profile?.subscription_tier && profile?.subscription_status === 'active') {
           // Normalize 'professional' to 'pro' for internal use
