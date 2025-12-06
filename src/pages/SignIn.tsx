@@ -9,8 +9,7 @@ import Button from '../components/common/Button';
 import toast from 'react-hot-toast';
 import { 
   storePostAuthRedirectPath,
-  clearPostAuthRedirectPath,
-  getPostAuthRedirectPath 
+  clearPostAuthRedirectPath
 } from '../constants/auth';
 
 // Email validation function to prevent fake/test emails
@@ -55,12 +54,10 @@ const SignIn = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
 
-  // Compute redirect destination once
+  // Always redirect to dashboard after sign-in
   const getRedirectDestination = useCallback(() => {
-    const locationStateFrom = (location.state as { from?: string })?.from;
-    const storedRedirect = getPostAuthRedirectPath();
-    return locationStateFrom || storedRedirect || '/app';
-  }, [location.state]);
+    return '/app';
+  }, []);
 
   // Stable redirect function
   const performRedirect = useCallback(() => {
@@ -71,14 +68,6 @@ const SignIn = () => {
     clearPostAuthRedirectPath();
     navigate(destination, { replace: true });
   }, [navigate, getRedirectDestination]);
-
-  // Store redirect path on mount (only once)
-  useEffect(() => {
-    const destination = getRedirectDestination();
-    if (destination && destination !== '/app') {
-      storePostAuthRedirectPath(destination);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for email verification success (only once)
   useEffect(() => {
