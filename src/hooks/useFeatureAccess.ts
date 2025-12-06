@@ -11,6 +11,30 @@ import { supabase } from '../lib/supabase';
 
 export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 
+/**
+ * Normalize tier names from database/Stripe to internal representation.
+ * Stripe uses 'professional' but internally we use 'pro'.
+ */
+const normalizeTier = (tier: string | null | undefined): SubscriptionTier => {
+  if (!tier) return 'free';
+  
+  const normalized = tier.toLowerCase();
+  
+  // Map Stripe 'professional' to internal 'pro'
+  if (normalized === 'professional') {
+    return 'pro';
+  }
+  
+  // Validate against known tiers
+  if (['free', 'starter', 'pro', 'team', 'enterprise'].includes(normalized)) {
+    return normalized as SubscriptionTier;
+  }
+  
+  // Default to free for unknown tiers
+  console.warn(`Unknown subscription tier: ${tier}, defaulting to 'free'`);
+  return 'free';
+};
+
 export interface FeatureLimits {
   datasets: number;
   models: number;
@@ -121,6 +145,24 @@ export const useFeatureAccess = (): FeatureAccess => {
       }
 
       try {
+        // First try to get tier from subscriptions table (more accurate for Stripe)
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('tier, status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (subscription?.tier) {
+          // Normalize 'professional' to 'pro' for internal use
+          setTier(normalizeTier(subscription.tier));
+          setIsLoading(false);
+          return;
+        }
+
+        // Fallback to user_profiles table
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('subscription_tier, subscription_status')
@@ -128,7 +170,8 @@ export const useFeatureAccess = (): FeatureAccess => {
           .single();
 
         if (profile?.subscription_tier && profile?.subscription_status === 'active') {
-          setTier(profile.subscription_tier as SubscriptionTier);
+          // Normalize 'professional' to 'pro' for internal use
+          setTier(normalizeTier(profile.subscription_tier));
         } else {
           setTier('free');
         }
