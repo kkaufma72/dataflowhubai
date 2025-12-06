@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Copy, TrendingUp, TrendingDown, AlertCircle, Share2, Download } from 'lucide-react';
 import { MLModel } from '../../types';
 import Button from '../common/Button';
+import toast from 'react-hot-toast';
 
 interface Scenario {
   id: string;
@@ -303,17 +304,24 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({
             autoFocus
           />
         ) : (
-          <h3
-            onClick={() => !scenario.isBaseline && setIsEditingName(true)}
-            className={`text-lg font-bold text-gray-900 ${!scenario.isBaseline && 'cursor-pointer hover:text-indigo-600'}`}
-          >
-            {scenario.name}
+          <div>
+            <h3
+              onClick={() => !scenario.isBaseline && setIsEditingName(true)}
+              className={`text-lg font-bold text-gray-900 ${!scenario.isBaseline && 'cursor-pointer hover:text-indigo-600'}`}
+            >
+              {scenario.name}
+              {scenario.isBaseline && (
+                <span className="ml-2 px-2 py-1 bg-indigo-600 text-white text-xs font-bold rounded">
+                  BASELINE
+                </span>
+              )}
+            </h3>
             {scenario.isBaseline && (
-              <span className="ml-2 px-2 py-1 bg-indigo-600 text-white text-xs font-bold rounded">
-                BASELINE
-              </span>
+              <p className="text-xs text-gray-500 mt-1">
+                Reference values • Click "Add Scenario" to test changes
+              </p>
             )}
-          </h3>
+          </div>
         )}
 
         {!scenario.isBaseline && (
