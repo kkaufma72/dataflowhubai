@@ -281,15 +281,16 @@ const FREDDatasetImporter: React.FC = () => {
             <div className="bg-white rounded-lg p-4 border border-green-100">
               <div className="flex items-center gap-2 mb-2">
                 <Cloud className="w-5 h-5 text-blue-500" />
-                <span className="font-medium text-gray-900">Cloud Storage</span>
+                <span className="font-medium text-gray-900">Supabase Cloud Storage</span>
               </div>
-              <p className="text-sm text-gray-600 mb-3">Saved to Supabase PostgreSQL</p>
+              <p className="text-sm text-gray-600 mb-1">✓ Saved to PostgreSQL database</p>
+              <p className="text-xs text-gray-500 mb-3">Table: <code className="bg-gray-100 px-1 rounded">datasets</code></p>
               <button
                 onClick={openSupabaseDashboard}
                 className="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
               >
                 <Eye className="w-4 h-4" />
-                View in Supabase
+                View in Supabase Dashboard
                 <ExternalLink className="w-3 h-3" />
               </button>
             </div>
@@ -396,6 +397,10 @@ const FREDDatasetImporter: React.FC = () => {
           <p className="text-gray-600 mt-1">
             Search and import 800,000+ economic time series from the Federal Reserve
           </p>
+          <div className="mt-2 flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg inline-flex">
+            <Cloud className="w-4 h-4" />
+            <span className="font-medium">All imports automatically saved to Supabase Cloud Storage</span>
+          </div>
         </div>
         <a
           href="https://fred.stlouisfed.org"
@@ -406,6 +411,43 @@ const FREDDatasetImporter: React.FC = () => {
           Visit FRED <ExternalLink className="w-4 h-4" />
         </a>
       </div>
+
+      {/* How it Works Info */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <div className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Info className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">How Cloud Storage Works</h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">1️⃣</span>
+                    <span className="font-medium text-gray-900">Search FRED</span>
+                  </div>
+                  <p className="text-gray-600 text-xs">Find economic datasets from 800,000+ time series</p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">2️⃣</span>
+                    <span className="font-medium text-gray-900">Save to Supabase</span>
+                  </div>
+                  <p className="text-gray-600 text-xs">Click "Save to Cloud" - data uploads to your Supabase database</p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">3️⃣</span>
+                    <span className="font-medium text-gray-900">Access Anywhere</span>
+                  </div>
+                  <p className="text-gray-600 text-xs">View in app or directly in Supabase dashboard</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Search */}
       <Card className="p-6">
@@ -499,17 +541,20 @@ const FREDDatasetImporter: React.FC = () => {
             {popularSeries.map((series) => (
               <div
                 key={series.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:shadow-md transition cursor-pointer"
+                className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:shadow-md transition cursor-pointer group"
                 onClick={() => handleImport(series)}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{series.title}</h4>
+                    <h4 className="font-medium text-gray-900 group-hover:text-primary-600">{series.title}</h4>
                     <p className="text-xs text-gray-500 mt-1">
                       {series.id} • {series.frequency_short} • {series.units_short}
                     </p>
                   </div>
-                  <Download className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                  <div className="flex flex-col items-center gap-1">
+                    <Cloud className="w-5 h-5 text-primary-600 flex-shrink-0" />
+                    <span className="text-[10px] text-primary-600 font-medium">Supabase</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 text-xs text-gray-600">
                   <span className="flex items-center gap-1">
@@ -559,9 +604,9 @@ const FREDDatasetImporter: React.FC = () => {
                     onClick={() => handleImport(series)}
                     disabled={isImporting}
                     size="sm"
-                    icon={isImporting ? <Download className="w-4 h-4 animate-bounce" /> : <Download className="w-4 h-4" />}
+                    icon={isImporting ? <Download className="w-4 h-4 animate-bounce" /> : <Cloud className="w-4 h-4" />}
                   >
-                    Import
+                    {isImporting ? 'Saving...' : 'Save to Cloud'}
                   </Button>
                 </div>
                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
@@ -586,11 +631,11 @@ const FREDDatasetImporter: React.FC = () => {
         <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-popIn">
           <div className="flex items-center gap-3">
             <div className="animate-spin">
-              <Download className="w-5 h-5 text-primary-600" />
+              <Cloud className="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">Importing from FRED...</p>
-              <p className="text-sm text-gray-600">Downloading and processing data</p>
+              <p className="font-medium text-gray-900">Saving to Supabase...</p>
+              <p className="text-sm text-gray-600">Downloading from FRED & uploading to cloud</p>
             </div>
           </div>
         </div>
