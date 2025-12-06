@@ -478,6 +478,37 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
 
       // Insert into Supabase
       const { supabaseInsert } = await import('../../lib/supabaseHelpers');
+      const { supabase } = await import('../../lib/supabase');
+      
+      // Get or create a project for this user
+      let projectId: string;
+      const { data: existingProjects } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+      
+      if (existingProjects && existingProjects.length > 0) {
+        projectId = existingProjects[0].id;
+      } else {
+        // Create a default project
+        const { data: newProject, error: projError } = await supabase
+          .from('projects')
+          .insert({
+            name: 'My Workspace',
+            description: 'Default workspace for datasets',
+            user_id: user.id
+          })
+          .select('id')
+          .single();
+        
+        if (projError || !newProject) {
+          throw new Error('Could not create default project');
+        }
+        projectId = newProject.id;
+      }
+
+      setUploadProgress(40);
       
       const datasetData = {
         name: truncateFileName(file.name),
@@ -487,7 +518,8 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         row_count: parsedData.rowCount,
         column_count: parsedData.columnCount,
         preview_data: previewData,
-        user_id: user.id
+        user_id: user.id,
+        project_id: projectId
       };
 
       setUploadProgress(50);
