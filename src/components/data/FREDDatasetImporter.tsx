@@ -36,6 +36,7 @@ import toast from 'react-hot-toast';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { Dataset } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 // Type for imported dataset info
 interface ImportedDatasetInfo {
@@ -51,6 +52,7 @@ interface ImportedDatasetInfo {
 const FREDDatasetImporter: React.FC = () => {
   const { user } = useAuth();
   const { addDataset, currentProject } = useMLContext();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FREDSeries[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -241,14 +243,52 @@ const FREDDatasetImporter: React.FC = () => {
     }
   };
 
-  // Open Supabase dashboard
-  const openSupabaseDashboard = () => {
+  // Open Supabase dashboard to view datasets table
+  const openSupabaseDashboard = async () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (supabaseUrl) {
-      const projectRef = supabaseUrl.split('//')[1]?.split('.')[0];
-      window.open(`https://supabase.com/dashboard/project/${projectRef}/editor/29785`, '_blank');
+      try {
+        // Extract project reference from Supabase URL
+        // Format: https://[project-ref].supabase.co
+        const urlMatch = supabaseUrl.match(/https?:\/\/([^.]+)\.supabase\.co/);
+        const projectRef = urlMatch ? urlMatch[1] : supabaseUrl.split('//')[1]?.split('.')[0];
+        
+        if (projectRef) {
+          // Open Supabase dashboard to the table editor
+          // Users can navigate to the 'datasets' table from there
+          const dashboardUrl = `https://supabase.com/dashboard/project/${projectRef}/editor`;
+          window.open(dashboardUrl, '_blank');
+          toast.success('Opening Supabase dashboard. Look for the "datasets" table in the sidebar.', {
+            duration: 4000
+          });
+        } else {
+          window.open('https://supabase.com/dashboard', '_blank');
+          toast.info('Please navigate to your project and find the "datasets" table');
+        }
+      } catch (error) {
+        console.error('Error opening Supabase dashboard:', error);
+        toast.error('Could not open Supabase dashboard');
+      }
     } else {
       window.open('https://supabase.com/dashboard', '_blank');
+      toast.info('Please navigate to your project and find the "datasets" table');
+    }
+  };
+
+  // View dataset in the app (Data Management page)
+  const viewDatasetInApp = () => {
+    if (lastImported) {
+      // Close the FRED importer modal first
+      setLastImported(null);
+      // Navigate to Data Management page
+      navigate('/app/data');
+      // Show toast to help user find the dataset
+      setTimeout(() => {
+        toast.success(`Dataset "${lastImported.name}" is now visible in your Data Management page!`, {
+          duration: 5000,
+          icon: '📊'
+        });
+      }, 500);
     }
   };
 
@@ -265,6 +305,9 @@ const FREDDatasetImporter: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-green-900">Dataset Imported Successfully!</h3>
                 <p className="text-green-700 text-sm">{lastImported.name}</p>
+                <p className="text-green-600 text-xs mt-1">
+                  ✅ Saved to cloud storage (Supabase) • Available in your Data Management page
+                </p>
               </div>
             </div>
             <button
@@ -277,6 +320,23 @@ const FREDDatasetImporter: React.FC = () => {
 
           {/* Storage Info */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* View in App */}
+            <div className="bg-white rounded-lg p-4 border border-green-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Table className="w-5 h-5 text-primary-600" />
+                <span className="font-medium text-gray-900">View Dataset</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">See it in your Data Management page</p>
+              <button
+                onClick={viewDatasetInApp}
+                className="w-full px-3 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                View in App
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
             {/* Supabase Storage */}
             <div className="bg-white rounded-lg p-4 border border-green-100">
               <div className="flex items-center gap-2 mb-2">
@@ -288,7 +348,7 @@ const FREDDatasetImporter: React.FC = () => {
                 onClick={openSupabaseDashboard}
                 className="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
               >
-                <Eye className="w-4 h-4" />
+                <Database className="w-4 h-4" />
                 View in Supabase
                 <ExternalLink className="w-3 h-3" />
               </button>
@@ -297,7 +357,7 @@ const FREDDatasetImporter: React.FC = () => {
             {/* Dataset Details */}
             <div className="bg-white rounded-lg p-4 border border-green-100">
               <div className="flex items-center gap-2 mb-2">
-                <Table className="w-5 h-5 text-purple-500" />
+                <Info className="w-5 h-5 text-purple-500" />
                 <span className="font-medium text-gray-900">Dataset Info</span>
               </div>
               <div className="space-y-1 text-sm">
@@ -313,36 +373,23 @@ const FREDDatasetImporter: React.FC = () => {
                   <span className="text-gray-500">Size:</span>
                   <span className="font-medium">{lastImported.fileSize}</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Dataset ID */}
-            <div className="bg-white rounded-lg p-4 border border-green-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Database className="w-5 h-5 text-indigo-500" />
-                <span className="font-medium text-gray-900">Dataset ID</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs bg-gray-100 px-2 py-1 rounded font-mono truncate">
-                  {lastImported.id}
-                </code>
-                <button
-                  onClick={copyDatasetId}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  title="Copy ID"
-                >
-                  {copiedId ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
+                <div className="flex justify-between mt-2 pt-2 border-t border-gray-100">
+                  <span className="text-gray-500">Source:</span>
+                  <span className="font-medium text-primary-600">FRED</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              onClick={viewDatasetInApp}
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+            >
+              <Table className="w-4 h-4" />
+              View in Data Management
+            </button>
             <button
               onClick={() => setShowRawData(!showRawData)}
               className="px-4 py-2 bg-white border border-green-200 hover:border-green-400 text-green-700 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
