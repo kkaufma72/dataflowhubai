@@ -17,6 +17,7 @@ import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import FinishSetupChecklist from '../components/onboarding/FinishSetupChecklist';
 import { useNavigate } from 'react-router-dom';
 import { EnhancedDataUploader } from '../components/data/EnhancedDataUploader';
+import DataUploader from '../components/data/DataUploader';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 
 // Lazy load heavy components
