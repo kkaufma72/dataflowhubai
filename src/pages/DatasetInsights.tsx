@@ -1715,8 +1715,7 @@ const DatasetInsights: React.FC = () => {
               </div>
             }>
               <DatasetKnowledgePanel 
-                datasetId={selectedDataset.id}
-                datasetName={selectedDataset.name}
+                dataset={selectedDataset}
               />
             </Suspense>
           ) : (
