@@ -29,7 +29,6 @@ import { useKnowledge } from '../context/KnowledgeContext';
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
 const OnboardingQuestionnaire = lazy(() => import('../components/onboarding/OnboardingQuestionnaire'));
-const OnboardingChecklist = lazy(() => import('../components/onboarding/OnboardingChecklist'));
 const StrategicUpgradePrompt = lazy(() => import('../components/onboarding/StrategicUpgradePrompt'));
 
 // Prediction models configuration (same as DatasetInsights)
@@ -921,13 +920,6 @@ const DashboardKoyfin: React.FC = () => {
           />
         </Suspense>
       )}
-
-      {/* Floating Onboarding Checklist */}
-      <div className="fixed bottom-4 right-4 z-30 w-72">
-        <Suspense fallback={null}>
-          <OnboardingChecklist variant="sidebar" />
-        </Suspense>
-      </div>
 
     </div>
   );
