@@ -25,6 +25,28 @@ import Card from '../common/Card';
 import Button from '../common/Button';
 import toast from 'react-hot-toast';
 
+const normalizeRow = (row: any, columns: string[] = []) => {
+  if (Array.isArray(row)) {
+    return row;
+  }
+
+  if (row && typeof row === 'object') {
+    if (columns.length) {
+      return columns.map((col, idx) => row?.[col] ?? row?.[idx]);
+    }
+    return Object.values(row);
+  }
+
+  return [row];
+};
+
+const generateDatasetId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `dataset-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+};
+
 interface TransformationStep {
   id: string;
   command: string;
@@ -57,6 +79,10 @@ const DataTransformationStudio: React.FC<DataTransformationStudioProps> = ({
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [newColumnName, setNewColumnName] = useState('');
   const commandRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    commandRef.current?.focus();
+  }, []);
 
   // Example commands shown to user
   const exampleCommands = [
@@ -344,10 +370,27 @@ Parse this command and return JSON:
   };
 
   const handleSave = () => {
-    if (onSave) {
-      onSave(dataset);
-      toast.success('Dataset saved!');
-    }
+    if (!onSave) return;
+
+    const previewData = dataset.preview_data
+      ? {
+          columns: [...dataset.preview_data.columns],
+          rows: dataset.preview_data.rows.map((row) =>
+            normalizeRow(row, dataset.preview_data?.columns || [])
+          )
+        }
+      : undefined;
+
+    const transformedDataset: Dataset = {
+      ...dataset,
+      id: generateDatasetId(),
+      name: dataset.name.includes('(Transformed)') ? dataset.name : `${dataset.name} (Transformed)`,
+      dateUploaded: new Date().toISOString(),
+      preview_data: previewData
+    };
+
+    onSave(transformedDataset);
+    toast.success('Dataset saved!');
   };
 
   const handleExport = () => {
@@ -548,11 +591,11 @@ Parse this command and return JSON:
                 type="text"
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') handleNaturalLanguageCommand(command);
                 }}
                 placeholder="Remove low ROI categories..."
-                disabled={isProcessing}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
               />
               <Button
@@ -679,4 +722,3 @@ Parse this command and return JSON:
 };
 
 export default DataTransformationStudio;
-

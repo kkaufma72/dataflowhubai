@@ -283,6 +283,14 @@ const FREDDatasetImporter: React.FC = () => {
       const dataSize = JSON.stringify(datasetData.data).length;
       const fileSizeKB = (dataSize / 1024).toFixed(1) + ' KB';
 
+      const previewColumns = ['date', 'value', 'realtime_start', 'realtime_end'];
+      const previewRows = datasetData.data.slice(0, 100).map((obs) => [
+        obs.date,
+        obs.value,
+        obs.realtime_start,
+        obs.realtime_end
+      ]);
+
       // Prepare dataset payload (using snake_case for Supabase columns)
       const datasetPayload = {
         user_id: user?.id || 'local-user',
@@ -291,8 +299,8 @@ const FREDDatasetImporter: React.FC = () => {
         description: datasetData.description,
         source: 'FRED',
         preview_data: {
-          columns: ['date', 'value', 'realtime_start', 'realtime_end'],
-          rows: datasetData.data.slice(0, 100)
+          columns: previewColumns,
+          rows: previewRows
         },
         row_count: datasetData.data.length,
         column_count: 4,
@@ -335,12 +343,34 @@ const FREDDatasetImporter: React.FC = () => {
 
       // Add to context and show success panel
       if (newDataset) {
-        addDataset(newDataset as Dataset);
+        const datasetForState: Dataset = {
+          id: newDataset.id,
+          name: newDataset.name,
+          description: newDataset.description || '',
+          rows: newDataset.row_count || datasetData.data.length,
+          columns: newDataset.column_count || 0,
+          dateUploaded: newDataset.created_at || new Date().toISOString(),
+          fileType: newDataset.file_type || 'json',
+          fileSize: newDataset.file_size || `${fileSizeKB} KB`,
+          projectId: newDataset.project_id,
+          preview_data: {
+            columns: newDataset.preview_data?.columns || previewColumns,
+            rows: (newDataset.preview_data?.rows || previewRows).map((row: any) =>
+              Array.isArray(row) ? row : previewColumns.map((col, idx) => row?.[col] ?? row?.[idx])
+            )
+          },
+          source: newDataset.source || 'FRED',
+          metadata: newDataset.metadata,
+          tags: newDataset.tags
+        };
+
+        // Dataset already exists in Supabase; skip re-insert and just sync local state
+        await addDataset(datasetForState, { persist: false });
         
         // Set last imported info for success panel
         setLastImported({
-          id: newDataset.id,
-          name: newDataset.name,
+          id: datasetForState.id,
+          name: datasetForState.name,
           rows: datasetData.data.length,
           columns: 4,
           source: 'FRED',
@@ -817,4 +847,3 @@ const FREDDatasetImporter: React.FC = () => {
 };
 
 export default FREDDatasetImporter;
-

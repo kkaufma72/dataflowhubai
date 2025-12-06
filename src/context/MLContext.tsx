@@ -5,6 +5,7 @@ import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
 import { useAuth } from '../components/auth/AuthProvider';
 import toast from 'react-hot-toast';
+import { isSampleDatasetId } from '../lib/enhancedSampleData';
 
 interface MLContextType {
   datasets: Dataset[];
@@ -396,9 +397,17 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
   const addDataset = useCallback(async (dataset: Dataset, options?: { persist?: boolean }): Promise<Dataset> => {
     const shouldPersist = options?.persist !== false;
-    const datasetWithValidId = isValidUUID(dataset.id)
+    let datasetWithValidId = isValidUUID(dataset.id)
       ? dataset
       : { ...dataset, id: generateUUID() };
+
+    // Always generate a fresh ID for built-in sample datasets to avoid PK collisions
+    if (isSampleDatasetId(datasetWithValidId.id)) {
+      datasetWithValidId = {
+        ...datasetWithValidId,
+        id: generateUUID()
+      };
+    }
 
     const initialProjectId = isValidUUID(datasetWithValidId.projectId || undefined)
       ? datasetWithValidId.projectId!

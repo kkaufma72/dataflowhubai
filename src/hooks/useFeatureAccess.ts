@@ -168,24 +168,14 @@ export const useFeatureAccess = (): FeatureAccess => {
           return;
         }
 
-        // Fallback to user_profiles table
-        // Use maybeSingle() for consistency
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('subscription_tier, subscription_status')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        // Fallback to user metadata stored in auth profile
+        const metadataTier = normalizeTier(
+          user.user_metadata?.subscription_tier ||
+          user.user_metadata?.plan ||
+          user.user_metadata?.tier
+        );
 
-        if (profileError) {
-          console.warn('Error fetching user profile:', profileError.message);
-        }
-
-        if (profile?.subscription_tier && profile?.subscription_status === 'active') {
-          // Normalize 'professional' to 'pro' for internal use
-          setTier(normalizeTier(profile.subscription_tier));
-        } else {
-          setTier('free');
-        }
+        setTier(metadataTier);
       } catch (error) {
         console.error('Error loading subscription tier:', error);
         setTier('free');
@@ -322,4 +312,3 @@ export const useFeatureAccess = (): FeatureAccess => {
 };
 
 export default useFeatureAccess;
-

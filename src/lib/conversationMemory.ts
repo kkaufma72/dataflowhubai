@@ -3,6 +3,40 @@
 
 import { supabase } from './supabase';
 
+type ConversationStorageMode = 'supabase' | 'local-only';
+
+let conversationStorageMode: ConversationStorageMode = 'supabase';
+let hasLoggedMissingTableWarning = false;
+
+const isMissingTableError = (error: any): boolean => {
+  if (!error) return false;
+  const code = String(error.code || error.status || error.statusCode || '').toUpperCase();
+  if (code === 'PGRST205' || code === '42P01') {
+    return true;
+  }
+
+  if (error?.status === 404 || error?.status === 406) {
+    return true;
+  }
+
+  const message = String(error?.message || '').toLowerCase();
+  const hint = String(error?.hint || '').toLowerCase();
+  return message.includes('conversations') || hint.includes('conversations');
+};
+
+const disableSupabaseConversationStorage = (error?: any) => {
+  conversationStorageMode = 'local-only';
+  if (!hasLoggedMissingTableWarning) {
+    console.warn(
+      'Conversations table is not available in Supabase. Falling back to localStorage until the migration is applied.',
+      error
+    );
+    hasLoggedMissingTableWarning = true;
+  }
+};
+
+const shouldUseSupabaseStorage = () => conversationStorageMode === 'supabase';
+
 export interface StoredConversation {
   id: string;
   user_id: string;
@@ -43,6 +77,11 @@ export const saveConversation = async (
   messages: any[],
   metadata?: any
 ): Promise<string> => {
+  if (!shouldUseSupabaseStorage()) {
+    saveToLocalStorage(userId, datasetId, messages);
+    return `local_${datasetId}`;
+  }
+
   try {
     const { data, error } = await supabase
       .from('conversations')
@@ -61,15 +100,22 @@ export const saveConversation = async (
       .single();
 
     if (error) {
-      // Table might not exist yet - fallback to localStorage
-      console.warn('Could not save to database, using localStorage:', error);
+      if (isMissingTableError(error)) {
+        disableSupabaseConversationStorage(error);
+      } else {
+        console.warn('Could not save conversation to Supabase, using localStorage:', error);
+      }
       saveToLocalStorage(userId, datasetId, messages);
       return `local_${datasetId}`;
     }
 
     return data.id;
   } catch (error) {
-    console.error('Error saving conversation:', error);
+    if (isMissingTableError(error)) {
+      disableSupabaseConversationStorage(error);
+    } else {
+      console.error('Error saving conversation:', error);
+    }
     // Fallback to localStorage
     saveToLocalStorage(userId, datasetId, messages);
     return `local_${datasetId}`;
@@ -83,6 +129,10 @@ export const loadConversation = async (
   userId: string,
   datasetId: string
 ): Promise<any[]> => {
+  if (!shouldUseSupabaseStorage()) {
+    return loadFromLocalStorage(userId, datasetId);
+  }
+
   try {
     const { data, error } = await supabase
       .from('conversations')
@@ -92,13 +142,20 @@ export const loadConversation = async (
       .single();
 
     if (error || !data) {
+      if (error && isMissingTableError(error)) {
+        disableSupabaseConversationStorage(error);
+      }
       // Try localStorage fallback
       return loadFromLocalStorage(userId, datasetId);
     }
 
     return data.messages || [];
   } catch (error) {
-    console.error('Error loading conversation:', error);
+    if (isMissingTableError(error)) {
+      disableSupabaseConversationStorage(error);
+    } else {
+      console.error('Error loading conversation:', error);
+    }
     return loadFromLocalStorage(userId, datasetId);
   }
 };
@@ -109,6 +166,10 @@ export const loadConversation = async (
 export const getUserConversations = async (
   userId: string
 ): Promise<StoredConversation[]> => {
+  if (!shouldUseSupabaseStorage()) {
+    return [];
+  }
+
   try {
     const { data, error } = await supabase
       .from('conversations')
@@ -117,12 +178,19 @@ export const getUserConversations = async (
       .order('updated_at', { ascending: false });
 
     if (error || !data) {
+      if (error && isMissingTableError(error)) {
+        disableSupabaseConversationStorage(error);
+      }
       return [];
     }
 
     return data;
   } catch (error) {
-    console.error('Error getting conversations:', error);
+    if (isMissingTableError(error)) {
+      disableSupabaseConversationStorage(error);
+    } else {
+      console.error('Error getting conversations:', error);
+    }
     return [];
   }
 };
@@ -269,6 +337,10 @@ export const clearOldConversations = async (userId: string, daysOld: number = 90
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
+  if (!shouldUseSupabaseStorage()) {
+    return;
+  }
+
   try {
     await supabase
       .from('conversations')
@@ -276,7 +348,10 @@ export const clearOldConversations = async (userId: string, daysOld: number = 90
       .eq('user_id', userId)
       .lt('updated_at', cutoffDate.toISOString());
   } catch (error) {
-    console.error('Error clearing old conversations:', error);
+    if (isMissingTableError(error)) {
+      disableSupabaseConversationStorage(error);
+    } else {
+      console.error('Error clearing old conversations:', error);
+    }
   }
 };
-

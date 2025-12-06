@@ -7,6 +7,20 @@
 
 import { supabase } from './supabase';
 
+let embeddingsAvailable = true;
+let hasLoggedEmbeddingWarning = false;
+
+const disableEmbeddings = (error?: any) => {
+  embeddingsAvailable = false;
+  if (!hasLoggedEmbeddingWarning) {
+    console.warn(
+      'Supabase embedding function is unavailable. Falling back to keyword search until access is restored.',
+      error
+    );
+    hasLoggedEmbeddingWarning = true;
+  }
+};
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -38,19 +52,23 @@ export interface SearchResult {
  * Generate embedding for text using Supabase Edge Function
  */
 export const generateEmbedding = async (text: string): Promise<number[] | null> => {
+  if (!embeddingsAvailable) {
+    return null;
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('generate-embedding', {
       body: { text }
     });
 
     if (error) {
-      console.error('Embedding generation error:', error);
+      disableEmbeddings(error);
       return null;
     }
 
     return data?.embedding || null;
   } catch (e) {
-    console.error('Failed to generate embedding:', e);
+    disableEmbeddings(e);
     return null;
   }
 };
@@ -59,19 +77,23 @@ export const generateEmbedding = async (text: string): Promise<number[] | null> 
  * Generate embeddings for multiple texts (batched)
  */
 export const generateEmbeddings = async (texts: string[]): Promise<(number[] | null)[]> => {
+  if (!embeddingsAvailable) {
+    return texts.map(() => null);
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('generate-embedding', {
       body: { texts }
     });
 
     if (error) {
-      console.error('Batch embedding generation error:', error);
+      disableEmbeddings(error);
       return texts.map(() => null);
     }
 
     return data?.embeddings || texts.map(() => null);
   } catch (e) {
-    console.error('Failed to generate embeddings:', e);
+    disableEmbeddings(e);
     return texts.map(() => null);
   }
 };
@@ -385,4 +407,3 @@ export default {
   searchAllKnowledge,
   indexDatasetKnowledge
 };
-

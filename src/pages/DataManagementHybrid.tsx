@@ -39,6 +39,24 @@ const LoadingFallback: React.FC = () => (
   <LoadingSkeleton variant="card" count={3} />
 );
 
+const normalizePreviewRow = (
+  row: any,
+  columns: string[] = []
+): (string | number | null | undefined)[] => {
+  if (Array.isArray(row)) {
+    return row;
+  }
+
+  if (row && typeof row === 'object') {
+    if (columns.length) {
+      return columns.map((col, idx) => row?.[col] ?? row?.[idx]);
+    }
+    return Object.values(row);
+  }
+
+  return [row];
+};
+
 const SAMPLE_TOUR_STORAGE_KEY = 'dfh-sample-tour-dismissed';
 const SAMPLE_DATASET_IDS = new Set(generateEnhancedSampleDatasets().map(sample => sample.id));
 
@@ -1144,10 +1162,18 @@ const DataManagement: React.FC = () => {
                   size="sm"
                   onClick={() => {
                     if (selectedDataset.preview_data) {
-                      const csv = [
-                        selectedDataset.preview_data.columns.join(','),
-                        ...selectedDataset.preview_data.rows.map(row => row.join(','))
-                      ].join('\n');
+                      const columns = selectedDataset.preview_data.columns || [];
+                      const rows = selectedDataset.preview_data.rows || [];
+                      const csvRows = rows.map((row) =>
+                        normalizePreviewRow(row, columns)
+                          .map((cell) => {
+                            if (cell === null || cell === undefined) return '';
+                            if (typeof cell === 'object') return JSON.stringify(cell);
+                            return String(cell);
+                          })
+                          .join(',')
+                      );
+                      const csv = [columns.join(','), ...csvRows].join('\n');
                       const blob = new Blob([csv], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
@@ -1187,15 +1213,24 @@ const DataManagement: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => (
-                        <tr key={rowIdx}>
-                          {row.map((cell, cellIdx) => (
-                            <td key={cellIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {cell}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
+                      {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => {
+                        const normalizedRow = normalizePreviewRow(
+                          row,
+                          selectedDataset.preview_data?.columns || []
+                        );
+                        return (
+                          <tr key={rowIdx}>
+                            {normalizedRow.map((cell, cellIdx) => (
+                              <td
+                                key={cellIdx}
+                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                              >
+                                {String(cell ?? '')}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                   <p className="text-sm text-gray-500 mt-4 text-center">

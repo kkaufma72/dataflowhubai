@@ -251,7 +251,12 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognition = useRef<any>(null);
+  const hasShownWelcomeRef = useRef(false);
   const datasetPromptSuggestions = useMemo(() => generatePromptSuggestions(dataset), [dataset]);
+  const welcomeStorageKey = useMemo(
+    () => (user ? `dfh-welcome-${user.id}-${dataset.id}` : `dfh-welcome-${dataset.id}`),
+    [user?.id, dataset.id]
+  );
 
   // Get models trained on this dataset
   const relatedModels = useMemo(() => {
@@ -315,6 +320,11 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   }, [messages]);
 
+  useEffect(() => {
+    const hasSeen = localStorage.getItem(welcomeStorageKey) === 'true';
+    hasShownWelcomeRef.current = hasSeen;
+  }, [welcomeStorageKey]);
+
   // Load conversation history for this dataset
   useEffect(() => {
     const loadHistory = async () => {
@@ -333,6 +343,8 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             }));
             
             setMessages(loadedMessages);
+            hasShownWelcomeRef.current = true;
+            localStorage.setItem(welcomeStorageKey, 'true');
             console.log(`💾 Loaded ${history.length} previous messages for ${dataset.name}`);
           }
         } catch (error) {
@@ -342,7 +354,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     };
 
     loadHistory();
-  }, [user, dataset.id]);
+  }, [user, dataset.id, welcomeStorageKey]);
 
   // Auto-save conversation whenever messages change
   useEffect(() => {
@@ -405,7 +417,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
 
   // Show personalized welcome message
   useEffect(() => {
-    if (messages.length === 0 && userProfile.full_name) {
+    if (!hasShownWelcomeRef.current && messages.length === 0 && userProfile.full_name) {
       let welcomeContent: string;
       
       // Use contextual welcome if user has completed onboarding
@@ -423,13 +435,22 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         content: welcomeContent,
         timestamp: new Date()
       };
-      setMessages([welcomeMessage]);
+      setMessages(prev => {
+        if (prev.length === 0) {
+          hasShownWelcomeRef.current = true;
+          localStorage.setItem(welcomeStorageKey, 'true');
+          return [welcomeMessage];
+        }
+        return prev;
+      });
     }
-  }, [userProfile, userContext, dataset.name, messages.length]);
+  }, [userProfile.full_name, userContext, dataset.name, messages.length, welcomeStorageKey]);
 
   const formatUseCase = (useCase?: string) => {
-    if (!useCase || useCase === 'general') return 'data analysis';
-    return useCase.replace(/-/g, ' ');
+    if (!useCase) return 'data analysis';
+    const normalized = useCase.replace(/-/g, ' ');
+    if (normalized === 'general') return 'data analysis';
+    return normalized;
   };
 
   const toggleVoiceInput = () => {

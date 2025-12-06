@@ -180,3 +180,14 @@ export const generateEnhancedSampleDatasets = () => {
     healthcareDataset
   ];
 };
+
+let sampleDatasetIdCache: Set<string> | null = null;
+
+export const isSampleDatasetId = (id: string): boolean => {
+  if (!sampleDatasetIdCache) {
+    sampleDatasetIdCache = new Set(
+      generateEnhancedSampleDatasets().map((dataset) => dataset.id)
+    );
+  }
+  return sampleDatasetIdCache.has(id);
+};
