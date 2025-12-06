@@ -481,17 +481,24 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       const { supabase } = await import('../../lib/supabase');
       
       // Get or create a project for this user
-      let projectId: string;
-      const { data: existingProjects } = await supabase
+      console.log('🔍 Looking for existing project for user:', user.id);
+      
+      const { data: existingProjects, error: projQueryError } = await supabase
         .from('projects')
         .select('id')
         .eq('user_id', user.id)
         .limit(1);
       
+      console.log('📁 Project query result:', { existingProjects, projQueryError });
+      
+      let projectId: string;
+      
       if (existingProjects && existingProjects.length > 0) {
         projectId = existingProjects[0].id;
+        console.log('✅ Using existing project:', projectId);
       } else {
         // Create a default project
+        console.log('📁 Creating new project...');
         const { data: newProject, error: projError } = await supabase
           .from('projects')
           .insert({
@@ -502,13 +509,18 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
           .select('id')
           .single();
         
+        console.log('📁 Create project result:', { newProject, projError });
+        
         if (projError || !newProject) {
-          throw new Error('Could not create default project');
+          console.error('❌ Failed to create project:', projError);
+          throw new Error(`Could not create default project: ${projError?.message || 'Unknown error'}`);
         }
         projectId = newProject.id;
+        console.log('✅ Created new project:', projectId);
       }
 
       setUploadProgress(40);
+      console.log('📊 Preparing dataset with project_id:', projectId);
       
       const datasetData = {
         name: truncateFileName(file.name),
@@ -521,6 +533,12 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
         user_id: user.id,
         project_id: projectId
       };
+
+      console.log('💾 Dataset data to insert:', JSON.stringify(datasetData, null, 2));
+      
+      if (!datasetData.project_id) {
+        throw new Error('project_id is missing from dataset data!');
+      }
 
       setUploadProgress(50);
       
