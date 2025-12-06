@@ -77,7 +77,10 @@ function clearOldCacheEntries(): void {
   
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key?.startsWith(CACHE_PREFIX) || key?.startsWith(SEARCH_CACHE_PREFIX)) {
+    // Check all FRED cache keys including popular indicators
+    if (key?.startsWith(CACHE_PREFIX) || 
+        key?.startsWith(SEARCH_CACHE_PREFIX) || 
+        key === POPULAR_CACHE_KEY) {
       const raw = localStorage.getItem(key);
       if (raw) {
         try {
