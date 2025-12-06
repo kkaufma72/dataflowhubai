@@ -134,7 +134,7 @@ const FREDDatasetImporter: React.FC = () => {
       const fileSizeKB = (dataSize / 1024).toFixed(1) + ' KB';
       const fileSizeMB = (dataSize / (1024 * 1024)).toFixed(2);
 
-      // Prepare dataset payload
+      // Prepare dataset payload (using snake_case for Supabase columns)
       const datasetPayload = {
         user_id: user?.id || 'local-user',
         project_id: currentProject?.id,
@@ -145,10 +145,9 @@ const FREDDatasetImporter: React.FC = () => {
           columns: ['date', 'value', 'realtime_start', 'realtime_end'],
           rows: datasetData.data.slice(0, 100)
         },
-        rows: datasetData.data.length,
-        columns: 4,
+        row_count: datasetData.data.length,
+        column_count: 4,
         file_size: fileSizeKB,
-        size_mb: fileSizeMB,
         file_type: 'json',
         metadata: datasetData.metadata,
         tags: ['economic', 'fred', 'time-series']

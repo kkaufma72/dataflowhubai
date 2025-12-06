@@ -13,11 +13,59 @@ import {
   Trash2,
   Archive,
   MoreVertical,
-  FolderOpen
+  FolderOpen,
+  Cloud,
+  TrendingUp,
+  Upload,
+  Zap,
+  FlaskConical
 } from 'lucide-react';
 import Button from '../common/Button';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../../utils/datasetHealthScore';
 import KnowledgeInsightsBadge from '../common/KnowledgeInsightsBadge';
+
+// Source badge configuration
+const getSourceBadge = (source?: string) => {
+  switch (source?.toLowerCase()) {
+    case 'fred':
+      return {
+        label: 'FRED',
+        icon: TrendingUp,
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-700',
+        borderColor: 'border-blue-200',
+        tooltip: 'Federal Reserve Economic Data'
+      };
+    case 'api':
+      return {
+        label: 'API',
+        icon: Zap,
+        bgColor: 'bg-purple-50',
+        textColor: 'text-purple-700',
+        borderColor: 'border-purple-200',
+        tooltip: 'Imported via API'
+      };
+    case 'sample':
+      return {
+        label: 'Sample',
+        icon: FlaskConical,
+        bgColor: 'bg-amber-50',
+        textColor: 'text-amber-700',
+        borderColor: 'border-amber-200',
+        tooltip: 'Sample dataset'
+      };
+    case 'upload':
+    default:
+      return {
+        label: 'Upload',
+        icon: Upload,
+        bgColor: 'bg-gray-50',
+        textColor: 'text-gray-600',
+        borderColor: 'border-gray-200',
+        tooltip: 'Uploaded file'
+      };
+  }
+};
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -243,9 +291,39 @@ const DatasetCard: React.FC<DatasetCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
-          <Calendar className="w-3.5 h-3.5 text-gray-400" />
-          <p className="text-xs text-gray-500">Uploaded {getUploadedDate()}</p>
+        {/* Source and Cloud Sync Status */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+            <p className="text-xs text-gray-500">Uploaded {getUploadedDate()}</p>
+          </div>
+          
+          <div className="flex items-center gap-1.5">
+            {/* Source Badge */}
+            {(() => {
+              const source = (dataset as any).source;
+              const badge = getSourceBadge(source);
+              const IconComponent = badge.icon;
+              return (
+                <div 
+                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${badge.bgColor} ${badge.textColor} ${badge.borderColor}`}
+                  title={badge.tooltip}
+                >
+                  <IconComponent className="w-2.5 h-2.5" />
+                  {badge.label}
+                </div>
+              );
+            })()}
+            
+            {/* Cloud Sync Indicator */}
+            <div 
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200"
+              title="Saved to Supabase Cloud"
+            >
+              <Cloud className="w-2.5 h-2.5" />
+              Synced
+            </div>
+          </div>
         </div>
       </div>
 
