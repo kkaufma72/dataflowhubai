@@ -33,14 +33,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build frontend
+        run: npm run build
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           # Start the dev server (adjust if needed)
-          start: npm run dev
+          start: npm run preview
           # Wait for dev server to be ready
           wait-on: 'http://localhost:3002'
-          wait-on-timeout: 120
+          wait-on-timeout: 180
           # Browser to use for testing
           browser: chrome
           # Run tests in parallel
