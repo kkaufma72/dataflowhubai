@@ -1,0 +1,994 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/lib/sampleData.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/lib</a> sampleData.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/9</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/8</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// src/lib/sampleData.ts
+&nbsp;
+export interface SampleDataset {
+    id: string;
+    name: string;
+    description: string;
+    row_count: number;
+    column_count: number;
+    dateUploaded: string;
+    file_type: string;
+    file_size: string;
+    project_id: string;
+    preview_data: {
+      columns: string[];
+      rows: any[][];
+    };
+    column_statistics?: any;
+  }
+  
+  /**
+   * Generate sample datasets for demo purposes - optimized for VC presentations
+   * These datasets showcase real-world business use cases with measurable ROI
+   */
+  export const generateSampleDatasets = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(): SampleDataset[] =&gt; {</span></span>
+    const <span class="cstat-no" title="statement not covered" >now = new Date().toISOString();</span>
+  
+<span class="cstat-no" title="statement not covered" >    return [</span>
+      // 1. CUSTOMER CHURN PREDICTION - High-Value Use Case
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        name: 'Customer Churn Analysis (SaaS)',
+        description: '12,500 B2B SaaS customers with 23% historical churn rate. Predict churn 60 days in advance to save $2.4M annually.',
+        row_count: 12500,
+        column_count: 15,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '3.2 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'customer_id', 'tenure_months', 'monthly_charges', 'total_revenue', 
+            'support_tickets', 'last_login_days', 'feature_usage_score', 
+            'payment_failures', 'contract_type', 'industry', 
+            'team_size', 'integrations_active', 'training_completed', 
+            'nps_score', 'churned'
+          ],
+          rows: [
+            ['CUST-8473', '24', '499', '11976', '2', '3', '87', '0', 'Annual', 'FinTech', '45', '8', 'Yes', '9', 'No'],
+            ['CUST-9201', '6', '299', '1794', '8', '45', '34', '3', 'Monthly', 'E-commerce', '12', '2', 'No', '4', 'Yes'],
+            ['CUST-7652', '36', '999', '35964', '1', '1', '92', '0', 'Annual', 'Healthcare', '120', '12', 'Yes', '10', 'No'],
+            ['CUST-5483', '18', '399', '7182', '5', '12', '68', '1', 'Quarterly', 'Retail', '28', '5', 'Yes', '7', 'No'],
+            ['CUST-3829', '3', '199', '597', '12', '67', '22', '4', 'Monthly', 'Marketing', '8', '1', 'No', '3', 'Yes'],
+          ]
+        },
+        column_statistics: {
+          monthly_charges: { min: 99, max: 2999, mean: 547, median: 499 },
+          tenure_months: { min: 1, max: 72, mean: 18.3, median: 14 },
+          nps_score: { min: 0, max: 10, mean: 6.8, median: 7 }
+        }
+      },
+&nbsp;
+      // 2. SALES FORECASTING - Revenue Impact
+      {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: 'Enterprise Sales Pipeline',
+        description: '8,300 deals worth $124M pipeline. ML forecasting improved accuracy by 34%, reducing missed targets by $8.2M/year.',
+        row_count: 8300,
+        column_count: 18,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '2.8 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'deal_id', 'created_date', 'deal_value', 'probability', 'stage', 
+            'days_in_stage', 'contact_count', 'demo_completed', 'proposal_sent',
+            'competitor_count', 'industry', 'company_size', 'region',
+            'lead_source', 'budget_confirmed', 'decision_date', 'sales_rep', 'closed_won'
+          ],
+          rows: [
+            ['DEAL-4729', '2024-09-15', '85000', '75', 'Negotiation', '12', '23', 'Yes', 'Yes', '2', 'SaaS', '250-500', 'West', 'Referral', 'Yes', '2024-12-01', 'Sarah Chen', 'Yes'],
+            ['DEAL-5812', '2024-10-03', '125000', '45', 'Proposal', '8', '15', 'Yes', 'Yes', '3', 'Manufacturing', '500-1000', 'Midwest', 'Outbound', 'No', '2025-01-15', 'Mike Torres', 'Pending'],
+            ['DEAL-3904', '2024-08-22', '45000', '90', 'Verbal Commit', '5', '31', 'Yes', 'Yes', '1', 'Healthcare', '100-250', 'East', 'Inbound', 'Yes', '2024-11-20', 'Lisa Wang', 'Yes'],
+            ['DEAL-6183', '2024-10-28', '220000', '30', 'Discovery', '15', '8', 'No', 'No', '4', 'Financial', '1000+', 'South', 'Partner', 'No', '2025-03-01', 'James Miller', 'Pending'],
+            ['DEAL-2957', '2024-07-10', '65000', '20', 'Stalled', '67', '12', 'Yes', 'No', '2', 'Retail', '250-500', 'West', 'Marketing', 'No', '2024-12-31', 'Amy Johnson', 'Pending'],
+          ]
+        },
+        column_statistics: {
+          deal_value: { min: 15000, max: 850000, mean: 149398, median: 95000 },
+          probability: { min: 5, max: 95, mean: 48, median: 50 }
+        }
+      },
+&nbsp;
+      // 3. FRAUD DETECTION - Risk Mitigation
+      {
+        id: '33333333-3333-4333-8333-333333333333',
+        name: 'Payment Fraud Detection',
+        description: '245,000 transactions with 2.3% fraud rate. ML model prevented $4.7M in fraud losses with 96.2% accuracy.',
+        row_count: 245000,
+        column_count: 22,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '18.4 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'transaction_id', 'timestamp', 'amount', 'merchant_category', 'payment_method',
+            'card_present', 'international', 'device_id', 'ip_address', 'velocity_1h',
+            'velocity_24h', 'avg_transaction_amount', 'customer_age_days', 'previous_fraud',
+            'time_since_last_transaction', 'shipping_address_change', 'email_verified',
+            'phone_verified', 'billing_shipping_match', 'high_risk_country', 'cvv_provided', 'is_fraud'
+          ],
+          rows: [
+            ['TXN-8472910', '2024-11-16 14:23:01', '89.99', 'Electronics', 'Credit Card', 'No', 'No', 'DEV-4892', '192.168.1.45', '1', '3', '125.50', '450', 'No', '120', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No'],
+            ['TXN-8472911', '2024-11-16 14:23:15', '2450.00', 'Jewelry', 'Debit Card', 'No', 'Yes', 'DEV-9201', '89.42.173.22', '5', '8', '78.20', '12', 'No', '15', 'Yes', 'No', 'No', 'No', 'Yes', 'No', 'Yes'],
+            ['TXN-8472912', '2024-11-16 14:24:32', '45.00', 'Grocery', 'Credit Card', 'Yes', 'No', 'DEV-3847', '192.168.5.102', '1', '2', '52.30', '890', 'No', '240', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No'],
+            ['TXN-8472913', '2024-11-16 14:25:01', '1299.99', 'Electronics', 'Credit Card', 'No', 'Yes', 'DEV-7392', '23.45.67.89', '12', '24', '45.90', '3', 'Yes', '5', 'Yes', 'No', 'No', 'No', 'Yes', 'No', 'Yes'],
+            ['TXN-8472914', '2024-11-16 14:26:45', '124.50', 'Restaurant', 'Mobile Pay', 'Yes', 'No', 'DEV-5029', '10.0.0.25', '1', '4', '98.40', '620', 'No', '180', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No'],
+          ]
+        },
+        column_statistics: {
+          amount: { min: 0.99, max: 9999.99, mean: 187.43, median: 89.99 },
+          velocity_24h: { min: 1, max: 50, mean: 4.2, median: 3 }
+        }
+      },
+&nbsp;
+      // 4. PREDICTIVE MAINTENANCE - Cost Savings
+      {
+        id: '44444444-4444-4444-8444-444444444444',
+        name: 'Industrial Equipment Monitoring',
+        description: '52,000 sensor readings from 340 machines. Predict failures 14 days early, reducing downtime costs by $3.1M/year.',
+        row_count: 52000,
+        column_count: 16,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '6.7 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'machine_id', 'timestamp', 'temperature_c', 'vibration_mm_s', 'pressure_psi',
+            'rpm', 'power_kw', 'humidity_percent', 'runtime_hours', 'maintenance_days_ago',
+            'error_count_24h', 'performance_score', 'oil_level', 'bearing_condition',
+            'anomaly_score', 'failure_next_14d'
+          ],
+          rows: [
+            ['MACH-204', '2024-11-16 14:00:00', '68.5', '2.3', '125', '3420', '42.1', '45', '8920', '45', '0', '98', 'Good', 'Normal', '0.12', 'No'],
+            ['MACH-087', '2024-11-16 14:00:00', '89.2', '8.7', '142', '3580', '51.8', '52', '12450', '120', '12', '72', 'Low', 'Worn', '0.87', 'Yes'],
+            ['MACH-156', '2024-11-16 14:00:00', '71.3', '3.1', '128', '3445', '43.5', '48', '5680', '22', '1', '95', 'Good', 'Normal', '0.18', 'No'],
+            ['MACH-319', '2024-11-16 14:00:00', '85.7', '6.4', '138', '3520', '48.2', '55', '15230', '89', '7', '78', 'Medium', 'Degraded', '0.64', 'Yes'],
+            ['MACH-042', '2024-11-16 14:00:00', '70.1', '2.8', '126', '3410', '41.9', '46', '3420', '15', '0', '97', 'Good', 'Normal', '0.15', 'No'],
+          ]
+        },
+        column_statistics: {
+          temperature_c: { min: 45, max: 105, mean: 72.8, median: 71.2 },
+          vibration_mm_s: { min: 0.5, max: 12.0, mean: 4.3, median: 3.5 }
+        }
+      },
+&nbsp;
+      // 5. MARKETING CAMPAIGN OPTIMIZATION - ROI Focus
+      {
+        id: '55555555-5555-4555-8555-555555555555',
+        name: 'Digital Marketing Campaign Performance',
+        description: '28,000 campaigns across 5 channels. ML optimization increased ROAS from 3.2x to 5.8x, adding $12M in revenue.',
+        row_count: 28000,
+        column_count: 20,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '4.5 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'campaign_id', 'start_date', 'channel', 'audience_segment', 'budget',
+            'impressions', 'clicks', 'conversions', 'revenue', 'ctr',
+            'conversion_rate', 'cpa', 'roas', 'device_type', 'time_of_day',
+            'day_of_week', 'ad_creative_type', 'landing_page_variant', 'weather_impact', 'high_performer'
+          ],
+          rows: [
+            ['CAMP-7294', '2024-10-15', 'Facebook', 'Tech Enthusiasts 25-34', '5000', '245000', '8925', '267', '45780', '3.64', '2.99', '18.73', '9.16', 'Mobile', 'Evening', 'Thursday', 'Video', 'Variant-A', 'Sunny', 'Yes'],
+            ['CAMP-8301', '2024-10-18', 'Google Ads', 'Enterprise Decision Makers', '12000', '890000', '12450', '89', '124500', '1.40', '0.71', '134.83', '10.38', 'Desktop', 'Morning', 'Tuesday', 'Search Text', 'Variant-C', 'Neutral', 'Yes'],
+            ['CAMP-5829', '2024-10-20', 'LinkedIn', 'C-Suite Executives', '8000', '125000', '2875', '45', '67500', '2.30', '1.57', '177.78', '8.44', 'Desktop', 'Afternoon', 'Wednesday', 'Sponsored Content', 'Variant-B', 'Rainy', 'No'],
+            ['CAMP-9472', '2024-10-22', 'Instagram', 'Millennials 28-35', '3500', '178000', '6230', '124', '28960', '3.50', '1.99', '28.23', '8.27', 'Mobile', 'Night', 'Friday', 'Story', 'Variant-A', 'Sunny', 'Yes'],
+            ['CAMP-3847', '2024-10-25', 'Twitter', 'Tech News Followers', '2500', '95000', '1825', '18', '5940', '1.92', '0.99', '138.89', '2.38', 'Mobile', 'Morning', 'Monday', 'Image', 'Variant-B', 'Cloudy', 'No'],
+          ]
+        },
+        column_statistics: {
+          budget: { min: 500, max: 50000, mean: 5420, median: 4200 },
+          roas: { min: 0.5, max: 15.8, mean: 4.7, median: 3.9 },
+          conversion_rate: { min: 0.1, max: 5.2, mean: 1.8, median: 1.5 }
+        }
+      },
+&nbsp;
+      // 6. CUSTOMER LIFETIME VALUE - Strategic Planning
+      {
+        id: '66666666-6666-4666-8666-666666666666',
+        name: 'E-commerce Customer Lifetime Value',
+        description: '67,500 customers with purchase history. Segment high-LTV customers ($850 avg) vs low-LTV ($120 avg) for targeted retention.',
+        row_count: 67500,
+        column_count: 18,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '8.9 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'customer_id', 'first_purchase_date', 'total_orders', 'total_revenue', 
+            'avg_order_value', 'purchase_frequency_days', 'returns_count', 'support_contacts',
+            'email_open_rate', 'sms_opt_in', 'loyalty_points', 'referrals_made',
+            'product_categories_bought', 'mobile_app_user', 'subscription_active', 
+            'last_purchase_days', 'predicted_ltv_12m', 'segment'
+          ],
+          rows: [
+            ['CUST-28473', '2022-03-15', '47', '8940', '190.21', '23', '2', '5', '42', 'Yes', '8940', '3', '8', 'Yes', 'Yes', '8', '2450', 'High-Value'],
+            ['CUST-39201', '2024-08-22', '3', '245', '81.67', '45', '0', '1', '18', 'No', '245', '0', '2', 'No', 'No', '67', '420', 'Low-Value'],
+            ['CUST-47652', '2021-11-03', '128', '24580', '191.88', '14', '8', '12', '67', 'Yes', '24580', '7', '12', 'Yes', 'Yes', '3', '4890', 'VIP'],
+            ['CUST-15483', '2023-06-18', '18', '2340', '130.00', '32', '1', '3', '35', 'Yes', '2340', '1', '5', 'Yes', 'No', '22', '1250', 'Medium-Value'],
+            ['CUST-63829', '2024-10-01', '1', '89', '89.00', 'N/A', '0', '0', '0', 'No', '89', '0', '1', 'No', 'No', '46', '180', 'Low-Value'],
+          ]
+        },
+        column_statistics: {
+          total_revenue: { min: 25, max: 45000, mean: 1247, median: 580 },
+          predicted_ltv_12m: { min: 50, max: 8500, mean: 850, median: 520 }
+        }
+      },
+&nbsp;
+      // 7. INVENTORY OPTIMIZATION - Supply Chain
+      {
+        id: '77777777-7777-4777-8777-777777777777',
+        name: 'Retail Inventory &amp; Demand Forecasting',
+        description: '15,400 SKUs across 85 locations. ML reduced stockouts by 42% and overstock by 38%, saving $6.8M in holding costs.',
+        row_count: 15400,
+        column_count: 17,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '3.9 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'sku', 'product_name', 'category', 'location', 'current_stock', 'reorder_point',
+            'lead_time_days', 'avg_daily_sales', 'stockout_events_30d', 'holding_cost_monthly',
+            'supplier', 'season_sensitive', 'promotion_active', 'weather_dependent', 
+            'days_until_expiry', 'predicted_demand_7d', 'reorder_recommended'
+          ],
+          rows: [
+            ['SKU-82947', 'Organic Bananas 2lb', 'Produce', 'Store-042', '245', '180', '2', '67', '0', '45', 'FreshFarms Co', 'No', 'No', 'No', '5', '489', 'Yes'],
+            ['SKU-39201', 'Winter Jacket - Black L', 'Apparel', 'Store-018', '12', '25', '14', '3', '2', '180', 'ClothingCorp', 'Yes', 'No', 'No', 'N/A', '42', 'Yes'],
+            ['SKU-74652', 'LED Smart Bulb 4-Pack', 'Electronics', 'Warehouse-05', '890', '500', '7', '45', '0', '320', 'TechSupply Inc', 'No', 'Yes', 'No', 'N/A', '378', 'No'],
+            ['SKU-15483', 'Sunscreen SPF 50', 'Health &amp; Beauty', 'Store-067', '34', '80', '5', '18', '4', '28', 'BeautyWorks', 'Yes', 'No', 'Yes', '210', '156', 'Yes'],
+            ['SKU-93829', 'Holiday Gift Set', 'Seasonal', 'Store-023', '156', '200', '10', '8', '1', '95', 'GiftMasters', 'Yes', 'Yes', 'No', 'N/A', '89', 'No'],
+          ]
+        },
+        column_statistics: {
+          current_stock: { min: 0, max: 5000, mean: 287, median: 145 },
+          avg_daily_sales: { min: 1, max: 200, mean: 23, median: 15 }
+        }
+      },
+&nbsp;
+      // 8. EMPLOYEE ATTRITION - HR Analytics
+      {
+        id: '88888888-8888-4888-8888-888888888888',
+        name: 'HR Talent Retention Analysis',
+        description: '4,200 employees with 18% annual attrition. Predict departures 90 days early, reducing recruitment costs by $1.2M/year.',
+        row_count: 4200,
+        column_count: 19,
+        dateUploaded: now,
+        file_type: 'csv',
+        file_size: '1.1 MB',
+        project_id: '1',
+        preview_data: {
+          columns: [
+            'employee_id', 'department', 'role', 'tenure_years', 'age', 'salary',
+            'performance_rating', 'promotions_count', 'training_hours_annual', 'remote_days_month',
+            'commute_time_min', 'manager_rating', 'team_size', 'overtime_hours_month',
+            'projects_count', 'last_raise_months', 'satisfaction_score', 'external_offers', 'left_company'
+          ],
+          rows: [
+            ['EMP-7294', 'Engineering', 'Senior Developer', '4.5', '32', '135000', '4.2', '2', '40', '20', '15', '4.5', '8', '12', '4', '8', '8.2', '0', 'No'],
+            ['EMP-8301', 'Sales', 'Account Executive', '1.2', '28', '75000', '3.8', '0', '24', '0', '45', '3.9', '12', '28', '12', '18', '5.4', '2', 'Yes'],
+            ['EMP-5829', 'Marketing', 'Product Marketing Manager', '6.8', '38', '142000', '4.5', '3', '52', '15', '20', '4.7', '5', '8', '3', '5', '9.1', '0', 'No'],
+            ['EMP-9472', 'Customer Success', 'CS Representative', '2.1', '26', '58000', '3.2', '0', '18', '5', '60', '3.5', '15', '22', '8', '24', '4.8', '1', 'Yes'],
+            ['EMP-3847', 'Engineering', 'Engineering Manager', '8.3', '41', '185000', '4.8', '4', '35', '22', '10', '4.9', '12', '15', '2', '6', '9.5', '0', 'No'],
+          ]
+        },
+        column_statistics: {
+          salary: { min: 45000, max: 285000, mean: 98400, median: 87500 },
+          satisfaction_score: { min: 1, max: 10, mean: 7.2, median: 7.5 }
+        }
+      }
+    ];
+  };
+  
+  /**
+   * Get a single sample dataset by ID
+   */
+  export const getSampleDataset = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>d: string): SampleDataset | undefined =&gt; {</span>
+    const datasets = <span class="cstat-no" title="statement not covered" >generateSampleDatasets();</span>
+<span class="cstat-no" title="statement not covered" >    return datasets.find(<span class="fstat-no" title="function not covered" >d =&gt; <span class="cstat-no" title="statement not covered" >d</span>.id === id)</span>;</span>
+  };
+  
+  /**
+   * Check if a dataset is a sample dataset
+   */
+  export const isSampleDataset = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(i</span>d: string): boolean =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return id.startsWith('sample-');</span>
+  };</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2025-12-08T18:01:41.880Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

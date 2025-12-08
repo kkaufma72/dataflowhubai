@@ -72,7 +72,7 @@ const EnhancedAIChat: React.FC = () => {
     loadUserContext();
   }, [user]);
 
-  // Show welcome message with context
+  // Show welcome message with context (only once)
   useEffect(() => {
     if (userContext && messages.length === 0) {
       const welcomeMessage = getContextualWelcomeMessage(userContext);
@@ -81,7 +81,7 @@ const EnhancedAIChat: React.FC = () => {
         content: welcomeMessage
       }]);
     }
-  }, [userContext]);
+  }, [userContext, messages.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

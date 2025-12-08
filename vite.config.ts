@@ -59,26 +59,55 @@ export default defineConfig(({ mode }) => ({
         manualChunks: (id) => {
           // Split vendor into smaller chunks for better caching
           if (id.includes('node_modules')) {
-            // Separate large libraries
+            // React ecosystem (core dependencies)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            // Chart libraries
             if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
               return 'charts';
             }
+            // D3 ecosystem
             if (id.includes('d3')) {
               return 'd3';
             }
-            if (id.includes('langchain') || id.includes('openai')) {
+            // AI/LangChain libraries (HEAVY - split separately)
+            if (id.includes('langchain') || id.includes('@langchain') || id.includes('ai-sdk')) {
               return 'ai';
             }
-            if (id.includes('swagger')) {
-              return 'swagger';
+            // TensorFlow (HEAVY - lazy load recommended)
+            if (id.includes('@tensorflow')) {
+              return 'tensorflow';
             }
-            if (id.includes('supabase')) {
+            // OpenAI SDK
+            if (id.includes('openai')) {
+              return 'openai-sdk';
+            }
+            // Supabase
+            if (id.includes('supabase') || id.includes('@supabase')) {
               return 'supabase';
             }
+            // Stripe
             if (id.includes('stripe')) {
               return 'stripe';
             }
-            // Group other vendor dependencies
+            // Swagger UI (already lazy loaded)
+            if (id.includes('swagger')) {
+              return 'swagger';
+            }
+            // Math/Data processing
+            if (id.includes('mathjs') || id.includes('papaparse') || id.includes('jszip')) {
+              return 'data-processing';
+            }
+            // UI libraries
+            if (id.includes('@tremor') || id.includes('lucide-react')) {
+              return 'ui-libs';
+            }
+            // Neo4j and database clients
+            if (id.includes('neo4j') || id.includes('neovis')) {
+              return 'db-clients';
+            }
+            // Group remaining vendor dependencies
             return 'vendor';
           }
         },

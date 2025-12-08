@@ -56,6 +56,11 @@ const ScenarioTesting = lazy(() => import('./pages/ScenarioTesting.tsx')); // Wh
 const ExperimentTracking = lazy(() => import('./pages/ExperimentTracking.tsx')); // MLflow-style experiment tracking
 const ModelMarketplace = lazy(() => import('./pages/ModelMarketplace.tsx')); // Pre-trained model marketplace
 
+// Debug Panel (only in dev mode)
+const DebugPanel = import.meta.env.DEV 
+  ? lazy(() => import('./components/debug/DebugPanel').then(m => ({ default: m.DebugPanel })))
+  : null;
+
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
   return (
@@ -240,6 +245,11 @@ if (!isSupabaseConfigured) {
             </UserProvider>
           </AuthProvider>
         </Router>
+        {DebugPanel && (
+          <Suspense fallback={null}>
+            <DebugPanel />
+          </Suspense>
+        )}
       </ErrorBoundary>
     </React.StrictMode>
   );

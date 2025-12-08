@@ -459,7 +459,9 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
     }, 100);
     
     return () => clearTimeout(timer);
-  }, [userProfile.full_name, userContext, dataset.name, welcomeStorageKey, messages.length]);
+    // Only run when userProfile or userContext changes, NOT when messages change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile.full_name, userContext, dataset.name, welcomeStorageKey]);
 
   const formatUseCase = (useCase?: string) => {
     if (!useCase) return 'data analysis';
