@@ -29,7 +29,7 @@
   
   /* IBM Typography Scale */
   h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-100 font-semibold;
+    @apply text-gray-900 font-semibold;
     font-family: 'IBM Plex Sans', sans-serif;
     letter-spacing: -0.01em;
   }
@@ -43,12 +43,12 @@
   
   /* Body text */
   p {
-    @apply text-gray-400 text-sm leading-relaxed;
+    @apply text-gray-700 text-sm leading-relaxed;
   }
   
   /* Labels - IBM style */
   label {
-    @apply text-gray-300 font-medium text-xs uppercase tracking-wider;
+    @apply text-gray-700 font-medium text-xs uppercase tracking-wider;
     letter-spacing: 0.05em;
   }
   
