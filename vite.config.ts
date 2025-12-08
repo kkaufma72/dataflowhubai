@@ -56,58 +56,20 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       external: ['swagger-ui-react', 'pg', 'neo4j-driver'], // Exclude server-side libraries
       output: {
+        // SIMPLIFIED chunk splitting to avoid initialization order issues
         manualChunks: (id) => {
-          // Split vendor into smaller chunks for better caching
           if (id.includes('node_modules')) {
-            // React ecosystem - MUST stay together to avoid scheduler issues
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
-              return 'react-vendor';
-            }
-            // Chart libraries
-            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
-              return 'charts';
-            }
-            // D3 ecosystem
-            if (id.includes('d3')) {
-              return 'd3';
-            }
-            // AI/LangChain libraries (HEAVY - split separately)
-            if (id.includes('langchain') || id.includes('@langchain') || id.includes('ai-sdk')) {
-              return 'ai';
-            }
-            // TensorFlow (HEAVY - lazy load recommended)
+            // Heavy libraries that are lazy-loaded anyway - keep separate
             if (id.includes('@tensorflow')) {
               return 'tensorflow';
             }
-            // OpenAI SDK
-            if (id.includes('openai')) {
-              return 'openai-sdk';
+            if (id.includes('langchain') || id.includes('@langchain')) {
+              return 'ai';
             }
-            // Supabase
-            if (id.includes('supabase') || id.includes('@supabase')) {
-              return 'supabase';
+            if (id.includes('d3')) {
+              return 'd3';
             }
-            // Stripe
-            if (id.includes('stripe')) {
-              return 'stripe';
-            }
-            // Swagger UI (already lazy loaded)
-            if (id.includes('swagger')) {
-              return 'swagger';
-            }
-            // Math/Data processing
-            if (id.includes('mathjs') || id.includes('papaparse') || id.includes('jszip')) {
-              return 'data-processing';
-            }
-            // UI libraries
-            if (id.includes('@tremor') || id.includes('lucide-react')) {
-              return 'ui-libs';
-            }
-            // Neo4j and database clients
-            if (id.includes('neo4j') || id.includes('neovis')) {
-              return 'db-clients';
-            }
-            // Group remaining vendor dependencies
+            // Everything else goes in vendor to avoid initialization issues
             return 'vendor';
           }
         },
