@@ -59,8 +59,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: (id) => {
           // Split vendor into smaller chunks for better caching
           if (id.includes('node_modules')) {
-            // React ecosystem (core dependencies)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // React ecosystem - MUST stay together to avoid scheduler issues
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
               return 'react-vendor';
             }
             // Chart libraries
@@ -137,7 +137,8 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: [
       'react', 
-      'react-dom', 
+      'react-dom',
+      'scheduler',
       'react-router-dom', 
       'lucide-react',
       // LangChain ES module dependencies that need pre-bundling
