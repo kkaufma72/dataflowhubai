@@ -23,7 +23,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
-  @apply bg-gray-950 text-gray-100;
+  @apply bg-white text-gray-900;
+  /* Dark backgrounds applied per-layout (AppLayoutKoyfin) instead of globally */
 }
   
   /* IBM Typography Scale */
