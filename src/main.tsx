@@ -64,7 +64,7 @@ const DebugPanel = import.meta.env.DEV
 // Loading fallback component for lazy loaded routes
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-primary/5/20">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-indigo-50">
       <div className="text-center">
         <div className="relative">
           {/* Outer spinning circle */}
