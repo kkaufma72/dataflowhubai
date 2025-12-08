@@ -1,0 +1,4 @@
+# Force fresh builds
+.vercel
+dist
+node_modules/.vite
