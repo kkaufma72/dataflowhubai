@@ -34,7 +34,7 @@ interface EnhancedRAGChatProps {
   onAnalysisComplete?: (analysis: any) => void;
 }
 
-export const EnhancedRAGChat: React.FC<EnhancedRAGChatProps> = ({
+export const EnhancedRAGChat: React.FC<EnhancedRAGChatProps> = React.memo(({
   dataset,
   userProfile,
   className = '',
@@ -367,6 +367,8 @@ export const EnhancedRAGChat: React.FC<EnhancedRAGChatProps> = ({
       </div>
     </div>
   );
-};
+});
+
+EnhancedRAGChat.displayName = 'EnhancedRAGChat';
 
 export default EnhancedRAGChat;

@@ -65,7 +65,7 @@ interface DataTransformationStudioProps {
   isModal?: boolean;
 }
 
-const DataTransformationStudio: React.FC<DataTransformationStudioProps> = ({
+const DataTransformationStudio: React.FC<DataTransformationStudioProps> = React.memo(({
   dataset: initialDataset,
   onSave,
   onClose,
@@ -414,7 +414,7 @@ Parse this command and return JSON:
     toast.success('Dataset exported!');
   };
 
-  const StudioContent = () => (
+  const studioContent = (
     <>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-primary-600 text-white">
@@ -708,7 +708,7 @@ Parse this command and return JSON:
     return (
       <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
-          <StudioContent />
+          {studioContent}
         </div>
       </div>
     );
@@ -716,9 +716,11 @@ Parse this command and return JSON:
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
-      <StudioContent />
+      {studioContent}
     </Card>
   );
-};
+});
+
+DataTransformationStudio.displayName = 'DataTransformationStudio';
 
 export default DataTransformationStudio;

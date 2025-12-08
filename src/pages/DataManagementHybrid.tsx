@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef, startTransition } from 'react';
+import SearchInput from '../components/common/SearchInput';
 import { useMLContext } from '../context/MLContext';
 import Card from '../components/common/Card';
 import DataConnector from '../components/data/DataConnector';
@@ -119,18 +120,6 @@ const DataManagement: React.FC = () => {
     localStorage.setItem('dataManagement_sortBy', sortBy);
     localStorage.setItem('dataManagement_sortOrder', sortOrder);
   }, [sortBy, sortOrder]);
-
-  // Save search query to localStorage when it changes (with debounce)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery) {
-        localStorage.setItem('dataManagement_searchQuery', searchQuery);
-      } else {
-        localStorage.removeItem('dataManagement_searchQuery');
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
 
   // FIXED: Filter and search datasets FIRST (before using it in totalPages)
   const filteredDatasets = useMemo(() => {
@@ -297,6 +286,20 @@ const DataManagement: React.FC = () => {
   const dismissSampleTour = useCallback(() => {
     localStorage.setItem(SAMPLE_TOUR_STORAGE_KEY, 'true');
     setShowSampleTour(false);
+  }, []);
+
+  // Memoized search handler to prevent input focus loss
+  const handleSearchChange = useCallback((value: string) => {
+    // Use startTransition to defer the state update and prevent focus loss
+    startTransition(() => {
+      setSearchQuery(value);
+    });
+    // Update localStorage directly without triggering re-render
+    if (value) {
+      localStorage.setItem('dataManagement_searchQuery', value);
+    } else {
+      localStorage.removeItem('dataManagement_searchQuery');
+    }
   }, []);
 
   const handleSampleTourAction = useCallback((action: 'profile' | 'chat' | 'graph') => {
@@ -614,20 +617,11 @@ const DataManagement: React.FC = () => {
             {/* Large Search Bar Row */}
             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               {/* Prominent Search Input */}
-              <div className="flex-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search datasets by name, tags, or columns... (⌘/)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
-                />
-              </div>
-              
+              <SearchInput
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search datasets by name, tags, or columns... (⌘/)"
+              />
               {/* Primary Action Button */}
               <Button
                 onClick={() => setShowUploader(true)}
@@ -742,7 +736,7 @@ const DataManagement: React.FC = () => {
             </div>
             <div className="flex-1 overflow-auto p-6">
               <Suspense fallback={<LoadingFallback />}>
-                <FREDDatasetImporter />
+                <FREDDatasetImporter key="fred-importer-modal" />
               </Suspense>
             </div>
           </div>
@@ -1279,6 +1273,7 @@ const DataManagement: React.FC = () => {
       {showChat && chatDataset && (
         <Suspense fallback={<LoadingFallback />}>
           <EnhancedAIChat
+            key={`chat-${chatDataset.id}`}
             dataset={chatDataset}
             onClose={handleCloseChat}
             isModal={true}

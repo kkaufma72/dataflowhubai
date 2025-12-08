@@ -12,7 +12,7 @@ interface Message {
   content: string;
 }
 
-const ChatInterface: React.FC = () => {
+const ChatInterface: React.FC = React.memo(() => {
   const { datasets } = useMLContext();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -174,6 +174,8 @@ const ChatInterface: React.FC = () => {
       </Card>
     </ErrorBoundary>
   );
-};
+});
+
+ChatInterface.displayName = 'ChatInterface';
 
 export default ChatInterface;

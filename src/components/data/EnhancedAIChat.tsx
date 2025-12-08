@@ -226,10 +226,10 @@ const isModelQuestion = (text: string): boolean => {
   return modelKeywords.some(kw => lowerText.includes(kw));
 };
 
-const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({ 
-  dataset, 
+const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
+  dataset,
   onClose,
-  isModal = false 
+  isModal = false
 }) => {
   const { user } = useAuth();
   const { models } = useMLContext();
@@ -320,41 +320,39 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   }, [messages]);
 
-  useEffect(() => {
-    const hasSeen = localStorage.getItem(welcomeStorageKey) === 'true';
-    hasShownWelcomeRef.current = hasSeen;
-  }, [welcomeStorageKey]);
-
-  // Load conversation history for this dataset
+  // Load conversation history for this dataset on mount (runs ONCE)
   useEffect(() => {
     const loadHistory = async () => {
-      if (user && dataset.id && messages.length === 0) {
-        try {
-          const history = await loadConversation(user.id, dataset.id);
+      if (!user || !dataset.id || messages.length > 0) {
+        return;
+      }
+      
+      try {
+        const history = await loadConversation(user.id, dataset.id);
+        
+        if (history && history.length > 0) {
+          const loadedMessages: Message[] = history.map((h: any) => ({
+            role: h.role,
+            content: h.content,
+            timestamp: new Date(h.timestamp),
+            charts: h.charts,
+            insights: h.insights,
+            actions: h.actions
+          }));
           
-          if (history && history.length > 0) {
-            const loadedMessages: Message[] = history.map((h: any) => ({
-              role: h.role,
-              content: h.content,
-              timestamp: new Date(h.timestamp),
-              charts: h.charts,
-              insights: h.insights,
-              actions: h.actions
-            }));
-            
-            setMessages(loadedMessages);
-            hasShownWelcomeRef.current = true;
-            localStorage.setItem(welcomeStorageKey, 'true');
-            console.log(`💾 Loaded ${history.length} previous messages for ${dataset.name}`);
-          }
-        } catch (error) {
-          console.error('Error loading conversation history:', error);
+          setMessages(loadedMessages);
+          hasShownWelcomeRef.current = true;
+          localStorage.setItem(welcomeStorageKey, 'true');
+          console.log(`💾 Loaded ${history.length} previous messages for ${dataset.name}`);
         }
+      } catch (error) {
+        console.error('Error loading conversation history:', error);
       }
     };
 
     loadHistory();
-  }, [user, dataset.id, welcomeStorageKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   // Auto-save conversation whenever messages change
   useEffect(() => {
@@ -415,9 +413,27 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     }
   }, []);
 
-  // Show personalized welcome message
+  // Show personalized welcome message (only if no history loaded)
   useEffect(() => {
-    if (!hasShownWelcomeRef.current && messages.length === 0 && userProfile.full_name) {
+    // Check if already shown or if messages already exist
+    if (hasShownWelcomeRef.current || messages.length > 0 || !userProfile.full_name) {
+      return;
+    }
+    
+    // Check localStorage
+    const hasShownBefore = localStorage.getItem(welcomeStorageKey) === 'true';
+    if (hasShownBefore) {
+      hasShownWelcomeRef.current = true;
+      return;
+    }
+    
+    // Add small delay to ensure history loading finishes first
+    const timer = setTimeout(() => {
+      // Double-check messages haven't been loaded
+      if (messages.length > 0) {
+        return;
+      }
+      
       let welcomeContent: string;
       
       // Use contextual welcome if user has completed onboarding
@@ -435,16 +451,15 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
         content: welcomeContent,
         timestamp: new Date()
       };
-      setMessages(prev => {
-        if (prev.length === 0) {
-          hasShownWelcomeRef.current = true;
-          localStorage.setItem(welcomeStorageKey, 'true');
-          return [welcomeMessage];
-        }
-        return prev;
-      });
-    }
-  }, [userProfile.full_name, userContext, dataset.name, messages.length, welcomeStorageKey]);
+      
+      // Set the ref and localStorage BEFORE updating state
+      hasShownWelcomeRef.current = true;
+      localStorage.setItem(welcomeStorageKey, 'true');
+      setMessages([welcomeMessage]);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [userProfile.full_name, userContext, dataset.name, welcomeStorageKey, messages.length]);
 
   const formatUseCase = (useCase?: string) => {
     if (!useCase) return 'data analysis';
@@ -470,7 +485,8 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   };
 
   const handleSendMessage = useCallback(async (messageText?: string) => {
-    const text = messageText || input.trim();
+    // Get input value from ref to avoid dependency on input state
+    const text = messageText || inputRef.current?.value?.trim() || '';
     if (!text || isLoading) return;
 
     // Add user message with animation
@@ -590,10 +606,11 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, dataset, userProfile, messages, relatedModels]);
+  }, [isLoading, dataset, userProfile, messages, relatedModels, canUseRichNarratives, trackUsage, remainingNarratives]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
+    const value = e.target.value;
+    setInput(value);
   }, []);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -608,58 +625,65 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   const quickActions = useMemo(() => {
     // If we have trained models, show model-focused actions
     const trainedModels = relatedModels.filter(m => m.status === 'trained' || m.status === 'deployed');
-    
+
     if (trainedModels.length > 0) {
       return [
         {
           label: "📊 Full Model Summary",
-          action: () => handleSendMessage("Give me a complete summary of the model from start to finish - the data, methodology, findings, and conclusions")
+          prompt: "Give me a complete summary of the model from start to finish - the data, methodology, findings, and conclusions"
         },
         {
           label: "🎯 Why These Results?",
-          action: () => handleSendMessage("Explain why the model came to these conclusions. What patterns did it find and what drives the predictions?")
+          prompt: "Explain why the model came to these conclusions. What patterns did it find and what drives the predictions?"
         },
         {
           label: "⚡ Key Performance",
-          action: () => handleSendMessage("Analyze the model's accuracy, precision, recall and explain what these metrics mean for my use case")
+          prompt: "Analyze the model's accuracy, precision, recall and explain what these metrics mean for my use case"
         },
         {
           label: "💡 Recommendations",
-          action: () => handleSendMessage("Based on the model results, what actions should I take? What are the business implications?")
+          prompt: "Based on the model results, what actions should I take? What are the business implications?"
         }
       ];
     }
-    
+
     // Marketing user actions
     if (isMarketingUser(userProfile)) {
       return getMarketingQuickActions(userProfile).map(qa => ({
         label: qa.label,
-        action: () => handleSendMessage(qa.prompt)
+        prompt: qa.prompt
       }));
     }
-    
+
     // Default data analysis actions
     return [
       {
         label: "📊 Create Dashboard",
-        action: () => handleSendMessage("Create a dashboard with the 4 most important charts for this data")
+        prompt: "Create a dashboard with the 4 most important charts for this data"
       },
       {
         label: "🧹 Clean Data",
-        action: () => handleSendMessage("Analyze data quality and clean any issues automatically")
+        prompt: "Analyze data quality and clean any issues automatically"
       },
       {
         label: "🔍 Find Insights",
-        action: () => handleSendMessage("Find the 3 most important insights I should know about this data")
+        prompt: "Find the 3 most important insights I should know about this data"
       },
       {
         label: "🤖 Suggest Model",
-        action: () => handleSendMessage("What ML model should I train with this data and why?")
+        prompt: "What ML model should I train with this data and why?"
       }
     ];
-  }, [userProfile, handleSendMessage, relatedModels]);
+  }, [userProfile, relatedModels]);
 
-  const ChatContent = () => (
+  // Memoize callback for StreamingMessage onComplete
+  const handleStreamComplete = useCallback((messageIndex: number) => {
+    setMessages(prev => prev.map((m, i) =>
+      i === messageIndex ? { ...m, streamComplete: true } : m
+    ));
+  }, []);
+
+  const chatContent = (
     <>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-primary to-primary-600">
@@ -766,12 +790,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
                       actions={message.actions}
                       modelMetrics={message.modelMetrics}
                       speed={80} // Faster streaming for better UX
-                      onComplete={() => {
-                        // Mark as complete
-                        setMessages(prev => prev.map((m, i) => 
-                          i === idx ? { ...m, streamComplete: true } : m
-                        ));
-                      }}
+                      onComplete={() => handleStreamComplete(idx)}
                     />
                     <p className="text-xs mt-1 px-1 text-gray-400">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -800,7 +819,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             {quickActions.slice(0, 6).map((qa, idx) => (
               <button
                 key={idx}
-                onClick={qa.action}
+                onClick={() => handleSendMessage(qa.prompt)}
                 className="text-xs px-3 py-2 bg-gradient-to-r from-white to-primary/5 text-primary-700 rounded-lg hover:from-primary/5 hover:to-primary/10 transition-all border border-primary/20 font-medium shadow-sm hover:shadow"
               >
                 {qa.label}
@@ -836,10 +855,11 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
             type="text"
             value={input}
             onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder={isListening ? "Listening..." : `Ask about ${dataset.name}...`}
             disabled={isLoading || isListening}
             className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
+            autoComplete="off"
           />
           
           <Button
@@ -893,7 +913,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
     return (
       <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col">
-          <ChatContent />
+          {chatContent}
         </div>
       </div>
     );
@@ -902,9 +922,11 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = ({
   // Card version (for embedding)
   return (
     <Card className="h-[700px] flex flex-col p-0 overflow-hidden shadow-xl">
-      <ChatContent />
+      {chatContent}
     </Card>
   );
-};
+});
+
+EnhancedAIChat.displayName = 'EnhancedAIChat';
 
 export default EnhancedAIChat;

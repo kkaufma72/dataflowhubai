@@ -26,8 +26,8 @@ interface PersonalizedDatasetChatProps {
   isModal?: boolean;
 }
 
-const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({ 
-  dataset, 
+const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = React.memo(({
+  dataset,
   onClose,
   isModal = false 
 }) => {
@@ -151,7 +151,7 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
 
   const suggestedQuestions = getSuggestedQuestions(dataset, userProfile);
 
-  const ChatContent = () => (
+  const chatContent = (
     <>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-primary/5 to-primary/5">
@@ -300,7 +300,7 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
     return (
       <div className="fixed inset-0 z-50 overflow-hidden bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl h-[80vh] flex flex-col">
-          <ChatContent />
+          {chatContent}
         </div>
       </div>
     );
@@ -309,10 +309,12 @@ const PersonalizedDatasetChat: React.FC<PersonalizedDatasetChatProps> = ({
   // Card version (for embedding)
   return (
     <Card className="h-[600px] flex flex-col p-0 overflow-hidden">
-      <ChatContent />
+      {chatContent}
     </Card>
   );
-};
+});
+
+PersonalizedDatasetChat.displayName = 'PersonalizedDatasetChat';
 
 export default PersonalizedDatasetChat;
 
