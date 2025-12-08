@@ -20,9 +20,28 @@
     </script>
   </head>
   <body style="background-color: #ffffff; margin: 0; padding: 0;">
-    <div id="root" style="min-height: 100vh;"></div>
+    <div id="root" style="min-height: 100vh;">
+      <!-- Loading state shown before React loads -->
+      <div id="initial-loader" style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, sans-serif;">
+        <div style="text-align: center;">
+          <div style="width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+          <p style="margin-top: 16px; color: #6b7280;">Loading DataFlowHub...</p>
+        </div>
+      </div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    </div>
     <div id="modal-portal"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Error handler for module loading failures
+      window.addEventListener('error', function(e) {
+        console.error('Script error:', e);
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.innerHTML = '<div style="text-align:center;padding:20px;"><h2 style="color:#ef4444;">Failed to load application</h2><p style="color:#6b7280;">Error: ' + (e.message || 'Unknown error') + '</p><button onclick="location.reload()" style="margin-top:16px;padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:6px;cursor:pointer;">Reload</button></div>';
+        }
+      });
+    </script>
     
     <!-- LinkedIn Insight Tag -->
     <script type="text/javascript">
