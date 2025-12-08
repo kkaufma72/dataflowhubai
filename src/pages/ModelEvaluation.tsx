@@ -1465,7 +1465,7 @@ const ModelEvaluationContent = () => {
                 </div>
               )}
               {performanceData.length > 0 && (
-                <div className="mt-4 bg-gray-950 rounded-lg p-6 border border-gray-800">
+                <div className="mt-4 bg-white rounded-lg p-6 border border-gray-200">
                   <AreaChart
                     className="h-80"
                     data={performanceData}
@@ -1474,7 +1474,7 @@ const ModelEvaluationContent = () => {
                     colors={['cyan', 'blue', 'purple']}
                     valueFormatter={(value) => `${(value * 100).toFixed(1)}%`}
                     showLegend={true}
-                    showGridLines={false}
+                    showGridLines={true}
                     showAnimation={true}
                     yAxisWidth={56}
                     curveType="monotone"

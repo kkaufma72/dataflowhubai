@@ -1,6 +1,6 @@
 // FRED Dataset Importer Component
 // Enhanced with caching, progress indicators, and loading skeletons
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   Search, 
   TrendingUp, 
@@ -158,6 +158,7 @@ const FREDDatasetImporter: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FREDSeries[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedSeries, setSelectedSeries] = useState<FREDSeries | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -199,7 +200,10 @@ const FREDDatasetImporter: React.FC = () => {
     setIsLoadingPopular(true);
     try {
       const results = await getPopularIndicatorsWithCache(5, (loaded, total) => {
-        setPopularLoadProgress({ loaded, total });
+        // Only update progress if search input doesn't have focus
+        if (document.activeElement !== searchInputRef.current) {
+          setPopularLoadProgress({ loaded, total });
+        }
       });
       setPopularSeries(results);
     } catch (error) {
@@ -219,7 +223,17 @@ const FREDDatasetImporter: React.FC = () => {
     setCacheStats(getCacheStats());
   }, [loadPopularIndicators]);
 
-  const handleSearch = async () => {
+  // Memoized search query change handler to prevent input focus loss
+  const handleSearchQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.persist(); // Persist the synthetic event
+    const value = e.target.value;
+    // Use requestAnimationFrame to defer state update
+    requestAnimationFrame(() => {
+      setSearchQuery(value);
+    });
+  }, []);
+
+  const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) {
       toast.error('Please enter a search query');
       return;
@@ -246,7 +260,7 @@ const FREDDatasetImporter: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [searchQuery]);
 
   const handleImport = async (series: FREDSeries) => {
     if (!user) {
@@ -617,12 +631,14 @@ const FREDDatasetImporter: React.FC = () => {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                onChange={handleSearchQueryChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Search for GDP, unemployment, inflation, S&P 500..."
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                autoComplete="off"
               />
             </div>
             <Button
@@ -846,4 +862,4 @@ const FREDDatasetImporter: React.FC = () => {
   );
 };
 
-export default FREDDatasetImporter;
+export default React.memo(FREDDatasetImporter);
