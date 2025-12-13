@@ -5,6 +5,7 @@ Database connection management and dependency injection.
 import logging
 from typing import AsyncGenerator
 
+from fastapi import HTTPException, status
 import redis.asyncio as aioredis
 from aiokafka import AIOKafkaProducer
 from minio import Minio
@@ -124,6 +125,11 @@ async def close_database_connections() -> None:
 
 async def get_postgres_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get PostgreSQL database session."""
+    if AsyncSessionLocal is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database not initialized. Backend startup may have failed.",
+        )
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -133,6 +139,11 @@ async def get_postgres_session() -> AsyncGenerator[AsyncSession, None]:
 
 async def get_timescaledb_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get TimescaleDB database session."""
+    if TimescaleSessionLocal is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="TimescaleDB not initialized. Backend startup may have failed.",
+        )
     async with TimescaleSessionLocal() as session:
         try:
             yield session

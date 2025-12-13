@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     )
 
     # PostgreSQL - Main Database
+    # NOTE: docker-compose sets DATABASE_URL; support both styles.
+    DATABASE_URL: str = ""
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "dataflow_user"
@@ -56,6 +58,8 @@ class Settings(BaseSettings):
     TIMESCALEDB_DB: str = "timeseries_db"
 
     # Redis - Cache and Queue
+    # NOTE: docker-compose sets REDIS_URL; support both styles.
+    REDIS_URL: str = ""
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = ""
@@ -122,6 +126,16 @@ class Settings(BaseSettings):
     @property
     def postgres_url(self) -> str:
         """Get PostgreSQL connection URL."""
+        if self.DATABASE_URL:
+            url = self.DATABASE_URL.strip()
+            # SQLAlchemy async engine expects postgresql+asyncpg
+            if url.startswith("postgresql+asyncpg://"):
+                return url
+            if url.startswith("postgresql://"):
+                return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            if url.startswith("postgres://"):
+                return url.replace("postgres://", "postgresql+asyncpg://", 1)
+            return url
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -138,6 +152,8 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         """Get Redis connection URL."""
+        if self.REDIS_URL:
+            return self.REDIS_URL.strip()
         if self.REDIS_PASSWORD:
             return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"

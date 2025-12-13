@@ -1,6 +1,7 @@
 import { InfluxDB, Point, WriteApi, QueryApi } from '@influxdata/influxdb-client';
 
-const url = import.meta.env.VITE_INFLUXDB_URL || 'http://localhost:8086';
+// Default to a relative URL so dev can proxy it (and HTTPS origins don't hit mixed-content blocks)
+const url = import.meta.env.VITE_INFLUXDB_URL || '/influxdb';
 const token = import.meta.env.VITE_INFLUXDB_TOKEN || 'dataflow-influx-token-2025';
 const org = import.meta.env.VITE_INFLUXDB_ORG || 'dataflowhub';
 const bucket = import.meta.env.VITE_INFLUXDB_BUCKET || 'model_metrics';

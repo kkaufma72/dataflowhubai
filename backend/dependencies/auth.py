@@ -53,7 +53,29 @@ async def get_current_user(
         )
         
     except JWTError:
-        raise credentials_exception
+        # Local dev convenience: if Supabase JWT secret isn't configured, allow
+        # extracting identity from the token without verifying signature.
+        # This is ONLY enabled when DEBUG=true.
+        if settings.DEBUG and not settings.SUPABASE_JWT_SECRET:
+            try:
+                payload = jwt.get_unverified_claims(token)
+            except Exception:
+                raise credentials_exception
+
+            user_id: str = payload.get("sub")
+            if user_id is None:
+                raise credentials_exception
+
+            email: Optional[str] = payload.get("email")
+            role: str = payload.get("role", "user")
+
+            token_data = TokenPayload(
+                sub=user_id,
+                email=email,
+                role=role,
+            )
+        else:
+            raise credentials_exception
 
     # Create user object from token
     user = User(

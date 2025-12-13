@@ -228,6 +228,7 @@ const DashboardKoyfin: React.FC = () => {
     datasets.slice(0, 3).forEach(d => {
       activities.push({
         type: 'dataset',
+        id: d.id,
         name: d.name,
         timestamp: d.dateUploaded || new Date().toISOString(),
         icon: Database,
@@ -239,6 +240,7 @@ const DashboardKoyfin: React.FC = () => {
     models.slice(0, 2).forEach(m => {
       activities.push({
         type: 'model',
+        id: m.id,
         name: m.name,
         timestamp: m.createdAt,
         icon: Brain,
@@ -655,6 +657,7 @@ const DashboardKoyfin: React.FC = () => {
                 recentActivity.map((activity, idx) => {
                   const Icon = activity.icon;
                   const timeAgo = getTimeAgo(activity.timestamp);
+                  const isModel = activity.type === 'model' && typeof activity.id === 'string' && activity.id.length > 0;
                   
                   return (
                     <div key={idx} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-800/30 transition-colors">
@@ -669,6 +672,16 @@ const DashboardKoyfin: React.FC = () => {
                           {timeAgo}
                         </p>
                       </div>
+
+                      {isModel && (
+                        <button
+                          onClick={() => navigate(`/app/modelops?model=${activity.id}`)}
+                          className="ml-2 shrink-0 px-2 py-1 text-[10px] font-semibold rounded bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                          title="Open this model in ModelOps"
+                        >
+                          ModelOps
+                        </button>
+                      )}
                     </div>
                   );
                 })

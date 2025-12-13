@@ -302,7 +302,7 @@ const DataManagement: React.FC = () => {
     }
   }, []);
 
-  const handleSampleTourAction = useCallback((action: 'profile' | 'chat' | 'graph') => {
+  const handleSampleTourAction = useCallback((action: 'profile' | 'chat') => {
     const sampleDataset = datasets.find(ds => SAMPLE_DATASET_IDS.has(ds.id)) || datasets[0];
     if (!sampleDataset) return;
 
@@ -314,8 +314,6 @@ const DataManagement: React.FC = () => {
     } else if (action === 'chat') {
       setChatDataset(sampleDataset);
       setShowChat(true);
-    } else if (action === 'graph') {
-      toast.success('Sample data is syncing with your knowledge graph.');
     }
 
     dismissSampleTour();
@@ -551,18 +549,6 @@ const DataManagement: React.FC = () => {
               </p>
               <Button className="mt-3" size="sm" onClick={() => handleSampleTourAction('chat')}>
                 Chat about this data
-              </Button>
-            </div>
-            <div className="rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm">
-              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                <Database className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold text-gray-900">See graph sync</h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Sample datasets automatically sync to the knowledge graph—no configuration required.
-              </p>
-              <Button className="mt-3" size="sm" onClick={() => handleSampleTourAction('graph')}>
-                View sync status
               </Button>
             </div>
           </div>

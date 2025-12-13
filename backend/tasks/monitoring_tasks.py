@@ -4,16 +4,21 @@ Handles scheduled monitoring, drift detection, and reporting.
 """
 
 import asyncio
+import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any
 from uuid import UUID
 
 from celery_app import celery_app
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 
 from services.timescale_service import TimescaleService
 from utils.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 # Create async engine
@@ -24,11 +29,32 @@ engine = create_async_engine(
     max_overflow=10
 )
 
+# PostgreSQL engine for operational tables (models, incidents, drift reports)
+postgres_engine = create_async_engine(
+    settings.postgres_url,
+    echo=False,
+    pool_size=5,
+    max_overflow=10,
+)
+
 AsyncSessionLocal = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False
 )
+
+PostgresSessionLocal = sessionmaker(
+    postgres_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
+
+
+def _safe_uuid(value: str) -> UUID | None:
+    try:
+        return UUID(value)
+    except Exception:
+        return None
 
 
 @celery_app.task(name='tasks.monitoring_tasks.check_model_drift')
@@ -42,6 +68,15 @@ def check_model_drift(model_id: str) -> Dict[str, Any]:
     Returns:
         Drift detection results
     """
+    parsed_model_id = _safe_uuid(model_id)
+    if not parsed_model_id:
+        return {
+            'status': 'error',
+            'model_id': model_id,
+            'error': 'model_id must be a valid UUID',
+            'checked_at': datetime.utcnow().isoformat(),
+        }
+
     # Simulate drift detection
     import time
     time.sleep(2)
@@ -54,7 +89,7 @@ def check_model_drift(model_id: str) -> Dict[str, Any]:
         async with AsyncSessionLocal() as session:
             service = TimescaleService(session)
             await service.record_model_metric(
-                model_id=UUID(model_id),
+                model_id=parsed_model_id,
                 metric_name='drift_score',
                 metric_value=drift_score,
                 metadata={'drift_detected': drift_detected}
@@ -62,6 +97,42 @@ def check_model_drift(model_id: str) -> Dict[str, Any]:
             await session.commit()
     
     asyncio.run(record_drift())
+
+    # Best-effort persistence of a minimal drift report to Postgres.
+    async def persist_report():
+        try:
+            async with PostgresSessionLocal() as session:
+                await session.execute(
+                    text(
+                        """
+                        INSERT INTO model_drift_reports (model_id, has_drift, drift_score, severity, report, created_at)
+                        VALUES (:model_id, :has_drift, :drift_score, :severity, :report, NOW())
+                        """
+                    ),
+                    {
+                        'model_id': parsed_model_id,
+                        'has_drift': drift_detected,
+                        'drift_score': drift_score,
+                        'severity': 'warning' if drift_detected else 'info',
+                        'report': {
+                            'model_id': str(parsed_model_id),
+                            'generated_at': datetime.utcnow().isoformat(),
+                            'has_drift': drift_detected,
+                            'drift_score': drift_score,
+                            'severity': 'warning' if drift_detected else 'info',
+                            'drifted_features': [],
+                            'recommended_actions': [
+                                'No significant drift detected' if not drift_detected else 'Investigate upstream data changes'
+                            ],
+                            'context': {'source': 'celery.monitoring_tasks.check_model_drift', 'simulated': True},
+                        },
+                    },
+                )
+                await session.commit()
+        except Exception as e:
+            logger.warning("Failed to persist drift report to Postgres: %s", e)
+
+    asyncio.run(persist_report())
     
     return {
         'status': 'completed',
@@ -81,8 +152,27 @@ def check_all_models_drift() -> Dict[str, Any]:
     Returns:
         Summary of drift checks
     """
-    # In production, query database for active models
-    active_models = ['model-1', 'model-2', 'model-3']
+    async def get_active_models() -> list[str]:
+        try:
+            async with PostgresSessionLocal() as session:
+                result = await session.execute(
+                    text(
+                        """
+                        SELECT id
+                        FROM ml_models
+                        WHERE status IN ('deployed', 'active', 'trained', 'ready')
+                        ORDER BY updated_at DESC
+                        LIMIT 50
+                        """
+                    )
+                )
+                rows = result.fetchall()
+                return [str(r.id) for r in rows]
+        except Exception as e:
+            logger.warning("Failed to query active models from Postgres: %s", e)
+            return []
+
+    active_models = asyncio.run(get_active_models())
     
     tasks = []
     for model_id in active_models:

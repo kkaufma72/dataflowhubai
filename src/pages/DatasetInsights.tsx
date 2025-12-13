@@ -1,14 +1,12 @@
 import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useMLContext } from '../context/MLContext';
-import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Share2, Brain, BookOpen } from 'lucide-react';
+import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Activity, PieChart, Brain, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
 import QueryBuilderModal from '../components/data/QueryBuilderModal';
 import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
 import { useDatasetKnowledge } from '../hooks/useDatasetKnowledge';
 
-// Lazy load Neo4j graph visualization
-const DatasetGraphVisualization = lazy(() => import('../components/graphs/DatasetGraphVisualization'));
 const WarehouseAnalyticsDashboard = lazy(() => import('../components/analytics/WarehouseAnalyticsDashboard'));
 const DatasetKnowledgePanel = lazy(() => import('../components/data/DatasetKnowledgePanel'));
 
@@ -185,7 +183,7 @@ const predictionModels = [
 const DatasetInsights: React.FC = () => {
   const { datasets } = useMLContext();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'visualizations' | 'graph' | 'warehouse'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'visualizations' | 'knowledge' | 'warehouse'>('overview');
   const [filterType, setFilterType] = useState<string>('all');
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComp, setChartComp] = useState<any>(null);
@@ -661,6 +659,16 @@ const DatasetInsights: React.FC = () => {
               </svg>
               Export
             </button>
+            <button
+              onClick={() =>
+                selectedDataset &&
+                navigate(`/app/train?datasetId=${encodeURIComponent(selectedDataset.id)}`)
+              }
+              disabled={!selectedDataset}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Train + Deploy + Monitor
+            </button>
             <button onClick={() => navigate('/app/data')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-all">
               Data Explorer
             </button>
@@ -705,20 +713,6 @@ const DatasetInsights: React.FC = () => {
             <Brain className="w-5 h-5" />
             Knowledge Base
           </button>
-          {/* Knowledge Graph - Only show in development (Neo4j Desktop) */}
-          {import.meta.env.DEV && (
-            <button
-              onClick={() => setActiveTab('graph')}
-              className={`${
-                activeTab === 'graph'
-                  ? 'border-blue-500 text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium saas-caption flex items-center gap-2 transition-colors`}
-            >
-              <Share2 className="w-5 h-5" />
-              Knowledge Graph
-            </button>
-          )}
           {/* Warehouse tab commented out - requires PostgreSQL setup
           <button
             onClick={() => setActiveTab('warehouse')}
@@ -1766,68 +1760,6 @@ const DatasetInsights: React.FC = () => {
                   <p className="text-sm text-gray-400">
                     The AI assistant uses this knowledge to provide more accurate and contextual responses.
                   </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Knowledge Graph Tab - Neo4j Integration */}
-      {activeTab === 'graph' && (
-        <div className="space-y-6">
-          <Suspense fallback={
-            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 text-center">
-              <Loader className="w-12 h-12 text-blue-400 animate-spin mx-auto mb-4" />
-              <p className="text-sm text-gray-400">Loading knowledge graph...</p>
-            </div>
-          }>
-            <DatasetGraphVisualization height="600px" />
-          </Suspense>
-
-          {/* Graph Insights - InfluxDB Style */}
-          <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-cyan-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-white">About Knowledge Graphs</h3>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-3">What You See:</h4>
-                  <ul className="space-y-2 text-sm text-gray-300">
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span><strong className="text-white">Nodes:</strong> Your uploaded datasets</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span><strong className="text-white">Edges:</strong> Relationships between datasets</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span><strong className="text-white">Size:</strong> Node size = number of rows</span>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-3">Use Cases:</h4>
-                  <ul className="space-y-2 text-sm text-gray-300">
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span>Find similar datasets automatically</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span>Track data lineage and transformations</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-blue-400 mr-2">•</span>
-                      <span>Discover hidden connections in your data</span>
-                    </li>
-                  </ul>
                 </div>
               </div>
             </div>

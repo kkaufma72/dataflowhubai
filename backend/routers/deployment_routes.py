@@ -2,22 +2,51 @@
 Model deployment and inference routes.
 """
 
+import time
+from typing import Any, Optional
+from uuid import UUID
+
 from typing import List
 
 from fastapi import APIRouter, Depends, status
 from minio import Minio
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import get_current_user, require_subscription
-from dependencies.database import get_minio_client, get_redis_client
+from dependencies.database import get_minio_client, get_redis_client, get_timescaledb_session
 from schemas.auth import User
 from schemas.ml_model import PredictionRequest, PredictionResponse
 from services.cache_service import CacheService
 from services.ml_service import MLService
+from services.timescale_service import TimescaleService
 from utils.config import settings
 
 
 router = APIRouter()
+
+
+def _safe_uuid(value: Any) -> Optional[UUID]:
+    try:
+        if value is None:
+            return None
+        return UUID(str(value))
+    except Exception:
+        return None
+
+
+def _extract_confidence(resp: PredictionResponse) -> Optional[float]:
+    # If probabilities are present, use the max probability of the first row.
+    probs = getattr(resp, "probabilities", None)
+    if not probs:
+        return None
+    try:
+        first = probs[0]
+        if not first:
+            return None
+        return float(max(first))
+    except Exception:
+        return None
 
 
 @router.post("/predict", response_model=PredictionResponse)
@@ -25,6 +54,7 @@ async def make_prediction(
     request: PredictionRequest,
     minio_client: Minio = Depends(get_minio_client),
     redis_client: Redis = Depends(get_redis_client),
+    tsdb: AsyncSession = Depends(get_timescaledb_session),
     current_user: User = Depends(get_current_user),
 ) -> PredictionResponse:
     """
@@ -45,10 +75,32 @@ async def make_prediction(
     # and verify user has access
     storage_path = f"models/{current_user.id}/{request.model_id}.pkl"
     
-    predictions = await ml_service.predict(
-        storage_path=storage_path,
-        data=request.data,
-    )
+    t0 = time.perf_counter()
+    predictions = await ml_service.predict(storage_path=storage_path, data=request.data)
+    response_time_ms = float((time.perf_counter() - t0) * 1000.0)
+
+    # Best-effort logging for drift monitoring; never break predictions.
+    try:
+        service = TimescaleService(tsdb)
+        await service.log_prediction(
+            model_id=_safe_uuid(request.model_id) or UUID(predictions.model_id),
+            user_id=_safe_uuid(current_user.id),
+            input_data={"rows": request.data},
+            prediction={
+                "predictions": predictions.predictions,
+                "probabilities": predictions.probabilities,
+            },
+            confidence_score=_extract_confidence(predictions),
+            response_time_ms=response_time_ms,
+        )
+    except Exception:
+        pass
+
+    # Keep contract: PredictionResponse includes prediction_time_ms
+    try:
+        predictions.prediction_time_ms = response_time_ms
+    except Exception:
+        pass
 
     return predictions
 

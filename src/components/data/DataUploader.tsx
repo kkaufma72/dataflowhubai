@@ -3,7 +3,6 @@ import { AlertCircle, Upload, FileSpreadsheet, Database, CheckCircle2, Edit3, Ch
 import { useMLContext } from '../../context/MLContext';
 import ProgressStepper, { Step } from '../common/ProgressStepper';
 import { useAuth } from '../auth/AuthProvider';
-import { syncDatasetToNeo4j } from '../../lib/neo4jSync';
 import toast from 'react-hot-toast';
 import Papa from 'papaparse';
 
@@ -597,18 +596,6 @@ const DataUploader: React.FC<DataUploaderProps> = ({ onClose }) => {
       }
       
       setUploadProgress(100);
-
-      // Sync to Neo4j (async, don't wait)
-      if (datasetForContext && user?.id) {
-        syncDatasetToNeo4j(datasetForContext as any, user.id)
-          .then(() => {
-            console.log('🔵 Dataset synced to Neo4j');
-            toast.success('Synced to knowledge graph! 🔵', { duration: 2000 });
-          })
-          .catch((error) => {
-            console.warn('Neo4j sync failed (optional):', error);
-          });
-      }
       
       toast.success(`Dataset "${file.name}" uploaded successfully!`, {
         duration: 4000,

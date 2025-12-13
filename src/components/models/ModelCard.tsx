@@ -1,8 +1,10 @@
 import React from 'react';
 import { BarChart, GitBranch, Activity, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MLModel } from '../../types';
 import Button from '../common/Button';
 import Card from '../common/Card';
+import toast from 'react-hot-toast';
 
 interface ModelCardProps {
   model: MLModel;
@@ -11,6 +13,30 @@ interface ModelCardProps {
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({ model, onDeploy, onEvaluate }) => {
+  const navigate = useNavigate();
+
+  const copyModelId = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(model.id);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = model.id;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+
+      toast.success('Copied model UUID');
+    } catch {
+      toast.error('Failed to copy UUID');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -57,6 +83,17 @@ const ModelCard: React.FC<ModelCardProps> = ({ model, onDeploy, onEvaluate }) =>
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">{model.name}</h3>
               <p className="mt-1 text-sm text-gray-500">{model.description}</p>
+              <div className="mt-2 text-xs text-gray-500">
+                <span className="mr-2 font-medium text-gray-600">UUID</span>
+                <span className="font-mono break-all">{model.id}</span>
+                <button
+                  type="button"
+                  onClick={() => void copyModelId()}
+                  className="ml-2 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -112,6 +149,16 @@ const ModelCard: React.FC<ModelCardProps> = ({ model, onDeploy, onEvaluate }) =>
         >
           Evaluate
         </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => navigate(`/app/modelops?model=${model.id}`)}
+          disabled={model.status === 'training' || model.status === 'failed'}
+        >
+          ModelOps
+        </Button>
+
         <Button
           size="sm"
           variant={model.status === 'deployed' ? 'secondary' : 'primary'}

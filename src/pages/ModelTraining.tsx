@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Layers,
@@ -59,6 +59,8 @@ const ModelTraining: React.FC = () => {
   const { datasets, models, addModel, updateModelStatus, deleteDataset, currentProject } = useMLContext();
   const { user } = useAuth();
   const { canUseSmartRecommendations, tier } = useFeatureAccess();
+  const [searchParams] = useSearchParams();
+  const appliedDatasetParamRef = useRef(false);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const selectedDatasetSafe = selectedDataset as Dataset | null;
   const [isTraining, setIsTraining] = useState(false);
@@ -74,6 +76,7 @@ const ModelTraining: React.FC = () => {
     precision: number;
     recall: number;
   } | undefined>(undefined);
+  const [lastTrainedModelId, setLastTrainedModelId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'train' | 'compare' | 'versions' | 'export' | 'tensorflow'>('train');
   const [crossValidationResults, setCrossValidationResults] = useState<CrossValidationResult[] | null>(null);
   const [cvQuestion, setCvQuestion] = useState('');
@@ -305,6 +308,30 @@ const ModelTraining: React.FC = () => {
     }
   };
 
+  // Fast lane: allow Dataset Insights to deep-link into training with a pre-selected dataset.
+  useEffect(() => {
+    if (appliedDatasetParamRef.current) return;
+
+    const datasetIdFromQuery = searchParams.get('datasetId');
+    if (!datasetIdFromQuery) return;
+    if (!datasets || datasets.length === 0) return;
+
+    appliedDatasetParamRef.current = true;
+    const dataset = datasets.find((d) => d.id === datasetIdFromQuery);
+    if (dataset) {
+      setSelectedDataset(dataset);
+      setActiveTab('train');
+
+      // Give React a tick to render the form, then scroll it into view.
+      window.setTimeout(() => {
+        const el = document.getElementById('training-form');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    }
+  }, [datasets, searchParams]);
+
   const handleDeploy = (model: MLModel) => {
     navigate(`/app/deploy?model=${model.id}`);
   };
@@ -340,6 +367,7 @@ const ModelTraining: React.FC = () => {
     try {
       setIsTraining(true);
       setProgress(0);
+      setLastTrainedModelId(null);
 
       toast.loading('Starting model training...', { id: 'training' });
 
@@ -468,6 +496,7 @@ const ModelTraining: React.FC = () => {
               updateModelStatus(newModel.id, 'trained', completedModel.metrics);
               setIsTraining(false);
               setCurrentTraining(null);
+              setLastTrainedModelId(newModel.id);
               toast.success('Model training completed successfully!', { id: 'training' });
               
               // Complete experiment tracking
@@ -678,6 +707,26 @@ const ModelTraining: React.FC = () => {
               <p className="text-sm text-gray-400 mt-1">Train and deploy production-ready ML models</p>
             </div>
 
+            {lastTrainedModelId && (
+              <div className="mt-4 bg-[#161b22] border border-emerald-900/60 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-900/30 border border-emerald-800 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-white">Training complete</div>
+                    <div className="text-xs text-gray-400">Jump straight into ModelOps Autopilot with this model.</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate(`/app/modelops?model=${lastTrainedModelId}`)}
+                  className="px-4 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors"
+                >
+                  Open in ModelOps
+                </button>
+              </div>
+            )}
+
             {/* Training Metrics Stats */}
             <div className="grid grid-cols-4 gap-4 mt-6">
               <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
@@ -704,11 +753,16 @@ const ModelTraining: React.FC = () => {
                   <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Avg Accuracy</span>
                 </div>
                 <div className="text-2xl font-mono font-bold text-white">
-                  {trainedModels.length > 0 
-                    ? `${(trainedModels.reduce((acc, m) => acc + (m.metrics?.accuracy || 0), 0) / trainedModels.length * 100).toFixed(1)}%`
-                    : '0%'}
+                  {(() => {
+                    const accuracies = trainedModels
+                      .map((m) => m.metrics?.accuracy)
+                      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+                    if (accuracies.length === 0) return '—';
+                    const avg = (accuracies.reduce((a, b) => a + b, 0) / accuracies.length) * 100;
+                    return `${avg.toFixed(1)}%`;
+                  })()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Across all models</div>
+                <div className="text-xs text-gray-500 mt-1">Across models with metrics</div>
               </div>
 
               <div className="bg-[#0d1117] border border-gray-800 rounded-lg px-4 py-3">
@@ -1058,7 +1112,7 @@ const ModelTraining: React.FC = () => {
         {selectedDataset && (
           <div className="grid grid-cols-3 gap-4">
             {/* Training Form */}
-            <div className="col-span-2 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
+            <div id="training-form" className="col-span-2 bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

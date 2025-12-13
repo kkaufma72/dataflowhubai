@@ -32,6 +32,7 @@ const ModelTraining = lazy(() => import('./pages/ModelTraining.tsx'));
 const ModelEvaluation = lazy(() => import('./pages/ModelEvaluation.tsx'));
 const Deployment = lazy(() => import('./pages/Deployment.tsx'));
 const ModelMonitoring = lazy(() => import('./pages/ModelMonitoring.tsx'));
+const ModelOps = lazy(() => import('./pages/ModelOps.tsx'));
 const SignIn = lazy(() => import('./pages/SignIn.tsx'));
 const LandingPage = lazy(() => import('./pages/LandingPageLinear.tsx')); // Linear-style minimalist landing
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
@@ -215,6 +216,7 @@ if (!isSupabaseConfigured) {
                               {/* Premium Features - Require Pro/Team subscription */}
                               <Route path="deploy" element={<PremiumRoute requiredFeature="canDeploy"><Deployment /></PremiumRoute>} />
                               <Route path="monitoring" element={<PremiumRoute requiredFeature="canMonitor"><ModelMonitoring /></PremiumRoute>} />
+                              <Route path="modelops" element={<ModelOps />} />
                               <Route path="metrics" element={<PremiumRoute requiredFeature="canMonitor"><MetricsDashboard /></PremiumRoute>} />
                               <Route path="async-ml" element={<PremiumRoute requiredFeature="advancedAnalytics"><AsyncMLOperations /></PremiumRoute>} />
                               

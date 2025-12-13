@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import { useDatasetActions } from '../hooks/useDatasetActions';
-import { syncDatasetToNeo4j } from '../lib/neo4jSync';
 import toast from 'react-hot-toast';
 
 // Lazy load heavy components
@@ -388,7 +387,7 @@ const DataManagementDark: React.FC = () => {
                   Upload Dataset
                 </h2>
                 <p className="text-sm text-gray-400 mt-0.5">
-                  Saves to Supabase & syncs to Knowledge Graph
+                  Saves to Supabase
                 </p>
               </div>
               <button

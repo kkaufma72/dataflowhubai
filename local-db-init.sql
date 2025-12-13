@@ -79,6 +79,48 @@ CREATE TABLE IF NOT EXISTS conversations (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- =========================
+-- ModelOps / Autopilot tables
+-- =========================
+
+-- Drift reports (stored as JSON for flexibility)
+CREATE TABLE IF NOT EXISTS model_drift_reports (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  model_id UUID NOT NULL REFERENCES ml_models(id) ON DELETE CASCADE,
+  user_id UUID,
+  has_drift BOOLEAN NOT NULL DEFAULT FALSE,
+  drift_score DOUBLE PRECISION NOT NULL DEFAULT 0,
+  severity TEXT NOT NULL DEFAULT 'info',
+  report JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Incidents opened from drift/performance issues
+CREATE TABLE IF NOT EXISTS model_incidents (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  model_id UUID NOT NULL REFERENCES ml_models(id) ON DELETE CASCADE,
+  drift_report_id UUID REFERENCES model_drift_reports(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'open',
+  severity TEXT NOT NULL DEFAULT 'warning',
+  title TEXT NOT NULL,
+  summary TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  resolved_at TIMESTAMPTZ
+);
+
+-- Autopilot policies (per user; JSON config)
+CREATE TABLE IF NOT EXISTS autopilot_policies (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID,
+  name TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  config JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_datasets_user_id ON datasets(user_id);
 CREATE INDEX IF NOT EXISTS idx_datasets_project_id ON datasets(project_id);
@@ -87,6 +129,13 @@ CREATE INDEX IF NOT EXISTS idx_datasets_created_at ON datasets(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_models_user_id ON ml_models(user_id);
 CREATE INDEX IF NOT EXISTS idx_models_dataset_id ON ml_models(dataset_id);
 CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
+
+-- ModelOps indexes
+CREATE INDEX IF NOT EXISTS idx_model_drift_reports_model_id ON model_drift_reports(model_id);
+CREATE INDEX IF NOT EXISTS idx_model_drift_reports_created_at ON model_drift_reports(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_model_incidents_model_id ON model_incidents(model_id);
+CREATE INDEX IF NOT EXISTS idx_model_incidents_status ON model_incidents(status);
+CREATE INDEX IF NOT EXISTS idx_autopilot_policies_user_id ON autopilot_policies(user_id);
 
 -- Trigger to sync rows/columns with row_count/column_count
 CREATE OR REPLACE FUNCTION sync_dataset_counts()
@@ -132,11 +181,23 @@ VALUES (
   'Local Test User'
 ) ON CONFLICT (user_id) DO NOTHING;
 
+-- Create a default autopilot policy for local dev
+INSERT INTO autopilot_policies (user_id, name, enabled, config)
+VALUES (
+  'a0000000-0000-0000-0000-000000000000',
+  'Default Autopilot Policy',
+  TRUE,
+  '{
+    "thresholds": {"warning": 0.20, "critical": 0.40},
+    "auto_open_incident": true
+  }'
+) ON CONFLICT DO NOTHING;
+
 -- Success message
 DO $$
 BEGIN
   RAISE NOTICE '✅ Local database schema created successfully!';
-  RAISE NOTICE '📊 Tables: projects, datasets, ml_models, user_profiles, conversations';
+  RAISE NOTICE '📊 Tables: projects, datasets, ml_models, user_profiles, conversations, model_drift_reports, model_incidents, autopilot_policies';
   RAISE NOTICE '🎯 Ready for FRED imports!';
 END $$;
 

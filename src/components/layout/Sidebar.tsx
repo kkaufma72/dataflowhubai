@@ -252,6 +252,13 @@ const Sidebar: React.FC = () => {
           premium: true
         },
         {
+          name: 'ModelOps',
+          href: '/app/modelops',
+          icon: Activity,
+          description: 'Drift & incidents',
+          premium: false
+        },
+        {
           name: 'Metrics',
           href: '/app/metrics',
           icon: LineChart,

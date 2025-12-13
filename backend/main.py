@@ -27,6 +27,7 @@ from routers import (
     knowledge_graph_routes,
     local_db_routes,
     ml_routes,
+    modelops_routes,
     monitoring_routes,
     pipeline_routes,
 )
@@ -80,6 +81,7 @@ def create_application() -> FastAPI:
     app.include_router(celery_ml_routes.router, prefix="/api/ml", tags=["ML Tasks (Async)"])
     app.include_router(deployment_routes.router, prefix="/api/deploy", tags=["Deployment"])
     app.include_router(monitoring_routes.router, prefix="/api/monitoring", tags=["Monitoring"])
+    app.include_router(modelops_routes.router, prefix="/api/modelops", tags=["ModelOps"])
     app.include_router(pipeline_routes.router, prefix="/api/pipelines", tags=["Pipelines"])
     app.include_router(knowledge_graph_routes.router, prefix="/api/knowledge", tags=["Knowledge Graph"])
     app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["Analytics"])

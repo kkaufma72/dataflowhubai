@@ -292,7 +292,33 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       const remoteDatasets = (datasetsResponse.ok ? await datasetsResponse.json() : []).map(
         (ds: SupabaseDatasetRow) => mapSupabaseDatasetRow(ds)
       );
-      const remoteModels = (modelsResponse.ok ? await modelsResponse.json() : []) as MLModel[];
+
+      const rawModels = (modelsResponse.ok ? await modelsResponse.json() : []) as any[];
+      const remoteModels: MLModel[] = (Array.isArray(rawModels) ? rawModels : []).map((m: any) => {
+        const metricsFromMetadata = m?.metadata?.metrics;
+        const metrics = (m?.metrics && typeof m.metrics === 'object' ? m.metrics : metricsFromMetadata) as
+          | Record<string, number>
+          | undefined;
+
+        return {
+          id: String(m?.id ?? ''),
+          name: String(m?.name ?? 'Model'),
+          description: String(m?.description ?? ''),
+          status: (m?.status ?? 'trained') as MLModel['status'],
+          datasetId: String(m?.dataset_id ?? m?.datasetId ?? ''),
+          projectId: (m?.project_id ?? m?.projectId ?? null) as string | null,
+          createdAt: String(m?.created_at ?? m?.createdAt ?? new Date().toISOString()),
+          metrics,
+          hyperparameters: (m?.hyperparameters && typeof m.hyperparameters === 'object' ? m.hyperparameters : undefined) as
+            | Record<string, number | string | boolean>
+            | undefined,
+          deploymentEndpoint: typeof m?.deployment_endpoint === 'string' ? m.deployment_endpoint : m?.deploymentEndpoint,
+          deployedAt: typeof m?.deployed_at === 'string' ? m.deployed_at : m?.deployedAt,
+          modelType: typeof m?.model_type === 'string' ? m.model_type : m?.modelType,
+          version: typeof m?.version === 'string' ? m.version : undefined,
+          parentModelId: typeof m?.parent_model_id === 'string' ? m.parent_model_id : m?.parentModelId,
+        };
+      });
 
       // Auto-load sample data behavior
       const hasSeededKey = user?.id ? `hasSeededDatasets_${user.id}` : null;

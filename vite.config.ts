@@ -17,18 +17,20 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         secure: false,
       },
+      '/influxdb': {
+        target: 'http://localhost:8086',
+        changeOrigin: true,
+        secure: false,
+      },
     },
     watch: {
       usePolling: true,
       interval: 1000,
       ignored: ['**/node_modules/**', '**/.git/**']
     },
+    // Avoid hard-coding ws://localhost which breaks in HTTPS environments (e.g., Codespaces)
     hmr: {
       timeout: 120000,
-      protocol: 'ws',
-      host: 'localhost',
-      port: 5173,  // Changed HMR port
-      clientPort: 5173,
       overlay: true
     },
     fs: {

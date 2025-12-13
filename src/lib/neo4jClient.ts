@@ -1,290 +1,34 @@
-/**
- * Neo4j Graph Database Client
- * 
- * For knowledge graphs, relationship analysis, and graph-based insights
- * 
- * NOTE: Only works in development (requires Neo4j Desktop)
- * Disabled in production build
- */
-
-let neo4j: any = null;
-type Driver = any;
-type Session = any;
-
-// Dynamic import for development only
-const loadNeo4j = async () => {
-  if (typeof window === 'undefined') return null;
-  if (neo4j) return neo4j;
-  
-  try {
-    neo4j = await import('neo4j-driver');
-    return neo4j.default || neo4j;
-  } catch (error) {
-    console.warn('Neo4j not available in this environment');
-    return null;
-  }
-};
+// Knowledge Graph visualization has been removed from the UI.
+// Keep this file as a no-op shim so any legacy imports won't break,
+// and to ensure we do not bundle or connect to Neo4j from the browser.
 
 class Neo4jClient {
-  private driver: Driver | null = null;
-  private isConnected: boolean = false;
-
-  /**
-   * Initialize connection to Neo4j
-   */
   async connect(): Promise<boolean> {
-    try {
-      // Load Neo4j dynamically (only available in development)
-      const neo4jModule = await loadNeo4j();
-      if (!neo4jModule) {
-        console.log('⚠️ Neo4j not available (production or not installed)');
-        return false;
-      }
-
-      const uri = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:55002';
-      const user = import.meta.env.VITE_NEO4J_USER || 'neo4j';
-      const password = import.meta.env.VITE_NEO4J_PASSWORD || 'dataflowhub2024';
-
-      console.log('🔵 Connecting to Neo4j:', uri);
-
-      this.driver = neo4jModule.driver(
-        uri,
-        neo4jModule.auth.basic(user, password),
-        {
-          // For Neo4j Aura (cloud), need to handle SSL
-          encrypted: uri.includes('+s'),
-          trust: 'TRUST_SYSTEM_CA_SIGNED_CERTIFICATES',
-          maxConnectionPoolSize: 50,
-          connectionAcquisitionTimeout: 60000
-        }
-      );
-
-      // Test connection
-      await this.driver.verifyConnectivity();
-      this.isConnected = true;
-      console.log('✅ Neo4j connected to:', uri);
-      return true;
-    } catch (error: any) {
-      console.error('❌ Neo4j connection failed:', error.message);
-      this.isConnected = false;
-      return false;
-    }
+    return false;
   }
 
-  /**
-   * Run a Cypher query
-   */
-  async runQuery(cypher: string, params: any = {}): Promise<any[]> {
-    if (!this.driver) {
-      await this.connect();
-    }
+  async disconnect(): Promise<void> {}
 
-    if (!this.driver) {
-      throw new Error('Neo4j not connected');
-    }
-
-    const session: Session = this.driver.session();
-    try {
-      const result = await session.run(cypher, params);
-      return result.records.map(record => record.toObject());
-    } finally {
-      await session.close();
-    }
+  async runQuery(_cypher: string, _params: any = {}): Promise<any[]> {
+    return [];
   }
 
-  /**
-   * Create dataset node in graph
-   */
-  async createDatasetNode(dataset: any): Promise<void> {
-    const query = `
-      MERGE (d:Dataset {id: $id})
-      SET d.name = $name,
-          d.rows = $rows,
-          d.columns = $columns,
-          d.created_at = $created_at,
-          d.file_type = $file_type
-      RETURN d
-    `;
+  async createDatasetNode(_dataset: any): Promise<void> {}
 
-    await this.runQuery(query, {
-      id: dataset.id,
-      name: dataset.name,
-      rows: dataset.row_count || dataset.rows || 0,
-      columns: dataset.column_count || dataset.columns || 0,
-      created_at: dataset.created_at || dataset.dateUploaded || new Date().toISOString(),
-      file_type: dataset.file_type || 'csv'
-    });
+  async linkDatasetToUser(_datasetId: string, _userId: string): Promise<void> {}
+
+  async findSimilarDatasets(_datasetId: string, _limit: number = 5): Promise<any[]> {
+    return [];
   }
 
-  /**
-   * Link dataset to user
-   */
-  async linkDatasetToUser(datasetId: string, userId: string): Promise<void> {
-    const query = `
-      MERGE (u:User {id: $userId})
-      MERGE (d:Dataset {id: $datasetId})
-      MERGE (u)-[:OWNS]->(d)
-    `;
-
-    await this.runQuery(query, { datasetId, userId });
-  }
-
-  /**
-   * Find similar datasets based on columns and size
-   */
-  async findSimilarDatasets(datasetId: string, limit: number = 5): Promise<any[]> {
-    const query = `
-      MATCH (source:Dataset {id: $datasetId})
-      MATCH (target:Dataset)
-      WHERE target.id <> source.id
-        AND abs(target.columns - source.columns) <= 5
-        AND abs(toFloat(target.rows) - toFloat(source.rows)) / toFloat(source.rows) < 0.5
-      RETURN target, 
-             abs(target.columns - source.columns) as column_diff,
-             abs(toFloat(target.rows) - toFloat(source.rows)) / toFloat(source.rows) as size_diff
-      ORDER BY column_diff ASC, size_diff ASC
-      LIMIT $limit
-    `;
-
-    return await this.runQuery(query, { datasetId, limit });
-  }
-
-  /**
-   * Create analysis tracking
-   */
-  async trackAnalysis(userId: string, datasetId: string, analysisType: string, results: any): Promise<void> {
-    const query = `
-      MATCH (u:User {id: $userId})
-      MATCH (d:Dataset {id: $datasetId})
-      CREATE (a:Analysis {
-        id: randomUUID(),
-        type: $analysisType,
-        results: $results,
-        timestamp: datetime()
-      })
-      CREATE (u)-[:PERFORMED]->(a)-[:ON]->(d)
-    `;
-
-    await this.runQuery(query, {
-      userId,
-      datasetId,
-      analysisType,
-      results: JSON.stringify(results)
-    });
-  }
-
-  /**
-   * Get user's analysis history
-   */
-  async getUserAnalysisHistory(userId: string, limit: number = 10): Promise<any[]> {
-    const query = `
-      MATCH (u:User {id: $userId})-[:PERFORMED]->(a:Analysis)-[:ON]->(d:Dataset)
-      RETURN a.type as type, 
-             a.timestamp as timestamp, 
-             d.name as dataset_name,
-             a.results as results
-      ORDER BY a.timestamp DESC
-      LIMIT $limit
-    `;
-
-    return await this.runQuery(query, { userId, limit });
-  }
-
-  /**
-   * Find dataset relationships for graph visualization
-   */
-  async getDatasetGraph(userId: string): Promise<any> {
-    // Try user-specific datasets first
-    let query = `
-      MATCH (u:User {id: $userId})-[:OWNS]->(d:Dataset)
-      OPTIONAL MATCH (d)-[r:SIMILAR_TO|RELATED_TO|FEEDS_INTO]-(other:Dataset)
-      RETURN d, collect(distinct r) as relationships, collect(distinct other) as related
-    `;
-
-    let results = await this.runQuery(query, { userId });
-
-    // If no user-specific datasets, get ALL datasets (for demo/testing)
-    if (results.length === 0) {
-      console.log('📊 No user datasets found, showing all datasets for demo');
-      query = `
-        MATCH (d:Dataset)
-        RETURN d
-      `;
-      results = await this.runQuery(query);
-    }
-    
-    console.log('📊 Neo4j query returned', results.length, 'results');
-    console.log('Raw results:', results);
-
-    // Transform for visualization
-    const nodes = new Map();
-    const edges = [];
-
-    // Add all dataset nodes
-    results.forEach(record => {
-      console.log('Processing record:', record);
-      const dataset = record.d?.properties || record.d;
-      if (!dataset) {
-        console.warn('No dataset in record:', record);
-        return;
-      }
-      
-      nodes.set(dataset.id, {
-        id: dataset.id,
-        label: dataset.name,
-        size: dataset.rows || 100,
-        group: dataset.file_type || 'csv'
-      });
-    });
-
-    // Now query for all relationships separately
-    const relsQuery = `
-      MATCH (d1:Dataset)-[r]->(d2:Dataset)
-      RETURN d1.id as from_id, d2.id as to_id, type(r) as rel_type
-    `;
-    
-    const relationships = await this.runQuery(relsQuery);
-    console.log('🔗 Found', relationships.length, 'relationships');
-    
-    relationships.forEach(rel => {
-      edges.push({
-        from: rel.from_id,
-        to: rel.to_id,
-        label: rel.rel_type
-      });
-    });
-
-    const graphData = {
-      nodes: Array.from(nodes.values()),
-      edges
-    };
-
-    console.log('🔵 Graph data to return:', graphData);
-    console.log('Nodes:', graphData.nodes.length, 'Edges:', graphData.edges.length);
-
-    return graphData;
-  }
-
-  /**
-   * Close connection
-   */
-  async close(): Promise<void> {
-    if (this.driver) {
-      await this.driver.close();
-      this.isConnected = false;
-    }
-  }
-
-  /**
-   * Check if connected
-   */
-  isReady(): boolean {
-    return this.isConnected;
-  }
+  async trackAnalysis(
+    _userId: string,
+    _datasetId: string,
+    _analysisType: string,
+    _results: any
+  ): Promise<void> {}
 }
 
-// Singleton instance
 export const neo4jClient = new Neo4jClient();
 
 export default neo4jClient;
-

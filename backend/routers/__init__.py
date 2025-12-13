@@ -10,6 +10,7 @@ from routers import (
     health_routes,
     knowledge_graph_routes,
     ml_routes,
+    modelops_routes,
     monitoring_routes,
     pipeline_routes,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "health_routes",
     "knowledge_graph_routes",
     "ml_routes",
+    "modelops_routes",
     "monitoring_routes",
     "pipeline_routes",
 ]

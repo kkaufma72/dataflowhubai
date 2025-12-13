@@ -6,6 +6,7 @@ Provides methods for recording and querying time-series metrics.
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from uuid import UUID
+from uuid import uuid4
 
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -112,7 +113,6 @@ class TimescaleService:
     
     async def log_prediction(
         self,
-        prediction_id: UUID,
         model_id: UUID,
         user_id: Optional[UUID],
         input_data: Dict[str, Any],
@@ -121,11 +121,12 @@ class TimescaleService:
         response_time_ms: float,
         error: Optional[str] = None,
         timestamp: Optional[datetime] = None,
+        prediction_id: Optional[UUID] = None,
     ) -> PredictionLog:
         """Log a model prediction."""
         log = PredictionLog(
             time=timestamp or datetime.utcnow(),
-            prediction_id=prediction_id,
+            prediction_id=prediction_id or uuid4(),
             model_id=model_id,
             user_id=user_id,
             input_data=input_data,

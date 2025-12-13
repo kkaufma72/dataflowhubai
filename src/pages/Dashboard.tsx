@@ -55,6 +55,27 @@ const Dashboard: React.FC = () => {
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
   const [showMagicMoment, setShowMagicMoment] = useState(false);
 
+  const copyUuid = async (uuid: string) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(uuid);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = uuid;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      toast.success('Copied model UUID');
+    } catch {
+      toast.error('Failed to copy UUID');
+    }
+  };
+
   // Check if user should see Magic Moment welcome
   useEffect(() => {
     const hasSeenMagicMoment = localStorage.getItem('hasSeenMagicMoment');
@@ -599,6 +620,17 @@ const Dashboard: React.FC = () => {
                     <div>
                       <h3 className="font-medium text-gray-900">{model.name}</h3>
                       <p className="text-sm text-gray-500">{model.modelType || 'ML Model'}</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        <span className="mr-2 font-medium text-gray-600">UUID</span>
+                        <span className="font-mono break-all">{model.id}</span>
+                        <button
+                          type="button"
+                          onClick={() => void copyUuid(model.id)}
+                          className="ml-2 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                        >
+                          Copy
+                        </button>
+                      </p>
                     </div>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${

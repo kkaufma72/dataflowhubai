@@ -1,15 +1,16 @@
-"""
-Data management API routes.
-"""
+"""Data management API routes."""
 
-from typing import List
+from typing import Any, Dict, List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from minio import Minio
 from redis.asyncio import Redis
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.auth import get_current_user
-from dependencies.database import get_minio_client, get_redis_client
+from dependencies.database import get_minio_client, get_postgres_session, get_redis_client
 from schemas.auth import User
 from schemas.dataset import (
     Dataset,
@@ -26,6 +27,92 @@ from utils.errors import NotFoundError, ValidationError
 
 
 router = APIRouter()
+
+
+@router.get("/datasets/{dataset_id}/models", response_model=dict)
+async def get_models_for_dataset(
+    dataset_id: str,
+    db: AsyncSession = Depends(get_postgres_session),
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 50,
+) -> dict:
+    """Return models linked to a dataset (Supabase/Postgres source of truth).
+
+    This uses the Supabase schema in `public.datasets` and `public.models`:
+    - `datasets.id` is the dataset UUID
+    - `models.dataset_id` is a FK pointing at `datasets.id`
+    - Both tables are user-scoped via `user_id`
+    """
+
+    try:
+        dataset_uuid = UUID(dataset_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid dataset_id (expected UUID)")
+
+    user_id = str(current_user.id)
+
+    dataset_row = (
+        await db.execute(
+            text(
+                """
+                SELECT id, name, description, project_id, user_id, created_at, updated_at
+                FROM datasets
+                WHERE id = :dataset_id
+                  AND user_id = CAST(:user_id AS uuid)
+                LIMIT 1
+                """
+            ),
+            {"dataset_id": dataset_uuid, "user_id": user_id},
+        )
+    ).mappings().first()
+
+    if not dataset_row:
+        return {"dataset_id": dataset_id, "dataset_found": False, "models": [], "total": 0}
+
+    model_rows = (
+        await db.execute(
+            text(
+                """
+                SELECT id, name, description, model_type, status, dataset_id, project_id,
+                       user_id, hyperparameters, training_config, metadata, created_at, updated_at
+                FROM models
+                WHERE dataset_id = :dataset_id
+                  AND user_id = CAST(:user_id AS uuid)
+                ORDER BY created_at DESC
+                OFFSET :skip
+                LIMIT :limit
+                """
+            ),
+            {
+                "dataset_id": dataset_uuid,
+                "user_id": user_id,
+                "skip": max(0, int(skip)),
+                "limit": max(0, min(200, int(limit))),
+            },
+        )
+    ).mappings().all()
+
+    def _row_to_json(row: Dict[str, Any]) -> Dict[str, Any]:
+        out: Dict[str, Any] = dict(row)
+        for key in ["id", "dataset_id", "project_id", "user_id"]:
+            if key in out and out[key] is not None:
+                out[key] = str(out[key])
+        for key in ["created_at", "updated_at"]:
+            if key in out and out[key] is not None:
+                out[key] = out[key].isoformat()
+        return out
+
+    dataset = _row_to_json(dict(dataset_row))
+    models = [_row_to_json(dict(r)) for r in model_rows]
+
+    return {
+        "dataset_id": dataset_id,
+        "dataset_found": True,
+        "dataset": dataset,
+        "models": models,
+        "total": len(models),
+    }
 
 
 @router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
