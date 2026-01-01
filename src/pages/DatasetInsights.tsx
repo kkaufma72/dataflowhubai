@@ -605,7 +605,7 @@ const DatasetInsights: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0d1117] p-6 space-y-6">
-      {/* InfluxDB-Style Header with Breadcrumb */}
+      {/* TimescaleDB-Style Header with Breadcrumb */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
@@ -732,7 +732,7 @@ const DatasetInsights: React.FC = () => {
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Prediction Models Section - InfluxDB Style */}
+          {/* Prediction Models Section - TimescaleDB Style */}
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
               <div className="flex items-center justify-between">
@@ -1019,7 +1019,7 @@ const DatasetInsights: React.FC = () => {
             </div>
           </div>
 
-          {/* Time Range & Controls Bar - InfluxDB Query Style */}
+          {/* Time Range & Controls Bar - TimescaleDB Query Style */}
           <div className="flex items-center justify-between p-4 bg-[#161b22] border border-gray-800 rounded-lg">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -1059,9 +1059,9 @@ const DatasetInsights: React.FC = () => {
             </div>
           </div>
 
-          {/* Charts Grid - InfluxDB Cell Style */}
+          {/* Charts Grid - TimescaleDB Cell Style */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Uploads Over Time - InfluxDB Cell */}
+            {/* Uploads Over Time - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1123,7 +1123,7 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* File Type Distribution - InfluxDB Cell */}
+            {/* File Type Distribution - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1173,7 +1173,7 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* Row Count Distribution - InfluxDB Cell */}
+            {/* Row Count Distribution - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1236,7 +1236,7 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* Column Statistics - InfluxDB Cell */}
+            {/* Column Statistics - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1292,9 +1292,9 @@ const DatasetInsights: React.FC = () => {
             </div>
           </div>
 
-          {/* Additional InfluxDB-Style Charts - Row 2 */}
+          {/* Additional TimescaleDB-Style Charts - Row 2 */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Data Ingestion Rate - InfluxDB Cell */}
+            {/* Data Ingestion Rate - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1387,7 +1387,7 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* Data Quality Trend - InfluxDB Cell */}
+            {/* Data Quality Trend - TimescaleDB Cell */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
@@ -1492,7 +1492,7 @@ const DatasetInsights: React.FC = () => {
             </div>
           </div>
 
-          {/* Dataset List - InfluxDB Table Style */}
+          {/* Dataset List - TimescaleDB Table Style */}
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
               <div className="flex items-center justify-between">
@@ -1585,7 +1585,7 @@ const DatasetInsights: React.FC = () => {
       {/* Visualizations Tab */}
       {activeTab === 'visualizations' && (
         <div className="space-y-6">
-          {/* Dataset Selector - InfluxDB Style */}
+          {/* Dataset Selector - TimescaleDB Style */}
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
               <div className="flex items-center gap-2">

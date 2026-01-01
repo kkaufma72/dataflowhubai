@@ -1,0 +1,97 @@
+{
+  "uid": "timescale-model-metrics",
+  "title": "Model Metrics (TimescaleDB)",
+  "tags": ["timescale", "model-metrics"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Accuracy over time",
+      "datasource": {
+        "type": "postgres",
+        "uid": null,
+        "name": "TimescaleDB"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": null
+          },
+          "format": "time_series",
+          "rawSql": "SELECT time as \"time\", metric_value AS accuracy FROM metrics WHERE metric_name = 'model_accuracy' ORDER BY time",
+          "interval": "",
+          "legendFormat": "{{model_id}}"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Loss over time",
+      "datasource": {
+        "type": "postgres",
+        "uid": null,
+        "name": "TimescaleDB"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": null
+          },
+          "format": "time_series",
+          "rawSql": "SELECT time as \"time\", metric_value AS loss FROM metrics WHERE metric_name = 'model_loss' ORDER BY time",
+          "legendFormat": "{{model_id}}"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Latest accuracy",
+      "datasource": {
+        "type": "postgres",
+        "uid": null,
+        "name": "TimescaleDB"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": null
+          },
+          "format": "table",
+          "rawSql": "SELECT metric_value FROM metrics WHERE metric_name = 'model_accuracy' ORDER BY time DESC LIMIT 1"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "text": {},
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    }
+  ]
+}

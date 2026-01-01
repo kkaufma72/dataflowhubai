@@ -161,6 +161,37 @@ async def get_model_metrics(
 @router.get("/metrics/{model_id}/aggregated", response_model=List[dict])
 async def get_model_metrics_aggregated(
     model_id: UUID,
+    metric_name: str,
+    interval: str = Query("1 hour", description="PostgreSQL interval syntax, e.g., '5 minutes'"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_timescaledb_session),
+    start_time: Optional[datetime] = Query(None, description="Start time for metrics"),
+    end_time: Optional[datetime] = Query(None, description="End time for metrics"),
+) -> List[dict]:
+    """
+    Get aggregated metrics for a model over time buckets (suitable for dashboards).
+    """
+    try:
+        service = TimescaleService(db)
+        if not start_time:
+            start_time = datetime.utcnow() - timedelta(hours=24)
+        if not end_time:
+            end_time = datetime.utcnow()
+
+        rows = await service.get_model_metrics_aggregated(
+            model_id=model_id,
+            metric_name=metric_name,
+            start_time=start_time,
+            end_time=end_time,
+            interval=interval,
+        )
+        return rows
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to aggregate metrics: {str(e)}")
+
+@router.get("/metrics/{model_id}/aggregated", response_model=List[dict])
+async def get_model_metrics_aggregated(
+    model_id: UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_timescaledb_session),
     metric_name: Optional[str] = Query(None, description="Filter by specific metric"),
@@ -491,4 +522,3 @@ async def acknowledge_alert(
         created_at=datetime.utcnow(),
         acknowledged_at=datetime.utcnow(),
     )
-

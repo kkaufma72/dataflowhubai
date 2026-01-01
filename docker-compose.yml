@@ -31,6 +31,28 @@ services:
       - "-c"
       - "effective_cache_size=1GB"
 
+  # PgBouncer - Connection pooling for Postgres
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: dataflow_pgbouncer
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=dataflow_user
+      - DB_PASSWORD=dataflow_secure_password
+      - DB_NAME=dataflow_hub
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=500
+      - DEFAULT_POOL_SIZE=50
+      - AUTH_TYPE=plain
+    ports:
+      - "6432:5432"
+    depends_on:
+      - postgres
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
   # Redis - Caching and Real-time Data
   redis:
     image: redis:7-alpine
@@ -102,64 +124,69 @@ services:
     image: timescale/timescaledb:latest-pg16
     container_name: dataflow_timescaledb
     environment:
-      POSTGRES_USER: tsdata_user
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: timescale_secure_password
-      POSTGRES_DB: timeseries_db
+      POSTGRES_DB: timescale
     ports:
       - "5433:5432"
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
+      - ./scripts/migrate-to-timescale.sql:/docker-entrypoint-initdb.d/01-timescale-setup.sql
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=timescaledb"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=4GB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "max_parallel_workers_per_gather=4"
+      - "-c"
+      - "timescaledb.telemetry_level=off"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tsdata_user -d timeseries_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d timescale"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - dataflow_network
     restart: unless-stopped
-
-  # Apache Kafka - Event streaming and data pipelines
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: dataflow_kafka
+  
+  # PgBouncer for TimescaleDB - Connection pooling for metrics writes
+  timescale_bouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: dataflow_timescale_bouncer
+    environment:
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=timescale_secure_password
+      - DB_NAME=timescale
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=300
+      - DEFAULT_POOL_SIZE=40
+      - AUTH_TYPE=plain
+    ports:
+      - "6433:5432"
     depends_on:
-      zookeeper:
-        condition: service_healthy
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-    ports:
-      - "9092:9092"
+      - timescaledb
     networks:
       - dataflow_network
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:29092 > /dev/null 2>&1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  # Zookeeper - Kafka coordination
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: dataflow_zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    networks:
-      - dataflow_network
-    healthcheck:
-      test: echo ruok | nc localhost 2181
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   # Prometheus - Metrics collection
@@ -178,31 +205,6 @@ services:
       - dataflow_network
     restart: unless-stopped
 
-  # InfluxDB - Time-series metrics database
-  influxdb:
-    image: influxdb:2.7
-    container_name: dataflow_influxdb
-    environment:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: admin
-      DOCKER_INFLUXDB_INIT_PASSWORD: dataflow_admin_2025
-      DOCKER_INFLUXDB_INIT_ORG: dataflowhub
-      DOCKER_INFLUXDB_INIT_BUCKET: model_metrics
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: dataflow-influx-token-2025
-    ports:
-      - "8086:8086"
-    volumes:
-      - influxdb_data:/var/lib/influxdb2
-      - influxdb_config:/etc/influxdb2
-    networks:
-      - dataflow_network
-    healthcheck:
-      test: ["CMD", "influx", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   # Grafana - Visualization and dashboards
   grafana:
     image: grafana/grafana:latest
@@ -214,9 +216,10 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - prometheus
-      - influxdb
     networks:
       - dataflow_network
     restart: unless-stopped
@@ -236,15 +239,15 @@ services:
       - DEBUG=true
       - ENVIRONMENT=development
       # Database
-      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@postgres:5432/dataflow_hub
+      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@pgbouncer:5432/dataflow_hub
       # Redis
       - REDIS_URL=redis://redis:6379/0
       # TimescaleDB
       - TIMESCALEDB_HOST=timescaledb
       - TIMESCALEDB_PORT=5432
-      - TIMESCALEDB_USER=tsdata_user
+      - TIMESCALEDB_USER=postgres
       - TIMESCALEDB_PASSWORD=timescale_secure_password
-      - TIMESCALEDB_DB=timeseries_db
+      - TIMESCALEDB_DB=timescale
       # Celery
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
@@ -256,8 +259,6 @@ services:
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=dataflow_secure_password
-      # Kafka
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       # API Keys (add your own)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
     depends_on:
@@ -266,7 +267,6 @@ services:
       - timescaledb
       - minio
       - neo4j
-      - kafka
     networks:
       - dataflow_network
     restart: unless-stopped
@@ -276,27 +276,89 @@ services:
       timeout: 10s
       retries: 3
 
-  # Celery Worker - Async task processing
-  celery_worker:
+  # Celery Worker (CPU) - Async task processing
+  celery_worker_cpu:
     build:
       context: ./backend
       dockerfile: Dockerfile.celery
-    container_name: dataflow_celery_worker
-    command: celery -A celery_app worker --loglevel=info --concurrency=4
+    container_name: dataflow_celery_worker_cpu
+    command: celery -A celery_app worker --loglevel=info --concurrency=4 --queues=cpu_tasks
     volumes:
       - ./backend:/app
     environment:
       - DEBUG=true
       - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
-      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@postgres:5432/dataflow_hub
+      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@pgbouncer:5432/dataflow_hub
       - TIMESCALEDB_HOST=timescaledb
       - TIMESCALEDB_PORT=5432
-      - TIMESCALEDB_USER=tsdata_user
+      - TIMESCALEDB_USER=postgres
       - TIMESCALEDB_PASSWORD=timescale_secure_password
-      - TIMESCALEDB_DB=timeseries_db
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - TIMESCALEDB_DB=timescale
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+    depends_on:
+      - redis
+      - postgres
+      - timescaledb
+      - backend
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # Celery Worker (GPU-heavy tasks)
+  celery_worker_gpu:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.celery
+    container_name: dataflow_celery_worker_gpu
+    command: celery -A celery_app worker --loglevel=info --concurrency=2 --queues=gpu_tasks
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=true
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@pgbouncer:5432/dataflow_hub
+      - TIMESCALEDB_HOST=timescaledb
+      - TIMESCALEDB_PORT=5432
+      - TIMESCALEDB_USER=postgres
+      - TIMESCALEDB_PASSWORD=timescale_secure_password
+      - TIMESCALEDB_DB=timescale
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+    depends_on:
+      - redis
+      - postgres
+      - timescaledb
+      - backend
+    networks:
+      - dataflow_network
+    restart: unless-stopped
+
+  # Celery Worker (IO-bound tasks)
+  celery_worker_io:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.celery
+    container_name: dataflow_celery_worker_io
+    command: celery -A celery_app worker --loglevel=info --concurrency=6 --queues=io_tasks
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=true
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@pgbouncer:5432/dataflow_hub
+      - TIMESCALEDB_HOST=timescaledb
+      - TIMESCALEDB_PORT=5432
+      - TIMESCALEDB_USER=postgres
+      - TIMESCALEDB_PASSWORD=timescale_secure_password
+      - TIMESCALEDB_DB=timescale
       - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
     depends_on:
       - redis
@@ -319,9 +381,10 @@ services:
     environment:
       - DEBUG=true
       - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
-      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@postgres:5432/dataflow_hub
+      - DATABASE_URL=postgresql://dataflow_user:dataflow_secure_password@pgbouncer:5432/dataflow_hub
     depends_on:
       - redis
       - postgres
@@ -339,11 +402,20 @@ services:
     ports:
       - "5555:5555"
     environment:
+      - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      # Flower auth (optional)
+      # - Set FLOWER_BASIC_AUTH="user:pass" to enable HTTP basic auth
+      # - Or set FLOWER_UNAUTHENTICATED_API=true to enable the Flower API without auth (not recommended)
+      - FLOWER_BASIC_AUTH=${FLOWER_BASIC_AUTH:-admin:floweradmin}
+      - FLOWER_UNAUTHENTICATED_API=${FLOWER_UNAUTHENTICATED_API:-}
+      - FLOWER_INSPECT_TIMEOUT=${FLOWER_INSPECT_TIMEOUT:-5000}
     depends_on:
       - redis
-      - celery_worker
+      - celery_worker_cpu
+      - celery_worker_gpu
+      - celery_worker_io
     networks:
       - dataflow_network
     restart: unless-stopped
@@ -357,8 +429,6 @@ volumes:
   timescaledb_data:
   prometheus_data:
   grafana_data:
-  influxdb_data:
-  influxdb_config:
 
 networks:
   dataflow_network:

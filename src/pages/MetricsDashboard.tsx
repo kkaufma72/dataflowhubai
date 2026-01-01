@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
-import { useInfluxMetrics, useAllModelsMetrics } from '../hooks/useInfluxMetrics';
+import { useTimescaleMetrics, useAllModelsMetrics } from "../hooks/useTimescaleMetrics";
 import { Activity, TrendingUp, TrendingDown, Database, RefreshCw, Clock, Zap } from 'lucide-react';
 
 const MetricsDashboard: React.FC = () => {
@@ -14,7 +14,7 @@ const MetricsDashboard: React.FC = () => {
   const { models, loading: modelsLoading, refresh: refreshModels, isAvailable } = useAllModelsMetrics(10000);
 
   // Fetch selected model's historical metrics
-  const { metrics, loading: metricsLoading, refresh: refreshMetrics } = useInfluxMetrics(
+  const { metrics, loading: metricsLoading, refresh: refreshMetrics } = useTimescaleMetrics(
     selectedModelId,
     refreshInterval,
     timeRange
@@ -133,19 +133,19 @@ const MetricsDashboard: React.FC = () => {
           <div className="bg-[#161b22] border border-yellow-800 rounded-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <Database className="w-6 h-6 text-yellow-400" />
-              <h2 className="text-xl font-bold text-white">InfluxDB Not Available</h2>
+              <h2 className="text-xl font-bold text-white">TimescaleDB Not Available</h2>
             </div>
             <p className="text-gray-400 mb-4">
-              InfluxDB is not currently available. Make sure the InfluxDB container is running:
+              TimescaleDB is not currently available. Make sure the TimescaleDB container is running:
             </p>
             <pre className="bg-[#0d1117] p-4 rounded text-sm text-gray-300 overflow-x-auto">
-              docker ps | grep influxdb
+              docker ps | grep timescaledb
             </pre>
             <p className="text-gray-400 mt-4">
               If it's not running, start it with:
             </p>
             <pre className="bg-[#0d1117] p-4 rounded text-sm text-gray-300 overflow-x-auto">
-              docker start dataflow_influxdb
+              docker start dataflow_timescaledb
             </pre>
           </div>
         </div>
@@ -212,7 +212,7 @@ const MetricsDashboard: React.FC = () => {
             </div>
           </div>
           <p className="text-gray-400">
-            Monitor model training metrics in real-time from InfluxDB
+            Monitor model training metrics in real-time from TimescaleDB
           </p>
         </div>
 
@@ -241,7 +241,7 @@ const MetricsDashboard: React.FC = () => {
           ) : models.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="mb-2">No models found in InfluxDB</p>
+              <p className="mb-2">No models found in TimescaleDB</p>
               <p className="text-sm">Train a model to see metrics here</p>
             </div>
           ) : (
@@ -296,7 +296,7 @@ const MetricsDashboard: React.FC = () => {
                 <div className="text-center text-gray-400">
                   <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4" />
                   <p className="text-lg font-semibold mb-2">Loading metrics...</p>
-                  <p className="text-sm">Fetching data from InfluxDB</p>
+                  <p className="text-sm">Fetching data from TimescaleDB</p>
                 </div>
               </div>
             ) : !metrics || metrics.timestamps.length === 0 ? (

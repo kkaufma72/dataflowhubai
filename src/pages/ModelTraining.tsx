@@ -17,9 +17,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { Dataset, ModelTrainingConfig, MLModel } from '../types';
-import { influxdb } from '../lib/influxdb';
+import { timescaleMetrics } from '../lib/timescale';
 import { experimentTracker } from '../lib/experimentTracking';
-import { useInfluxMetrics } from '../hooks/useInfluxMetrics';
+import { useTimescaleMetrics } from '../hooks/useTimescaleMetrics';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import ModelCard from '../components/models/ModelCard';
@@ -84,8 +84,8 @@ const ModelTraining: React.FC = () => {
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComponents, setChartComponents] = useState<any>(null);
 
-  // Fetch live training metrics from InfluxDB
-  const { metrics, loading: metricsLoading, error: metricsError } = useInfluxMetrics(
+  // Fetch live training metrics from TimescaleDB
+  const { metrics, loading: metricsLoading, error: metricsError } = useTimescaleMetrics(
     currentTraining?.id,
     5000,
     1 // Last 1 hour of training data
@@ -120,7 +120,7 @@ const ModelTraining: React.FC = () => {
     loadCharts();
   }, []);
 
-  // Process InfluxDB metrics into chart data
+  // Process TimescaleDB metrics into chart data
   const trainingMetricsData = useMemo(() => {
     if (!metrics || !metrics.timestamps || metrics.timestamps.length === 0) {
       return null;
@@ -130,7 +130,7 @@ const ModelTraining: React.FC = () => {
     const epochs = Array.from({ length: metrics.timestamps.length }, (_, i) => i + 1);
     const accuracyData = metrics.accuracies || [];
     const lossData = metrics.losses || [];
-    // Training speed not available from InfluxDB yet, generate mock for now
+    // Training speed not available from TimescaleDB yet, generate mock for now
     const speedData = epochs.map(() => 850 + Math.random() * 300);
 
     return { epochs, accuracyData, lossData, speedData };
@@ -419,15 +419,15 @@ const ModelTraining: React.FC = () => {
         setProgress((prev) => {
           const newProgress = prev + Math.random() * 5;
           
-          // Log metrics to InfluxDB periodically
-          if (newProgress < 100 && influxdb.isAvailable()) {
+          // Log metrics to TimescaleDB periodically
+          if (newProgress < 100 && timescaleMetrics.isAvailable()) {
             const currentEpoch = Math.floor(newProgress / 10) + 1;
             const simulatedMetrics = {
               accuracy: 0.5 + (newProgress / 100) * 0.4 + Math.random() * 0.05,
               loss: 1.5 - (newProgress / 100) * 1.2 + Math.random() * 0.1,
             };
             
-            influxdb.logModelMetrics({
+            timescaleMetrics.logModelMetrics({
               modelId: newModel.id,
               modelName: newModel.name,
               accuracy: simulatedMetrics.accuracy,
@@ -436,7 +436,7 @@ const ModelTraining: React.FC = () => {
               userId: user?.id,
               datasetId: config.datasetId,
             }).catch(err => {
-              console.warn('Failed to log metrics to InfluxDB:', err);
+              console.warn('Failed to log metrics to TimescaleDB:', err);
             });
           }
           
@@ -512,9 +512,9 @@ const ModelTraining: React.FC = () => {
                 console.log('✅ Completed experiment:', expId);
               }
               
-              // Log final metrics to InfluxDB
-              if (influxdb.isAvailable() && completedModel.metrics) {
-                influxdb.logModelMetrics({
+              // Log final metrics to TimescaleDB
+              if (timescaleMetrics.isAvailable() && completedModel.metrics) {
+                timescaleMetrics.logModelMetrics({
                   modelId: completedModel.id,
                   modelName: completedModel.name,
                   accuracy: completedModel.metrics.accuracy || 0,
@@ -526,7 +526,7 @@ const ModelTraining: React.FC = () => {
                   userId: user?.id,
                   datasetId: config.datasetId,
                 }).catch(err => {
-                  console.warn('Failed to log final metrics to InfluxDB:', err);
+                  console.warn('Failed to log final metrics to TimescaleDB:', err);
                 });
               }
               
@@ -640,7 +640,7 @@ const ModelTraining: React.FC = () => {
   return (
       <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen bg-[#0d1117]">
-        {/* InfluxDB-Style Header */}
+        {/* TimescaleDB-Style Header */}
         <div className="border-b border-gray-800 bg-[#161b22]">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
@@ -784,7 +784,7 @@ const ModelTraining: React.FC = () => {
             {metricsLoading && !trainingMetricsData && (
               <div className="bg-[#0d1117] border border-gray-800 rounded-lg p-8 mt-4 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
-                <p className="text-sm text-gray-400">Loading training metrics from InfluxDB...</p>
+                <p className="text-sm text-gray-400">Loading training metrics from TimescaleDB...</p>
               </div>
             )}
             {!metricsLoading && !trainingMetricsData && !metricsError && (
@@ -1197,7 +1197,7 @@ const ModelTraining: React.FC = () => {
               </div>
             </div>
 
-            {/* InfluxDB-Style Tabs */}
+            {/* TimescaleDB-Style Tabs */}
             <div className="border-b border-gray-800">
               <nav className="flex gap-6 px-2">
                 <button

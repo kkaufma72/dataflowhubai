@@ -87,22 +87,29 @@ def check_model_drift(model_id: str) -> Dict[str, Any]:
     # Record drift metric
     async def record_drift():
         async with AsyncSessionLocal() as session:
-            service = TimescaleService(session)
-            await service.record_model_metric(
-                model_id=parsed_model_id,
-                metric_name='drift_score',
-                metric_value=drift_score,
-                metadata={'drift_detected': drift_detected}
-            )
-            await session.commit()
+            try:
+                service = TimescaleService(session)
+                await service.record_model_metric(
+                    model_id=parsed_model_id,
+                    metric_name='drift_score',
+                    metric_value=drift_score,
+                    metadata={'drift_detected': drift_detected}
+                )
+                await session.commit()
+            except Exception as e:
+                logger.error(f"Failed to record drift metric: {e}")
+                await session.rollback()
     
-    asyncio.run(record_drift())
+    try:
+        asyncio.run(record_drift())
+    except Exception as e:
+        logger.error(f"Error running record_drift coroutine: {e}")
 
     # Best-effort persistence of a minimal drift report to Postgres.
     async def persist_report():
         try:
-            async with PostgresSessionLocal() as session:
-                await session.execute(
+            async with PostgresSessionLocal() as pg_session:
+                await pg_session.execute(
                     text(
                         """
                         INSERT INTO model_drift_reports (model_id, has_drift, drift_score, severity, report, created_at)
@@ -242,23 +249,29 @@ def generate_daily_report() -> Dict[str, Any]:
     
     metrics = asyncio.run(get_daily_metrics())
     
-    # Record system metrics
+    # Record system metrics (best-effort, don't fail if table doesn't exist)
     async def record_system():
-        async with AsyncSessionLocal() as session:
-            service = TimescaleService(session)
-            await service.record_system_metric(
-                service_name='platform',
-                metric_name='daily_predictions',
-                metric_value=metrics['total_predictions']
-            )
-            await service.record_system_metric(
-                service_name='platform',
-                metric_name='daily_avg_response_time',
-                metric_value=metrics['avg_response_time_ms']
-            )
-            await session.commit()
+        try:
+            async with AsyncSessionLocal() as session:
+                service = TimescaleService(session)
+                await service.record_system_metric(
+                    service_name='platform',
+                    metric_name='daily_predictions',
+                    metric_value=metrics['total_predictions']
+                )
+                await service.record_system_metric(
+                    service_name='platform',
+                    metric_name='daily_avg_response_time',
+                    metric_value=metrics['avg_response_time_ms']
+                )
+                await session.commit()
+        except Exception as e:
+            logger.warning(f"Failed to record system metrics to TimescaleDB: {e}")
     
-    asyncio.run(record_system())
+    try:
+        asyncio.run(record_system())
+    except Exception as e:
+        logger.error(f"Error running record_system coroutine: {e}")
     
     return {
         'status': 'completed',

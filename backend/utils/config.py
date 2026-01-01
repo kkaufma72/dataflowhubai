@@ -53,9 +53,9 @@ class Settings(BaseSettings):
     # TimescaleDB - Time-series Database
     TIMESCALEDB_HOST: str = "localhost"
     TIMESCALEDB_PORT: int = 5433
-    TIMESCALEDB_USER: str = "tsdata_user"
+    TIMESCALEDB_USER: str = "postgres"
     TIMESCALEDB_PASSWORD: str = "timescale_secure_password"
-    TIMESCALEDB_DB: str = "timeseries_db"
+    TIMESCALEDB_DB: str = "timescale"
 
     # Redis - Cache and Queue
     # NOTE: docker-compose sets REDIS_URL; support both styles.
@@ -79,11 +79,6 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str = "minioadmin_secure_password"
     MINIO_SECURE: bool = False
     MINIO_BUCKET: str = "dataflow-datasets"
-
-    # Kafka - Event Streaming
-    KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
-    KAFKA_CONSUMER_GROUP: str = "dataflow-api"
-    KAFKA_TOPICS_PREFIX: str = "dataflow"
 
     # Supabase - Authentication
     SUPABASE_URL: str = ""
@@ -166,5 +161,4 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
-
 

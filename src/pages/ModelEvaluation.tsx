@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMLContext } from '../context/MLContext';
-import { useInfluxMetrics } from '../hooks/useInfluxMetrics';
+import { useTimescaleMetrics } from '../hooks/useTimescaleMetrics';
 import {
   Card,
   Title,
@@ -89,8 +89,8 @@ const ModelEvaluationContent = () => {
   const [_isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [_previewError, setPreviewError] = useState<string | null>(null);
 
-  // Fetch live evaluation metrics from InfluxDB
-  const { metrics, loading: metricsLoading, error: metricsError } = useInfluxMetrics(
+  // Fetch live evaluation metrics from TimescaleDB
+  const { metrics, loading: metricsLoading, error: metricsError } = useTimescaleMetrics(
     selectedModel?.id,
     5000,
     24 // Last 24 hours of evaluation data
@@ -182,7 +182,7 @@ const ModelEvaluationContent = () => {
       return [] as Array<{ date: string; accuracy: number; precision: number; recall: number }>;
     }
 
-    // Use live InfluxDB metrics if available
+    // Use live TimescaleDB metrics if available
     if (metrics && metrics.timestamps && metrics.timestamps.length > 0) {
       return metrics.timestamps.map((timestamp: Date, index: number) => ({
         date: new Date(timestamp).toLocaleString('en-US', { 
@@ -192,8 +192,8 @@ const ModelEvaluationContent = () => {
           minute: '2-digit' 
         }),
         accuracy: metrics.accuracies[index] || 0,
-        precision: 0, // InfluxDB doesn't track precision yet - fallback
-        recall: 0 // InfluxDB doesn't track recall yet - fallback
+        precision: 0, // TimescaleDB doesn't track precision yet - fallback
+        recall: 0 // TimescaleDB doesn't track recall yet - fallback
       }));
     }
 
@@ -1452,7 +1452,7 @@ const ModelEvaluationContent = () => {
                 <div className="h-72 flex items-center justify-center">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
-                    <p className="text-sm text-gray-900 font-medium">Loading performance metrics from InfluxDB...</p>
+                    <p className="text-sm text-gray-900 font-medium">Loading performance metrics from TimescaleDB...</p>
                   </div>
                 </div>
               )}
@@ -1490,7 +1490,7 @@ const ModelEvaluationContent = () => {
                   <p>{performanceNarrative.stability}</p>
                   {metrics && metrics.timestamps && metrics.timestamps.length > 0 && (
                     <p className="text-xs text-emerald-600 mt-2">
-                      📊 Data from InfluxDB: {metrics.timestamps.length} real-time data points
+                      📊 Data from TimescaleDB: {metrics.timestamps.length} real-time data points
                     </p>
                   )}
                 </div>
@@ -1799,7 +1799,7 @@ const ModelEvaluationContent = () => {
                   
                   {metricsUnavailable ? (
                     <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-900">
-                      Live residual metrics are unavailable because InfluxDB cannot be reached from this browser.
+                      Live residual metrics are unavailable because TimescaleDB cannot be reached from this browser.
                     </div>
                   ) : (
                     <ScatterChart

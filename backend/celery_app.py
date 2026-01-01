@@ -13,7 +13,7 @@ from utils.config import settings
 # Initialize Celery app
 celery_app = Celery(
     'dataflow_tasks',
-    broker=settings.redis_url,
+    broker=settings.redis_url,  # Using Redis Streams
     backend=settings.redis_url.replace('/0', '/1'),  # Use different DB for results
     include=[
         'tasks.ml_tasks',
@@ -42,19 +42,27 @@ celery_app.conf.update(
     result_expires=3600,  # Results expire after 1 hour
     result_extended=True,
     
-    # Task routes - send tasks to specific queues
+    # Broker options: Redis Streams for backpressure and ordering
+    broker_transport_options={
+        'visibility_timeout': 3600,
+        'stream_options': {
+            'maxlen': 10000,
+            'approximate': True,
+        },
+    },
+
+    # Task routes - send tasks to specific queues (workload sharding)
     task_routes={
-        'tasks.ml_tasks.*': {'queue': 'ml_tasks'},
-        'tasks.data_tasks.*': {'queue': 'data_tasks'},
-        'tasks.monitoring_tasks.*': {'queue': 'monitoring_tasks'},
+        'tasks.ml_tasks.*': {'queue': 'gpu_tasks'},          # GPU/CPU heavy
+        'tasks.data_tasks.*': {'queue': 'cpu_tasks'},        # CPU/IO mixed
+        'tasks.monitoring_tasks.*': {'queue': 'io_tasks'},   # IO/light CPU
     },
     
-    # Queue configuration with priorities
+    # Queue configuration per workload
     task_queues=(
-        Queue('default', Exchange('default'), routing_key='default'),
-        Queue('ml_tasks', Exchange('ml_tasks'), routing_key='ml.#', priority=5),
-        Queue('data_tasks', Exchange('data_tasks'), routing_key='data.#', priority=3),
-        Queue('monitoring_tasks', Exchange('monitoring_tasks'), routing_key='monitoring.#', priority=1),
+        Queue('cpu_tasks', Exchange('cpu_tasks'), routing_key='cpu.#'),
+        Queue('gpu_tasks', Exchange('gpu_tasks'), routing_key='gpu.#'),
+        Queue('io_tasks', Exchange('io_tasks'), routing_key='io.#'),
     ),
     
     # Retry configuration

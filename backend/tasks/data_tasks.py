@@ -4,6 +4,7 @@ Handles async data preprocessing, quality checks, and transformations.
 """
 
 import asyncio
+import logging
 from datetime import datetime
 from typing import Dict, Any, List
 from uuid import UUID
@@ -14,6 +15,9 @@ from sqlalchemy.orm import sessionmaker
 
 from services.timescale_service import TimescaleService
 from utils.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 # Create async engine
@@ -29,6 +33,14 @@ AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False
 )
+
+
+def _safe_uuid(value: str) -> UUID | None:
+    """Safely convert string to UUID, return None if invalid."""
+    try:
+        return UUID(value)
+    except Exception:
+        return None
 
 
 @celery_app.task(
@@ -176,8 +188,48 @@ def check_all_datasets_quality() -> Dict[str, Any]:
     Returns:
         Summary of quality checks
     """
-    # In production, query database for active datasets
-    active_datasets = ['dataset-1', 'dataset-2', 'dataset-3']
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Query database for active datasets (UUIDs)
+    async def get_active_datasets() -> list[str]:
+        try:
+            from sqlalchemy import text
+            from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+            from sqlalchemy.orm import sessionmaker
+            from utils.config import settings
+            
+            engine = create_async_engine(settings.postgres_url, echo=False)
+            AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+            
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(
+                    text(
+                        """
+                        SELECT id::text
+                        FROM datasets
+                        WHERE status IN ('processed', 'ready', 'active')
+                        ORDER BY updated_at DESC
+                        LIMIT 50
+                        """
+                    )
+                )
+                rows = result.fetchall()
+                return [r[0] for r in rows]
+        except Exception as e:
+            logger.warning(f"Failed to query active datasets: {e}")
+            return []
+    
+    active_datasets = asyncio.run(get_active_datasets())
+    
+    if not active_datasets:
+        logger.info("No active datasets found for quality checks")
+        return {
+            'status': 'skipped',
+            'total_datasets': 0,
+            'task_ids': [],
+            'scheduled_at': datetime.utcnow().isoformat()
+        }
     
     tasks = []
     for dataset_id in active_datasets:

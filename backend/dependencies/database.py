@@ -7,7 +7,6 @@ from typing import AsyncGenerator
 
 from fastapi import HTTPException, status
 import redis.asyncio as aioredis
-from aiokafka import AIOKafkaProducer
 from minio import Minio
 from neo4j import AsyncGraphDatabase, AsyncDriver
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
@@ -23,7 +22,6 @@ timescaledb_engine = None
 redis_client = None
 neo4j_driver = None
 minio_client = None
-kafka_producer = None
 
 # Session Makers
 AsyncSessionLocal = None
@@ -32,7 +30,7 @@ TimescaleSessionLocal = None
 
 async def initialize_database_connections() -> None:
     """Initialize all database connections on application startup."""
-    global postgres_engine, timescaledb_engine, redis_client, neo4j_driver, minio_client, kafka_producer
+    global postgres_engine, timescaledb_engine, redis_client, neo4j_driver, minio_client
     global AsyncSessionLocal, TimescaleSessionLocal
 
     # PostgreSQL
@@ -89,20 +87,9 @@ async def initialize_database_connections() -> None:
     if not minio_client.bucket_exists(settings.MINIO_BUCKET):
         minio_client.make_bucket(settings.MINIO_BUCKET)
 
-    # Kafka Producer (optional - will log warning if unavailable)
-    try:
-        kafka_producer = AIOKafkaProducer(
-            bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-        )
-        await kafka_producer.start()
-        logger.info("Kafka producer connected")
-    except Exception as e:
-        logger.warning(f"Kafka not available: {e}. Continuing without Kafka.")
-
-
 async def close_database_connections() -> None:
     """Close all database connections on application shutdown."""
-    global postgres_engine, timescaledb_engine, redis_client, neo4j_driver, kafka_producer
+    global postgres_engine, timescaledb_engine, redis_client, neo4j_driver
 
     if postgres_engine:
         await postgres_engine.dispose()
@@ -115,10 +102,6 @@ async def close_database_connections() -> None:
 
     if neo4j_driver:
         await neo4j_driver.close()
-
-    if kafka_producer:
-        await kafka_producer.stop()
-
 
 # Dependency Functions
 
@@ -164,10 +147,4 @@ def get_neo4j_driver() -> AsyncDriver:
 def get_minio_client() -> Minio:
     """Dependency to get MinIO client."""
     return minio_client
-
-
-def get_kafka_producer() -> AIOKafkaProducer:
-    """Dependency to get Kafka producer."""
-    return kafka_producer
-
 

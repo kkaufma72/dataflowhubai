@@ -63,8 +63,16 @@ class Dataset(BaseModel):
     is_public: bool = False
     created_at: datetime
     updated_at: datetime
+    
+    # S3 Storage fields
+    s3_key: Optional[str] = None
+    s3_bucket: str = "datasets"
+    storage_provider: str = "minio"
+    content_type: Optional[str] = None
+    checksum: Optional[str] = None
+    storage_metadata_dict: Dict[str, Any] = Field(default_factory=dict, alias="storage_metadata")
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 
 class DatasetProfileRequest(BaseModel):
@@ -112,5 +120,46 @@ class UploadResponse(BaseModel):
     size_bytes: int
     status: str = "uploaded"
     message: str = "Dataset uploaded successfully"
+    
+    # Presigned URL for direct upload (if using client-side upload)
+    upload_url: Optional[str] = None
+    s3_key: Optional[str] = None
 
 
+class PresignedUploadRequest(BaseModel):
+    """Request for presigned upload URL."""
+
+    filename: str
+    content_type: Optional[str] = None
+    dataset_name: str
+    description: Optional[str] = None
+    project_id: Optional[str] = None
+
+
+class PresignedUploadResponse(BaseModel):
+    """Response with presigned upload URL."""
+
+    upload_url: str
+    s3_key: str
+    s3_bucket: str
+    expires_in_seconds: int = 3600
+    dataset_id: str
+    message: str = "Upload to this URL, then call /confirm-upload"
+
+
+class ConfirmUploadRequest(BaseModel):
+    """Confirm successful upload and store metadata."""
+
+    dataset_id: str
+    s3_key: str
+    file_size: int
+    checksum: Optional[str] = None
+
+
+class DownloadUrlResponse(BaseModel):
+    """Response with presigned download URL."""
+
+    download_url: str
+    filename: str
+    content_type: Optional[str] = None
+    expires_in_seconds: int = 3600

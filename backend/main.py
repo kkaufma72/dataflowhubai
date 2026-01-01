@@ -26,6 +26,7 @@ from routers import (
     health_routes,
     knowledge_graph_routes,
     local_db_routes,
+    metrics_routes,
     ml_routes,
     modelops_routes,
     monitoring_routes,
@@ -39,8 +40,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application lifecycle: startup and shutdown events."""
     # Startup
     await initialize_database_connections()
+    
+    # Start metrics batcher
+    from lib.metrics_batcher import get_batcher
+    batcher = get_batcher()
+    await batcher.start()
+    
     yield
+    
     # Shutdown
+    await batcher.stop()  # Flush remaining metrics
     await close_database_connections()
 
 
@@ -81,6 +90,7 @@ def create_application() -> FastAPI:
     app.include_router(celery_ml_routes.router, prefix="/api/ml", tags=["ML Tasks (Async)"])
     app.include_router(deployment_routes.router, prefix="/api/deploy", tags=["Deployment"])
     app.include_router(monitoring_routes.router, prefix="/api/monitoring", tags=["Monitoring"])
+    app.include_router(metrics_routes.router, tags=["Metrics"])
     app.include_router(modelops_routes.router, prefix="/api/modelops", tags=["ModelOps"])
     app.include_router(pipeline_routes.router, prefix="/api/pipelines", tags=["Pipelines"])
     app.include_router(knowledge_graph_routes.router, prefix="/api/knowledge", tags=["Knowledge Graph"])

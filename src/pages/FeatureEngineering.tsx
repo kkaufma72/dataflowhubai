@@ -382,7 +382,7 @@ const FeatureEngineering: React.FC = () => {
         onFeatureUpdate={handleFeatureUpdate}
       />
 
-      {/* Time Series Feature Analysis - InfluxDB Style */}
+      {/* Time Series Feature Analysis - TimescaleDB Style */}
       {chartsLoaded && ChartComponents && (
         <div className="space-y-4">
           {/* Graph + Single Stat - Feature Importance Over Time */}

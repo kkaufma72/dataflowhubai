@@ -13,7 +13,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.database import (
-    get_kafka_producer,
     get_minio_client,
     get_neo4j_driver,
     get_postgres_session,
@@ -39,6 +38,8 @@ async def health_check(
 ) -> HealthCheckResponse:
     """
     Comprehensive health check for all services.
+    
+    Includes metrics batcher status.
     
     Returns:
         HealthCheckResponse with status of all services
@@ -84,6 +85,25 @@ async def health_check(
     except Exception as e:
         services["minio"] = {"status": "unhealthy", "message": str(e)}
 
+    # Check Metrics Batcher
+    try:
+        from lib.metrics_batcher import get_batcher
+        batcher = get_batcher()
+        stats = batcher.get_stats()
+        
+        if stats["running"]:
+            services["metrics_batcher"] = {
+                "status": "healthy",
+                "message": f"Buffered: {stats['total_buffered']}, Flushed: {stats['total_flushed']}"
+            }
+        else:
+            services["metrics_batcher"] = {
+                "status": "unhealthy",
+                "message": "Not running"
+            }
+    except Exception as e:
+        services["metrics_batcher"] = {"status": "unhealthy", "message": str(e)}
+
     # Determine overall status
     all_healthy = all(s["status"] == "healthy" for s in services.values())
     overall_status = "healthy" if all_healthy else "degraded"
@@ -117,5 +137,4 @@ async def liveness_check() -> dict[str, str]:
         Simple status response
     """
     return {"status": "alive"}
-
 

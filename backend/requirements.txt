@@ -27,7 +27,6 @@ minio==7.2.9
 neo4j==5.25.0
 
 # Kafka
-aiokafka==0.11.0  # Async Kafka client
 
 # Authentication
 python-jose[cryptography]==3.3.0
