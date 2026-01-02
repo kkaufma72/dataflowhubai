@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '../common/Card';
-import { Layers, BarChart2, BrainCircuit, Network, GitBranch } from 'lucide-react';
+import { Layers, BarChart2, BrainCircuit, Network } from 'lucide-react';
 
 export interface Algorithm {
   id: string;
@@ -168,35 +168,6 @@ export const algorithms: Algorithm[] = [
       }
     ]
   },
-  {
-    id: 'ensemble',
-    name: 'Ensemble Model',
-    description: 'Combines multiple models for better predictions',
-    icon: GitBranch,
-    type: 'both',
-    hyperparameters: [
-      {
-        name: 'voting',
-        type: 'select',
-        label: 'Voting Method',
-        default: 'soft',
-        options: ['hard', 'soft']
-      },
-      {
-        name: 'weights',
-        type: 'select',
-        label: 'Weighting Method',
-        default: 'uniform',
-        options: ['uniform', 'dynamic']
-      },
-      {
-        name: 'use_probabilities',
-        type: 'boolean',
-        label: 'Use Probabilities',
-        default: true
-      }
-    ]
-  }
 ];
 
 interface ModelAlgorithmsProps {

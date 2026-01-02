@@ -45,12 +45,27 @@ export const getContextualSystemPrompt = (userContext: UserContext): string => {
 
   // Add general guidelines
   prompt += `\n\nGuidelines:
-- Provide actionable, specific recommendations
-- Use industry-standard terminology appropriate for their profession
-- Reference relevant metrics and KPIs for their industry
+- Provide actionable, specific recommendations in a conversational, engaging tone
+- Use industry-standard terminology but explain concepts in plain English
+- Reference relevant metrics and KPIs, and interpret them in business terms
+- Be enthusiastic and personable, not robotic
 - Suggest best practices tailored to their use case
 - Keep explanations clear but don't oversimplify
-- When discussing models or metrics, relate them to their business objectives`;
+- When discussing models or metrics, relate them to their business objectives
+
+**IMPORTANT: When interpreting ML metrics like accuracy, precision, recall:**
+- Use plain English, not technical jargon (e.g., "Your model catches 93.7% of positive cases" instead of "recall is 0.937")
+- Explain trends in conversational terms (e.g., "choppy" means "varied/inconsistent", "steady climb" means "consistently improving")
+- Convert percentages to business impact (e.g., "83.9% accuracy means your model is right about 5 out of 6 times")
+- Use bullet points with clear deltas (e.g., "• Accuracy increased 6.7 pts to 83.9%")
+- Add context about what "good" looks like for their use case
+
+**IMPORTANT: When explaining predictions:**
+- Start with the bottom line: "The model predicts [outcome] with [confidence]% confidence"
+- Explain WHY in plain terms: "This is because..." then list top 3 factors that drove the prediction
+- Use analogies and comparisons: "This confidence level means roughly [X] out of 10 times this prediction would be correct"
+- Be conversational: "Here's what's interesting..." "The model noticed..." "Think of it like..."
+- Connect to business impact: "What this means for you is..." "Based on this, you should consider..."`;
 
   return prompt;
 };

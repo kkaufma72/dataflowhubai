@@ -330,6 +330,42 @@ const loadFromLocalStorage = (userId: string, datasetId: string): any[] => {
   return [];
 };
 
+const deleteFromLocalStorage = (userId: string, datasetId: string) => {
+  try {
+    const key = `${STORAGE_KEY_PREFIX}${userId}_${datasetId}`;
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error('localStorage delete error:', error);
+  }
+};
+
+/**
+ * Delete a specific conversation
+ */
+export const deleteConversation = async (userId: string, datasetId: string): Promise<void> => {
+  // Always delete from localStorage
+  deleteFromLocalStorage(userId, datasetId);
+
+  if (!shouldUseSupabaseStorage()) {
+    return;
+  }
+
+  try {
+    await supabase
+      .from('conversations')
+      .delete()
+      .eq('user_id', userId)
+      .eq('dataset_id', datasetId);
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      disableSupabaseConversationStorage(error);
+    } else {
+      console.error('Error deleting conversation:', error);
+      throw error;
+    }
+  }
+};
+
 /**
  * Clear old conversations (cleanup)
  */

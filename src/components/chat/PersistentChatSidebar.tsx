@@ -3,6 +3,7 @@ import { X, Send, Minimize2, Maximize2, Sparkles, Trash2, Copy, Check } from 'lu
 import { Dataset } from '../../types';
 import toast from 'react-hot-toast';
 import { useAuth } from '../auth/AuthProvider';
+import { supabase } from '../../lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -84,8 +85,13 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
     setIsLoading(true);
 
     try {
-      // Use secure Edge Function instead of direct OpenAI API
-      const { secureAIChat } = await import('../../lib/secureAI');
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error('Please sign in to use the AI assistant');
+      }
 
       // Build user profile from metadata
       const userProfile = {
@@ -96,18 +102,53 @@ const PersistentChatSidebar: React.FC<PersistentChatSidebarProps> = ({
         use_case: user?.user_metadata?.use_case || 'general'
       };
 
-      const aiResponse = await secureAIChat({
-        question,
-        dataset,
-        userProfile,
-        conversationHistory: messages.map(m => ({ role: m.role, content: m.content }))
+      // Build conversation history in OpenAI format
+      const conversationHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      // Add user message to history
+      conversationHistory.push({
+        role: 'user',
+        content: question
       });
 
-      const response = aiResponse.text || 'No response received';
+      // Call backend API
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          messages: conversationHistory,
+          dataset_context: {
+            name: dataset.name,
+            rows: dataset.rows,
+            columns: dataset.columns,
+            preview_data: dataset.preview_data,
+            column_statistics: dataset.column_statistics
+          },
+          user_profile: userProfile,
+          temperature: 0.9,
+          max_tokens: 2000
+        })
+      });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      
+      // Extract response text from OpenAI format
+      const responseText = data.choices?.[0]?.message?.content || 'No response received';
+      
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response,
+        content: responseText,
         timestamp: new Date()
       };
 

@@ -84,6 +84,32 @@ class ModelTrainingRequest(BaseModel):
         return v.strip()
 
 
+class CrossValidationRequest(BaseModel):
+    """Request payload for running cross-validation."""
+
+    dataset_id: str = Field(..., alias="datasetId")
+    target_column: str = Field(..., alias="targetColumn")
+    task_type: TaskType = Field(default=TaskType.CLASSIFICATION, alias="taskType")
+    folds: int = Field(default=5, ge=2, le=10)
+    algorithms: List[AlgorithmType] = Field(default_factory=list)
+    preview_data: Optional[dict] = Field(default=None, alias="previewData")
+    train_test_split: Optional[float] = Field(default=None, alias="trainTestSplit")
+
+    model_config = {"populate_by_name": True}
+
+
+class CrossValidationFoldResult(BaseModel):
+    """Cross-validation metrics for a single fold."""
+
+    fold: int
+    accuracy: float
+    precision: float
+    recall: float
+    f1_score: float = Field(alias="f1Score")
+
+    model_config = {"populate_by_name": True}
+
+
 class ModelMetrics(BaseModel):
     """Model evaluation metrics."""
 
@@ -166,5 +192,4 @@ class PredictionResponse(BaseModel):
     predictions: List[Any]
     probabilities: Optional[List[List[float]]] = None
     prediction_time_ms: float
-
 

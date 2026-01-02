@@ -3,12 +3,15 @@ Monitoring and drift detection routes.
 """
 
 from datetime import datetime, timedelta
+import random
+import logging
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 
 from dependencies.auth import get_current_user
 from dependencies.database import get_minio_client, get_timescaledb_session
@@ -23,6 +26,18 @@ from services.timescale_service import TimescaleService
 
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+class SeedMetricsRequest(BaseModel):
+    """Payload for seeding synthetic metrics."""
+
+    count: int = 20
+    interval_seconds: int = 60
+    accuracy_base: float = 0.82
+    precision_base: float = 0.80
+    recall_base: float = 0.78
+    noise: float = 0.03
 
 
 @router.post("/drift-detection", response_model=DriftDetectionResult)
@@ -155,7 +170,9 @@ async def get_model_metrics(
             for m in metrics
         ]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve metrics: {str(e)}")
+        # Keep the UI functional even if TimescaleDB is unavailable
+        logger.warning("Failed to retrieve metrics for %s: %s", model_id, e)
+        return []
 
 
 @router.get("/metrics/{model_id}/aggregated", response_model=List[dict])
@@ -347,39 +364,43 @@ async def record_training_metric(
     epoch: int,
     metrics: dict,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_timescaledb_session),
 ) -> dict:
     """
     Record training metrics for a specific epoch.
+    
+    Uses the batching API for high-performance writes.
     
     Args:
         model_id: Model identifier
         epoch: Training epoch number
         metrics: Dictionary of metric_name -> metric_value
         current_user: Current authenticated user
-        db: TimescaleDB session
         
     Returns:
         Confirmation with recorded metrics
     """
     try:
-        service = TimescaleService(db)
-        recorded = []
+        from lib.metrics_helper import metrics_client
         
-        for metric_name, metric_value in metrics.items():
-            await service.record_training_metric(
-                model_id=model_id,
-                epoch=epoch,
-                metric_name=metric_name,
-                metric_value=float(metric_value),
-            )
-            recorded.append({"metric_name": metric_name, "value": metric_value})
+        # Prepare batch metrics
+        metric_points = [
+            {
+                "metric_name": f"model_{metric_name}",
+                "value": float(metric_value),
+                "model_id": str(model_id),
+                "tags": {"epoch": str(epoch), "phase": "training"}
+            }
+            for metric_name, metric_value in metrics.items()
+        ]
+        
+        # Send to batching API
+        await metrics_client.record_batch(metric_points)
         
         return {
             "model_id": str(model_id),
             "epoch": epoch,
             "recorded_at": datetime.utcnow().isoformat(),
-            "metrics": recorded,
+            "metrics": [{"metric_name": k, "value": v} for k, v in metrics.items()],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to record training metrics: {str(e)}")

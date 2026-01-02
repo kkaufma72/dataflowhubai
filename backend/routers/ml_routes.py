@@ -2,6 +2,7 @@
 Machine learning training and feature engineering routes.
 """
 
+import random
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
@@ -12,11 +13,13 @@ from dependencies.auth import get_current_user, require_subscription
 from dependencies.database import get_minio_client, get_redis_client
 from schemas.auth import User
 from schemas.ml_model import (
+    CrossValidationRequest,
     FeatureEngineeringRequest,
     Model,
     ModelCreate,
     ModelTrainingRequest,
     ModelUpdate,
+    TaskType,
 )
 from services.background_tasks import BackgroundTaskService
 from services.data_service import DataService
@@ -147,6 +150,63 @@ async def engineer_features(
     }
 
 
+@router.post("/cross-validation", response_model=dict)
+async def run_cross_validation(
+    request: CrossValidationRequest,
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """
+    Return simulated cross-validation metrics to keep the UI functional.
+    
+    This endpoint will be replaced with a real service once backend
+    model evaluation is wired up. Results are deterministic per dataset
+    and target column to provide consistent UX.
+    """
+
+    def _clamp(value: float, minimum: float = 0.01, maximum: float = 0.99) -> float:
+        return max(minimum, min(maximum, value))
+
+    rng = random.Random(f"{request.dataset_id}:{request.target_column}:{request.folds}")
+    base_score = 0.78 if request.task_type == TaskType.CLASSIFICATION else 0.72
+
+    folds: List[dict] = []
+    for fold_idx in range(1, request.folds + 1):
+        variation = rng.uniform(-0.06, 0.06)
+        accuracy = _clamp(base_score + variation)
+        precision = _clamp(accuracy - rng.uniform(-0.02, 0.02))
+        recall = _clamp(accuracy + rng.uniform(-0.02, 0.02))
+        f1_score = _clamp((2 * precision * recall) / (precision + recall + 1e-6))
+
+        folds.append(
+            {
+                "fold": fold_idx,
+                "accuracy": round(accuracy, 4),
+                "precision": round(precision, 4),
+                "recall": round(recall, 4),
+                "f1Score": round(f1_score, 4),
+            }
+        )
+
+    def _average(key: str) -> float:
+        return round(sum(f[key] for f in folds) / len(folds), 4) if folds else 0.0
+
+    return {
+        "datasetId": request.dataset_id,
+        "targetColumn": request.target_column,
+        "taskType": request.task_type.value,
+        "algorithms": [algo.value for algo in request.algorithms] or ["auto"],
+        "folds": folds,
+        "results": folds,
+        "summary": {
+            "averageAccuracy": _average("accuracy"),
+            "averagePrecision": _average("precision"),
+            "averageRecall": _average("recall"),
+            "averageF1Score": _average("f1Score"),
+            "note": "Simulated cross-validation until full backend integration is available.",
+        },
+    }
+
+
 @router.get("/models", response_model=List[Model])
 async def list_models(
     current_user: User = Depends(get_current_user),
@@ -237,4 +297,3 @@ async def delete_model(
     """
     # In production, delete from database and storage
     pass
-

@@ -83,10 +83,10 @@ class Settings(BaseSettings):
     # Supabase - Authentication
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
-    SUPABASE_JWT_SECRET: str = ""
+    SUPABASE_JWT_SECRET: str = "c9818af2-89cc-4315-a425-9cc1672b2a8d"
 
     # JWT Configuration
-    JWT_SECRET_KEY: str = "your-secret-key-change-in-production"
+    JWT_SECRET_KEY: str = "c9818af2-89cc-4315-a425-9cc1672b2a8d"
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7

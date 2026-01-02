@@ -188,8 +188,8 @@ export class EnhancedOrchestrator {
             ...conversationHistory.map(m => ({ role: m.role, content: m.content })),
             { role: 'user', content: question }
           ],
-          temperature: 0.7,
-          max_tokens: 1200
+          temperature: 0.9,
+          max_tokens: 2000
         })
       });
 

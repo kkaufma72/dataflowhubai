@@ -1,7 +1,7 @@
 // Enhanced AI Chat with Streaming, Agents, Auto-Actions, and Model Narratives
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Dataset, MLModel } from '../../types';
-import { Send, Sparkles, X, User, Bot, Loader2, Mic, MicOff, Brain, Target, Crown, Lock } from 'lucide-react';
+import { Send, Sparkles, X, User, Bot, Loader2, Mic, MicOff, Brain, Target, Crown, Lock, Trash2 } from 'lucide-react';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import { useAuth } from '../auth/AuthProvider';
@@ -9,7 +9,7 @@ import { UserProfile } from '../../utils/personalizedPrompts';
 import { runAgentOrchestrator, generateRichModelResponse, generatePredictionExplanation } from '../../lib/aiAgents';
 import { secureAIChat } from '../../lib/secureAI';
 import { getMarketingQuickActions } from '../../lib/agents/marketingAgentSimple';
-import { saveConversation, loadConversation } from '../../lib/conversationMemory';
+import { saveConversation, loadConversation, deleteConversation } from '../../lib/conversationMemory';
 import { getContextualSystemPrompt, getContextualWelcomeMessage } from '../../lib/contextualPrompts';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
@@ -413,55 +413,7 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
     }
   }, []);
 
-  // Show personalized welcome message (only if no history loaded)
-  useEffect(() => {
-    // Check if already shown or if messages already exist
-    if (hasShownWelcomeRef.current || messages.length > 0 || !userProfile.full_name) {
-      return;
-    }
-    
-    // Check localStorage
-    const hasShownBefore = localStorage.getItem(welcomeStorageKey) === 'true';
-    if (hasShownBefore) {
-      hasShownWelcomeRef.current = true;
-      return;
-    }
-    
-    // Add small delay to ensure history loading finishes first
-    const timer = setTimeout(() => {
-      // Double-check messages haven't been loaded
-      if (messages.length > 0) {
-        return;
-      }
-      
-      let welcomeContent: string;
-      
-      // Use contextual welcome if user has completed onboarding
-      if (userContext && userContext.profession) {
-        welcomeContent = getContextualWelcomeMessage(userContext);
-      } else {
-        // Fallback to simple welcome
-        const firstName = userProfile.full_name.split(' ')[0];
-        const useCase = formatUseCase(userProfile.use_case);
-        welcomeContent = `Hi ${firstName}! 👋 I'm your AI team of data experts, personalized for ${useCase}.\n\nI can analyze "${dataset.name}" and:\n• Find patterns and insights\n• Create perfect visualizations\n• Suggest actions\n• Clean your data\n• Train ML models\n\nWhat would you like to know?`;
-      }
-      
-      const welcomeMessage: Message = {
-        role: 'assistant',
-        content: welcomeContent,
-        timestamp: new Date()
-      };
-      
-      // Set the ref and localStorage BEFORE updating state
-      hasShownWelcomeRef.current = true;
-      localStorage.setItem(welcomeStorageKey, 'true');
-      setMessages([welcomeMessage]);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-    // Only run when userProfile or userContext changes, NOT when messages change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userProfile.full_name, userContext, dataset.name, welcomeStorageKey]);
+  // Welcome message removed - no introduction shown
 
   const formatUseCase = (useCase?: string) => {
     if (!useCase) return 'data analysis';
@@ -622,6 +574,17 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
     }
   }, [handleSendMessage]);
 
+  // Prevent back-to-back identical messages (same role + trimmed content)
+  const appendMessage = useCallback((next: Message) => {
+    setMessages(prev => {
+      const last = prev[prev.length - 1];
+      if (last && last.role === next.role && (last.content || '').trim() === (next.content || '').trim()) {
+        return prev;
+      }
+      return [...prev, next];
+    });
+  }, []);
+
   // Quick action buttons (context-aware based on user profile and available models)
   // Memoized to prevent re-creation on every render (which causes input focus loss)
   const quickActions = useMemo(() => {
@@ -685,6 +648,26 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
     ));
   }, []);
 
+  // Clear conversation
+  const handleClearChat = useCallback(() => {
+    if (window.confirm('Clear this conversation? This cannot be undone.')) {
+      setMessages([]);
+      // DO NOT reset hasShownWelcomeRef - keep it true so welcome doesn't show again
+      // hasShownWelcomeRef.current = false; // REMOVED
+      // DO NOT remove localStorage key - keep it so welcome doesn't show again
+      // localStorage.removeItem(welcomeStorageKey); // REMOVED
+      
+      // Delete from database if user is logged in
+      if (user && dataset.id) {
+        deleteConversation(user.id, dataset.id).catch(err => {
+          console.error('Error deleting conversation:', err);
+        });
+      }
+      
+      toast.success('Conversation cleared');
+    }
+  }, [user, dataset.id]);
+
   const chatContent = (
     <>
       {/* Header */}
@@ -717,6 +700,16 @@ const EnhancedAIChat: React.FC<EnhancedAIChatProps> = React.memo(({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <button
+              onClick={handleClearChat}
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+              title="Clear conversation"
+            >
+              <Trash2 className="w-4 h-4" />
+              Clear
+            </button>
+          )}
           {tier === 'free' && (
             <button
               onClick={() => setShowUpgradeModal(true)}

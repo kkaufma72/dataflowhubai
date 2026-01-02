@@ -15,6 +15,8 @@ interface Message {
   content: string;
 }
 
+const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+
 // Context-specific prompts based on use case
 const getUseCasePrompt = (useCase: string): string => {
   const prompts: Record<string, string> = {
@@ -72,16 +74,7 @@ const EnhancedAIChat: React.FC = () => {
     loadUserContext();
   }, [user]);
 
-  // Show welcome message with context (only once)
-  useEffect(() => {
-    if (userContext && messages.length === 0) {
-      const welcomeMessage = getContextualWelcomeMessage(userContext);
-      setMessages([{
-        role: 'assistant',
-        content: welcomeMessage
-      }]);
-    }
-  }, [userContext, messages.length]);
+  // Welcome message removed - no introduction shown
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -132,10 +125,13 @@ ${datasets.map(d => `- ${d.name} (${d.rows} rows, ${d.columns} columns)`).join('
   };
 
   const handleSend = async (messageText?: string) => {
+    if (loading) return; // prevent overlapping sends
+
     const textToSend = messageText || input;
     if (!textToSend.trim()) return;
 
     const userMessage: Message = { role: 'user', content: textToSend };
+    const pendingMessages = [...messages, userMessage];
     
     // Build contextual system prompt based on user profile
     let systemPrompt = '';
@@ -162,40 +158,77 @@ Help users understand and work with their datasets, build ML models, and extract
       content: systemPrompt
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(pendingMessages);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (!token) {
+        throw new Error('Please sign in to use the AI assistant');
+      }
+
+      const response = await fetch(`${apiBase}/api/ai/chat`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [systemContext, ...messages, userMessage],
-          max_tokens: 1000,
-          temperature: 0.7,
+          messages: [systemContext, ...pendingMessages],
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.detail || errorData.error || `API error: ${response.status}`);
       }
 
       const data = await response.json();
+      
+      // Extract content from response
+      let content = '';
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        content = data.choices[0].message.content;
+      } else if (typeof data === 'string') {
+        content = data;
+      } else {
+        console.error('Unexpected response format:', data);
+        content = 'Sorry, I received an unexpected response format. Please try again.';
+      }
+      
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: content,
       };
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error:', error);
+      
+      // Avoid duplicate assistant messages when the response matches the latest assistant reply
+      const lastAssistant = [...pendingMessages].reverse().find(m => m.role === 'assistant');
+      if (!lastAssistant || lastAssistant.content.trim() !== assistantMessage.content.trim()) {
+        setMessages([...pendingMessages, assistantMessage]);
+      } else {
+        setMessages(pendingMessages);
+      }
+    } catch (error: any) {
+      console.error('AI Chat Error:', error);
+      // Properly extract error message from various error types
+      let errorMessage = 'Sorry, there was an error processing your request. Please try again in a moment.';
+      
+      if (error.message && typeof error.message === 'string') {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error.detail) {
+        errorMessage = error.detail;
+      } else if (error.error) {
+        errorMessage = error.error;
+      }
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, there was an error processing your request. Please check your API key and try again.',
+        content: errorMessage,
       }]);
     } finally {
       setLoading(false);

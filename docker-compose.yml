@@ -261,6 +261,12 @@ services:
       - NEO4J_PASSWORD=dataflow_secure_password
       # API Keys (add your own)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+      - VLLM_ENDPOINT=${VLLM_ENDPOINT:-http://localhost:8000/v1/chat/completions}
+      - VLLM_MODEL=${VLLM_MODEL:-meta-llama/Meta-Llama-3-8B-Instruct}
+      # Supabase Auth
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-}
+      - SUPABASE_URL=${VITE_SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:-}
     depends_on:
       - postgres
       - redis

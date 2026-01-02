@@ -18,6 +18,7 @@ from middleware.error_handler import ErrorHandlerMiddleware
 from middleware.logging import LoggingMiddleware
 from middleware.performance import PerformanceMiddleware
 from routers import (
+    ai_routes,
     analytics_routes,
     auth_routes,
     celery_ml_routes,
@@ -31,6 +32,7 @@ from routers import (
     modelops_routes,
     monitoring_routes,
     pipeline_routes,
+    skill_routes,
 )
 from utils.config import settings
 
@@ -39,6 +41,10 @@ from utils.config import settings
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application lifecycle: startup and shutdown events."""
     # Startup
+    # Log JWT secret (first 8 chars only for security)
+    jwt_secret = settings.SUPABASE_JWT_SECRET or settings.JWT_SECRET_KEY
+    print(f"✓ JWT Secret loaded: {jwt_secret[:8]}... (length: {len(jwt_secret)})")
+    
     await initialize_database_connections()
     
     # Start metrics batcher
@@ -68,8 +74,8 @@ def create_application() -> FastAPI:
     # CORS Configuration
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
+        allow_origins=["*"],  # Allow all origins for development
+        allow_credentials=False,  # Must be False when using allow_origins=["*"]
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -83,6 +89,7 @@ def create_application() -> FastAPI:
     app.add_middleware(LoggingMiddleware)
 
     # Include Routers
+    app.include_router(ai_routes.router, prefix="/api", tags=["AI"])
     app.include_router(health_routes.router, prefix="/api", tags=["Health"])
     app.include_router(auth_routes.router, prefix="/api/auth", tags=["Authentication"])
     app.include_router(data_routes.router, prefix="/api/data", tags=["Data Management"])
@@ -96,6 +103,7 @@ def create_application() -> FastAPI:
     app.include_router(knowledge_graph_routes.router, prefix="/api/knowledge", tags=["Knowledge Graph"])
     app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["Analytics"])
     app.include_router(local_db_routes.router, prefix="/api", tags=["Local Database"])
+    app.include_router(skill_routes.router, prefix="/api", tags=["Skills"])
 
     return app
 
@@ -112,5 +120,3 @@ async def root() -> dict[str, str]:
         "status": "operational",
         "docs": "/api/docs",
     }
-
-

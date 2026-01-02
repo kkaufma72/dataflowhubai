@@ -7,6 +7,7 @@ import asyncio
 from datetime import datetime
 from typing import Dict, Any
 from uuid import UUID
+import httpx
 
 from celery import Task
 from celery_app import celery_app
@@ -87,23 +88,32 @@ def train_model(self, model_id: str, dataset_id: str, config: Dict[str, Any]) ->
             loss = 0.5 - (epoch * 0.03)  # Simulated decreasing loss
             accuracy = 0.7 + (epoch * 0.02)  # Simulated increasing accuracy
             
-            # Record to TimescaleDB
+            # Record metrics to batching API (non-blocking, high performance)
             async def record_metrics():
-                async with AsyncSessionLocal() as session:
-                    service = TimescaleService(session)
-                    await service.record_training_metric(
-                        model_id=UUID(model_id),
-                        epoch=epoch,
-                        metric_name='loss',
-                        metric_value=loss
-                    )
-                    await service.record_training_metric(
-                        model_id=UUID(model_id),
-                        epoch=epoch,
-                        metric_name='accuracy',
-                        metric_value=accuracy
-                    )
-                    await session.commit()
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    try:
+                        await client.post(
+                            f"http://localhost:8000/api/metrics/batch",
+                            json={
+                                "metrics": [
+                                    {
+                                        "metric_name": "model_loss",
+                                        "value": loss,
+                                        "model_id": model_id,
+                                        "tags": {"epoch": str(epoch), "phase": "training"}
+                                    },
+                                    {
+                                        "metric_name": "model_accuracy",
+                                        "value": accuracy,
+                                        "model_id": model_id,
+                                        "tags": {"epoch": str(epoch), "phase": "training"}
+                                    }
+                                ]
+                            }
+                        )
+                    except Exception as e:
+                        # Metrics are best-effort, don't fail training
+                        print(f"Warning: Failed to record metrics for epoch {epoch}: {e}")
             
             asyncio.run(record_metrics())
             
@@ -122,19 +132,29 @@ def train_model(self, model_id: str, dataset_id: str, config: Dict[str, Any]) ->
         final_accuracy = 0.7 + (epochs * 0.02)
         
         async def record_final_metrics():
-            async with AsyncSessionLocal() as session:
-                service = TimescaleService(session)
-                await service.record_model_metric(
-                    model_id=UUID(model_id),
-                    metric_name='final_accuracy',
-                    metric_value=final_accuracy
-                )
-                await service.record_model_metric(
-                    model_id=UUID(model_id),
-                    metric_name='training_time',
-                    metric_value=epochs * 2  # Simulated training time
-                )
-                await session.commit()
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                try:
+                    await client.post(
+                        f"http://localhost:8000/api/metrics/batch",
+                        json={
+                            "metrics": [
+                                {
+                                    "metric_name": "model_final_accuracy",
+                                    "value": final_accuracy,
+                                    "model_id": model_id,
+                                    "tags": {"phase": "complete"}
+                                },
+                                {
+                                    "metric_name": "model_training_time",
+                                    "value": float(epochs * 2),
+                                    "model_id": model_id,
+                                    "tags": {"phase": "complete"}
+                                }
+                            ]
+                        }
+                    )
+                except Exception as e:
+                    print(f"Warning: Failed to record final metrics: {e}")
         
         asyncio.run(record_final_metrics())
         

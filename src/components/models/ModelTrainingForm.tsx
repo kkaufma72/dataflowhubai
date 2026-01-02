@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BarChart2, InfoIcon, Sparkles, TrendingUp, AlertCircle } from 'lucide-react';
 import { Dataset, ModelTrainingConfig } from '../../types';
 import Button from '../common/Button';
@@ -30,25 +30,60 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   const [trainTestSplit, setTrainTestSplit] = useState(0.8);
   const [hyperparameterTuning, setHyperparameterTuning] = useState(true);
   const [optimizationMetric, setOptimizationMetric] = useState('f1');
-  const [algorithms, setAlgorithms] = useState<string[]>([
-    'random_forest',
-    'xgboost',
-  ]);
+  const [algorithms, setAlgorithms] = useState<string[]>([]);
+  const [userChoseAlgorithms, setUserChoseAlgorithms] = useState(false);
+  const userChoseAlgorithmsRef = useRef(false);
   const [crossValidationFolds, setCrossValidationFolds] = useState(5);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
-  const [validationResults, setValidationResults] = useState<CrossValidationResult[] | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-  
   // Smart recommendations state
   const [profilingResult, setProfilingResult] = useState<DatasetProfileResult | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(true);
+  const [validationResults, setValidationResults] = useState<CrossValidationResult[] | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const recommendedAlgorithms = useMemo(
+    () => profilingResult?.algorithmRecommendations.slice(0, 2) ?? [],
+    [profilingResult]
+  );
+  const suggestedTarget = profilingResult?.targetRecommendations[0];
+  const datasetStats = useMemo(
+    () => ({
+      rows: dataset.rows?.toLocaleString?.() ?? '—',
+      columns: dataset.columns?.toLocaleString?.() ?? '—'
+    }),
+    [dataset.columns, dataset.rows]
+  );
 
   const toggleAlgorithm = (algorithm: string) => {
     setAlgorithms((prev) =>
       prev.includes(algorithm) ? prev.filter((a) => a !== algorithm) : [...prev, algorithm]
     );
+    setUserChoseAlgorithms(true);
+    userChoseAlgorithmsRef.current = true;
+  };
+
+  const handleApplySmartPlan = () => {
+    if (!profilingResult) return;
+
+    if (suggestedTarget) {
+      setTargetVariable(suggestedTarget);
+    }
+
+    if (profilingResult.modelTypeRecommendation) {
+      setModelType(profilingResult.modelTypeRecommendation.type);
+    }
+
+    if (profilingResult.algorithmRecommendations.length > 0) {
+      const topAlgorithms = profilingResult.algorithmRecommendations
+        .slice(0, 2)
+        .map(rec => rec.algorithm);
+      setAlgorithms(topAlgorithms);
+      setUserChoseAlgorithms(false);
+      userChoseAlgorithmsRef.current = false;
+    }
+
+    toast.success('Applied smart defaults for this dataset', { icon: '✨' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,6 +120,11 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
   
   // Profile dataset and generate smart recommendations
   useEffect(() => {
+    // New dataset: reset auto-selection guard
+    setUserChoseAlgorithms(false);
+    userChoseAlgorithmsRef.current = false;
+    setAlgorithms([]);
+
     const runProfiling = async () => {
       setIsProfileLoading(true);
       try {
@@ -104,8 +144,8 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
           setModelType(result.modelTypeRecommendation.type);
         }
         
-        if (result.algorithmRecommendations.length > 0) {
-          // Auto-select top 2 recommended algorithms
+        if (!userChoseAlgorithmsRef.current && result.algorithmRecommendations.length > 0) {
+          // Auto-select top 2 recommended algorithms only if user hasn't chosen yet
           const topAlgorithms = result.algorithmRecommendations
             .slice(0, 2)
             .map(rec => rec.algorithm);
@@ -131,41 +171,121 @@ const ModelTrainingForm: React.FC<ModelTrainingFormProps> = ({
     }
   }, [dataset.id]); // Only run when dataset changes
 
-  const handleRunCrossValidation = () => {
+  const handleRunCrossValidation = async () => {
     if (!targetVariable || algorithms.length === 0) return;
     
     setIsValidating(true);
-    toast.loading('Running cross-validation (simulated)...', { id: 'cross-validation' });
+    toast.loading('Running cross-validation...', { id: 'cross-validation' });
     setValidationResults(null);
     
-    // TODO: Replace with actual backend API call
-    // Simulate cross-validation for demo purposes
-    setTimeout(() => {
-      const results = [];
-      const baseAccuracy = 0.75 + Math.random() * 0.15;
-      const basePrecision = 0.7 + Math.random() * 0.2;
-      const baseRecall = 0.7 + Math.random() * 0.2;
-      const baseF1 = 0.7 + Math.random() * 0.2;
-      
-      for (let i = 1; i <= crossValidationFolds; i++) {
-        results.push({
-          fold: i,
-          accuracy: baseAccuracy + (Math.random() - 0.5) * 0.05,
-          precision: basePrecision + (Math.random() - 0.5) * 0.05,
-          recall: baseRecall + (Math.random() - 0.5) * 0.05,
-          f1Score: baseF1 + (Math.random() - 0.5) * 0.05
-        });
+    try {
+      const response = await fetch('/api/ml/cross-validation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          datasetId: dataset.id,
+          targetColumn: targetVariable,
+          taskType: modelType,
+          folds: crossValidationFolds,
+          algorithms,
+          previewData: dataset.preview_data,
+          trainTestSplit
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Cross-validation request failed');
       }
-      
+
+      const payload = await response.json();
+      const folds = payload.results || payload.folds || [];
+      const results = folds.map((fold: any, index: number) => ({
+        fold: fold.fold ?? fold.index ?? index + 1,
+        accuracy: fold.accuracy ?? fold.metrics?.accuracy ?? 0,
+        precision: fold.precision ?? fold.metrics?.precision ?? 0,
+        recall: fold.recall ?? fold.metrics?.recall ?? 0,
+        f1Score: fold.f1Score ?? fold.f1 ?? fold.metrics?.f1 ?? fold.metrics?.f1Score ?? fold.metrics?.f1_score ?? 0
+      }));
+
       setValidationResults(results);
+      toast.success('Cross-validation completed', { id: 'cross-validation' });
+    } catch (error) {
+      console.error('Cross-validation failed:', error);
+      toast.error('Failed to run cross-validation', { id: 'cross-validation' });
+    } finally {
       setIsValidating(false);
-      toast.success('Cross-validation completed (simulated data)', { id: 'cross-validation' });
-    }, 2000);
+    }
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Outcome</p>
+              <h2 className="text-lg font-bold text-slate-900">
+                Train a ready-to-deploy model with safe defaults
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Uses stratified split, auto-tuned metrics, and top recommended algorithms so you can run with confidence.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-700">
+                <span className="inline-flex items-center rounded-full bg-white px-3 py-1 border border-slate-200">
+                  Dataset: {dataset.name} • {datasetStats.rows} rows, {datasetStats.columns} columns
+                </span>
+                {profilingResult?.dataQualityIssues?.length ? (
+                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 border border-amber-200 text-amber-800">
+                    Data quality flags: {profilingResult.dataQualityIssues.length}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 border border-emerald-200 text-emerald-800">
+                    Data check ready
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="w-full md:w-auto">
+              <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Plan</p>
+                <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                  <li>
+                    Target: <span className="font-semibold">{targetVariable || suggestedTarget || 'Pick target'}</span>
+                  </li>
+                  <li>
+                    Model: <span className="font-semibold capitalize">{modelType}</span>
+                  </li>
+                  <li>
+                    Algorithms: <span className="font-semibold">
+                      {algorithms.length > 0
+                        ? `${algorithms.length} selected`
+                        : recommendedAlgorithms.length > 0
+                          ? 'Will auto-select top matches'
+                          : 'Choose 1–2'}
+                    </span>
+                  </li>
+                  <li>
+                    Validation: <span className="font-semibold">Stratified CV · {crossValidationFolds} folds</span>
+                  </li>
+                </ul>
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleApplySmartPlan}
+                    disabled={!profilingResult}
+                    className="w-full"
+                  >
+                    Apply smart defaults
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Smart Recommendations Banner */}
         {profilingResult && profilingResult.algorithmRecommendations.length > 0 && showRecommendations && (
           <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-lg">

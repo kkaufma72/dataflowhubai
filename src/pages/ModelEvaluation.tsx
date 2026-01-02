@@ -264,21 +264,31 @@ const ModelEvaluationContent = () => {
     const swings = [first.accuracy, first.precision, first.recall, last.accuracy, last.precision, last.recall];
     const maxSwing = Math.max(...swings) - Math.min(...swings);
     const stability = maxSwing < 0.05
-      ? 'Metrics are stable within ±5 pts, signaling consistent performance.'
-      : 'Metrics fluctuate more than ±5 pts—keep monitoring for drift or seasonal effects.';
+      ? 'Overall: Stable within ±5 pts, no immediate drift risk. Keep routine checks.'
+      : 'Overall: Volatility >5 pts; watch for drift/seasonality and revisit validation windows.';
+
+    const headline = [
+      accuracyMsg,
+      precisionMsg,
+      recallMsg,
+      maxSwing < 0.05 ? 'Trajectory: steady' : 'Trajectory: choppy',
+    ].join(' • ');
 
     return {
       accuracyMsg,
       precisionMsg,
       recallMsg,
       stability,
+      headline,
     };
   }, [performanceData, describeDelta]);
 
   const performanceQuestionSuggestions = [
+    'Give me the headline on accuracy/precision/recall',
     'Are metrics trending up?',
     'Is recall stable over time?',
-    'Do I need to worry about drift?'
+    'Do I need to worry about drift?',
+    'What should I watch next?'
   ];
 
   const answerPerformanceQuestion = (prompt: string) => {
@@ -289,6 +299,10 @@ const ModelEvaluationContent = () => {
     }
 
     const q = prompt.toLowerCase();
+    if (q.includes('headline') || q.includes('summary') || q.includes('overall')) {
+      setPerformanceAnswer(performanceNarrative.headline);
+      return;
+    }
     if (q.includes('accur')) {
       setPerformanceAnswer(performanceNarrative.accuracyMsg);
       return;
@@ -305,8 +319,12 @@ const ModelEvaluationContent = () => {
       setPerformanceAnswer(performanceNarrative.stability);
       return;
     }
+    if (q.includes('watch') || q.includes('next') || q.includes('monitor')) {
+      setPerformanceAnswer(`${performanceNarrative.stability} Next: monitor recall sensitivity and threshold tuning.`);
+      return;
+    }
 
-    setPerformanceAnswer(`${performanceNarrative.accuracyMsg} ${performanceNarrative.precisionMsg}`);
+    setPerformanceAnswer(performanceNarrative.headline);
   };
 
   const handlePerformanceSubmit = (event: React.FormEvent<HTMLFormElement>) => {

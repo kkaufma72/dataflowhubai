@@ -81,11 +81,17 @@ export const KnowledgeProvider: React.FC<KnowledgeProviderProps> = ({ children }
     const loadRecentActivity = async () => {
       try {
         // Fetch recent knowledge entries with insights
-        const { data: knowledgeData } = await supabase
+        // Using Supabase client ensures proper headers (Accept, apikey, Authorization)
+        const { data: knowledgeData, error: knowledgeError } = await supabase
           .from('dataset_knowledge')
           .select('dataset_id, dataset_name, analysis_history, stories')
           .order('updated_at', { ascending: false })
           .limit(10);
+
+        if (knowledgeError) {
+          console.warn('Failed to load recent knowledge:', knowledgeError);
+          return;
+        }
 
         if (knowledgeData) {
           // Extract recent insights
