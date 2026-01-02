@@ -12,6 +12,7 @@ import pandas as pd
 from minio import Minio
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -24,6 +25,21 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.svm import SVC, SVR
+
+try:
+    from lightgbm import LGBMClassifier, LGBMRegressor
+
+    HAS_LIGHTGBM = True
+except Exception:
+    HAS_LIGHTGBM = False
+
+try:
+    from xgboost import XGBClassifier, XGBRegressor
+
+    HAS_XGBOOST = True
+except Exception:
+    HAS_XGBOOST = False
 
 from schemas.ml_model import (
     AlgorithmType,
@@ -41,6 +57,7 @@ class MLService:
     def __init__(self, minio_client: Minio, bucket_name: str):
         self.minio = minio_client
         self.bucket = bucket_name
+        self.unavailable_algorithms: Dict[AlgorithmType, str] = {}
         self.algorithm_map = {
             AlgorithmType.RANDOM_FOREST: {
                 TaskType.CLASSIFICATION: RandomForestClassifier,
@@ -50,6 +67,14 @@ class MLService:
                 TaskType.CLASSIFICATION: GradientBoostingClassifier,
                 TaskType.REGRESSION: GradientBoostingClassifier,
             },
+            AlgorithmType.SVM: {
+                TaskType.CLASSIFICATION: SVC,
+                TaskType.REGRESSION: SVR,
+            },
+            AlgorithmType.NEURAL_NETWORK: {
+                TaskType.CLASSIFICATION: MLPClassifier,
+                TaskType.REGRESSION: MLPRegressor,
+            },
             AlgorithmType.LINEAR_REGRESSION: {
                 TaskType.REGRESSION: LinearRegression,
             },
@@ -57,6 +82,21 @@ class MLService:
                 TaskType.CLASSIFICATION: LogisticRegression,
             },
         }
+        if HAS_XGBOOST:
+            self.algorithm_map[AlgorithmType.XGBOOST] = {
+                TaskType.CLASSIFICATION: XGBClassifier,
+                TaskType.REGRESSION: XGBRegressor,
+            }
+        else:
+            self.unavailable_algorithms[AlgorithmType.XGBOOST] = "xgboost is not installed"
+
+        if HAS_LIGHTGBM:
+            self.algorithm_map[AlgorithmType.LIGHTGBM] = {
+                TaskType.CLASSIFICATION: LGBMClassifier,
+                TaskType.REGRESSION: LGBMRegressor,
+            }
+        else:
+            self.unavailable_algorithms[AlgorithmType.LIGHTGBM] = "lightgbm is not installed"
 
     async def train_model(
         self,
@@ -131,12 +171,21 @@ class MLService:
         # Get model class
         model_class = self.algorithm_map.get(algorithm, {}).get(task_type)
         if not model_class:
+            unavailable_reason = self.unavailable_algorithms.get(algorithm)
+            if unavailable_reason:
+                raise ValidationError(
+                    f"Algorithm '{algorithm.value}' is available but missing an optional dependency ({unavailable_reason})."
+                )
             raise ValidationError(
                 f"Algorithm '{algorithm}' not supported for task type '{task_type}'"
             )
 
         # Initialize model with hyperparameters
         params = hyperparameters or {}
+        if algorithm == AlgorithmType.SVM and task_type == TaskType.CLASSIFICATION:
+            params.setdefault("probability", True)  # ensure predict_proba exists
+        if algorithm == AlgorithmType.NEURAL_NETWORK:
+            params.setdefault("max_iter", 300)
         model = model_class(**params)
 
         # Train model
@@ -355,5 +404,4 @@ class MLService:
 async def get_ml_service(minio_client: Minio, bucket_name: str) -> MLService:
     """Factory function to get ML service instance."""
     return MLService(minio_client, bucket_name)
-
 
