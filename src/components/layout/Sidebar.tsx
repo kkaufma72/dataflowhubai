@@ -299,12 +299,6 @@ const Sidebar: React.FC = () => {
           href: '/app/marketplace',
           icon: ShoppingCart,
           description: 'Pre-trained models'
-        },
-        {
-          name: 'Skills Hub',
-          href: '/app/skills',
-          icon: BookOpen,
-          description: 'Codex skills & playbooks'
         }
       ]
     }

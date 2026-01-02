@@ -32,7 +32,6 @@ from routers import (
     modelops_routes,
     monitoring_routes,
     pipeline_routes,
-    skill_routes,
 )
 from utils.config import settings
 
@@ -103,7 +102,6 @@ def create_application() -> FastAPI:
     app.include_router(knowledge_graph_routes.router, prefix="/api/knowledge", tags=["Knowledge Graph"])
     app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["Analytics"])
     app.include_router(local_db_routes.router, prefix="/api", tags=["Local Database"])
-    app.include_router(skill_routes.router, prefix="/api", tags=["Skills"])
 
     return app
 

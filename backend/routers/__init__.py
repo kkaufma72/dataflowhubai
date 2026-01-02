@@ -14,7 +14,6 @@ from routers import (
     modelops_routes,
     monitoring_routes,
     pipeline_routes,
-    skill_routes,
 )
 
 __all__ = [
@@ -29,5 +28,4 @@ __all__ = [
     "modelops_routes",
     "monitoring_routes",
     "pipeline_routes",
-    "skill_routes",
 ]

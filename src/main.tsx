@@ -36,7 +36,6 @@ const ModelOps = lazy(() => import('./pages/ModelOps.tsx'));
 const SignIn = lazy(() => import('./pages/SignIn.tsx'));
 const LandingPage = lazy(() => import('./pages/LandingPageLinear.tsx')); // Linear-style minimalist landing
 const PricingPage = lazy(() => import('./pages/PricingPage.tsx'));
-const SkillsHub = lazy(() => import('./pages/SkillsHub.tsx'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage.tsx')); // Security & compliance
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.tsx')); // Privacy policy
 const CaseStudiesPage = lazy(() => import('./pages/CaseStudiesPage.tsx')); // Customer success stories
@@ -225,7 +224,6 @@ if (!isSupabaseConfigured) {
                               <Route path="scenarios" element={<ScenarioTesting />} />
                               <Route path="experiments" element={<ExperimentTracking />} />
                               <Route path="marketplace" element={<ModelMarketplace />} />
-                              <Route path="skills" element={<SkillsHub />} />
                               
                               {/* User Account & Settings */}
                               <Route path="profile" element={<UserProfile />} />
