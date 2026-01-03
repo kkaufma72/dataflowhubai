@@ -102,10 +102,16 @@ async def get_metrics_stats():
     - Flush count
     """
     if not timescaledb_engine:
-        raise HTTPException(
-            status_code=503, 
-            detail="Metrics unavailable (TimescaleDB not configured)"
-        )
+        # Return empty stats when TimescaleDB not configured
+        return {
+            "buffer_sizes": {},
+            "received": 0,
+            "flushed": 0,
+            "dropped": 0,
+            "flush_count": 0,
+            "running": False,
+            "message": "TimescaleDB not configured"
+        }
     batcher = get_batcher()
     return batcher.get_stats()
 
@@ -118,10 +124,17 @@ async def force_flush():
     Useful for testing or ensuring metrics are written before shutdown.
     """
     if not timescaledb_engine:
-        raise HTTPException(
-            status_code=503, 
-            detail="Metrics unavailable (TimescaleDB not configured)"
-        )
+        return {
+            "message": "Flush skipped (TimescaleDB not configured)",
+            "stats": {
+                "buffer_sizes": {},
+                "received": 0,
+                "flushed": 0,
+                "dropped": 0,
+                "flush_count": 0,
+                "running": False
+            }
+        }
     batcher = get_batcher()
     await batcher.flush_all()
     return {"message": "Flushed all metric buffers", "stats": batcher.get_stats()}
@@ -137,10 +150,10 @@ async def ingest_single_metric(metric: MetricPoint):
     This endpoint exists for backward compatibility.
     """
     if not timescaledb_engine:
-        raise HTTPException(
-            status_code=503, 
-            detail="Metrics ingestion unavailable (TimescaleDB not configured)"
-        )
+        return {
+            "message": "Metric received (TimescaleDB not configured - metric not stored)",
+            "stored": False
+        }
     
     batcher = get_batcher()
     
