@@ -7,6 +7,9 @@ import { useAuth } from '../components/auth/AuthProvider';
 import { PageHeader } from '../components/ui/PageHeader';
 import Card from '../components/common/Card';
 
+// API base URL - configurable for production deployment
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 type DriftAnalyzeResponse = {
   model_id: string;
   created_at: string;
@@ -147,7 +150,7 @@ const ModelOps: React.FC = () => {
 
   const createTestModel = useCallback(async () => {
     try {
-      const res = await fetch('/api/modelops/dev/models', {
+      const res = await fetch(`${API_BASE_URL}/api/modelops/dev/models`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({ name: 'Test Model', model_type: 'demo', status: 'trained' })
@@ -250,7 +253,7 @@ const ModelOps: React.FC = () => {
   const loadIncidents = useCallback(async () => {
     setIsLoadingIncidents(true);
     try {
-      const res = await fetch('/api/modelops/incidents?status=open', {
+      const res = await fetch(`${API_BASE_URL}/api/modelops/incidents?status=open`, {
         method: 'GET',
         headers: authHeaders
       });
@@ -276,7 +279,7 @@ const ModelOps: React.FC = () => {
 
       setRcaLoading((prev) => ({ ...prev, [incidentId]: true }));
       try {
-        const res = await fetch(`/api/modelops/incidents/${encodeURIComponent(incidentId)}/rca`, {
+        const res = await fetch(`${API_BASE_URL}/api/modelops/incidents/${encodeURIComponent(incidentId)}/rca`, {
           method: 'GET',
           headers: authHeaders
         });
@@ -304,7 +307,7 @@ const ModelOps: React.FC = () => {
         return;
       }
 
-      const res = await fetch('/api/knowledge/lineage/dev/seed', {
+      const res = await fetch(`${API_BASE_URL}/api/knowledge/lineage/dev/seed`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({ feature })
@@ -324,7 +327,7 @@ const ModelOps: React.FC = () => {
 
       setAutoResolveLoading((prev) => ({ ...prev, [incidentId]: true }));
       try {
-        const res = await fetch(`/api/modelops/incidents/${encodeURIComponent(incidentId)}/autoresolve-check`, {
+        const res = await fetch(`${API_BASE_URL}/api/modelops/incidents/${encodeURIComponent(incidentId)}/autoresolve-check`, {
           method: 'POST',
           headers: authHeaders
         });
@@ -512,7 +515,7 @@ const ModelOps: React.FC = () => {
       const reference_stats = await parseJsonOrThrow(referenceStatsText, 'reference_stats');
       const current_stats = await parseJsonOrThrow(currentStatsText, 'current_stats');
 
-      const res = await fetch(`/api/modelops/models/${encodeURIComponent(modelId)}/drift/analyze`, {
+      const res = await fetch(`${API_BASE_URL}/api/modelops/models/${encodeURIComponent(modelId)}/drift/analyze`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({ reference_stats, current_stats, context: {} })
@@ -556,7 +559,7 @@ const ModelOps: React.FC = () => {
 
     setIsDeploying(true);
     try {
-      const res = await fetch(`/api/deploy/models/${encodeURIComponent(modelId)}/endpoint-info`, {
+      const res = await fetch(`${API_BASE_URL}/api/deploy/models/${encodeURIComponent(modelId)}/endpoint-info`, {
         method: 'GET',
         headers: authHeaders
       });
@@ -587,7 +590,7 @@ const ModelOps: React.FC = () => {
       const reference_stats = await parseJsonOrThrow(referenceStatsText, 'reference_stats');
       const current_stats = await parseJsonOrThrow(currentStatsText, 'current_stats');
 
-      const res = await fetch(`/api/modelops/models/${encodeURIComponent(modelId)}/autopilot/run`, {
+      const res = await fetch(`${API_BASE_URL}/api/modelops/models/${encodeURIComponent(modelId)}/autopilot/run`, {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({ reference_stats, current_stats, context: {}, simulate: true })

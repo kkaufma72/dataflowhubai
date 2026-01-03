@@ -95,22 +95,41 @@ For more details on testing procedures and requirements, see [TESTING.md](./TEST
 
 ### Frontend Deployment
 
-The application can be deployed to Netlify:
+The application can be deployed to Netlify or Vercel:
 
+#### Netlify
 1. Connect your GitHub repository to Netlify
 2. Configure the build settings:
    - Build command: `npm run build`
    - Publish directory: `dist`
-3. Set up environment variables in Netlify settings
+3. Set up environment variables in Netlify settings:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+   - `VITE_API_BASE_URL`: (Optional) Your FastAPI backend URL if not using proxy
+   - See `.env.example` for all required variables
+4. Update `netlify.toml`: Replace `https://your-backend-api-url.com` with your actual backend URL
+
+#### Vercel
+1. Connect your GitHub repository to Vercel
+2. Configure build settings (auto-detected for Vite)
+3. Set up environment variables in Vercel settings
+4. Update `vercel.json`: Replace `https://your-backend-api-url.com` with your actual backend URL
+
+**Important**: See [PRODUCTION_API_SETUP.md](./PRODUCTION_API_SETUP.md) for detailed API configuration to avoid 405 errors.
 
 ### Backend Deployment
 
-The backend is managed through Supabase:
+The FastAPI backend can be deployed to:
+- Docker containers (recommended)
+- Cloud platforms (AWS, GCP, Azure)
+- Heroku, Railway, or similar PaaS
 
-1. Create a production Supabase project
-2. Run the migrations
-3. Deploy the Edge Functions
-4. Update the environment variables in your frontend deployment
+Steps:
+1. Set up PostgreSQL database (or use Supabase)
+2. Configure environment variables (see `backend/.env.example`)
+3. Deploy using Docker: `docker-compose up -d backend`
+4. Run migrations if needed
+5. Ensure CORS is configured to allow your frontend domain
 
 ## Contributing
 
