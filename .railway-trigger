@@ -1,0 +1,2 @@
+# This file exists to trigger a Railway redeploy
+# Update timestamp: 2026-01-03 - Force redeploy with MinIO/Redis/Neo4j graceful fallback
