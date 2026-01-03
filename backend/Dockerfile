@@ -1,5 +1,9 @@
-# FastAPI Backend Dockerfile
+# FastAPI Backend Dockerfile - Railway Compatible
+# Version: 1.0.1 - Optional services (MinIO/Redis/Neo4j/TimescaleDB)
 FROM python:3.11-slim
+
+# Build argument to bust cache
+ARG CACHEBUST=1
 
 WORKDIR /app
 
