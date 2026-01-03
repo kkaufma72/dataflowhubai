@@ -1,4 +1,62 @@
-# Force fresh builds
+# Build artifacts
 .vercel
 dist
 node_modules/.vite
+
+# Backend (deployed separately on Railway)
+backend/
+api/
+
+# Docker and local development
+docker-compose.yml
+Dockerfile
+*.db
+*.sql
+venv/
+.venv/
+__pycache__/
+
+# Development files
+.env.local
+.env.development
+coverage/
+cypress/
+.bolt/
+.cursor/
+.idx/
+
+# Large dependencies
+node_modules/tensorflow/
+node_modules/@tensorflow/
+node_modules/sharp/
+node_modules/canvas/
+
+# Documentation (not needed for build)
+*.md
+!README.md
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+test-*.py
+test-*.js
+
+# Scripts
+scripts/
+celery_status.sh
+setup_*.sh
+restart.sh
+
+# Monitoring configs
+prometheus.yml
+grafana-provisioning/
+
+# Local database files
+warehouse-init.sql
+local-db-init.sql
+NEO4J_TEST_DATA.cypher
+
+# Marketing assets (if large)
+marketing/
