@@ -14,8 +14,10 @@ JWT_SECRET_KEY=c9818af2-89cc-4315-a425-9cc1672b2a8d
 JWT_ALGORITHM=HS256
 
 # === Application Settings ===
-ENVIRONMENT=production
-DEBUG=false
+# IMPORTANT: Use DEBUG=true for Railway to enable auto-table creation
+# Railway/PaaS deployments should use DEBUG=true to allow schema bootstrapping
+ENVIRONMENT=railway
+DEBUG=true
 LOG_LEVEL=INFO
 
 # === OPTIONAL: Redis for Caching ===

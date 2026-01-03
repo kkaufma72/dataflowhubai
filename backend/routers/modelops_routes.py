@@ -232,7 +232,8 @@ async def _ensure_modelops_tables(db: AsyncSession) -> None:
     if not missing:
         return
 
-    # In production, do not auto-migrate; force an explicit migration.
+    # In strict production (DEBUG=False + ENVIRONMENT=production), do not auto-migrate
+    # Railway and similar platforms typically use DEBUG=True, so allow auto-creation there
     if (not settings.DEBUG) and settings.ENVIRONMENT.lower() == "production":
         raise HTTPException(
             status_code=503,
@@ -243,7 +244,7 @@ async def _ensure_modelops_tables(db: AsyncSession) -> None:
             ),
         )
 
-    # Bootstrap schema (idempotent)
+    # Bootstrap schema (idempotent) - safe in dev and Railway deployments
         try:
                 await db.execute(
                         text(
@@ -368,7 +369,7 @@ def _root_cause_narrative_from_stats(
 async def incident_root_cause_analysis(
     incident_id: UUID,
     db: AsyncSession = Depends(get_postgres_session),
-    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    neo4j_driver: Optional[AsyncDriver] = Depends(get_neo4j_driver),
     current_user: User = Depends(get_current_user),
 ) -> IncidentRCAResponse:
     """Lineage-based RCA for an incident.
@@ -447,17 +448,8 @@ async def incident_root_cause_analysis(
         )
 
     # Neo4j lineage RCA query
-    try:
-        rca = await feature_lineage_rca(
-            neo4j_driver=neo4j_driver,
-            user_id=str(current_user.id),
-            feature_name=top_feature,
-        )
-    except Exception as exc:
-        if settings.DEBUG:
-            warnings.append(f"Neo4j lineage lookup failed: {exc}")
-        else:
-            warnings.append("Neo4j lineage lookup failed")
+    if neo4j_driver is None:
+        warnings.append("Neo4j not available (knowledge graph disabled)")
         rca = {
             "lineage_found": False,
             "feature": top_feature,
@@ -467,6 +459,27 @@ async def incident_root_cause_analysis(
             "filters": [],
             "upstream_columns": [],
         }
+    else:
+        try:
+            rca = await feature_lineage_rca(
+                neo4j_driver=neo4j_driver,
+                user_id=str(current_user.id),
+                feature_name=top_feature,
+            )
+        except Exception as exc:
+            if settings.DEBUG:
+                warnings.append(f"Neo4j lineage lookup failed: {exc}")
+            else:
+                warnings.append("Neo4j lineage lookup failed")
+            rca = {
+                "lineage_found": False,
+                "feature": top_feature,
+                "transformation_step": {},
+                "dataset": {},
+                "dataset_version": {},
+                "filters": [],
+                "upstream_columns": [],
+            }
 
     return IncidentRCAResponse(
         incident_id=str(incident_id),
@@ -856,7 +869,7 @@ async def run_autopilot_demo(
     model_id: UUID,
     request: AutopilotRunRequest,
     db: AsyncSession = Depends(get_postgres_session),
-    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    neo4j_driver: Optional[AsyncDriver] = Depends(get_neo4j_driver),
     current_user: User = Depends(get_current_user),
 ) -> AutopilotRunResponse:
     """Run the full Autopilot demo sequence for recruiters.
@@ -957,28 +970,31 @@ async def run_autopilot_demo(
     top_feature = _extract_top_feature_from_drift_report(drift_report) or "income_bucket"
 
     if incident:
-        try:
-            lineage = await feature_lineage_rca(
-                neo4j_driver=neo4j_driver,
-                user_id=str(current_user.id),
-                feature_name=str(top_feature),
-            )
-            rca_payload = IncidentRCAResponse(
-                incident_id=incident.incident_id,
-                feature=lineage.get("feature"),
-                lineage_found=bool(lineage.get("lineage_found", False)),
-                transformation_step=lineage.get("transformation_step") or {},
-                dataset=lineage.get("dataset") or {},
-                dataset_version=lineage.get("dataset_version") or {},
-                filters=lineage.get("filters") or [],
-                upstream_columns=lineage.get("upstream_columns") or [],
-                warnings=[],
-            )
-        except Exception as exc:
-            if settings.DEBUG:
-                warnings.append(f"Neo4j lineage lookup failed: {exc}")
-            else:
-                warnings.append("Neo4j lineage lookup failed")
+        if neo4j_driver is None:
+            warnings.append("Neo4j not available (knowledge graph disabled)")
+        else:
+            try:
+                lineage = await feature_lineage_rca(
+                    neo4j_driver=neo4j_driver,
+                    user_id=str(current_user.id),
+                    feature_name=str(top_feature),
+                )
+                rca_payload = IncidentRCAResponse(
+                    incident_id=incident.incident_id,
+                    feature=lineage.get("feature"),
+                    lineage_found=bool(lineage.get("lineage_found", False)),
+                    transformation_step=lineage.get("transformation_step") or {},
+                    dataset=lineage.get("dataset") or {},
+                    dataset_version=lineage.get("dataset_version") or {},
+                    filters=lineage.get("filters") or [],
+                    upstream_columns=lineage.get("upstream_columns") or [],
+                    warnings=[],
+                )
+            except Exception as exc:
+                if settings.DEBUG:
+                    warnings.append(f"Neo4j lineage lookup failed: {exc}")
+                else:
+                    warnings.append("Neo4j lineage lookup failed)")
 
     # "Retrain" (mock): create a new model row as the new version.
     retrained_model_id: Optional[str] = None
