@@ -1,9 +1,9 @@
 # FastAPI Backend Dockerfile - Railway Compatible
-# Version: 1.0.1 - Optional services (MinIO/Redis/Neo4j/TimescaleDB)
+# Version: 1.0.2 - Force rebuild Jan 3 2026
 FROM python:3.11-slim
 
-# Build argument to bust cache
-ARG CACHEBUST=1
+# FORCE REBUILD - Change this number to bust Railway cache: 2026010301
+ARG REBUILD_TRIGGER=2026010301
 
 WORKDIR /app
 
