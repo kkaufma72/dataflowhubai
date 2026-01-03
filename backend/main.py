@@ -83,12 +83,17 @@ def create_application() -> FastAPI:
     )
 
     # CORS Configuration
+    # Use configured origins or allow all in debug mode
+    cors_origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"]
+    allow_credentials = len(cors_origins) > 0 and "*" not in cors_origins
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Allow all origins for development
-        allow_credentials=False,  # Must be False when using allow_origins=["*"]
+        allow_origins=cors_origins,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     # Compression

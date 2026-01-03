@@ -20,6 +20,11 @@ ENVIRONMENT=railway
 DEBUG=true
 LOG_LEVEL=INFO
 
+# === REQUIRED: CORS Origins ===
+# CRITICAL: Add your Vercel frontend URL here to fix CORS errors
+# Example: CORS_ORIGINS=["https://your-app.vercel.app","http://localhost:5173"]
+CORS_ORIGINS=["https://your-vercel-app.vercel.app","http://localhost:5173"]
+
 # === OPTIONAL: Redis for Caching ===
 # Recommended for production performance
 # Add Railway Redis addon or use external Redis service

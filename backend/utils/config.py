@@ -4,8 +4,9 @@ Configuration management using Pydantic Settings.
 
 from functools import lru_cache
 from typing import List
+import json
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,8 +37,26 @@ class Settings(BaseSettings):
             "http://localhost:3002",
             "http://localhost:5173",
             "https://dataflowhub.ai",
+            # In production, set via CORS_ORIGINS env var:
+            # CORS_ORIGINS=["https://your-app.vercel.app"]
         ]
     )
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from string or list."""
+        if isinstance(v, str):
+            # Try parsing as JSON array first
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except (json.JSONDecodeError, ValueError):
+                pass
+            # Fallback to comma-separated values
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # PostgreSQL - Main Database
     # NOTE: docker-compose sets DATABASE_URL; support both styles.
