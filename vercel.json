@@ -1,16 +1,7 @@
 {
   "buildCommand": "npm run build",
   "framework": "vite",
-  "functions": {
-    "api/index.py": {
-      "runtime": "python3.9"
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
