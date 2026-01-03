@@ -43,8 +43,8 @@ node_modules/canvas/
 test-*.py
 test-*.js
 
-# Scripts
-scripts/
+# Scripts (root level only, not src/scripts)
+/scripts/
 celery_status.sh
 setup_*.sh
 restart.sh
