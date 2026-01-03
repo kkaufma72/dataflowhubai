@@ -47,42 +47,73 @@ async def initialize_database_connections() -> None:
         expire_on_commit=False,
     )
 
+    # Check if we're in a cloud environment (skip localhost services)
+    is_cloud_env = settings.ENVIRONMENT.lower() in ("production", "railway", "staging")
+
     # TimescaleDB (optional - may not be available in all environments)
-    try:
-        timescaledb_engine = create_async_engine(
-            settings.timescaledb_url,
-            echo=settings.DEBUG,
-            pool_size=20,
-            max_overflow=10,
-            pool_pre_ping=True,
-        )
-        TimescaleSessionLocal = async_sessionmaker(
-            timescaledb_engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-        )
-        logger.info("✓ TimescaleDB connection established")
-    except Exception as e:
-        logger.warning(f"TimescaleDB connection failed (optional service): {e}")
+    skip_timescaledb = (
+        is_cloud_env and 
+        (settings.TIMESCALEDB_HOST == "localhost" or settings.TIMESCALEDB_HOST == "timescaledb")
+    )
+    
+    if skip_timescaledb:
+        logger.info("⚠ TimescaleDB disabled (localhost endpoint in cloud environment)")
         timescaledb_engine = None
         TimescaleSessionLocal = None
+    else:
+        try:
+            timescaledb_engine = create_async_engine(
+                settings.timescaledb_url,
+                echo=settings.DEBUG,
+                pool_size=20,
+                max_overflow=10,
+                pool_pre_ping=True,
+            )
+            TimescaleSessionLocal = async_sessionmaker(
+                timescaledb_engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+            )
+            logger.info("✓ TimescaleDB connection established")
+        except Exception as e:
+            logger.warning(f"TimescaleDB connection failed (optional service): {e}")
+            timescaledb_engine = None
+            TimescaleSessionLocal = None
 
     # Redis (optional for caching, but recommended)
-    try:
-        redis_client = await aioredis.from_url(
-            settings.redis_url,
-            encoding="utf-8",
-            decode_responses=True,
-            max_connections=settings.REDIS_MAX_CONNECTIONS,
-        )
-        logger.info("✓ Redis connection established")
-    except Exception as e:
-        logger.warning(f"Redis connection failed (optional service): {e}")
+    skip_redis = (
+        is_cloud_env and 
+        settings.REDIS_HOST in ("localhost", "redis")
+    )
+    
+    if skip_redis:
+        logger.info("⚠ Redis disabled (localhost endpoint in cloud environment)")
         redis_client = None
+    else:
+        try:
+            redis_client = await aioredis.from_url(
+                settings.redis_url,
+                encoding="utf-8",
+                decode_responses=True,
+                max_connections=settings.REDIS_MAX_CONNECTIONS,
+            )
+            logger.info("✓ Redis connection established")
+        except Exception as e:
+            logger.warning(f"Redis connection failed (optional service): {e}")
+            redis_client = None
 
     # Neo4j (optional - may not be available in all environments)
-    try:
-        neo4j_driver = AsyncGraphDatabase.driver(
+    skip_neo4j = (
+        is_cloud_env and 
+        ("localhost" in settings.NEO4J_URI or "neo4j://" in settings.NEO4J_URI)
+    )
+    
+    if skip_neo4j:
+        logger.info("⚠ Neo4j disabled (localhost endpoint in cloud environment)")
+        neo4j_driver = None
+    else:
+        try:
+            neo4j_driver = AsyncGraphDatabase.driver(
             settings.NEO4J_URI,
             auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
         )
@@ -92,20 +123,29 @@ async def initialize_database_connections() -> None:
         neo4j_driver = None
 
     # MinIO (optional - may not be available in all environments)
-    try:
-        minio_client = Minio(
-            settings.MINIO_ENDPOINT,
-            access_key=settings.MINIO_ACCESS_KEY,
-            secret_key=settings.MINIO_SECRET_KEY,
-            secure=settings.MINIO_SECURE,
-        )
-        # Ensure bucket exists
-        if not minio_client.bucket_exists(settings.MINIO_BUCKET):
-            minio_client.make_bucket(settings.MINIO_BUCKET)
-        logger.info("✓ MinIO connection established")
-    except Exception as e:
-        logger.warning(f"MinIO connection failed (optional service): {e}")
+    skip_minio = (
+        is_cloud_env and 
+        settings.MINIO_ENDPOINT.startswith("localhost")
+    )
+    
+    if skip_minio:
+        logger.info("⚠ MinIO disabled (localhost endpoint in cloud environment)")
         minio_client = None
+    else:
+        try:
+            minio_client = Minio(
+                settings.MINIO_ENDPOINT,
+                access_key=settings.MINIO_ACCESS_KEY,
+                secret_key=settings.MINIO_SECRET_KEY,
+                secure=settings.MINIO_SECURE,
+            )
+            # Test connection and ensure bucket exists
+            if not minio_client.bucket_exists(settings.MINIO_BUCKET):
+                minio_client.make_bucket(settings.MINIO_BUCKET)
+            logger.info("✓ MinIO connection established")
+        except Exception as e:
+            logger.warning(f"MinIO connection failed (optional service): {e}")
+            minio_client = None
 
 async def close_database_connections() -> None:
     """Close all database connections on application shutdown."""
