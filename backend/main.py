@@ -83,18 +83,24 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # CORS Configuration
-    # Use configured origins or allow all in debug mode
-    cors_origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"]
-    allow_credentials = len(cors_origins) > 0 and "*" not in cors_origins
+    # CORS Configuration - Allow Vercel and local development
+    # In production, Railway uses CORS_ORIGINS from environment
+    cors_origins = settings.CORS_ORIGINS if settings.CORS_ORIGINS else [
+        "http://localhost:3002",
+        "http://localhost:5173",
+        "https://dataflowhub.vercel.app",
+        "https://*.vercel.app",  # All Vercel preview deployments
+        "*"  # Allow all for now (restrict in production)
+    ]
     
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_credentials=allow_credentials,
-        allow_methods=["*"],
+        allow_origins=["*"],  # Allow all origins for Railway/Vercel
+        allow_credentials=False,  # Must be False when allow_origins=["*"]
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["*"],
         expose_headers=["*"],
+        max_age=3600,  # Cache preflight requests for 1 hour
     )
 
     # Compression
