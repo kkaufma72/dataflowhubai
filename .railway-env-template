@@ -2,7 +2,16 @@
 # Copy these to your Railway project's environment variables
 
 # === REQUIRED: Supabase Database ===
-DATABASE_URL=postgresql://postgres.bcobpxgktvgfsffdsiog:Kbk7130774321!!@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+# Use the URL-encoded password with %21%21 instead of !!
+DATABASE_URL=postgresql://postgres.bcobpxgktvgfsffdsiog:Kbk7130774321%21%21@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+
+# === OPTIONAL: TimescaleDB (use same Supabase database) ===
+# Just point to the same database - TimescaleDB extension can be enabled in Supabase
+TIMESCALEDB_HOST=aws-0-us-east-1.pooler.supabase.com
+TIMESCALEDB_PORT=6543
+TIMESCALEDB_USER=postgres.bcobpxgktvgfsffdsiog
+TIMESCALEDB_PASSWORD=Kbk7130774321!!
+TIMESCALEDB_DB=postgres
 
 # === REQUIRED: Supabase Authentication ===
 SUPABASE_URL=https://bcobpxgktvgfsffdsiog.supabase.co

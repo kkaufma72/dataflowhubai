@@ -167,13 +167,13 @@ async def get_postgres_session() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def get_timescaledb_session() -> AsyncGenerator[AsyncSession, None]:
-    """Dependency to get TimescaleDB database session."""
+async def get_timescaledb_session() -> AsyncGenerator[AsyncSession | None, None]:
+    """Dependency to get TimescaleDB database session (optional)."""
     if TimescaleSessionLocal is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="TimescaleDB not initialized. Backend startup may have failed.",
-        )
+        logger.warning("TimescaleDB session requested but service not available")
+        yield None
+        return
+    
     async with TimescaleSessionLocal() as session:
         try:
             yield session
