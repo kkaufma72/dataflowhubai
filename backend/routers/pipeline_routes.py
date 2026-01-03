@@ -166,6 +166,12 @@ async def execute_pipeline(
     Returns:
         Execution task information
     """
+    if redis_client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Background tasks unavailable (Redis not configured). Please configure Redis for pipeline execution."
+        )
+    
     task_service = BackgroundTaskService(redis_client)
     
     task_id = await task_service.enqueue_task(
@@ -206,6 +212,14 @@ async def get_execution_status(
     Returns:
         Execution status and results
     """
+    if redis_client is None:
+        return {
+            "execution_id": execution_id,
+            "pipeline_id": pipeline_id,
+            "status": "unavailable",
+            "message": "Background tasks unavailable (Redis not configured)"
+        }
+    
     task_service = BackgroundTaskService(redis_client)
     task_result = await task_service.get_task_status(execution_id)
 
