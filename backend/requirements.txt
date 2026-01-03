@@ -1,4 +1,5 @@
 # FastAPI and Core Dependencies
+# Updated: 2026-01-03 - Railway deployment with optional services
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 pydantic==2.9.2
