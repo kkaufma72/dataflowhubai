@@ -1,0 +1,62 @@
+# Railway Environment Variables
+# Copy these to your Railway project's environment variables
+
+# === REQUIRED: Supabase Database ===
+DATABASE_URL=postgresql://postgres.bcobpxgktvgfsffdsiog:Kbk7130774321!!@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+
+# === REQUIRED: Supabase Authentication ===
+SUPABASE_URL=https://bcobpxgktvgfsffdsiog.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjb2JweGdrdHZnZnNmZmRzaW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4NDE1NDQsImV4cCI6MjA3NjQxNzU0NH0.xI0sbMYLa7ln-XcbESHr4Y9tLNzg_LLkZAySj0O5a04
+SUPABASE_JWT_SECRET=c9818af2-89cc-4315-a425-9cc1672b2a8d
+
+# === REQUIRED: JWT Configuration ===
+JWT_SECRET_KEY=c9818af2-89cc-4315-a425-9cc1672b2a8d
+JWT_ALGORITHM=HS256
+
+# === Application Settings ===
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=INFO
+
+# === OPTIONAL: Redis for Caching ===
+# Recommended for production performance
+# Add Railway Redis addon or use external Redis service
+# REDIS_URL=redis://default:[password]@[host]:[port]
+
+# === OPTIONAL: Additional Services ===
+# These are NOT required - backend will work without them
+# MINIO_ENDPOINT=[your-s3-endpoint]
+# MINIO_ACCESS_KEY=[access-key]
+# MINIO_SECRET_KEY=[secret-key]
+# MINIO_SECURE=true
+
+# NEO4J_URI=bolt://[host]:[port]
+# NEO4J_USER=[user]
+# NEO4J_PASSWORD=[password]
+
+# TIMESCALEDB_HOST=[host]
+# TIMESCALEDB_PORT=5432
+# TIMESCALEDB_USER=[user]
+# TIMESCALEDB_PASSWORD=[password]
+# TIMESCALEDB_DB=[database]
+
+# === How to Deploy ===
+# 1. Go to Railway dashboard: https://railway.app
+# 2. Create new project from GitHub repo: kkaufma72/dataflowhubai
+# 3. Select the backend service
+# 4. Add these environment variables (Variables tab)
+# 5. Replace [YOUR_PASSWORD], [YOUR_ANON_PUBLIC_KEY], and [YOUR_JWT_SECRET]
+# 6. Deploy!
+
+# === Where to Find Your Credentials ===
+# Supabase Dashboard: https://supabase.com/dashboard/project/bcobpxgktvgfsffdsiog
+# 
+# Database Password:
+#   Settings → Database → Connection string → URI tab
+#   Extract password from the connection string
+#
+# API Keys & JWT Secret:
+#   Settings → API
+#   - Copy "Project URL" → SUPABASE_URL
+#   - Copy "anon public" key → SUPABASE_KEY
+#   - Copy "JWT Secret" → SUPABASE_JWT_SECRET and JWT_SECRET_KEY
