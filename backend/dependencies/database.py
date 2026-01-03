@@ -47,17 +47,13 @@ async def initialize_database_connections() -> None:
         expire_on_commit=False,
     )
 
-    # Check if we're in a cloud environment (skip localhost services)
-    is_cloud_env = settings.ENVIRONMENT.lower() in ("production", "railway", "staging")
-
     # TimescaleDB (optional - may not be available in all environments)
-    skip_timescaledb = (
-        is_cloud_env and 
-        (settings.TIMESCALEDB_HOST == "localhost" or settings.TIMESCALEDB_HOST == "timescaledb")
-    )
+    # Skip if pointing to localhost/docker hostnames (unless in local DEBUG mode)
+    is_localhost_timescale = settings.TIMESCALEDB_HOST in ("localhost", "timescaledb", "127.0.0.1")
     
-    if skip_timescaledb:
-        logger.info("⚠ TimescaleDB disabled (localhost endpoint in cloud environment)")
+    if is_localhost_timescale:
+        # In production/Railway, skip localhost services entirely
+        logger.info("⚠ TimescaleDB disabled (localhost endpoint not available)")
         timescaledb_engine = None
         TimescaleSessionLocal = None
     else:
@@ -81,13 +77,10 @@ async def initialize_database_connections() -> None:
             TimescaleSessionLocal = None
 
     # Redis (optional for caching, but recommended)
-    skip_redis = (
-        is_cloud_env and 
-        settings.REDIS_HOST in ("localhost", "redis")
-    )
+    is_localhost_redis = settings.REDIS_HOST in ("localhost", "redis", "127.0.0.1")
     
-    if skip_redis:
-        logger.info("⚠ Redis disabled (localhost endpoint in cloud environment)")
+    if is_localhost_redis:
+        logger.info("⚠ Redis disabled (localhost endpoint not available)")
         redis_client = None
     else:
         try:
@@ -103,33 +96,27 @@ async def initialize_database_connections() -> None:
             redis_client = None
 
     # Neo4j (optional - may not be available in all environments)
-    skip_neo4j = (
-        is_cloud_env and 
-        ("localhost" in settings.NEO4J_URI or "neo4j://" in settings.NEO4J_URI)
-    )
+    is_localhost_neo4j = "localhost" in settings.NEO4J_URI or "127.0.0.1" in settings.NEO4J_URI
     
-    if skip_neo4j:
-        logger.info("⚠ Neo4j disabled (localhost endpoint in cloud environment)")
+    if is_localhost_neo4j:
+        logger.info("⚠ Neo4j disabled (localhost endpoint not available)")
         neo4j_driver = None
     else:
         try:
             neo4j_driver = AsyncGraphDatabase.driver(
-            settings.NEO4J_URI,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
-        )
-        logger.info("✓ Neo4j connection established")
-    except Exception as e:
-        logger.warning(f"Neo4j connection failed (optional service): {e}")
-        neo4j_driver = None
+                settings.NEO4J_URI,
+                auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+            )
+            logger.info("✓ Neo4j connection established")
+        except Exception as e:
+            logger.warning(f"Neo4j connection failed (optional service): {e}")
+            neo4j_driver = None
 
     # MinIO (optional - may not be available in all environments)
-    skip_minio = (
-        is_cloud_env and 
-        settings.MINIO_ENDPOINT.startswith("localhost")
-    )
+    is_localhost_minio = settings.MINIO_ENDPOINT.startswith(("localhost", "127.0.0.1"))
     
-    if skip_minio:
-        logger.info("⚠ MinIO disabled (localhost endpoint in cloud environment)")
+    if is_localhost_minio:
+        logger.info("⚠ MinIO disabled (localhost endpoint not available)")
         minio_client = None
     else:
         try:
