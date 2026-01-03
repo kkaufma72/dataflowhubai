@@ -8,12 +8,12 @@
   NPM_FLAGS = "--no-audit --no-fund --silent"
   NODE_OPTIONS = "--max-old-space-size=4096 --max-semi-space-size=512 --no-warnings --inspect"
 
-# Proxy API requests to FastAPI backend
-[[redirects]]
-  from = "/api/*"
-  to = "https://your-backend-api-url.com/api/:splat"
-  status = 200
-  force = true
+# API proxy disabled - deploy backend separately and set VITE_API_BASE_URL
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-backend-api-url.com/api/:splat"
+#   status = 200
+#   force = true
 
 [[redirects]]
   from = "/*"
