@@ -93,6 +93,9 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose }) =>
           createdAt: createdProject.created_at
         });
         
+        // Dispatch event to notify Sidebar to reload projects
+        window.dispatchEvent(new CustomEvent('projectCreated'));
+        
         console.log('✅ All done!');
         toast.success('Project created successfully');
         

@@ -29,9 +29,16 @@ const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette }) => {
 
   // Listen for custom event from Sidebar
   React.useEffect(() => {
-    const handleOpenNewProjectModal = () => setShowNewProjectModal(true);
+    const handleOpenNewProjectModal = () => {
+      console.log('🔔 Navbar received openNewProjectModal event');
+      setShowNewProjectModal(true);
+    };
     window.addEventListener('openNewProjectModal', handleOpenNewProjectModal);
-    return () => window.removeEventListener('openNewProjectModal', handleOpenNewProjectModal);
+    console.log('✅ Navbar event listener registered');
+    return () => {
+      console.log('🔴 Navbar event listener removed');
+      window.removeEventListener('openNewProjectModal', handleOpenNewProjectModal);
+    };
   }, []);
 
   const handleSignOut = async () => {
