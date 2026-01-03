@@ -1,6 +1,7 @@
 """
 DataFlowHub AI - FastAPI Backend
 Enterprise AutoML Platform API
+Version: 1.0.1 - Railway Compatible (Optional Services)
 """
 
 from contextlib import asynccontextmanager
