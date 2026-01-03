@@ -8,6 +8,7 @@ from datetime import datetime
 import logging
 
 from lib.metrics_batcher import get_batcher
+from dependencies.database import timescaledb_engine
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,12 @@ async def ingest_metrics_batch(request: BatchMetricsRequest):
     response = httpx.post("http://localhost:8000/api/metrics/batch", json={"metrics": metrics})
     ```
     """
+    if not timescaledb_engine:
+        raise HTTPException(
+            status_code=503, 
+            detail="Metrics ingestion unavailable (TimescaleDB not configured)"
+        )
+    
     batcher = get_batcher()
     
     if not batcher.running:
@@ -94,6 +101,11 @@ async def get_metrics_stats():
     - Total received/flushed/dropped counts
     - Flush count
     """
+    if not timescaledb_engine:
+        raise HTTPException(
+            status_code=503, 
+            detail="Metrics unavailable (TimescaleDB not configured)"
+        )
     batcher = get_batcher()
     return batcher.get_stats()
 
@@ -105,6 +117,11 @@ async def force_flush():
     
     Useful for testing or ensuring metrics are written before shutdown.
     """
+    if not timescaledb_engine:
+        raise HTTPException(
+            status_code=503, 
+            detail="Metrics unavailable (TimescaleDB not configured)"
+        )
     batcher = get_batcher()
     await batcher.flush_all()
     return {"message": "Flushed all metric buffers", "stats": batcher.get_stats()}
@@ -119,6 +136,12 @@ async def ingest_single_metric(metric: MetricPoint):
     **Note:** Prefer `/batch` endpoint for better performance.
     This endpoint exists for backward compatibility.
     """
+    if not timescaledb_engine:
+        raise HTTPException(
+            status_code=503, 
+            detail="Metrics ingestion unavailable (TimescaleDB not configured)"
+        )
+    
     batcher = get_batcher()
     
     if not batcher.running:

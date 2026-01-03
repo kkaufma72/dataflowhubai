@@ -46,15 +46,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     
     await initialize_database_connections()
     
-    # Start metrics batcher
+    # Start metrics batcher (only if TimescaleDB is available)
     from lib.metrics_batcher import get_batcher
-    batcher = get_batcher()
-    await batcher.start()
+    from dependencies.database import timescaledb_engine
+    
+    if timescaledb_engine:
+        try:
+            batcher = get_batcher()
+            await batcher.start()
+            print("✓ Metrics batcher started")
+        except Exception as e:
+            print(f"⚠ Metrics batcher failed to start: {e}")
+            batcher = None
+    else:
+        print("⚠ Metrics batcher disabled (TimescaleDB not available)")
+        batcher = None
     
     yield
     
     # Shutdown
-    await batcher.stop()  # Flush remaining metrics
+    if batcher:
+        await batcher.stop()  # Flush remaining metrics
     await close_database_connections()
 
 
