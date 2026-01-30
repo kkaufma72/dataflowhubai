@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef, startTransition } from 'react';
 import SearchInput from '../components/common/SearchInput';
 import { useMLContext } from '../context/MLContext';
-import Card from '../components/common/Card';
 import DataConnector from '../components/data/DataConnector';
-import DatasetCard from '../components/data/DatasetCard';
-import ProjectSelectorModal from '../components/data/ProjectSelectorModal';
-import { Dataset, Project } from '../types';
-import { Database, Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, Loader, Search, X, SortAsc, SortDesc, Calendar, FileType, TrendingUp } from 'lucide-react';
+import { Dataset } from '../types';
+import { Upload, Sparkles, MessageSquare, ChevronLeft, ChevronRight, X, TrendingUp } from 'lucide-react';
 import Button from '../components/common/Button';
 import { useAuth } from '../components/auth/AuthProvider';
-import { useDatasetActions } from '../hooks/useDatasetActions';
 import toast from 'react-hot-toast';
 import { generateSyntheticDataset } from '../lib/syntheticDataGenerator';
 import FloatingAIAssistant from '../components/data/FloatingAIAssistant';
@@ -17,9 +13,18 @@ import DataEmptyState from '../components/data/DataEmptyState';
 import { generateEnhancedSampleDatasets } from '../lib/enhancedSampleData';
 import FinishSetupChecklist from '../components/onboarding/FinishSetupChecklist';
 import { useNavigate } from 'react-router-dom';
-import { EnhancedDataUploader } from '../components/data/EnhancedDataUploader';
 import DataUploader from '../components/data/DataUploader';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title as ChartTitle,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
 // Lazy load heavy components
 const DataProfiler = lazy(() => import('../components/data/DataProfiler'));
@@ -33,7 +38,6 @@ const FREDQuickInsights = lazy(() => import('../components/data/FREDQuickInsight
 
 // Import UX enhancement components
 import KeyboardShortcuts from '../components/common/KeyboardShortcuts';
-import FeatureTooltip from '../components/common/FeatureTooltip';
 
 // Loading fallback component
 const LoadingFallback: React.FC = () => (
@@ -58,6 +62,77 @@ const normalizePreviewRow = (
   return [row];
 };
 
+ChartJS.register(CategoryScale, LinearScale, BarElement, ChartTitle, Tooltip, Legend);
+
+const formatRelativeTime = (value?: string | Date | number) => {
+  if (!value) return 'unknown';
+  const target = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  if (!Number.isFinite(target)) return 'unknown';
+  const diffMs = Date.now() - target;
+  const seconds = Math.max(0, Math.floor(diffMs / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
+
+const inferColumnTypeLabel = (value: any) => {
+  if (value === null || value === undefined || value === '') return 'Unknown';
+  if (!Number.isNaN(Number(value))) return 'Numeric';
+  const asDate = Date.parse(value);
+  if (!Number.isNaN(asDate)) return 'Datetime';
+  return 'Text';
+};
+
+const safeNumber = (value: any) => {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+
+const buildHistogram = (values: number[], bins = 12) => {
+  if (!values.length) return { labels: [] as string[], counts: [] as number[] };
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return { labels: [] as string[], counts: [] as number[] };
+  if (min === max) {
+    return { labels: [`${min}`], counts: [values.length] };
+  }
+  const step = (max - min) / bins;
+  const counts = Array.from({ length: bins }, () => 0);
+  for (const v of values) {
+    const idx = Math.min(bins - 1, Math.max(0, Math.floor((v - min) / step)));
+    counts[idx] += 1;
+  }
+  const labels = counts.map((_, i) => {
+    const a = min + step * i;
+    const b = min + step * (i + 1);
+    return `${a.toFixed(2)}–${b.toFixed(2)}`;
+  });
+  return { labels, counts };
+};
+
+const buildTopCategories = (values: string[], topK = 8) => {
+  const countsMap = new Map<string, number>();
+  for (const v of values) {
+    const key = v.trim() === '' ? '(empty)' : v;
+    countsMap.set(key, (countsMap.get(key) ?? 0) + 1);
+  }
+  const sorted = Array.from(countsMap.entries()).sort((a, b) => b[1] - a[1]);
+  const top = sorted.slice(0, topK);
+  const rest = sorted.slice(topK);
+  const restCount = rest.reduce((sum, [, c]) => sum + c, 0);
+  const labels = top.map(([k]) => k);
+  const counts = top.map(([, c]) => c);
+  if (restCount > 0) {
+    labels.push('Other');
+    counts.push(restCount);
+  }
+  return { labels, counts };
+};
+
 const SAMPLE_TOUR_STORAGE_KEY = 'dfh-sample-tour-dismissed';
 const SAMPLE_DATASET_IDS = new Set(generateEnhancedSampleDatasets().map(sample => sample.id));
 
@@ -70,10 +145,11 @@ type DatasetFilters = {
 const DataManagement: React.FC = () => {
   const { datasets, addDataset, currentProject, models } = useMLContext();
   const { user } = useAuth();
-  const { moveDatasetToProject, deleteDataset, archiveDataset } = useDatasetActions();
   const navigate = useNavigate();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(() => {
+    return localStorage.getItem('dfh-data-selected-dataset-id') || '';
+  });
   const [showUploader, setShowUploader] = useState(false);
   const [showConnector, setShowConnector] = useState(false);
   const [showGeneratorModal, setShowGeneratorModal] = useState(false);
@@ -88,10 +164,6 @@ const DataManagement: React.FC = () => {
   const [generatorType, setGeneratorType] = useState<'marketing' | 'sales' | 'customer'>('marketing');
   const [rowCount, setRowCount] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Move dataset state
-  const [showMoveModal, setShowMoveModal] = useState(false);
-  const [datasetToMove, setDatasetToMove] = useState<Dataset | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,6 +186,39 @@ const DataManagement: React.FC = () => {
   const [filters] = useState<DatasetFilters>({});
   const [hasProfiledData, setHasProfiledData] = useState(() => localStorage.getItem('dfh-setup-profiled') === 'true');
   const [showSampleTour, setShowSampleTour] = useState(false);
+
+  const selectedDataset = useMemo(() => {
+    if (!datasets.length) return null;
+    const explicit = datasets.find((d) => d.id === selectedDatasetId);
+    return explicit || datasets[0] || null;
+  }, [datasets, selectedDatasetId]);
+
+  useEffect(() => {
+    if (!datasets.length) return;
+    if (!selectedDatasetId) {
+      setSelectedDatasetId(datasets[0].id);
+      localStorage.setItem('dfh-data-selected-dataset-id', datasets[0].id);
+      return;
+    }
+    const stillExists = datasets.some((d) => d.id === selectedDatasetId);
+    if (!stillExists) {
+      setSelectedDatasetId(datasets[0].id);
+      localStorage.setItem('dfh-data-selected-dataset-id', datasets[0].id);
+    }
+  }, [datasets, selectedDatasetId]);
+
+  const selectDataset = useCallback((dataset: Dataset) => {
+    setSelectedDatasetId(dataset.id);
+    localStorage.setItem('dfh-data-selected-dataset-id', dataset.id);
+  }, []);
+
+  useEffect(() => {
+    const panel = localStorage.getItem('dfh-data-open-panel');
+    if (!panel) return;
+    localStorage.removeItem('dfh-data-open-panel');
+    if (panel === 'quality') setShowQuality(true);
+    if (panel === 'preview') setShowPreview(true);
+  }, []);
 
   // Save sort preferences to localStorage
   useEffect(() => {
@@ -238,7 +343,7 @@ const DataManagement: React.FC = () => {
       const newestDataset = datasets[0];
       
       if (newestDataset && newestDataset.id !== lastViewedId) {
-        setSelectedDataset(newestDataset);
+        selectDataset(newestDataset);
         setShowQuality(true);
         localStorage.setItem('lastViewedDatasetId', newestDataset.id);
       }
@@ -259,29 +364,14 @@ const DataManagement: React.FC = () => {
   }, [datasets, user]);
 
   // Memoized callback functions to prevent unnecessary re-renders
-  const handlePreview = useCallback((dataset: Dataset) => {
-    setSelectedDataset(dataset);
-    setShowPreview(true);
-  }, []);
-
-  const handleAnalyze = useCallback((dataset: Dataset) => {
-    setSelectedDataset(dataset);
-    setShowAnalysis(true);
-  }, []);
-
   const handleQualityCheck = useCallback((dataset: Dataset) => {
-    setSelectedDataset(dataset);
+    selectDataset(dataset);
     setShowQuality(true);
     if (!hasProfiledData) {
       localStorage.setItem('dfh-setup-profiled', 'true');
       setHasProfiledData(true);
     }
-  }, [hasProfiledData]);
-
-  const openChat = useCallback((dataset: Dataset) => {
-    setChatDataset(dataset);
-    setShowChat(true);
-  }, []);
+  }, [hasProfiledData, selectDataset]);
 
   const dismissSampleTour = useCallback(() => {
     localStorage.setItem(SAMPLE_TOUR_STORAGE_KEY, 'true');
@@ -306,7 +396,7 @@ const DataManagement: React.FC = () => {
     const sampleDataset = datasets.find(ds => SAMPLE_DATASET_IDS.has(ds.id)) || datasets[0];
     if (!sampleDataset) return;
 
-    setSelectedDataset(sampleDataset);
+    selectDataset(sampleDataset);
 
     if (action === 'profile') {
       setShowAnalysis(true);
@@ -317,33 +407,11 @@ const DataManagement: React.FC = () => {
     }
 
     dismissSampleTour();
-  }, [datasets, dismissSampleTour]);
-
-  const handleClosePreview = useCallback(() => {
-    setShowPreview(false);
-  }, []);
-
-  const handleCloseAnalysis = useCallback(() => {
-    setShowAnalysis(false);
-  }, []);
-
-  const handleCloseQuality = useCallback(() => {
-    setShowQuality(false);
-  }, []);
+  }, [datasets, dismissSampleTour, selectDataset]);
 
   const handleCloseChat = useCallback(() => {
     setShowChat(false);
     setChatDataset(null);
-  }, []);
-
-  const handleTransform = useCallback((dataset: Dataset) => {
-    setTransformDataset(dataset);
-    setShowTransformStudio(true);
-  }, []);
-
-  const handleCloseTransform = useCallback(() => {
-    setShowTransformStudio(false);
-    setTransformDataset(null);
   }, []);
 
   const handleSaveTransformedDataset = useCallback(async (transformed: Dataset) => {
@@ -357,59 +425,6 @@ const DataManagement: React.FC = () => {
       toast.error('Failed to save transformed dataset');
     }
   }, [addDataset]);
-
-  // Move dataset handlers
-  const handleMoveDataset = useCallback((dataset: Dataset) => {
-    setDatasetToMove(dataset);
-    setShowMoveModal(true);
-  }, []);
-
-  const handleConfirmMove = useCallback(async (targetProject: Project) => {
-    if (!datasetToMove || !user) return;
-    
-    const result = await moveDatasetToProject(
-      datasetToMove.id, 
-      targetProject.id, 
-      targetProject.name, 
-      user.id
-    );
-    
-    if (result.success) {
-      // Refresh datasets - in a real app you'd want to update the context
-      window.location.reload();
-    }
-    
-    setShowMoveModal(false);
-    setDatasetToMove(null);
-  }, [datasetToMove, user, moveDatasetToProject]);
-
-  const handleCloseMoveModal = useCallback(() => {
-    setShowMoveModal(false);
-    setDatasetToMove(null);
-  }, []);
-
-  // Delete and archive handlers
-  const handleDeleteDataset = useCallback(async (dataset: Dataset) => {
-    if (!user) return;
-    await deleteDataset(dataset, user.id);
-    // Refresh datasets - in a real app you'd want to update the context
-    window.location.reload();
-  }, [user, deleteDataset]);
-
-  const handleArchiveDataset = useCallback(async (dataset: Dataset) => {
-    if (!user) return;
-    await archiveDataset(dataset, user.id);
-    // Refresh datasets - in a real app you'd want to update the context  
-    window.location.reload();
-  }, [user, archiveDataset]);
-
-  const handleCloseUploader = useCallback(() => {
-    setShowUploader(false);
-  }, []);
-
-  const handleCloseConnector = useCallback(() => {
-    setShowConnector(false);
-  }, []);
 
   const handleChecklistConnect = useCallback(() => {
     setShowUploader(true);
@@ -429,7 +444,7 @@ const DataManagement: React.FC = () => {
   }, [navigate]);
 
   const handleChecklistDeploy = useCallback(() => {
-    navigate('/app/deployment');
+    navigate('/app/deploy');
   }, [navigate]);
 
   const handleGenerateSyntheticData = useCallback(async () => {
@@ -492,13 +507,125 @@ const DataManagement: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Memoize page numbers for pagination
-  const pageNumbers = useMemo(() => {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }, [totalPages]);
+  const previewColumns = selectedDataset?.preview_data?.columns || [];
+  const previewRows = selectedDataset?.preview_data?.rows || [];
+  const previewSampleSize = previewRows.length;
+  const hasPreviewData = previewColumns.length > 0 && previewSampleSize > 0;
+  const previewUpdatedLabel = formatRelativeTime(
+    selectedDataset?.quality?.lastChecked || selectedDataset?.dateUploaded
+  );
+
+  const columnProfiles = useMemo(() => {
+    if (!hasPreviewData) return [] as Array<{ name: string; type: string; completeness: number; distinctCount: number }>;
+    const totalRows = previewRows.length;
+    return previewColumns.slice(0, 6).map((column, idx) => {
+      let nullCount = 0;
+      const distinct = new Set<string>();
+      let sampleValue: any = null;
+      previewRows.forEach((row) => {
+        const normalized = normalizePreviewRow(row, previewColumns);
+        const value = normalized[idx];
+        if (value === null || value === undefined || value === '') {
+          nullCount += 1;
+        } else {
+          distinct.add(String(value));
+          if (sampleValue === null) sampleValue = value;
+        }
+      });
+      const completeness = totalRows ? Math.round(((totalRows - nullCount) / totalRows) * 100) : 0;
+      return {
+        name: column,
+        type: inferColumnTypeLabel(sampleValue),
+        completeness,
+        distinctCount: distinct.size,
+      };
+    });
+  }, [hasPreviewData, previewColumns, previewRows]);
+
+  const previewNullPercent = useMemo(() => {
+    if (!hasPreviewData) return 0;
+    const totalCells = previewRows.length * previewColumns.length;
+    if (totalCells === 0) return 0;
+    let nullCells = 0;
+    previewRows.forEach((row) => {
+      const normalized = normalizePreviewRow(row, previewColumns);
+      previewColumns.forEach((_, idx) => {
+        const value = normalized[idx];
+        if (value === null || value === undefined || value === '') nullCells += 1;
+      });
+    });
+    return Math.round((nullCells / totalCells) * 100);
+  }, [hasPreviewData, previewColumns, previewRows]);
+
+  const numericDistribution = useMemo(() => {
+    if (!hasPreviewData) return null as null | { column: string; labels: string[]; counts: number[] };
+    for (let i = 0; i < previewColumns.length; i += 1) {
+      const numericValues: number[] = [];
+      for (const row of previewRows) {
+        const normalized = normalizePreviewRow(row, previewColumns);
+        const v = safeNumber(normalized[i]);
+        if (v !== null) numericValues.push(v);
+        if (numericValues.length >= 200) break;
+      }
+      if (numericValues.length >= 10) {
+        const hist = buildHistogram(numericValues, 12);
+        return { column: previewColumns[i], labels: hist.labels, counts: hist.counts };
+      }
+    }
+    return null;
+  }, [hasPreviewData, previewColumns, previewRows]);
+
+  const categoricalDistribution = useMemo(() => {
+    if (!hasPreviewData) return null as null | { column: string; labels: string[]; counts: number[] };
+    for (let i = 0; i < previewColumns.length; i += 1) {
+      const values: string[] = [];
+      let numericHits = 0;
+      let totalHits = 0;
+      for (const row of previewRows) {
+        const normalized = normalizePreviewRow(row, previewColumns);
+        const raw = normalized[i];
+        if (raw === null || raw === undefined || raw === '') continue;
+        totalHits += 1;
+        const asNum = safeNumber(raw);
+        if (asNum !== null) numericHits += 1;
+        values.push(String(raw));
+        if (values.length >= 200) break;
+      }
+      // treat as categorical when it’s mostly non-numeric and has repetition
+      const numericRatio = totalHits ? numericHits / totalHits : 1;
+      if (values.length >= 10 && numericRatio < 0.4) {
+        const top = buildTopCategories(values, 8);
+        if (top.labels.length >= 3) {
+          return { column: previewColumns[i], labels: top.labels, counts: top.counts };
+        }
+      }
+    }
+    return null;
+  }, [hasPreviewData, previewColumns, previewRows]);
+
+  const fixChips = useMemo(() => {
+    const chips: Array<{ id: string; label: string; title: string }> = [];
+    if (!selectedDataset) return chips;
+    if (!hasPreviewData) {
+      chips.push({ id: 'generate-preview', label: 'Fix: add preview', title: 'Upload/import data to populate preview rows and schema.' });
+      return chips;
+    }
+    if (previewNullPercent >= 10) {
+      chips.push({ id: 'missing', label: 'Fix: missing values', title: 'High null rate in preview sample; review completeness.' });
+    }
+    const lowCompletenessCols = columnProfiles.filter((c) => c.completeness < 85);
+    if (lowCompletenessCols.length) {
+      chips.push({
+        id: 'completeness',
+        label: 'Fix: completeness',
+        title: `Columns under 85% complete: ${lowCompletenessCols.map((c) => c.name).slice(0, 3).join(', ')}${lowCompletenessCols.length > 3 ? '…' : ''}`,
+      });
+    }
+    return chips;
+  }, [columnProfiles, hasPreviewData, previewNullPercent, selectedDataset]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Global Keyboard Shortcuts */}
       <KeyboardShortcuts
         onSearch={() => searchInputRef.current?.focus()}
@@ -568,689 +695,864 @@ const DataManagement: React.FC = () => {
         />
       )}
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm mb-4">
-        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
-        <span className="text-gray-600">/</span>
-        <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Data</span>
-        <span className="text-gray-600">/</span>
-        <span className="text-white font-medium">Data Management</span>
+      {/* Pipeline ribbon */}
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-slate-950 px-3 py-2 text-xs text-slate-200 shadow-lg">
+        {([
+          { label: 'Data', to: '/app/data', panel: null },
+          { label: 'Profile', to: '/app/data', panel: 'quality' },
+          { label: 'Features', to: '/app/train?step=2', panel: null },
+          { label: 'Train', to: '/app/train', panel: null },
+          { label: 'Evaluate', to: '/app/evaluate', panel: null },
+          { label: 'Deploy', to: '/app/deploy', panel: null },
+          { label: 'Monitor', to: '/app/train?step=3', panel: null },
+          { label: 'Insights', to: '/app/insights', panel: null },
+        ] as const).map((step) => {
+          const isActive = step.label === 'Data';
+          return (
+            <button
+              key={step.label}
+              type="button"
+              onClick={() => {
+                if (step.panel) localStorage.setItem('dfh-data-open-panel', step.panel);
+                navigate(step.to);
+              }}
+              className={`rounded-full px-3 py-1 border transition ${
+                isActive
+                  ? 'bg-white/10 border-white/20 text-white'
+                  : 'bg-white/5 border-white/10 text-slate-300 hover:text-white hover:border-white/20'
+              }`}
+              aria-label={`Go to ${step.label}`}
+            >
+              {step.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Simplified Header with Prominent Search */}
-      <div className="mb-8 space-y-6">
-        {/* Title Row */}
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Database className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-100">Data Management</h1>
-            <p className="text-sm text-gray-400">Upload, connect, and manage your datasets</p>
+      {/* Promise + primary action */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="rounded-2xl border border-white/10 bg-slate-950 p-6 text-white shadow-lg">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Data management</p>
+          <h1 className="mt-2 text-2xl font-bold">Organize, trust, and launch your datasets fast</h1>
+          <p className="mt-2 text-sm text-slate-300">Preview, profile, and fix issues in minutes.</p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Button
+              onClick={() => {
+                setShowUploader(true);
+                setShowConnector(false);
+                setShowFREDImporter(false);
+                setShowGeneratorModal(false);
+              }}
+              icon={<Upload className="w-4 h-4" />}
+              className="btn-primary-improved"
+              aria-label="Upload or import dataset"
+            >
+              Upload / Import
+            </Button>
+            <Button
+              onClick={() => setShowPreview(true)}
+              variant="outline"
+              size="sm"
+              disabled={!selectedDataset}
+              aria-label="Open dataset preview"
+            >
+              Open preview
+            </Button>
+            <Button
+              onClick={() => setShowQuality(true)}
+              variant="outline"
+              size="sm"
+              disabled={!selectedDataset}
+              aria-label="Profile dataset quality"
+            >
+              Profile quality
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedDataset) return;
+                setTransformDataset(selectedDataset);
+                setShowTransformStudio(true);
+              }}
+              variant="outline"
+              size="sm"
+              disabled={!selectedDataset}
+              aria-label="Transform or feature-engineer dataset"
+            >
+              Transform / Features
+            </Button>
+            <Button
+              onClick={() => navigate('/app/train')}
+              variant="outline"
+              size="sm"
+              aria-label="Go to model training"
+            >
+              Train
+            </Button>
           </div>
         </div>
+        <div className="rounded-2xl border border-white/10 bg-slate-950 p-6 text-white shadow-lg">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Dataset spine</p>
+          <label className="mt-3 block text-xs text-slate-400" htmlFor="dfh-dataset-selector">
+            Selected dataset
+          </label>
+          <select
+            id="dfh-dataset-selector"
+            value={selectedDataset?.id || ''}
+            onChange={(e) => {
+              const ds = datasets.find((d) => d.id === e.target.value);
+              if (ds) selectDataset(ds);
+            }}
+            className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            aria-label="Select dataset"
+          >
+            {datasets.length === 0 ? (
+              <option value="">No datasets yet</option>
+            ) : (
+              datasets.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))
+            )}
+          </select>
+          <div className="mt-4 text-sm text-slate-300">
+            {selectedDataset ? (
+              <div>
+                <p className="font-semibold">
+                  Using {selectedDataset.name} • Updated {formatRelativeTime(selectedDataset.quality?.lastChecked || selectedDataset.dateUploaded)}
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  Sample: {selectedDataset.preview_data?.rows?.length || 0} rows • Columns: {selectedDataset.preview_data?.columns?.length || 0}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">Upload or import a dataset to begin.</p>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {datasets.length === 0 ? (
-          // Empty State: Enhanced checklist and CTAs
+      {datasets.length === 0 && (
+        <div className="rounded-2xl border border-white/10 bg-slate-950 p-6 text-white shadow-lg">
           <DataEmptyState
             onUploadClick={() => setShowUploader(true)}
             onGenerateSampleClick={() => setShowGeneratorModal(true)}
             onConnectClick={() => setShowConnector(true)}
           />
-        ) : (
-          // Has Datasets: Show search bar + controls
-          <div className="space-y-4">
-            {/* Large Search Bar Row */}
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-              {/* Prominent Search Input */}
+        </div>
+      )}
+
+      {datasets.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          {/* Left: dataset watchlist */}
+          <div className="rounded-2xl border border-white/10 bg-slate-950 p-4 text-white shadow-lg">
+            <div className="flex items-center gap-2">
               <SearchInput
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Search datasets by name, tags, or columns... (⌘/)"
+                placeholder="Search datasets… (⌘/)"
               />
-              {/* Primary Action Button */}
-              <Button
-                onClick={() => setShowUploader(true)}
-                icon={<Upload className="w-4 h-4" />}
-                className="btn-primary-improved whitespace-nowrap"
-              >
-                Upload Dataset
-              </Button>
             </div>
-
-            {/* Controls Row */}
-            <div className="flex flex-wrap gap-3 items-center justify-between">
-              {/* Left: Quick Actions */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setShowConnector(true)}
-                  className="px-4 py-2 bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
-                >
-                  <Database className="w-4 h-4" />
-                  <span>Connect Source</span>
-                </button>
-                <button
-                  onClick={() => setShowGeneratorModal(true)}
-                  className="px-4 py-2 bg-white border-2 border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 font-semibold rounded-lg transition-all duration-200 flex items-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generate Sample</span>
-                </button>
-                <FeatureTooltip
-                  featureKey="fred-integration"
-                  title="✨ New: FRED Economic Data"
-                  description="Import 800,000+ economic datasets from the Federal Reserve! Perfect for market analysis and forecasting."
-                  actionLabel="Try it now"
-                  onAction={() => setShowFREDImporter(true)}
-                  position="bottom"
-                >
-                  <button
-                    onClick={() => setShowFREDImporter(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 shadow-md"
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    <span>FRED Economic Data</span>
-                    <kbd className="ml-1 px-1 py-0.5 text-xs bg-white/20 rounded">⌘E</kbd>
-                  </button>
-                </FeatureTooltip>
-                <span className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm font-bold text-gray-900">
-                  {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-
-              {/* Right: Smart Sort Controls */}
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <div className="text-xs text-slate-400">{filteredDatasets.length} datasets</div>
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-300">Sort by:</label>
+                <label className="text-xs text-slate-400" htmlFor="dfh-sort">Sort</label>
                 <select
+                  id="dfh-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'name' | 'date' | 'size' | 'quality')}
-                  className="px-3 py-2 bg-gray-900 border border-gray-700 text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white"
+                  aria-label="Sort datasets"
                 >
-                  <option value="date">📅 Recent</option>
-                  <option value="name">🔤 Name</option>
-                  <option value="size">📊 Size</option>
-                  <option value="quality">✨ Quality</option>
+                  <option value="date">Recent</option>
+                  <option value="name">Name</option>
+                  <option value="size">Size</option>
+                  <option value="quality">Quality</option>
                 </select>
                 <button
+                  type="button"
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="p-2 bg-gray-900 border border-gray-700 hover:border-cyan-500 text-gray-100 rounded-lg transition-all"
+                  className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white hover:border-white/20"
+                  aria-label={sortOrder === 'asc' ? 'Set descending sort order' : 'Set ascending sort order'}
                   title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
                 </button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Uploader Modal */}
-      {showUploader && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Upload Dataset</h3>
-              <button
-                onClick={handleCloseUploader}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              <DataUploader onClose={handleCloseUploader} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* FRED Economic Data Importer Modal */}
-      {showFREDImporter && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Import Economic Data from FRED</h3>
-              </div>
-              <button
-                onClick={() => setShowFREDImporter(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              <Suspense fallback={<LoadingFallback />}>
-                <FREDDatasetImporter key="fred-importer-modal" />
-              </Suspense>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Connector Modal */}
-      {showConnector && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Connect Data Source</h3>
-              <button
-                onClick={handleCloseConnector}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              <DataConnector onConnect={async (connection) => {
-                console.log('Connected to:', connection);
-                toast.loading('Importing data from BigQuery...', { id: 'bigquery-import' });
-                
-                try {
-                  // For GCP BigQuery connections
-                  if (connection.type === 'gcp' && connection.config) {
-                    const config = connection.config as any;
-                    const datasetLocation = config['Dataset Location'] || '';
-                    
-                    // Extract dataset info from location string
-                    // Format: "project.dataset.table"
-                    const parts = datasetLocation.split('.');
-                    const tableName = parts[parts.length - 1] || 'bitcoin_inputs';
-                    
-                    // Create a dataset entry from the BigQuery connection
-                    const importedDataset = {
-                      id: crypto.randomUUID(),
-                      name: `BigQuery: ${tableName}`,
-                      description: `Imported from ${datasetLocation}`,
-                      rows: 1000, // Placeholder - would be from actual query
-                      columns: 10, // Placeholder - would be from actual query
-                      dateUploaded: new Date().toISOString(),
-                      fileType: 'bigquery',
-                      fileSize: 'Cloud Dataset',
-                      preview_data: {
-                        columns: ['input_index', 'spent_transaction_hash', 'spent_output_index', 'script_asm', 'script_hex', 'sequence', 'required_signatures', 'type', 'addresses', 'value'],
-                        rows: [
-                          ['0', 'a1b2c3d4e5f6...', '1', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', '50.00000000'],
-                          ['1', 'b2c3d4e5f6a7...', '0', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S', '25.50000000'],
-                          ['0', 'c3d4e5f6a7b8...', '2', 'OP_DUP OP_HASH160...', '76a914...', '4294967294', '1', 'pubkeyhash', '1HQ3Go3ggs8pFnXuHVHRytPCq5fGG8Hbhx', '10.25000000'],
-                          ['2', 'd4e5f6a7b8c9...', '1', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '1dice8EMZmqKvrGE4Qc9bUFf9PX3xaYDp', '0.05000000'],
-                          ['0', 'e5f6a7b8c9d0...', '0', 'OP_DUP OP_HASH160...', '76a914...', '4294967293', '1', 'pubkeyhash', '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', '100.00000000'],
-                          ['1', 'f6a7b8c9d0e1...', '3', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '3J98t1WpEZ73CNmYviecrnyiWrnqRhWNLy', '15.75000000'],
-                          ['0', 'a7b8c9d0e1f2...', '1', 'OP_DUP OP_HASH160...', '76a914...', '4294967292', '1', 'pubkeyhash', '1FeexV6bAHb8ybZjqQMjJrcCrHGW9sb6uF', '5.00000000'],
-                          ['2', 'b8c9d0e1f2a3...', '0', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '1LdRcdxfbSnmCYYNdeYpUnztiYzVfBEQeC', '0.10000000'],
-                          ['1', 'c9d0e1f2a3b4...', '2', 'OP_DUP OP_HASH160...', '76a914...', '4294967294', '1', 'pubkeyhash', '1AC4fMwgY8j9onSbXEWeH6Zan8QGMSdmtA', '75.00000000'],
-                          ['0', 'd0e1f2a3b4c5...', '1', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '1Kn5h2qpgw9mWE5jKpk8PP4qvvJ1QVy8su', '3.25000000'],
-                        ]
-                      },
-                      projectId: currentProject?.id,
-                    };
-                    
-                    // Add to datasets
-                    await addDataset(importedDataset);
-                    
-                    toast.success(`Imported ${tableName} from BigQuery!`, { id: 'bigquery-import' });
-                    handleCloseConnector();
-                  } else {
-                    toast.success(`Connected to ${connection.name}`, { id: 'bigquery-import' });
-                    handleCloseConnector();
-                  }
-                } catch (error) {
-                  console.error('Error importing from BigQuery:', error);
-                  toast.error('Failed to import data from BigQuery', { id: 'bigquery-import' });
-                }
-              }} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Synthetic Data Generator Modal */}
-      {showGeneratorModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Generate Sample Data</h3>
-              <button
-                onClick={() => setShowGeneratorModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dataset Type
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['marketing', 'sales', 'customer'] as const).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setGeneratorType(type)}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        generatorType === type
-                          ? 'bg-primary-600 text-white border-purple-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Rows: {rowCount.toLocaleString()}
-                </label>
-                <input
-                  type="range"
-                  min="100"
-                  max="10000"
-                  step="100"
-                  value={rowCount}
-                  onChange={(e) => setRowCount(parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>100</span>
-                  <span>10,000</span>
-                </div>
-              </div>
-
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-                <p className="text-sm text-primary-800">
-                  <strong>Preview:</strong> This will generate a realistic {generatorType} dataset with {rowCount.toLocaleString()} rows including various metrics and dimensions.
-                </p>
-              </div>
-
-              <div className="flex space-x-3 pt-2">
-                <Button
-                  onClick={handleGenerateSyntheticData}
-                  disabled={isGenerating}
-                  icon={<Sparkles className="w-4 h-4" />}
-                  className="flex-1"
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Dataset'}
-                </Button>
-                <Button
-                  onClick={() => setShowGeneratorModal(false)}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Smart FRED Suggestions - Show when user has datasets */}
-      {datasets.length > 0 && (
-        <Suspense fallback={<LoadingFallback />}>
-          <FREDSmartSuggestions
-            userDatasets={datasets}
-            onSuggestClick={(seriesId, name) => {
-              toast.success(`Opening FRED to import ${name}...`);
-              setShowFREDImporter(true);
-            }}
-          />
-        </Suspense>
-      )}
-
-      {/* Quick Insights for selected FRED dataset */}
-      {selectedDataset && (selectedDataset.source === 'FRED' || selectedDataset.metadata?.source === 'FRED') && (
-        <Suspense fallback={<LoadingFallback />}>
-          <FREDQuickInsights dataset={selectedDataset} />
-        </Suspense>
-      )}
-
-      {/* Datasets Grid with Pagination OR Organize View */}
-      <div>
-        {datasets.length === 0 ? (
-          <Card>
-            <div className="text-center py-12">
-              <Database className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No datasets</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Get started by uploading a dataset or connecting a data source.
-              </p>
-            </div>
-          </Card>
-        ) : (
-          // SMART GRID VIEW - Automatically sorted and organized
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="mt-3 space-y-2 max-h-[70vh] overflow-auto pr-1">
               {paginatedDatasets.map((dataset) => {
-                const isSampleDataset = SAMPLE_DATASET_IDS.has(dataset.id);
+                const isActive = dataset.id === selectedDataset?.id;
+                const health = dataset.quality?.score;
+                const hasPreview = (dataset.preview_data?.rows?.length || 0) > 0;
                 return (
-                  <div key={dataset.id} className="space-y-3">
-                    <DatasetCard
-                      dataset={dataset}
-                      onPreview={handlePreview}
-                      onAnalyze={handleAnalyze}
-                      onQualityCheck={handleQualityCheck}
-                      onChat={openChat}
-                      onTransform={handleTransform}
-                      onMove={handleMoveDataset}
-                      onDelete={handleDeleteDataset}
-                      onArchive={handleArchiveDataset}
-                    />
-                    {isSampleDataset && (
-                      <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-3 text-sm text-indigo-900 shadow-sm">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-                              Sample dataset tips
-                            </p>
-                            <p className="text-sm text-indigo-900">
-                              Try these quick actions before uploading your own data.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleQualityCheck(dataset)}
-                          >
-                            Run quality scan
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleAnalyze(dataset)}
-                          >
-                            Explore profiling
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openChat(dataset)}
-                          >
-                            Ask AI for insights
-                          </Button>
-                        </div>
+                  <button
+                    key={dataset.id}
+                    type="button"
+                    onClick={() => selectDataset(dataset)}
+                    className={`w-full rounded-xl border px-3 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                      isActive
+                        ? 'border-white/20 bg-white/10'
+                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                    }`}
+                    aria-current={isActive ? 'true' : undefined}
+                    aria-label={`Select dataset ${dataset.name}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{dataset.name}</p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {dataset.rows?.toLocaleString() || 0} rows • {dataset.columns || 0} cols
+                        </p>
                       </div>
-                    )}
-                  </div>
+                      <div className="text-right text-xs text-slate-400">
+                        <div>{health !== undefined ? `Health ${health}` : 'Health —'}</div>
+                        <div>{hasPreview ? 'Preview ✓' : 'No preview'}</div>
+                      </div>
+                    </div>
+                  </button>
                 );
               })}
             </div>
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
-                <div className="flex flex-1 justify-between sm:hidden">
-                  <Button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Next
-                  </Button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing{' '}
-                      <span className="font-medium">{startIndex + 1}</span>
-                      {' '}to{' '}
-                      <span className="font-medium">
-                        {Math.min(endIndex, datasets.length)}
-                      </span>
-                      {' '}of{' '}
-                      <span className="font-medium">{datasets.length}</span>
-                      {' '}datasets
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      variant="outline"
-                      size="sm"
-                      icon={<ChevronLeft className="w-4 h-4" />}
-                    >
-                      Previous
-                    </Button>
-                    
-                    {/* Page Numbers */}
-                    <div className="flex space-x-1">
-                      {pageNumbers.map((page) => {
-                        // Show first page, last page, current page, and pages around current
-                        if (
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        ) {
-                          return (
-                            <button
-                              key={page}
-                              onClick={() => handlePageChange(page)}
-                              className={`px-3 py-1 text-sm font-medium rounded-md ${
-                                currentPage === page
-                                  ? 'bg-primary-600 text-white'
-                                  : 'text-gray-700 hover:bg-gray-100'
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        } else if (
-                          page === currentPage - 2 ||
-                          page === currentPage + 2
-                        ) {
-                          return (
-                            <span key={page} className="px-2 py-1 text-gray-500">
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white disabled:opacity-40"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-white disabled:opacity-40"
+                  aria-label="Next page"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
 
-                    <Button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      variant="outline"
-                      size="sm"
-                      icon={<ChevronRight className="w-4 h-4" />}
+          {/* Right: dataset workspace */}
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+              <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Dataset workspace</p>
+              {selectedDataset ? (
+                <>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold">Using {selectedDataset.name} • Updated {previewUpdatedLabel}</p>
+                      <p className="mt-1 text-sm text-slate-300">
+                        Sample size: {previewSampleSize.toLocaleString()} rows • Null rate: {hasPreviewData ? `${previewNullPercent}%` : '—'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                        Health: {selectedDataset.quality?.score ?? '—'}
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                        Issues: {selectedDataset.quality?.issues ?? '—'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {fixChips.map((chip) => (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={() => setShowQuality(true)}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white hover:border-white/20"
+                        title={chip.title}
+                        aria-label={chip.label}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-[11px] text-slate-500">
+                    Definitions: “Updated” uses last quality check (or upload time). “Null rate” and “completeness” are computed from preview rows stored in `preview_data`.
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-sm text-slate-300">Select a dataset to see preview-driven metrics.</p>
+              )}
+            </div>
+
+            {/* Inline action rail (no modals) */}
+            <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+              <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Actions</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  onClick={() => {
+                    setShowUploader((v) => !v);
+                    setShowConnector(false);
+                    setShowFREDImporter(false);
+                    setShowGeneratorModal(false);
+                  }}
+                  size="sm"
+                  icon={<Upload className="h-4 w-4" />}
+                  aria-label="Toggle upload panel"
+                >
+                  Upload / Import
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowConnector((v) => !v);
+                    setShowUploader(false);
+                    setShowFREDImporter(false);
+                    setShowGeneratorModal(false);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  aria-label="Toggle connect source panel"
+                >
+                  Connect
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowFREDImporter((v) => !v);
+                    setShowUploader(false);
+                    setShowConnector(false);
+                    setShowGeneratorModal(false);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  aria-label="Toggle FRED importer"
+                >
+                  FRED import
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowGeneratorModal((v) => !v);
+                    setShowUploader(false);
+                    setShowConnector(false);
+                    setShowFREDImporter(false);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  aria-label="Toggle sample generator"
+                >
+                  Generate sample
+                </Button>
+              </div>
+
+              {showUploader && (
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Upload dataset</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowUploader(false)}
+                      className="text-slate-400 hover:text-white"
+                      aria-label="Close upload panel"
                     >
-                      Next
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <DataUploader onClose={() => setShowUploader(false)} />
+                  </div>
+                </div>
+              )}
+
+              {showConnector && (
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Connect source</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowConnector(false)}
+                      className="text-slate-400 hover:text-white"
+                      aria-label="Close connect source panel"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <DataConnector
+                      onConnect={async (connection) => {
+                        console.log('Connected to:', connection);
+                        toast.loading('Importing data from BigQuery...', { id: 'bigquery-import' });
+
+                        try {
+                          if (connection.type === 'gcp' && connection.config) {
+                            const config = connection.config as any;
+                            const datasetLocation = config['Dataset Location'] || '';
+                            const parts = datasetLocation.split('.');
+                            const tableName = parts[parts.length - 1] || 'bitcoin_inputs';
+                            const importedDataset = {
+                              id: crypto.randomUUID(),
+                              name: `BigQuery: ${tableName}`,
+                              description: `Imported from ${datasetLocation}`,
+                              rows: 1000,
+                              columns: 10,
+                              dateUploaded: new Date().toISOString(),
+                              fileType: 'bigquery',
+                              fileSize: 'Cloud Dataset',
+                              preview_data: {
+                                columns: ['input_index', 'spent_transaction_hash', 'spent_output_index', 'script_asm', 'script_hex', 'sequence', 'required_signatures', 'type', 'addresses', 'value'],
+                                rows: [
+                                  ['0', 'a1b2c3d4e5f6...', '1', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', '50.00000000'],
+                                  ['1', 'b2c3d4e5f6a7...', '0', 'OP_DUP OP_HASH160...', '76a914...', '4294967295', '1', 'pubkeyhash', '12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S', '25.50000000'],
+                                ],
+                              },
+                              projectId: currentProject?.id,
+                            };
+
+                            await addDataset(importedDataset as any);
+                            toast.success(`Imported ${tableName} from BigQuery!`, { id: 'bigquery-import' });
+                            setShowConnector(false);
+                          } else {
+                            toast.success(`Connected to ${connection.name}`, { id: 'bigquery-import' });
+                            setShowConnector(false);
+                          }
+                        } catch (error) {
+                          console.error('Error importing from BigQuery:', error);
+                          toast.error('Failed to import data from BigQuery', { id: 'bigquery-import' });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {showFREDImporter && (
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-emerald-400" />
+                      <p className="text-sm font-semibold">Import from FRED</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowFREDImporter(false)}
+                      className="text-slate-400 hover:text-white"
+                      aria-label="Close FRED importer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <Suspense fallback={<LoadingFallback />}>
+                      <FREDDatasetImporter key="fred-importer-inline" />
+                    </Suspense>
+                  </div>
+                </div>
+              )}
+
+              {showGeneratorModal && (
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">Generate sample dataset</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowGeneratorModal(false)}
+                      className="text-slate-400 hover:text-white"
+                      aria-label="Close generator"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <div>
+                      <label className="block text-xs text-slate-400">Dataset type</label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(['marketing', 'sales', 'customer'] as const).map((type) => (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => setGeneratorType(type)}
+                            className={`rounded-full border px-3 py-1 text-xs ${
+                              generatorType === type
+                                ? 'border-white/20 bg-white/10 text-white'
+                                : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:text-white'
+                            }`}
+                            aria-label={`Set generator type to ${type}`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400">Rows: {rowCount.toLocaleString()}</label>
+                      <input
+                        type="range"
+                        min="100"
+                        max="10000"
+                        step="100"
+                        value={rowCount}
+                        onChange={(e) => setRowCount(parseInt(e.target.value))}
+                        className="mt-2 w-full"
+                        aria-label="Row count"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      onClick={handleGenerateSyntheticData}
+                      disabled={isGenerating}
+                      size="sm"
+                      icon={<Sparkles className="h-4 w-4" />}
+                      aria-label="Generate dataset"
+                    >
+                      {isGenerating ? 'Generating…' : 'Generate'}
+                    </Button>
+                    <Button
+                      onClick={() => setShowGeneratorModal(false)}
+                      size="sm"
+                      variant="outline"
+                      aria-label="Cancel generator"
+                    >
+                      Cancel
                     </Button>
                   </div>
+                  <p className="mt-3 text-[11px] text-slate-500">
+                    Definition: Generates synthetic data and stores the first 100 rows as `preview_data`.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Schema snapshot */}
+            <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-slate-500">
+                <span>Schema snapshot</span>
+                <span>{previewColumns.length} columns</span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {columnProfiles.length ? (
+                  columnProfiles.map((profile) => (
+                    <div key={profile.name} className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{profile.name}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {profile.type} · {profile.distinctCount} distinct
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-slate-300">{profile.completeness}% complete</p>
+                        <div className="mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+                          <div className="h-full bg-white/30" style={{ width: `${profile.completeness}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-300">No preview yet — upload/import data to see schema and distributions.</p>
+                )}
+              </div>
+              <p className="mt-4 text-[11px] text-slate-500">
+                Definition: Types, completeness, and distinct counts come from preview rows (`preview_data`).
+              </p>
+            </div>
+
+            {/* Distributions */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.4em] text-slate-500">
+                  <span>Numeric distribution</span>
+                  <span className="tracking-normal">Updated {previewUpdatedLabel}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold">
+                    {numericDistribution ? `Distribution: ${numericDistribution.column} (sample)` : 'No numeric column found'}
+                  </p>
+                  <p className="text-xs text-slate-400">Sample: {previewSampleSize.toLocaleString()} rows</p>
+                </div>
+                <div className="mt-3">
+                  {numericDistribution && numericDistribution.labels.length ? (
+                    <Bar
+                      data={{
+                        labels: numericDistribution.labels,
+                        datasets: [
+                          {
+                            label: 'Count',
+                            data: numericDistribution.counts,
+                            backgroundColor: 'rgba(255,255,255,0.25)',
+                            borderColor: 'rgba(255,255,255,0.35)',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: true },
+                        },
+                        scales: {
+                          x: { ticks: { color: 'rgba(226,232,240,0.7)', maxRotation: 0, autoSkip: true }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                          y: { ticks: { color: 'rgba(226,232,240,0.7)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        },
+                      }}
+                      aria-label="Numeric distribution chart"
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-300">Preview doesn’t contain enough numeric values to chart.</p>
+                  )}
+                </div>
+                <p className="mt-3 text-[11px] text-slate-500" title="Histogram built from the first numeric column in preview_data.">
+                  Definition: Histogram from the first inferred numeric column in `preview_data`.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.4em] text-slate-500">
+                  <span>Categorical distribution</span>
+                  <span className="tracking-normal">Updated {previewUpdatedLabel}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold">
+                    {categoricalDistribution ? `Distribution: ${categoricalDistribution.column} (sample)` : 'No categorical column found'}
+                  </p>
+                  <p className="text-xs text-slate-400">Sample: {previewSampleSize.toLocaleString()} rows</p>
+                </div>
+                <div className="mt-3">
+                  {categoricalDistribution && categoricalDistribution.labels.length ? (
+                    <Bar
+                      data={{
+                        labels: categoricalDistribution.labels,
+                        datasets: [
+                          {
+                            label: 'Count',
+                            data: categoricalDistribution.counts,
+                            backgroundColor: 'rgba(255,255,255,0.25)',
+                            borderColor: 'rgba(255,255,255,0.35)',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: true },
+                        },
+                        scales: {
+                          x: { ticks: { color: 'rgba(226,232,240,0.7)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                          y: { ticks: { color: 'rgba(226,232,240,0.7)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        },
+                      }}
+                      aria-label="Categorical distribution chart"
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-300">Preview doesn’t contain enough categorical repetition to chart.</p>
+                  )}
+                </div>
+                <p className="mt-3 text-[11px] text-slate-500" title="Top categories computed from the first non-numeric column in preview_data.">
+                  Definition: Top categories from the first inferred categorical column in `preview_data`.
+                </p>
+              </div>
+            </div>
+
+            {/* Inline preview */}
+            {showPreview && selectedDataset && (
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Preview</p>
+                    <p className="mt-1 text-sm font-semibold">{selectedDataset.name}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (!selectedDataset.preview_data) return;
+                        const columns = selectedDataset.preview_data.columns || [];
+                        const rows = selectedDataset.preview_data.rows || [];
+                        const csvRows = rows.map((row) =>
+                          normalizePreviewRow(row, columns)
+                            .map((cell) => {
+                              if (cell === null || cell === undefined) return '';
+                              if (typeof cell === 'object') return JSON.stringify(cell);
+                              return String(cell);
+                            })
+                            .join(',')
+                        );
+                        const csv = [columns.join(','), ...csvRows].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${selectedDataset.name}.csv`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast.success('Dataset exported successfully!');
+                      }}
+                      aria-label="Export preview as CSV"
+                    >
+                      Export CSV
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPreview(false)}
+                      className="text-slate-400 hover:text-white"
+                      aria-label="Close preview"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {selectedDataset.preview_data ? (
+                    <div className="overflow-x-auto rounded-xl border border-white/10">
+                      <table className="min-w-full divide-y divide-white/10">
+                        <thead className="bg-white/5">
+                          <tr>
+                            {selectedDataset.preview_data.columns?.map((col, idx) => (
+                              <th
+                                key={idx}
+                                className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-300"
+                              >
+                                {col}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/10">
+                          {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => {
+                            const normalizedRow = normalizePreviewRow(row, selectedDataset.preview_data?.columns || []);
+                            return (
+                              <tr key={rowIdx}>
+                                {normalizedRow.map((cell, cellIdx) => (
+                                  <td key={cellIdx} className="px-4 py-2 text-xs text-slate-200">
+                                    {String(cell ?? '')}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      <p className="p-3 text-xs text-slate-400">
+                        Showing first 20 preview rows (source of truth: full dataset).
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-300">No preview data available.</p>
+                  )}
                 </div>
               </div>
             )}
-          </>
-        )}
-      </div>
 
-      {/* Quality Dashboard Modal with Lazy Loading */}
-      {showQuality && selectedDataset && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Data Quality: {selectedDataset.name}
-              </h3>
-              <button
-                onClick={handleCloseQuality}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              <Suspense fallback={<LoadingFallback />}>
-                <div className="space-y-6">
-                  {/* Health Score Card */}
-                  <DatasetHealthCard dataset={selectedDataset} showDetails={true} />
-                  
-                  {/* Detailed Quality Dashboard */}
-                  <DataQualityDashboard dataset={selectedDataset} />
+            {/* Inline quality */}
+            {showQuality && selectedDataset && (
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Quality</p>
+                    <p className="mt-1 text-sm font-semibold">{selectedDataset.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuality(false)}
+                    className="text-slate-400 hover:text-white"
+                    aria-label="Close quality panel"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              </Suspense>
-            </div>
-            <div className="flex justify-end space-x-3 p-6 border-t">
-              <Button
-                onClick={() => {
-                  handleCloseQuality();
-                  handlePreview(selectedDataset);
-                }}
-              >
-                View Data
-              </Button>
-              <Button
-                onClick={() => {
-                  handleCloseQuality();
-                  openChat(selectedDataset);
-                }}
-                icon={<MessageSquare className="w-4 h-4" />}
-              >
-                Ask AI About Quality
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      {showPreview && selectedDataset && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Preview: {selectedDataset.name}
-              </h3>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (selectedDataset.preview_data) {
-                      const columns = selectedDataset.preview_data.columns || [];
-                      const rows = selectedDataset.preview_data.rows || [];
-                      const csvRows = rows.map((row) =>
-                        normalizePreviewRow(row, columns)
-                          .map((cell) => {
-                            if (cell === null || cell === undefined) return '';
-                            if (typeof cell === 'object') return JSON.stringify(cell);
-                            return String(cell);
-                          })
-                          .join(',')
-                      );
-                      const csv = [columns.join(','), ...csvRows].join('\n');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${selectedDataset.name}.csv`;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                      toast.success('Dataset exported successfully!');
-                    }
-                  }}
-                  icon={<Database className="w-4 h-4" />}
-                >
-                  Export CSV
-                </Button>
-                <button
-                  onClick={handleClosePreview}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="mt-4">
+                  <Suspense fallback={<LoadingFallback />}>
+                    <div className="space-y-6">
+                      <DatasetHealthCard dataset={selectedDataset} showDetails={true} />
+                      <DataQualityDashboard dataset={selectedDataset} />
+                    </div>
+                  </Suspense>
+                </div>
               </div>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
-              {selectedDataset.preview_data ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {selectedDataset.preview_data.columns?.map((col, idx) => (
-                          <th
-                            key={idx}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            {col}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedDataset.preview_data.rows?.slice(0, 20).map((row, rowIdx) => {
-                        const normalizedRow = normalizePreviewRow(
-                          row,
-                          selectedDataset.preview_data?.columns || []
-                        );
-                        return (
-                          <tr key={rowIdx}>
-                            {normalizedRow.map((cell, cellIdx) => (
-                              <td
-                                key={cellIdx}
-                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                              >
-                                {String(cell ?? '')}
-                              </td>
-                            ))}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                  <p className="text-sm text-gray-500 mt-4 text-center">
-                    Showing first 20 rows of {selectedDataset.rows?.toLocaleString() || 0} total rows
-                  </p>
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-8">No preview data available</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* Analysis Modal with Lazy Loading */}
-      {showAnalysis && selectedDataset && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Analyze: {selectedDataset.name}
-              </h3>
-              <button
-                onClick={handleCloseAnalysis}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-6">
+            {/* Inline analysis */}
+            {showAnalysis && selectedDataset && (
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Profiler</p>
+                    <p className="mt-1 text-sm font-semibold">{selectedDataset.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAnalysis(false)}
+                    className="text-slate-400 hover:text-white"
+                    aria-label="Close profiler"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <Suspense fallback={<LoadingFallback />}>
+                    <DataProfiler
+                      dataset={selectedDataset}
+                      onApplyRecommendations={(recommendations) => {
+                        console.log('Applying recommendations:', recommendations);
+                        toast.success('Recommendations applied!');
+                      }}
+                    />
+                  </Suspense>
+                </div>
+              </div>
+            )}
+
+            {/* Inline transform studio */}
+            {showTransformStudio && transformDataset && (
+              <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.4em] text-slate-500">Transform</p>
+                    <p className="mt-1 text-sm font-semibold">{transformDataset.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTransformStudio(false)}
+                    className="text-slate-400 hover:text-white"
+                    aria-label="Close transform panel"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <Suspense fallback={<LoadingFallback />}>
+                    <DataTransformationStudio
+                      dataset={transformDataset}
+                      onSave={handleSaveTransformedDataset}
+                      onClose={() => setShowTransformStudio(false)}
+                      isModal={false}
+                    />
+                  </Suspense>
+                </div>
+              </div>
+            )}
+
+            {/* Smart FRED suggestions + quick insights (kept inline) */}
+            <Suspense fallback={<LoadingFallback />}>
+              <FREDSmartSuggestions
+                userDatasets={datasets}
+                onSuggestClick={(_seriesId, name) => {
+                  toast.success(`Opening FRED to import ${name}...`);
+                  setShowFREDImporter(true);
+                }}
+              />
+            </Suspense>
+
+            {selectedDataset && (selectedDataset.source === 'FRED' || selectedDataset.metadata?.source === 'FRED') && (
               <Suspense fallback={<LoadingFallback />}>
-                <DataProfiler 
-                  dataset={selectedDataset}
-                  onApplyRecommendations={(recommendations) => {
-                    console.log('Applying recommendations:', recommendations);
-                    toast.success('Recommendations applied!');
-                  }}
-                />
+                <FREDQuickInsights dataset={selectedDataset} />
               </Suspense>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -1267,25 +1569,6 @@ const DataManagement: React.FC = () => {
         </Suspense>
       )}
 
-      {/* Data Transformation Studio */}
-      {showTransformStudio && transformDataset && (
-        <Suspense fallback={<LoadingFallback />}>
-          <DataTransformationStudio
-            dataset={transformDataset}
-            onSave={handleSaveTransformedDataset}
-            onClose={handleCloseTransform}
-            isModal={true}
-          />
-        </Suspense>
-      )}
-
-      {/* Move Dataset Modal */}
-      <ProjectSelectorModal
-        isOpen={showMoveModal}
-        onClose={handleCloseMoveModal}
-        onSelectProject={handleConfirmMove}
-        datasetName={datasetToMove?.name || ''}
-      />
 
       {/* Floating AI Assistant */}
       <FloatingAIAssistant

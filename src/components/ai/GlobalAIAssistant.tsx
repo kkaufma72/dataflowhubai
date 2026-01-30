@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { Bot, X } from 'lucide-react';
+import { SplineScene } from '../ui/splite';
 
 const ChatComponent = React.lazy(() => import('./EnhancedAIChat'));
 
@@ -56,10 +57,10 @@ export const AIChatProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           className={`fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 group ${
             showPulse ? 'animate-pulse' : ''
           }`}
-          title="Open AI Assistant"
+          title="Open Robot Assistant"
         >
           <div className="relative">
-            <Sparkles className="w-6 h-6" />
+            <Bot className="w-6 h-6" />
             {showPulse && (
               <span className="absolute -top-1 -right-1 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
@@ -68,7 +69,7 @@ export const AIChatProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             )}
           </div>
           <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Ask AI Assistant
+            Ask Robot Assistant
           </div>
         </button>
       )}
@@ -90,6 +91,21 @@ export const AIChatProvider: React.FC<{ children: ReactNode }> = ({ children }) 
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
+
+              <div className="border-b border-gray-200">
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <div className="h-12 w-12 rounded-xl overflow-hidden bg-gray-900">
+                    <SplineScene
+                      scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-gray-900">Robot Copilot</div>
+                    <div className="text-xs text-gray-500">Ask questions about your workspace and data</div>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex-1 overflow-hidden">
                 <React.Suspense fallback={<div className="flex items-center justify-center h-full"><p>Loading chat...</p></div>}>

@@ -459,17 +459,17 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
     switch (type) {
       case 'bar':
-        return <Bar {...chartProps} />;
+        return <Bar key={`chart-bar-${title}`} redraw={true} {...chartProps} />;
       case 'line':
-        return <Line {...chartProps} />;
+        return <Line key={`chart-line-${title}`} redraw={true} {...chartProps} />;
       case 'pie':
-        return <Pie {...chartProps} />;
+        return <Pie key={`chart-pie-${title}`} redraw={true} {...chartProps} />;
       case 'doughnut':
-        return <Doughnut {...chartProps} />;
+        return <Doughnut key={`chart-doughnut-${title}`} redraw={true} {...chartProps} />;
       case 'scatter':
-        return <Scatter {...chartProps} />;
+        return <Scatter key={`chart-scatter-${title}`} redraw={true} {...chartProps} />;
       default:
-        return <Bar {...chartProps} />;
+        return <Bar key={`chart-default-${title}`} redraw={true} {...chartProps} />;
     }
   };
 

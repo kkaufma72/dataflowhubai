@@ -589,7 +589,12 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
                 <h3 className="text-sm font-medium text-gray-700">Performance Metrics</h3>
               </div>
               <div className="h-80">
-                <Line data={getPerformanceChartData()} options={chartOptions} />
+                <Line
+                  key={`perf-metrics-${selectedModelId}`}
+                  redraw={true}
+                  data={getPerformanceChartData()}
+                  options={chartOptions}
+                />
               </div>
             </Card>
             
@@ -598,7 +603,12 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
                 <h3 className="text-sm font-medium text-gray-700">Response Time</h3>
               </div>
               <div className="h-80">
-                <Line data={getLatencyChartData()} options={chartOptions} />
+                <Line
+                  key={`latency-${selectedModelId}`}
+                  redraw={true}
+                  data={getLatencyChartData()}
+                  options={chartOptions}
+                />
               </div>
             </Card>
           </div>
@@ -609,7 +619,12 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
                 <h3 className="text-sm font-medium text-gray-700">Request Volume & Errors</h3>
               </div>
               <div className="h-80">
-                <Line data={getRequestVolumeChartData()} options={requestsChartOptions} />
+                <Line
+                  key={`requests-${selectedModelId}`}
+                  redraw={true}
+                  data={getRequestVolumeChartData()}
+                  options={requestsChartOptions}
+                />
               </div>
             </Card>
             
@@ -619,7 +634,12 @@ const ModelPerformanceDashboard: React.FC<ModelPerformanceDashboardProps> = ({
               </div>
               <div className="h-80 flex items-center justify-center">
                 <div className="w-3/4 h-3/4">
-                  <Doughnut data={getErrorRateChartData()} options={doughnutOptions} />
+                  <Doughnut
+                    key={`error-rate-${selectedModelId}`}
+                    redraw={true}
+                    data={getErrorRateChartData()}
+                    options={doughnutOptions}
+                  />
                 </div>
               </div>
             </Card>

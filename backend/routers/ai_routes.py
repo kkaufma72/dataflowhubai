@@ -5,6 +5,7 @@ AI proxy routes to keep API keys on the backend.
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
 from typing import List, Literal, Optional
 
 import httpx
@@ -42,11 +43,32 @@ async def chat_completion(
     """
     Proxy chat completions to OpenAI using server-side credentials.
     """
-    # Resolve base URL and model defaults to keep a single model across the app.
+    # Resolve base URL and model defaults.
+    # IMPORTANT: Only use VLLM_MODEL when VLLM_ENDPOINT is set; otherwise prefer OPENAI_MODEL.
     vllm_endpoint = os.getenv("VLLM_ENDPOINT")
-    default_model = os.getenv("VLLM_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4"
     base_url = vllm_endpoint or "https://api.openai.com/v1/chat/completions"
+    default_model = (
+        (os.getenv("VLLM_MODEL") if vllm_endpoint else os.getenv("OPENAI_MODEL"))
+        or "gpt-4"
+    )
     model = payload.model or default_model
+
+    # Guard against a common misconfiguration: pointing VLLM_ENDPOINT at this API server.
+    # This causes authenticated chat requests to recurse into the backend and return
+    # 404 {"detail":"Not Found"} from the missing /v1/chat/completions route.
+    if vllm_endpoint:
+        parsed = urlparse(vllm_endpoint)
+        host = (parsed.hostname or "").lower()
+        port = parsed.port
+        if host in {"localhost", "127.0.0.1"} and port == 8000:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=(
+                    "VLLM_ENDPOINT is misconfigured (it points to this API server at localhost:8000). "
+                    "Unset VLLM_ENDPOINT to use OpenAI, or set it to your vLLM server URL "
+                    "(e.g. http://<vllm-host>:<port>/v1/chat/completions)."
+                ),
+            )
 
     api_key = os.getenv("OPENAI_API_KEY")
     # vLLM typically runs without auth; only require key for OpenAI-hosted endpoint.
@@ -71,7 +93,8 @@ async def chat_completion(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
+        timeout = httpx.Timeout(30.0, connect=10.0, read=30.0, write=30.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(
                 base_url,
                 headers=headers,
@@ -80,7 +103,7 @@ async def chat_completion(
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Failed to reach OpenAI: {exc}",
+            detail=f"Failed to reach chat upstream ({base_url}): {exc}",
         )
 
     if resp.status_code != status.HTTP_200_OK:

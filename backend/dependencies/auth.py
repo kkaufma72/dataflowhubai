@@ -4,6 +4,7 @@ Authentication and authorization dependencies.
 
 from typing import Optional
 import time
+import sys
 import httpx
 
 from fastapi import Depends, HTTPException, Request, status
@@ -157,6 +158,18 @@ async def get_current_user(
         return User(id="preflight", email="", role="user")  # not used by handlers
 
     if not creds or creds.scheme.lower() != "bearer":
+        if DEBUG:
+            auth_header = request.headers.get("authorization")
+            auth_len = len(auth_header) if auth_header else 0
+            auth_has_bearer_prefix = bool(auth_header) and auth_header.lower().startswith("bearer ")
+            creds_scheme = getattr(creds, "scheme", None)
+            creds_has_credentials = bool(getattr(creds, "credentials", None))
+            print(
+                f"Auth debug: header_present={bool(auth_header)} header_len={auth_len} "
+                f"header_bearer_prefix={auth_has_bearer_prefix} creds_present={bool(creds)} "
+                f"creds_scheme={creds_scheme} creds_has_credentials={creds_has_credentials}",
+                file=sys.stderr,
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing auth token",

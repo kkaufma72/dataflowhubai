@@ -21,14 +21,25 @@
  * @returns Full API URL
  */
 export function getApiUrl(path: string): string {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-  
-  // Remove leading slash from path if baseUrl is present to avoid double slashes
-  if (baseUrl && path.startsWith('/')) {
-    return `${baseUrl}${path}`;
+  const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+  const baseUrl = rawBaseUrl.replace(/\/+$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (!baseUrl) return normalizedPath;
+
+  // If baseUrl already includes '/api', avoid generating '/api/api/*'
+  const baseEndsWithApi = baseUrl === '/api' || baseUrl.endsWith('/api');
+  const pathStartsWithApi = normalizedPath === '/api' || normalizedPath.startsWith('/api/');
+
+  if (baseEndsWithApi && pathStartsWithApi) {
+    const withoutApiPrefix = normalizedPath === '/api'
+      ? ''
+      : normalizedPath.replace(/^\/api\//, '/');
+    return `${baseUrl}${withoutApiPrefix}`;
   }
-  
-  return baseUrl ? `${baseUrl}${path}` : path;
+
+  return `${baseUrl}${normalizedPath}`;
 }
 
 /**

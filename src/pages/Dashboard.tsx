@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
         name: 'Feature Engineering',
         description: 'Prepare features',
         status: datasets.length > 0 ? (models.length > 0 ? 'completed' : 'current') : 'upcoming',
-        href: '/app/feature-engineering',
+        href: '/app/train?step=2',
         icon: Sparkles
       },
       {
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
         name: 'Monitor',
         description: 'Monitor performance',
         status: models.some(m => m.status === 'deployed') ? 'current' : 'upcoming',
-        href: '/app/monitoring',
+        href: '/app/train?step=3',
         icon: Activity
       }
     ];

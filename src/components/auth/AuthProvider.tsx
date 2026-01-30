@@ -266,8 +266,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       
+      // Redirect to landing page using window.location for reliable navigation
+      // This ensures clean state after auth changes
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
     } catch (error) {
-      // Silent fail
+      // Silent fail - still redirect on error
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } finally {
       // Reset flag after a short delay to allow redirect
       setTimeout(() => {

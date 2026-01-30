@@ -19,7 +19,6 @@ import {
   TrendingUp,
   TestTube,
   ShoppingCart,
-  BookOpen,
   LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -167,7 +166,10 @@ const Sidebar: React.FC = () => {
     try {
       await supabase.auth.signOut();
       toast.success('Signed out successfully');
-      navigate('/');
+      // Use window.location for reliable navigation after auth state change
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');
@@ -211,7 +213,7 @@ const Sidebar: React.FC = () => {
         },
         {
           name: 'Feature Engineering',
-          href: '/app/feature-engineering',
+          href: '/app/train?step=2',
           icon: Sparkles,
           description: 'Transform and enhance data'
         }
@@ -226,11 +228,12 @@ const Sidebar: React.FC = () => {
       premium: true,
       items: [
         {
-          name: 'Train Models',
+          name: 'ML Workspace',
           href: '/app/train',
-          icon: Brain,
-          description: 'Create new models',
-          dataTour: 'train-models'
+          icon: Sparkles,
+          description: 'Select data, train, and monitor',
+          badge: 'New',
+          dataTour: 'ml-studio'
         },
         {
           name: 'Evaluate',
@@ -258,7 +261,7 @@ const Sidebar: React.FC = () => {
         },
         {
           name: 'Monitoring',
-          href: '/app/monitoring',
+          href: '/app/train?step=3',
           icon: Activity,
           description: 'Track performance',
           premium: true
@@ -502,16 +505,16 @@ const Sidebar: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${
                   active
-                    ? 'bg-gradient-to-r from-primary-600 to-primary-600 text-white shadow-lg'
-                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xl shadow-blue-500/40'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white hover:shadow-lg hover:shadow-white/10'
                 }`}
                 title={isCollapsed ? item.description : ''}
               >
                 <item.icon
                   className={`flex-shrink-0 ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5 mr-3'} ${
-                    active ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                    active ? 'text-white drop-shadow-lg' : 'text-gray-400 group-hover:text-white'
                   }`}
                 />
                 {!isCollapsed && <span className="flex-1 truncate">{item.name}</span>}
@@ -576,16 +579,16 @@ const Sidebar: React.FC = () => {
                         key={subItem.name}
                         to={subItem.href}
                         data-tour={(subItem as any).dataTour}
-                        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                        className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                           active
-                            ? 'bg-primary-600 text-white shadow-md'
-                            : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                            ? 'bg-gradient-to-r from-blue-600/90 to-purple-600/90 text-white shadow-lg shadow-blue-500/30'
+                            : 'text-gray-300 hover:bg-white/5 hover:text-white hover:shadow-md hover:shadow-white/5'
                         } ${!isCollapsed && 'ml-2'}`}
                         title={isCollapsed ? subItem.description : ''}
                       >
                         <subItem.icon
                           className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-4 h-4 mr-3'} ${
-                            active ? 'text-white' : 'text-gray-400 group-hover:text-white'
+                            active ? 'text-white' : 'text-gray-400 group-hover:text-blue-400 transition-colors'
                           }`}
                         />
                         {!isCollapsed && (

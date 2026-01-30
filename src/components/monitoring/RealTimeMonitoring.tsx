@@ -492,7 +492,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             <h3 className="text-sm font-medium text-gray-700">Accuracy Trend</h3>
           </div>
           <div className="h-64">
-            <Line data={getAccuracyChartData()} options={chartOptions} />
+            <Line key={`accuracy-trend-${modelId}`} redraw={true} data={getAccuracyChartData()} options={chartOptions} />
           </div>
         </Card>
 
@@ -501,7 +501,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
             <h3 className="text-sm font-medium text-gray-700">Response Time</h3>
           </div>
           <div className="h-64">
-            <Line data={getLatencyChartData()} options={chartOptions} />
+            <Line key={`response-time-${modelId}`} redraw={true} data={getLatencyChartData()} options={chartOptions} />
           </div>
         </Card>
       </div>
@@ -511,7 +511,7 @@ const RealTimeMonitoring: React.FC<RealTimeMonitoringProps> = ({
           <h3 className="text-sm font-medium text-gray-700">Request Volume</h3>
         </div>
         <div className="h-64">
-          <Line data={getRequestVolumeChartData()} options={chartOptions} />
+          <Line key={`request-volume-${modelId}`} redraw={true} data={getRequestVolumeChartData()} options={chartOptions} />
         </div>
       </Card>
 

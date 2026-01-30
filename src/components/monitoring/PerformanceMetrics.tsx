@@ -297,13 +297,13 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
         </div>
         <div className="h-80">
           {selectedMetric === 'accuracy' && (
-            <Line data={getAccuracyChartData()} options={chartOptions} />
+            <Line key={`accuracy-${modelId}`} redraw={true} data={getAccuracyChartData()} options={chartOptions} />
           )}
           {selectedMetric === 'latency' && (
-            <Line data={getLatencyChartData()} options={chartOptions} />
+            <Line key={`latency-${modelId}`} redraw={true} data={getLatencyChartData()} options={chartOptions} />
           )}
           {selectedMetric === 'volume' && (
-            <Line data={getRequestVolumeChartData()} options={chartOptions} />
+            <Line key={`volume-${modelId}`} redraw={true} data={getRequestVolumeChartData()} options={chartOptions} />
           )}
         </div>
       </Card>

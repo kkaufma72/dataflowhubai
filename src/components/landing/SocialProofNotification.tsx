@@ -6,62 +6,152 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { User, MapPin, Clock } from 'lucide-react';
 
 interface Notification {
   name: string;
+  role: string;
   location: string;
   action: string;
+  impact: string;
+  volume: string;
   timeAgo: string;
 }
 
 const SAMPLE_NOTIFICATIONS: Notification[] = [
-  { name: 'Sarah M.', location: 'New York, US', action: 'started a free trial', timeAgo: '2 minutes ago' },
-  { name: 'James L.', location: 'London, UK', action: 'uploaded their first dataset', timeAgo: '5 minutes ago' },
-  { name: 'Maria G.', location: 'Toronto, CA', action: 'trained an ML model', timeAgo: '8 minutes ago' },
-  { name: 'David K.', location: 'Sydney, AU', action: 'upgraded to Pro', timeAgo: '12 minutes ago' },
-  { name: 'Anna S.', location: 'Berlin, DE', action: 'started a free trial', timeAgo: '15 minutes ago' },
-  { name: 'Michael R.', location: 'San Francisco, US', action: 'analyzed 50k rows', timeAgo: '18 minutes ago' },
-  { name: 'Emma W.', location: 'Paris, FR', action: 'started a free trial', timeAgo: '22 minutes ago' },
-  { name: 'Chris P.', location: 'Singapore', action: 'deployed a model', timeAgo: '25 minutes ago' },
+  {
+    name: 'Sarah M.',
+    role: 'Data Science Lead',
+    location: 'New York, US',
+    action: 'shipped a churn model with the guided recipe',
+    impact: '+12% lift vs baseline',
+    volume: '230k rows',
+    timeAgo: '2 minutes ago',
+  },
+  {
+    name: 'James L.',
+    role: 'Analytics Engineer',
+    location: 'London, UK',
+    action: 'cleaned drifted features and retrained automatically',
+    impact: 'Stability score 0.94',
+    volume: '3 data sources',
+    timeAgo: '5 minutes ago',
+  },
+  {
+    name: 'Maria G.',
+    role: 'ML Engineer',
+    location: 'Toronto, CA',
+    action: 'deployed a forecasting model with rollback enabled',
+    impact: 'Latency 58 ms p95',
+    volume: '11M predictions/day',
+    timeAgo: '8 minutes ago',
+  },
+  {
+    name: 'David K.',
+    role: 'Product Manager',
+    location: 'Sydney, AU',
+    action: 'validated class balance before launch',
+    impact: 'Approval ready',
+    volume: 'Audit log exported',
+    timeAgo: '12 minutes ago',
+  },
+  {
+    name: 'Anna S.',
+    role: 'Founder',
+    location: 'Berlin, DE',
+    action: 'launched a demo pipeline with sample data',
+    impact: 'Live in 6 minutes',
+    volume: 'Zero setup',
+    timeAgo: '15 minutes ago',
+  },
+  {
+    name: 'Michael R.',
+    role: 'Head of Data',
+    location: 'San Francisco, US',
+    action: 'auto-resolved missing values and retrained',
+    impact: 'Data freshness 11m',
+    volume: '50k rows ingested',
+    timeAgo: '18 minutes ago',
+  },
+  {
+    name: 'Emma W.',
+    role: 'Growth Analyst',
+    location: 'Paris, FR',
+    action: 'started a free trial with the revenue preset',
+    impact: 'Preset recommended',
+    volume: '90% guided defaults',
+    timeAgo: '22 minutes ago',
+  },
+  {
+    name: 'Chris P.',
+    role: 'Platform Engineer',
+    location: 'Singapore',
+    action: 'deployed a model to staging with safeguards',
+    impact: 'Rollback ready',
+    volume: 'Blue/green',
+    timeAgo: '25 minutes ago',
+  },
 ];
 
 export const SocialProofNotification: React.FC = () => {
   const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => setReduceMotion(event.matches);
+
+    setReduceMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     // Don't show if user has dismissed
     if (sessionStorage.getItem('dfh_social_dismissed')) return;
 
     let notificationIndex = 0;
+    let hideTimeout: ReturnType<typeof setTimeout>;
+    let nextTimeout: ReturnType<typeof setTimeout>;
+
+    const displayDuration = reduceMotion ? 6500 : 5000;
 
     const showNotification = () => {
       setCurrentNotification(SAMPLE_NOTIFICATIONS[notificationIndex]);
       setIsVisible(true);
 
       // Hide after 5 seconds
-      setTimeout(() => {
+      hideTimeout = setTimeout(() => {
         setIsVisible(false);
-      }, 5000);
+      }, displayDuration);
 
       // Move to next notification
       notificationIndex = (notificationIndex + 1) % SAMPLE_NOTIFICATIONS.length;
     };
 
     // Show first notification after 10 seconds
-    const initialTimeout = setTimeout(showNotification, 10000);
-
-    // Show subsequent notifications every 30-60 seconds
-    const interval = setInterval(() => {
+    const initialTimeout = setTimeout(() => {
       showNotification();
-    }, 30000 + Math.random() * 30000);
+
+      const scheduleNext = () => {
+        nextTimeout = setTimeout(() => {
+          showNotification();
+          scheduleNext();
+        }, reduceMotion ? 45000 : 30000 + Math.random() * 25000);
+      };
+
+      scheduleNext();
+    }, reduceMotion ? 12000 : 10000);
 
     return () => {
       clearTimeout(initialTimeout);
-      clearInterval(interval);
+      clearTimeout(nextTimeout);
+      clearTimeout(hideTimeout);
     };
-  }, []);
+  }, [reduceMotion]);
 
   const handleDismiss = () => {
     setIsVisible(false);
@@ -71,40 +161,74 @@ export const SocialProofNotification: React.FC = () => {
   if (!currentNotification || !isVisible) return null;
 
   return (
-    <div 
-      className={`fixed bottom-4 left-4 z-40 max-w-sm bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-500 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+    <div
+      className={`fixed bottom-4 left-4 z-40 max-w-sm bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-black text-white rounded-2xl shadow-2xl shadow-blue-500/20 border border-white/10 backdrop-blur-xl overflow-hidden transition-all duration-500 ${
+        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
       }`}
     >
       <div className="p-4">
         <div className="flex items-start gap-3">
           {/* Avatar */}
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="relative w-11 h-11 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
             <User className="w-5 h-5 text-white" />
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-emerald-400 text-[10px] font-bold rounded-full flex items-center justify-center text-black">
+              •
+            </span>
           </div>
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-900">
-              <span className="font-semibold">{currentNotification.name}</span>
-              {' '}{currentNotification.action}
-            </p>
-            <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-cyan-200">
+              Live right now
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold leading-tight">
+                {currentNotification.name}
+                <span className="text-gray-300 font-normal"> · {currentNotification.role}</span>
+              </p>
+              <p className="text-sm text-gray-200 leading-snug">{currentNotification.action}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-300">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10">
                 <MapPin className="w-3 h-3" />
                 {currentNotification.location}
               </span>
-              <span className="flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10">
                 <Clock className="w-3 h-3" />
                 {currentNotification.timeAgo}
               </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-100 border border-emerald-400/20">
+                Impact {currentNotification.impact}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/10 text-blue-100 border border-blue-400/20">
+                Data {currentNotification.volume}
+              </span>
             </div>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/product-tour"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-semibold border border-white/10 hover:bg-white/15 transition"
+              >
+                See the playbook
+              </Link>
+              <button
+                onClick={handleDismiss}
+                className="text-xs text-gray-300 hover:text-white transition"
+              >
+                Mute notifications
+              </button>
+            </div>
+            <p className="text-[11px] text-gray-400">
+              Activity is anonymized and rotates every ~45s. No personal data stored.
+            </p>
           </div>
 
           {/* Close */}
           <button
             onClick={handleDismiss}
-            className="text-gray-400 hover:text-gray-600 text-sm"
+            className="text-gray-400 hover:text-white text-sm"
+            aria-label="Close live activity notification"
           >
             ✕
           </button>
@@ -112,10 +236,10 @@ export const SocialProofNotification: React.FC = () => {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-gray-100">
-        <div 
-          className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 animate-shrink"
-          style={{ animation: 'shrink 5s linear forwards' }}
+      <div className="h-1 bg-white/5">
+        <div
+          className={`h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 ${reduceMotion ? '' : 'animate-shrink'}`}
+          style={reduceMotion ? { width: '100%' } : { animation: 'shrink 5s linear forwards' }}
         />
       </div>
 
@@ -130,4 +254,3 @@ export const SocialProofNotification: React.FC = () => {
 };
 
 export default SocialProofNotification;
-

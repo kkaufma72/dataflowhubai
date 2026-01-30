@@ -131,7 +131,11 @@ const SignIn = () => {
       hasRedirected.current = true;
       const destination = getRedirectDestination();
       clearPostAuthRedirectPath();
-      navigate(destination, { replace: true });
+      
+      // Use a small delay to ensure auth state is updated
+      setTimeout(() => {
+        window.location.href = destination;
+      }, 100);
     } catch (error: any) {
       console.error('Error signing in:', error);
       setError(error.message);

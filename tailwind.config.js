@@ -5,9 +5,33 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Shadcn compatibility
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        
         // IBM Blue - Primary brand color (Carbon Dark Theme)
         primary: {
           DEFAULT: '#0F62FE',
+          foreground: "hsl(var(--primary-foreground))",
           50: '#E5F1FF',
           100: '#CCE3FF',
           200: '#99C7FF',
@@ -60,6 +84,7 @@ export default {
         // Maintain backward compatibility
         secondary: {
           DEFAULT: '#24A148',
+          foreground: "hsl(var(--secondary-foreground))",
           light: '#42BE65',
           dark: '#198038'
         },
@@ -106,9 +131,14 @@ export default {
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'fade-in': 'fade-in 0.3s ease-out forwards',
+        'fadeIn': 'fadeIn 0.5s ease-out forwards',
         'slide-in': 'slide-in 0.2s ease-out',
       },
       keyframes: {
+        'fadeIn': {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
         'fade-in': {
           '0%': { opacity: 0, transform: 'translateY(-10px)' },
           '100%': { opacity: 1, transform: 'translateY(0)' },

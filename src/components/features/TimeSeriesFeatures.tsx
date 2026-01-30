@@ -833,7 +833,7 @@ const TimeSeriesFeatures: React.FC<TimeSeriesFeaturesProps> = ({
           <h3 className="text-sm font-medium text-gray-900 mb-4">Time Series Feature Preview</h3>
           
           <div className="h-80">
-            <Line data={getPreviewChartData()} options={chartOptions} />
+            <Line key={`ts-preview-${config.dateColumn}`} redraw={true} data={getPreviewChartData()} options={chartOptions} />
           </div>
           
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">

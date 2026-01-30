@@ -516,7 +516,9 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-4">Performance Comparison</h4>
                   <div className="h-64">
-                    <Bar 
+                    <Bar
+                      key={`ab-perf-${test.id}`}
+                      redraw={true}
                       data={getTestResultsChartData(test)} 
                       options={{
                         responsive: true,
@@ -539,7 +541,9 @@ const ABTestingPanel: React.FC<ABTestingPanelProps> = ({ model }) => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-4">Response Time</h4>
                   <div className="h-64">
-                    <Bar 
+                    <Bar
+                      key={`ab-latency-${test.id}`}
+                      redraw={true}
                       data={getTestLatencyChartData(test)} 
                       options={{
                         responsive: true,

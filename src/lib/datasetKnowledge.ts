@@ -133,7 +133,7 @@ export const getDatasetKnowledge = async (datasetId: string, datasetName: string
       .from('dataset_knowledge')
       .select('*')
       .eq('dataset_id', datasetId)
-      .single();
+      .maybeSingle();
     
     if (data && !error) {
       const knowledge = {

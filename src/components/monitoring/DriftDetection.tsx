@@ -101,7 +101,7 @@ const DriftDetection: React.FC<DriftDetectionProps> = ({
           </div>
         </div>
         <div className="h-64">
-          <Bar data={getDriftChartData()} options={chartOptions} />
+          <Bar key={`drift-${modelId}`} redraw={true} data={getDriftChartData()} options={chartOptions} />
         </div>
       </Card>
 

@@ -54,7 +54,7 @@ const FinishSetupChecklist: React.FC<FinishSetupChecklistProps> = ({
       description: 'Push to production and watch live metrics.',
       completed: hasDeployedModel,
       action: onDeploy,
-      fallbackLink: '/app/deployment',
+      fallbackLink: '/app/deploy',
     },
   ];
 

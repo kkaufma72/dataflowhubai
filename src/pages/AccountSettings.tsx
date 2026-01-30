@@ -263,8 +263,7 @@ const AccountSettings: React.FC = () => {
       setIsSigningOut(true);
       await signOut();
       toast.success('Signed out successfully');
-      // Navigate to landing page after successful sign out
-      navigate('/', { replace: true });
+      // AuthProvider handles redirect - no need for additional navigation
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');

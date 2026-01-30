@@ -260,8 +260,8 @@ services:
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=dataflow_secure_password
       # API Keys (add your own)
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
-      - VLLM_ENDPOINT=${VLLM_ENDPOINT:-http://localhost:8000/v1/chat/completions}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - VLLM_ENDPOINT=${VLLM_ENDPOINT:-}
       - VLLM_MODEL=${VLLM_MODEL:-meta-llama/Meta-Llama-3-8B-Instruct}
       # Supabase Auth
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-}
@@ -303,7 +303,7 @@ services:
       - TIMESCALEDB_USER=postgres
       - TIMESCALEDB_PASSWORD=timescale_secure_password
       - TIMESCALEDB_DB=timescale
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     depends_on:
       - redis
       - postgres
@@ -334,7 +334,7 @@ services:
       - TIMESCALEDB_USER=postgres
       - TIMESCALEDB_PASSWORD=timescale_secure_password
       - TIMESCALEDB_DB=timescale
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     depends_on:
       - redis
       - postgres
@@ -365,7 +365,7 @@ services:
       - TIMESCALEDB_USER=postgres
       - TIMESCALEDB_PASSWORD=timescale_secure_password
       - TIMESCALEDB_DB=timescale
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_key_here}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     depends_on:
       - redis
       - postgres

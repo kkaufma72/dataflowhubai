@@ -2,43 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader, Database, Sparkles, TrendingUp, BarChart3, AlertCircle } from 'lucide-react';
 import { useMLContext } from '../../context/MLContext';
 import { useAuth } from '../auth/AuthProvider';
-import { useUser } from '../../context/UserContext';
 import { 
   getContextualSystemPrompt, 
-  getContextualDataExample, 
-  getContextualWelcomeMessage 
+  getContextualDataExample,
 } from '../../lib/contextualPrompts';
 import { supabase } from '../../lib/supabase';
+import { getApiUrl } from '../../lib/api';
+import { getAuthToken } from '../../lib/supabaseHelpers';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
-const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-
-// Context-specific prompts based on use case
-const getUseCasePrompt = (useCase: string): string => {
-  const prompts: Record<string, string> = {
-    'business-analytics': 'Focus on helping users analyze business KPIs, revenue trends, and operational metrics. Provide insights on how to improve business performance and identify opportunities.',
-    'customer-insights': 'Help users understand customer behavior, segmentation, churn analysis, and lifetime value. Focus on actionable insights for customer acquisition and retention.',
-    'predictive-maintenance': 'Assist with predicting equipment failures, maintenance scheduling, and anomaly detection. Focus on reducing downtime and optimizing maintenance costs.',
-    'fraud-detection': 'Help identify fraudulent patterns, suspicious transactions, and security threats. Provide guidance on anomaly detection and risk scoring.',
-    'recommendation-systems': 'Assist with building recommendation engines, collaborative filtering, and personalization algorithms. Focus on improving user engagement and conversion.',
-    'healthcare': 'Help with medical data analysis, patient outcomes prediction, and clinical decision support. Always emphasize privacy and ethical considerations.',
-    'finance': 'Assist with financial forecasting, risk assessment, and portfolio optimization. Focus on time series analysis and volatility modeling.',
-    'marketing': 'Help optimize marketing campaigns, customer acquisition costs, and conversion funnels. Focus on ROI and attribution analysis.',
-    'supply-chain': 'Assist with demand forecasting, inventory optimization, and logistics planning. Focus on reducing costs and improving efficiency.',
-    'general': 'Provide general data science guidance, covering various ML algorithms, feature engineering, and model evaluation.',
-  };
-  
-  return prompts[useCase] || prompts['general'];
-};
-
 const EnhancedAIChat: React.FC = () => {
   const { datasets } = useMLContext();
   const { user } = useAuth();
-  const { userProfile } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -163,14 +142,16 @@ Help users understand and work with their datasets, build ML models, and extract
     setLoading(true);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getAuthToken();
 
-      if (!token) {
+      // Backend expects a Supabase session JWT (3 dot-separated parts), not the anon key.
+      if (!token || token.split('.').length !== 3) {
         throw new Error('Please sign in to use the AI assistant');
       }
 
-      const response = await fetch(`${apiBase}/api/ai/chat`, {
+      const url = getApiUrl('/api/ai/chat');
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +164,23 @@ Help users understand and work with their datasets, build ML models, and extract
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.detail || errorData.error || `API error: ${response.status}`);
+
+        const detail = (errorData as any)?.detail;
+        const rawError = (errorData as any)?.error;
+        const detailText =
+          typeof detail === 'string'
+            ? detail
+            : detail != null
+              ? JSON.stringify(detail)
+              : '';
+        const errorText =
+          typeof rawError === 'string'
+            ? rawError
+            : rawError != null
+              ? JSON.stringify(rawError)
+              : '';
+
+        throw new Error(detailText || errorText || `API error: ${response.status}`);
       }
 
       const data = await response.json();

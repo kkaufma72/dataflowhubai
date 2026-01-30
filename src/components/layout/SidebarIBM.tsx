@@ -50,7 +50,7 @@ const SidebarIBM: React.FC = () => {
       icon: Sparkles 
     },
     { 
-      path: '/app/feature-engineering', 
+      path: '/app/train?step=2', 
       label: 'Features', 
       icon: Zap 
     },
@@ -66,12 +66,12 @@ const SidebarIBM: React.FC = () => {
       icon: TrendingUp 
     },
     { 
-      path: '/app/deployment', 
+      path: '/app/deploy', 
       label: 'Deployment', 
       icon: Activity 
     },
     { 
-      path: '/app/monitoring', 
+      path: '/app/train?step=3', 
       label: 'Monitoring', 
       icon: BarChart3 
     },

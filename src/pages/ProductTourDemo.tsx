@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
+import LandingNav from '../components/LandingNav';
 
 // Impressive hardcoded demo data for investor presentations
 const DEMO_DATASETS = [
@@ -1277,8 +1278,10 @@ const ProductTourDemo: React.FC = () => {
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </a>
       </div>
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <LandingNav />
+
+      {/* Tour header (below global nav) */}
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
@@ -1292,7 +1295,7 @@ const ProductTourDemo: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm font-medium text-gray-600">
                 Step {currentStep + 1} of {tourSteps.length}
               </div>
               <Button
@@ -1304,13 +1307,11 @@ const ProductTourDemo: React.FC = () => {
                 {isAutoPlaying ? 'Stop' : 'Auto Play'}
               </Button>
               
-              {/* Sign Up Button */}
               <a
                 href="/signin"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-600 text-gray-900 font-semibold rounded-lg hover:from-primary-700 hover:to-primary-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700"
               >
-                <Zap className="w-4 h-4" />
-                Sign Up Free
+                Sign Up
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>

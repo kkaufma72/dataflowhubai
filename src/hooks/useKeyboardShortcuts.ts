@@ -93,7 +93,7 @@ export const useKeyboardShortcuts = (handlers: KeyboardShortcutHandlers = {}) =>
           '/app/train',     // 4 - Train
           '/app/evaluate',  // 5 - Evaluate
           '/app/deploy',    // 6 - Deploy
-          '/app/monitor',   // 7 - Monitor
+          '/app/train?step=3',   // 7 - Monitor
           '/app/settings',  // 8 - Settings
           '/app/usage'      // 9 - Usage
         ];

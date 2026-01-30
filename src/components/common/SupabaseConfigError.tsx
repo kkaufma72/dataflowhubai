@@ -22,7 +22,6 @@ const SupabaseConfigError: React.FC = () => {
           <ul className="text-sm text-gray-600 space-y-1 ml-6">
             <li>• VITE_SUPABASE_URL</li>
             <li>• VITE_SUPABASE_ANON_KEY</li>
-            <li>• VITE_OPENAI_API_KEY</li>
           </ul>
         </div>
 

@@ -390,7 +390,12 @@ const MetricsDashboard: React.FC = () => {
                 </div>
                 <div className="p-6" style={{ height: '400px' }}>
                   {accuracyChartData ? (
-                    <Line data={accuracyChartData} options={chartOptions} />
+                    <Line
+                      key={`accuracy-line-${selectedModelId}`}
+                      redraw={true}
+                      data={accuracyChartData}
+                      options={chartOptions}
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">
                       No data available
@@ -412,7 +417,12 @@ const MetricsDashboard: React.FC = () => {
                 </div>
                 <div className="p-6" style={{ height: '400px' }}>
                   {lossChartData ? (
-                    <Line data={lossChartData} options={chartOptions} />
+                    <Line
+                      key={`loss-line-${selectedModelId}`}
+                      redraw={true}
+                      data={lossChartData}
+                      options={chartOptions}
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400">
                       No data available

@@ -35,7 +35,7 @@ const navigation = [
     children: [
       { name: 'Browse & Upload', href: '/app/data', icon: FileSpreadsheet },
       { name: 'Insights & Charts', href: '/app/insights', icon: BarChart3 },
-      { name: 'Feature Engineering', href: '/app/feature-engineering', icon: Wand2 },
+      { name: 'Feature Engineering', href: '/app/train?step=2', icon: Wand2 },
     ]
   },
   {
@@ -51,7 +51,7 @@ const navigation = [
     icon: Rocket,
     children: [
       { name: 'Deploy', href: '/app/deploy', icon: Rocket },
-      { name: 'Monitoring', href: '/app/monitoring', icon: Activity },
+      { name: 'Monitoring', href: '/app/train?step=3', icon: Activity },
     ]
   }
 ];

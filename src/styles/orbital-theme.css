@@ -1,0 +1,184 @@
+/* Orbital Theme - Unified dark theme with glassmorphism and neon accents */
+
+@layer utilities {
+  /* Glassmorphism cards */
+  .glass-card {
+    @apply bg-black/40 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl;
+  }
+  
+  .glass-card-hover {
+    @apply bg-black/40 backdrop-blur-lg border border-white/10 rounded-xl shadow-xl transition-all duration-300 hover:border-white/20 hover:shadow-2xl hover:shadow-white/10;
+  }
+
+  /* Orbital gradient backgrounds */
+  .orbital-bg {
+    background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15), transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(16, 185, 129, 0.15), transparent 50%);
+  }
+
+  .orbital-bg-blue {
+    background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2), transparent 60%);
+  }
+
+  .orbital-bg-purple {
+    background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.2), transparent 60%);
+  }
+
+  .orbital-bg-teal {
+    background: radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.2), transparent 60%);
+  }
+
+  /* Neon glow effects */
+  .neon-blue {
+    @apply shadow-lg shadow-blue-500/30;
+  }
+
+  .neon-purple {
+    @apply shadow-lg shadow-purple-500/30;
+  }
+
+  .neon-teal {
+    @apply shadow-lg shadow-teal-500/30;
+  }
+
+  .neon-emerald {
+    @apply shadow-lg shadow-emerald-500/30;
+  }
+
+  /* Orbital buttons */
+  .orbital-button {
+    @apply relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/40;
+  }
+
+  .orbital-button::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+
+  .orbital-button:hover::before {
+    transform: translateX(100%);
+  }
+
+  /* Orbital stat cards */
+  .stat-card-orbital {
+    @apply relative glass-card p-6 cursor-pointer overflow-visible;
+  }
+
+  .stat-card-orbital::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent 70%);
+  }
+
+  .stat-card-orbital:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Animated orbital rings */
+  .orbital-ring {
+    animation: spin 20s linear infinite;
+    pointer-events: none;
+  }
+
+  .orbital-ring-slow {
+    animation: spin 30s linear infinite reverse;
+    pointer-events: none;
+  }
+
+  /* Pulse animations */
+  .pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Gradient text */
+  .gradient-text-blue {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400;
+  }
+
+  .gradient-text-purple {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400;
+  }
+
+  .gradient-text-teal {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400;
+  }
+
+  /* Backdrop filters */
+  .backdrop-blur-strong {
+    backdrop-filter: blur(20px);
+  }
+
+  /* Interactive hover states */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-glow-blue {
+    @apply transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30;
+  }
+
+  .hover-glow-purple {
+    @apply transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30;
+  }
+
+  /* Progress bars with glow */
+  .progress-bar-glow {
+    @apply relative h-2 bg-white/10 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-glow::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500;
+    width: var(--progress, 0%);
+    transition: width 0.5s ease;
+  }
+
+  /* Floating elements */
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Data visualization cards */
+  .viz-card {
+    @apply glass-card p-6 hover-lift hover-glow-blue;
+  }
+
+  /* Metric badges */
+  .metric-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  /* Connection lines (for orbital nodes) */
+  .connection-line {
+    @apply absolute h-px bg-gradient-to-r from-transparent via-white/20 to-transparent;
+  }
+}

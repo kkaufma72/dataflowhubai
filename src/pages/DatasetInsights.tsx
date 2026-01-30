@@ -4,8 +4,6 @@ import { Database, BarChart2, TrendingUp, Calendar, FileText, Filter, Loader, Ac
 import { useNavigate } from 'react-router-dom';
 import { calculateDatasetHealth, getHealthBadgeProps } from '../utils/datasetHealthScore';
 import QueryBuilderModal from '../components/data/QueryBuilderModal';
-import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
-import { useDatasetKnowledge } from '../hooks/useDatasetKnowledge';
 
 const WarehouseAnalyticsDashboard = lazy(() => import('../components/analytics/WarehouseAnalyticsDashboard'));
 const DatasetKnowledgePanel = lazy(() => import('../components/data/DatasetKnowledgePanel'));
@@ -14,171 +12,17 @@ const DatasetKnowledgePanel = lazy(() => import('../components/data/DatasetKnowl
 let ChartComponents: any = null;
 const loadCharts = async () => {
   if (!ChartComponents) {
-    const [{ Bar, Pie, Line }, { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler }] = await Promise.all([
+    const [{ Bar, Pie, Line, Doughnut }, { Chart: ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler }] = await Promise.all([
       import('react-chartjs-2'),
       import('chart.js')
     ]);
     
     ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
     
-    ChartComponents = { Bar, Pie, Line };
+    ChartComponents = { Bar, Pie, Line, Doughnut };
   }
   return ChartComponents;
 };
-
-// Generate realistic mock time-series data
-const generateMockTimeSeriesData = (days: number = 30) => {
-  const data: number[] = [];
-  let baseValue = 5;
-  
-  for (let i = 0; i < days; i++) {
-    // Create realistic fluctuations with trends
-    const trend = 0.1; // Slight upward trend
-    const seasonality = Math.sin(i / 7) * 2; // Weekly pattern
-    const noise = (Math.random() - 0.5) * 3;
-    const spike = (i % 7 === 0 || i % 7 === 6) ? Math.random() * 5 : 0; // Weekend spikes
-    
-    baseValue = Math.max(0, baseValue + trend + seasonality + noise + spike);
-    data.push(Math.round(baseValue));
-  }
-  
-  return data;
-};
-
-// Generate mock data volume metrics
-const generateMockDataVolume = () => {
-  const metrics = [];
-  const now = new Date();
-  
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    
-    // Simulate realistic data ingestion patterns
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    const baseVolume = 120 + Math.random() * 40; // 120-160 MB base
-    const weekendMultiplier = isWeekend ? 0.7 : 1.0; // Less on weekends
-    const trendMultiplier = 1 + (i / 30) * 0.3; // 30% growth over period
-    
-    metrics.push({
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      volume: Math.round(baseVolume * weekendMultiplier * trendMultiplier)
-    });
-  }
-  
-  return metrics;
-};
-
-// Prediction models configuration
-const predictionModels = [
-  {
-    id: 'marketing-campaigns',
-    name: 'Regression Model trained on Marketing Campaigns',
-    metric: 'Campaign ROI',
-    unit: '%',
-    color: 'rgb(59, 130, 246)', // Blue
-    historicalData: Array.from({ length: 30 }, (_, i) => {
-      const base = 145;
-      const trend = i * 0.8;
-      const seasonal = Math.sin(i / 7) * 12;
-      const noise = (Math.random() - 0.5) * 8;
-      return Math.max(100, Math.round(base + trend + seasonal + noise));
-    }),
-    forecastData: Array.from({ length: 14 }, (_, i) => {
-      const base = 170;
-      const trend = i * 0.9;
-      const seasonal = Math.sin((30 + i) / 7) * 12;
-      const noise = (Math.random() - 0.5) * 6;
-      return Math.round(base + trend + seasonal + noise);
-    })
-  },
-  {
-    id: 'sales-forecast',
-    name: 'Sales Revenue Forecasting',
-    metric: 'Revenue',
-    unit: 'K',
-    color: 'rgb(16, 185, 129)', // Emerald
-    historicalData: Array.from({ length: 30 }, (_, i) => {
-      const base = 280;
-      const trend = i * 1.2;
-      const seasonal = Math.sin(i / 5) * 25;
-      const noise = (Math.random() - 0.5) * 15;
-      return Math.max(200, Math.round(base + trend + seasonal + noise));
-    }),
-    forecastData: Array.from({ length: 14 }, (_, i) => {
-      const base = 320;
-      const trend = i * 1.4;
-      const seasonal = Math.sin((30 + i) / 5) * 25;
-      const noise = (Math.random() - 0.5) * 12;
-      return Math.round(base + trend + seasonal + noise);
-    })
-  },
-  {
-    id: 'customer-churn',
-    name: 'Customer Churn Prediction',
-    metric: 'Churn Rate',
-    unit: '%',
-    color: 'rgb(249, 115, 22)', // Orange
-    historicalData: Array.from({ length: 30 }, (_, i) => {
-      const base = 8.5;
-      const trend = -i * 0.08; // Improving (decreasing)
-      const seasonal = Math.sin(i / 6) * 1.5;
-      const noise = (Math.random() - 0.5) * 0.8;
-      return Math.max(3, parseFloat((base + trend + seasonal + noise).toFixed(2)));
-    }),
-    forecastData: Array.from({ length: 14 }, (_, i) => {
-      const base = 6.2;
-      const trend = -i * 0.06; // Continuing to improve
-      const seasonal = Math.sin((30 + i) / 6) * 1.5;
-      const noise = (Math.random() - 0.5) * 0.6;
-      return parseFloat((base + trend + seasonal + noise).toFixed(2));
-    })
-  },
-  {
-    id: 'inventory-demand',
-    name: 'Inventory Demand Forecasting',
-    metric: 'Units',
-    unit: '',
-    color: 'rgb(168, 85, 247)', // Purple
-    historicalData: Array.from({ length: 30 }, (_, i) => {
-      const base = 1850;
-      const trend = i * 15;
-      const seasonal = Math.sin(i / 4) * 180;
-      const noise = (Math.random() - 0.5) * 100;
-      return Math.max(1000, Math.round(base + trend + seasonal + noise));
-    }),
-    forecastData: Array.from({ length: 14 }, (_, i) => {
-      const base = 2300;
-      const trend = i * 18;
-      const seasonal = Math.sin((30 + i) / 4) * 180;
-      const noise = (Math.random() - 0.5) * 80;
-      return Math.round(base + trend + seasonal + noise);
-    })
-  },
-  {
-    id: 'web-traffic',
-    name: 'Web Traffic Prediction',
-    metric: 'Visitors',
-    unit: 'K',
-    color: 'rgb(236, 72, 153)', // Pink
-    historicalData: Array.from({ length: 30 }, (_, i) => {
-      const base = 42;
-      const trend = i * 0.6;
-      const seasonal = Math.sin(i / 7) * 8;
-      const weekendBoost = (i % 7 === 0 || i % 7 === 6) ? 12 : 0;
-      const noise = (Math.random() - 0.5) * 5;
-      return Math.max(25, Math.round(base + trend + seasonal + weekendBoost + noise));
-    }),
-    forecastData: Array.from({ length: 14 }, (_, i) => {
-      const base = 60;
-      const trend = i * 0.7;
-      const seasonal = Math.sin((30 + i) / 7) * 8;
-      const weekendBoost = ((30 + i) % 7 === 0 || (30 + i) % 7 === 6) ? 12 : 0;
-      const noise = (Math.random() - 0.5) * 4;
-      return Math.round(base + trend + seasonal + weekendBoost + noise);
-    })
-  }
-];
 
 const DatasetInsights: React.FC = () => {
   const { datasets } = useMLContext();
@@ -188,8 +32,19 @@ const DatasetInsights: React.FC = () => {
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComp, setChartComp] = useState<any>(null);
   const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(null);
-  const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
   const [showQueryBuilder, setShowQueryBuilder] = useState(false);
+  const [selectedCategoricalColumn, setSelectedCategoricalColumn] = useState<string>('');
+  const [selectedNumericColumn, setSelectedNumericColumn] = useState<string>('');
+  const pipelineRibbon = [
+    { label: 'Ingest', route: '/app/data' },
+    { label: 'Profile', route: '/app/data' },
+    { label: 'Features', route: '/app/train?step=2' },
+    { label: 'Train', route: '/app/train' },
+    { label: 'Evaluate', route: '/app/evaluate' },
+    { label: 'Deploy', route: '/app/deploy' },
+    { label: 'Monitor', route: '/app/train?step=3' },
+    { label: 'Insights', route: '/app/insights' },
+  ];
 
   // Load charts on mount
   useEffect(() => {
@@ -213,11 +68,396 @@ const DatasetInsights: React.FC = () => {
 
   const selectedDataset = datasets.find(d => d.id === selectedDatasetId);
 
+  const selectedDatasetLabel = selectedDataset?.name?.trim() || 'Untitled dataset';
+
+  type ColumnProfile = {
+    name: string;
+    sampleCount: number;
+    nullCount: number;
+    nonNullCount: number;
+    completenessPct: number; // 0..100
+    distinctCount: number;
+    inferredType: 'numeric' | 'categorical' | 'mixed' | 'unknown';
+    numeric?: { min: number; median: number; max: number; count: number };
+    topCategories?: Array<{ label: string; count: number }>;
+  };
+
+  const columnProfiles = useMemo(() => {
+    const cols = selectedDataset?.preview_data?.columns;
+    const rows = selectedDataset?.preview_data?.rows;
+    if (!cols || !rows || rows.length === 0) return null;
+
+    const normalize = (v: any) => {
+      if (v === null || v === undefined) return null;
+      const s = String(v).trim();
+      if (!s) return null;
+      const lowered = s.toLowerCase();
+      if (lowered === 'null' || lowered === 'none' || lowered === 'nan' || lowered === 'undefined') return null;
+      return s;
+    };
+
+    const profiles: ColumnProfile[] = cols.map((colName: string, colIndex: number) => {
+      const values = rows.map((r: any) => (Array.isArray(r) ? r[colIndex] : r?.[colName]));
+      const normalized = values.map(normalize);
+      const sampleCount = normalized.length;
+      const nonNullValues = normalized.filter((v) => v !== null) as string[];
+      const nonNullCount = nonNullValues.length;
+      const nullCount = sampleCount - nonNullCount;
+      const completenessPct = sampleCount > 0 ? (nonNullCount / sampleCount) * 100 : 0;
+
+      const distinctSet = new Set(nonNullValues.map((v) => v));
+      const distinctCount = distinctSet.size;
+
+      const numericParsed = nonNullValues
+        .map((v) => {
+          const n = Number(v);
+          return Number.isFinite(n) ? n : NaN;
+        })
+        .filter((n) => Number.isFinite(n));
+      const numericRatio = nonNullCount > 0 ? numericParsed.length / nonNullCount : 0;
+
+      const isNumeric = numericParsed.length > 0 && numericRatio >= 0.6;
+      const isCategorical = nonNullCount > 0 && !isNumeric;
+
+      let inferredType: ColumnProfile['inferredType'] = 'unknown';
+      if (isNumeric) inferredType = 'numeric';
+      else if (isCategorical) inferredType = 'categorical';
+      else if (nonNullCount > 0) inferredType = 'mixed';
+
+      const profile: ColumnProfile = {
+        name: colName,
+        sampleCount,
+        nullCount,
+        nonNullCount,
+        completenessPct,
+        distinctCount,
+        inferredType,
+      };
+
+      if (isNumeric) {
+        const sorted = [...numericParsed].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+        profile.numeric = { min: sorted[0], median, max: sorted[sorted.length - 1], count: sorted.length };
+      } else if (isCategorical) {
+        const counts: Record<string, number> = {};
+        nonNullValues.forEach((v) => {
+          const key = v.length > 60 ? `${v.slice(0, 57)}…` : v;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        profile.topCategories = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8)
+          .map(([label, count]) => ({ label, count }));
+      }
+
+      return profile;
+    });
+
+    return profiles;
+  }, [selectedDatasetId, selectedDataset?.preview_data]);
+
+  const numericColumns = useMemo(
+    () => (columnProfiles ? columnProfiles.filter((c) => c.inferredType === 'numeric').map((c) => c.name) : []),
+    [columnProfiles]
+  );
+  const categoricalColumns = useMemo(
+    () => (columnProfiles ? columnProfiles.filter((c) => c.inferredType === 'categorical').map((c) => c.name) : []),
+    [columnProfiles]
+  );
+
+  useEffect(() => {
+    // Reset or update column selections when dataset or available columns change
+    const catColValid = selectedCategoricalColumn && categoricalColumns.includes(selectedCategoricalColumn);
+    const numColValid = selectedNumericColumn && numericColumns.includes(selectedNumericColumn);
+    
+    if (!catColValid && categoricalColumns.length > 0) {
+      setSelectedCategoricalColumn(categoricalColumns[0]);
+    } else if (!categoricalColumns.length) {
+      setSelectedCategoricalColumn('');
+    }
+    
+    if (!numColValid && numericColumns.length > 0) {
+      setSelectedNumericColumn(numericColumns[0]);
+    } else if (!numericColumns.length) {
+      setSelectedNumericColumn('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDatasetId, categoricalColumns.join('|'), numericColumns.join('|')]);
+
+  const completenessChartData = useMemo(() => {
+    if (!columnProfiles) return null;
+    const top = [...columnProfiles]
+      .sort((a, b) => a.completenessPct - b.completenessPct)
+      .slice(0, 12);
+    return {
+      labels: top.map((c) => c.name),
+      datasets: [
+        {
+          label: 'Completeness %',
+          data: top.map((c) => Math.round(c.completenessPct)),
+          backgroundColor: (context: any) => {
+            const value = context.raw || 0;
+            // Gradient from red (low) to green (high)
+            if (value >= 90) return 'rgba(16, 185, 129, 0.7)';
+            if (value >= 70) return 'rgba(34, 197, 94, 0.6)';
+            if (value >= 50) return 'rgba(250, 204, 21, 0.6)';
+            if (value >= 30) return 'rgba(251, 146, 60, 0.6)';
+            return 'rgba(239, 68, 68, 0.6)';
+          },
+          borderColor: (context: any) => {
+            const value = context.raw || 0;
+            if (value >= 90) return 'rgb(16, 185, 129)';
+            if (value >= 70) return 'rgb(34, 197, 94)';
+            if (value >= 50) return 'rgb(250, 204, 21)';
+            if (value >= 30) return 'rgb(251, 146, 60)';
+            return 'rgb(239, 68, 68)';
+          },
+          borderWidth: 2,
+          borderRadius: 6,
+          borderSkipped: false,
+          hoverBorderWidth: 3,
+        },
+      ],
+    };
+  }, [columnProfiles]);
+
+  const selectedCategoryProfile = useMemo(() => {
+    if (!columnProfiles || !selectedCategoricalColumn) return null;
+    return columnProfiles.find((c) => c.name === selectedCategoricalColumn) || null;
+  }, [columnProfiles, selectedCategoricalColumn]);
+
+  const topCategoryChartData = useMemo(() => {
+    const cats = selectedCategoryProfile?.topCategories;
+    if (!cats || cats.length === 0) return null;
+    // Premium gradient colors
+    const colors = [
+      'rgba(99, 102, 241, 0.75)',   // Indigo
+      'rgba(168, 85, 247, 0.75)',   // Purple
+      'rgba(236, 72, 153, 0.75)',   // Pink
+      'rgba(14, 165, 233, 0.75)',   // Sky
+      'rgba(34, 197, 94, 0.75)',    // Green
+      'rgba(251, 146, 60, 0.75)',   // Orange
+      'rgba(250, 204, 21, 0.75)',   // Yellow
+      'rgba(239, 68, 68, 0.75)',    // Red
+    ];
+    const borderColors = [
+      'rgb(99, 102, 241)',
+      'rgb(168, 85, 247)',
+      'rgb(236, 72, 153)',
+      'rgb(14, 165, 233)',
+      'rgb(34, 197, 94)',
+      'rgb(251, 146, 60)',
+      'rgb(250, 204, 21)',
+      'rgb(239, 68, 68)',
+    ];
+    return {
+      labels: cats.map((c) => c.label),
+      datasets: [
+        {
+          label: selectedCategoricalColumn,
+          data: cats.map((c) => c.count),
+          backgroundColor: colors.slice(0, cats.length),
+          borderColor: borderColors.slice(0, cats.length),
+          borderWidth: 2,
+          hoverBorderWidth: 3,
+          hoverOffset: 8,
+        },
+      ],
+    };
+  }, [selectedCategoryProfile, selectedCategoricalColumn]);
+
+  const selectedNumericProfile = useMemo(() => {
+    if (!columnProfiles || !selectedNumericColumn) return null;
+    const p = columnProfiles.find((c) => c.name === selectedNumericColumn) || null;
+    return p?.numeric ? p : null;
+  }, [columnProfiles, selectedNumericColumn]);
+
+  const numericBandChartData = useMemo(() => {
+    const n = selectedNumericProfile?.numeric;
+    if (!n) return null;
+    return {
+      labels: ['Min', 'Median', 'Max'],
+      datasets: [
+        {
+          label: selectedNumericColumn,
+          data: [n.min, n.median, n.max],
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.65)',  // Blue
+            'rgba(168, 85, 247, 0.65)',  // Purple  
+            'rgba(16, 185, 129, 0.65)'   // Emerald
+          ],
+          borderColor: [
+            'rgb(59, 130, 246)',
+            'rgb(168, 85, 247)',
+            'rgb(16, 185, 129)'
+          ],
+          borderWidth: 2,
+          borderRadius: 8,
+          borderSkipped: false,
+          hoverBorderWidth: 3,
+        },
+      ],
+    };
+  }, [selectedNumericProfile, selectedNumericColumn]);
+
   // Filter datasets by type
   const filteredDatasets = useMemo(() => {
     if (filterType === 'all') return datasets;
     return datasets.filter(d => d.fileType?.toLowerCase() === filterType.toLowerCase());
   }, [datasets, filterType]);
+
+  const formatRelativeTime = (iso?: string) => {
+    if (!iso) return 'unknown';
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return 'unknown';
+    const diffMs = Date.now() - then;
+    const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+    if (diffSec < 60) return `${diffSec}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  };
+
+  const datasetStats = useMemo(() => {
+    if (!selectedDataset) return null;
+    const qualityScore = selectedDataset.quality?.score;
+    const nulls = selectedDataset.preview_data?.rows?.length
+      ? selectedDataset.preview_data.columns.map((col, idx) => {
+          let nullCount = 0;
+          selectedDataset.preview_data?.rows?.forEach((row: any) => {
+            const value = Array.isArray(row) ? row[idx] : row[col];
+            if (value === null || value === undefined || value === '') nullCount += 1;
+          });
+          return { col, nullPct: selectedDataset.preview_data!.rows.length ? (nullCount / selectedDataset.preview_data!.rows.length) * 100 : 0 };
+        })
+      : [];
+    const topNull = nulls.length ? [...nulls].sort((a, b) => b.nullPct - a.nullPct)[0] : null;
+    return {
+      rows: selectedDataset.rows || 0,
+      columns: selectedDataset.columns || 0,
+      fileType: selectedDataset.fileType || 'Unknown',
+      fileSize: selectedDataset.fileSize || 'N/A',
+      uploaded: selectedDataset.dateUploaded,
+      qualityScore,
+      topNull,
+    };
+  }, [selectedDataset]);
+
+  const firstNumericColumn = useMemo(() => {
+    if (!selectedDataset?.preview_data?.columns || !selectedDataset.preview_data.rows?.length) return null;
+    const { columns, rows } = selectedDataset.preview_data;
+    return columns.find((col, idx) => {
+      const sampleValues = rows.slice(0, 12).map((row: any) => (Array.isArray(row) ? row[idx] : row[col]));
+      return sampleValues.some((val) => !Number.isNaN(parseFloat(val)));
+    }) || null;
+  }, [selectedDataset]);
+
+  const firstCategoricalColumn = useMemo(() => {
+    if (!selectedDataset?.preview_data?.columns || !selectedDataset.preview_data.rows?.length) return null;
+    const { columns, rows } = selectedDataset.preview_data;
+    return columns.find((col, idx) => {
+      const sampleValues = rows.slice(0, 12).map((row: any) => (Array.isArray(row) ? row[idx] : row[col]));
+      return sampleValues.every((val) => typeof val === 'string' || val === null || val === undefined);
+    }) || null;
+  }, [selectedDataset]);
+
+  const numericDistributionData = useMemo(() => {
+    if (!firstNumericColumn || !selectedDataset?.preview_data) return null;
+    const { columns, rows } = selectedDataset.preview_data;
+    const colIndex = columns.indexOf(firstNumericColumn);
+    const values = rows
+      .map((row: any) => (Array.isArray(row) ? row[colIndex] : row[firstNumericColumn]))
+      .map((v: any) => parseFloat(v))
+      .filter((v) => !Number.isNaN(v));
+    if (!values.length) return null;
+    const sorted = [...values].sort((a, b) => a - b);
+    const bins = 8;
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    const binSize = (max - min || 1) / bins;
+    const counts = Array.from({ length: bins }, () => 0);
+    sorted.forEach((v) => {
+      const idx = Math.min(bins - 1, Math.floor((v - min) / binSize));
+      counts[idx] += 1;
+    });
+    const labels = counts.map((_, idx) => {
+      const start = min + idx * binSize;
+      const end = start + binSize;
+      return `${start.toFixed(1)} - ${end.toFixed(1)}`;
+    });
+    return {
+      labels,
+      datasets: [{
+        label: firstNumericColumn,
+        data: counts,
+        backgroundColor: 'rgba(99, 102, 241, 0.6)',
+        borderColor: 'rgb(99, 102, 241)',
+        borderWidth: 2,
+        borderRadius: 6,
+        hoverBackgroundColor: 'rgba(99, 102, 241, 0.8)',
+        hoverBorderWidth: 3,
+      }]
+    };
+  }, [firstNumericColumn, selectedDataset]);
+
+  const categoricalDistributionData = useMemo(() => {
+    if (!firstCategoricalColumn || !selectedDataset?.preview_data) return null;
+    const { columns, rows } = selectedDataset.preview_data;
+    const colIndex = columns.indexOf(firstCategoricalColumn);
+    const counts: Record<string, number> = {};
+    rows.forEach((row: any) => {
+      const value = Array.isArray(row) ? row[colIndex] : row[firstCategoricalColumn];
+      const key = value === null || value === undefined || value === '' ? 'Unknown' : String(value);
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    if (!entries.length) return null;
+    // Premium gradient colors for pie/doughnut
+    const colors = [
+      'rgba(99, 102, 241, 0.8)',   // Indigo
+      'rgba(16, 185, 129, 0.8)',   // Emerald
+      'rgba(236, 72, 153, 0.8)',   // Pink
+      'rgba(251, 146, 60, 0.8)',   // Orange
+      'rgba(59, 130, 246, 0.8)',   // Blue
+      'rgba(168, 85, 247, 0.8)',   // Purple
+      'rgba(239, 68, 68, 0.8)',    // Red
+      'rgba(14, 165, 233, 0.8)',   // Sky
+    ];
+    const borderColors = [
+      'rgb(99, 102, 241)',
+      'rgb(16, 185, 129)',
+      'rgb(236, 72, 153)',
+      'rgb(251, 146, 60)',
+      'rgb(59, 130, 246)',
+      'rgb(168, 85, 247)',
+      'rgb(239, 68, 68)',
+      'rgb(14, 165, 233)',
+    ];
+    return {
+      labels: entries.map(([k]) => k),
+      datasets: [{
+        label: firstCategoricalColumn,
+        data: entries.map(([, v]) => v),
+        backgroundColor: colors.slice(0, entries.length),
+        borderColor: borderColors.slice(0, entries.length),
+        borderWidth: 2,
+        hoverBorderWidth: 3,
+        hoverOffset: 10,
+      }]
+    };
+  }, [firstCategoricalColumn, selectedDataset]);
+
+  const previewDistributionData = useMemo(
+    () => ({
+      numeric: numericDistributionData,
+      categorical: categoricalDistributionData,
+    }),
+    [numericDistributionData, categoricalDistributionData]
+  );
 
   // Get unique file types
   const fileTypes = useMemo(() => {
@@ -249,154 +489,22 @@ const DatasetInsights: React.FC = () => {
     };
   }, [datasets]);
 
-  const totalRows = stats.totalRows;
+  const parseFileSizeMB = (sizeStr: string | undefined) => {
+    const s = (sizeStr || '0 KB').trim().toUpperCase();
+    const n = Number.parseFloat(s);
+    if (!Number.isFinite(n)) return 0;
+    if (s.includes('GB')) return n * 1024;
+    if (s.includes('MB')) return n;
+    if (s.includes('KB')) return n / 1024;
+    return n;
+  };
 
-  // Dataset uploads over time chart - Enhanced with realistic mock data
-  const uploadsOverTimeData = useMemo(() => {
-    const last30Days: string[] = [];
-    const mockData = generateMockTimeSeriesData(30);
-    
-    // Generate last 30 days labels
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      last30Days.push(dateStr);
-    }
-    
-    // If we have real data, use it; otherwise use mock data
-    const useRealData = datasets.length > 5;
-    
-    let dataPoints: number[];
-    if (useRealData) {
-      const uploadsByDate: { [key: string]: number } = {};
-      last30Days.forEach(date => uploadsByDate[date] = 0);
-      
-      datasets.forEach(dataset => {
-        try {
-          const dateStr = dataset.dateUploaded || new Date().toISOString();
-          const date = new Date(dateStr).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
-          });
-          if (uploadsByDate.hasOwnProperty(date)) {
-            uploadsByDate[date]++;
-          }
-        } catch (e) {
-          console.warn('Invalid date for dataset:', dataset.id);
-        }
-      });
-      dataPoints = last30Days.map(date => uploadsByDate[date]);
-    } else {
-      // Use realistic mock data for demo purposes
-      dataPoints = mockData;
-    }
-    
-    return {
-      labels: last30Days,
-      datasets: [{
-        label: 'Datasets Uploaded',
-        data: dataPoints,
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        pointBackgroundColor: 'rgb(59, 130, 246)',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        borderWidth: 3
-      }]
-    };
-  }, [datasets]);
-
-  // File type distribution chart - Enhanced with better colors
-  const fileTypeDistributionData = useMemo(() => {
-    const typeCounts: { [key: string]: number } = {};
-    const typeBytes: { [key: string]: number } = {};
-    
-    datasets.forEach(dataset => {
-      const type = (dataset.fileType || 'unknown').toUpperCase();
-      typeCounts[type] = (typeCounts[type] || 0) + 1;
-      
-      // Calculate size in MB
-      const sizeStr = dataset.fileSize || '0 KB';
-      const sizeNum = parseFloat(sizeStr);
-      const sizeMB = sizeStr.includes('MB') ? sizeNum : sizeNum / 1024;
-      typeBytes[type] = (typeBytes[type] || 0) + sizeMB;
+  const formatDayLabel = (d: Date) =>
+    d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
     });
 
-    const colors = {
-      'CSV': { bg: 'rgba(59, 130, 246, 0.9)', border: 'rgb(59, 130, 246)' },    // Blue
-      'JSON': { bg: 'rgba(139, 92, 246, 0.9)', border: 'rgb(139, 92, 246)' },   // Purple
-      'XLSX': { bg: 'rgba(16, 185, 129, 0.9)', border: 'rgb(16, 185, 129)' },   // Green
-      'PARQUET': { bg: 'rgba(249, 115, 22, 0.9)', border: 'rgb(249, 115, 22)' }, // Orange
-      'XML': { bg: 'rgba(236, 72, 153, 0.9)', border: 'rgb(236, 72, 153)' },    // Pink
-      'TXT': { bg: 'rgba(251, 191, 36, 0.9)', border: 'rgb(251, 191, 36)' },    // Amber
-      'UNKNOWN': { bg: 'rgba(107, 114, 128, 0.9)', border: 'rgb(107, 114, 128)' } // Gray
-    };
-
-    const types = Object.keys(typeCounts);
-    const backgrounds = types.map(type => colors[type as keyof typeof colors]?.bg || 'rgba(107, 114, 128, 0.9)');
-    const borders = types.map(type => colors[type as keyof typeof colors]?.border || 'rgb(107, 114, 128)');
-
-    return {
-      labels: types.map(type => `${type} (${typeCounts[type]})`),
-      datasets: [{
-        label: 'File Types',
-        data: Object.values(typeCounts),
-        backgroundColor: backgrounds,
-        borderColor: borders,
-        borderWidth: 2,
-        hoverOffset: 15
-      }]
-    };
-  }, [datasets]);
-
-    // Row count distribution - Enhanced with better ranges and styling
-  const rowCountDistributionData = useMemo(() => {
-    const rowRanges: { [key: string]: number } = {
-      '< 1K': 0,
-      '1K - 10K': 0,
-      '10K - 100K': 0,
-      '100K - 1M': 0,
-      '> 1M': 0
-    };
-
-    datasets.forEach(dataset => {
-      const rows = dataset.rows || 0;
-      if (rows < 1000) rowRanges['< 1K']++;
-      else if (rows < 10000) rowRanges['1K - 10K']++;
-      else if (rows < 100000) rowRanges['10K - 100K']++;
-      else if (rows < 1000000) rowRanges['100K - 1M']++;
-      else rowRanges['> 1M']++;
-    });
-
-    // Create gradient colors for bars
-    const values = Object.values(rowRanges);
-    const maxValue = Math.max(...values, 1);
-    const backgroundColors = values.map(val => {
-      const intensity = 0.5 + (val / maxValue) * 0.5; // 0.5 to 1.0
-      return `rgba(16, 185, 129, ${intensity})`;
-    });
-
-    return {
-      labels: Object.keys(rowRanges),
-      datasets: [{
-        label: 'Datasets by Row Count',
-        data: values,
-        backgroundColor: backgroundColors,
-        borderColor: 'rgb(16, 185, 129)',
-        borderWidth: 2,
-        borderRadius: 8,
-        borderSkipped: false
-      }]
-    };
-  }, [datasets]);
 
   // Generate visualization data for selected dataset
   const visualizationData = useMemo(() => {
@@ -444,79 +552,135 @@ const DatasetInsights: React.FC = () => {
     };
   }, [selectedDataset]);
 
-  // Generate bar chart for numeric column
-  const generateBarChartData = (column: string) => {
+  // Generate histogram for numeric column (distribution chart)
+  const generateHistogramData = (column: string) => {
     if (!visualizationData) return null;
 
     const colIndex = visualizationData.columns.indexOf(column);
-    const values = visualizationData.rows
-      .slice(0, 10)
-      .map((row: any, idx: number) => {
+    const rawValues = visualizationData.rows
+      .map((row: any) => {
         const value = Array.isArray(row) ? row[colIndex] : row[column];
-        return {
-          label: `Row ${idx + 1}`,
-          value: parseFloat(value) || 0
-        };
-      });
+        return parseFloat(value);
+      })
+      .filter((v: number) => !isNaN(v) && isFinite(v));
+
+    if (rawValues.length === 0) return null;
+
+    // Create histogram bins
+    const min = Math.min(...rawValues);
+    const max = Math.max(...rawValues);
+    const binCount = Math.min(10, Math.ceil(Math.sqrt(rawValues.length)));
+    const binSize = (max - min) / binCount || 1;
+    
+    const bins: number[] = Array(binCount).fill(0);
+    rawValues.forEach((v: number) => {
+      const binIndex = Math.min(binCount - 1, Math.floor((v - min) / binSize));
+      bins[binIndex]++;
+    });
+
+    const labels = bins.map((_, idx) => {
+      const start = min + idx * binSize;
+      const end = start + binSize;
+      return `${start.toFixed(1)}-${end.toFixed(1)}`;
+    });
+
+    // Calculate stats for display
+    const mean = rawValues.reduce((a: number, b: number) => a + b, 0) / rawValues.length;
+    const sortedVals = [...rawValues].sort((a, b) => a - b);
+    const median = sortedVals[Math.floor(sortedVals.length / 2)];
 
     return {
-      labels: values.map(v => v.label),
-      datasets: [{
-        label: column,
-        data: values.map(v => v.value),
-        backgroundColor: 'rgba(99, 102, 241, 0.6)',
-        borderColor: 'rgb(99, 102, 241)',
-        borderWidth: 2
-      }]
+      chartData: {
+        labels,
+        datasets: [{
+          label: `Distribution of ${column}`,
+          data: bins,
+          backgroundColor: 'rgba(99, 102, 241, 0.6)',
+          borderColor: 'rgb(99, 102, 241)',
+          borderWidth: 2,
+          borderRadius: 4,
+          hoverBackgroundColor: 'rgba(99, 102, 241, 0.85)',
+        }]
+      },
+      stats: {
+        min: min.toFixed(2),
+        max: max.toFixed(2),
+        mean: mean.toFixed(2),
+        median: median.toFixed(2),
+        count: rawValues.length
+      }
     };
   };
 
-  // Generate pie chart for categorical column
-  const generatePieChartData = (column: string) => {
+  // Generate doughnut chart for categorical column
+  const generateDoughnutChartData = (column: string) => {
     if (!visualizationData) return null;
 
     const colIndex = visualizationData.columns.indexOf(column);
     const valueCounts: Record<string, number> = {};
+    let totalCount = 0;
     
     visualizationData.rows.forEach((row: any) => {
       const value = Array.isArray(row) ? row[colIndex] : row[column];
-      if (value !== null && value !== undefined) {
-        const key = String(value);
+      if (value !== null && value !== undefined && value !== '') {
+        const key = String(value).length > 20 ? String(value).slice(0, 17) + '...' : String(value);
         valueCounts[key] = (valueCounts[key] || 0) + 1;
+        totalCount++;
       }
     });
 
     const sortedEntries = Object.entries(valueCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 8);
+      .slice(0, 6);
 
     if (sortedEntries.length === 0) return null;
 
+    // Premium gradient colors
     const colors = [
-      'rgba(99, 102, 241, 0.6)',
-      'rgba(236, 72, 153, 0.6)',
-      'rgba(251, 146, 60, 0.6)',
-      'rgba(34, 197, 94, 0.6)',
-      'rgba(168, 85, 247, 0.6)',
-      'rgba(239, 68, 68, 0.6)',
-      'rgba(14, 165, 233, 0.6)',
-      'rgba(251, 191, 36, 0.6)'
+      'rgba(99, 102, 241, 0.85)',   // Indigo
+      'rgba(168, 85, 247, 0.85)',   // Purple
+      'rgba(236, 72, 153, 0.85)',   // Pink
+      'rgba(14, 165, 233, 0.85)',   // Sky
+      'rgba(34, 197, 94, 0.85)',    // Green
+      'rgba(251, 146, 60, 0.85)',   // Orange
+    ];
+    const borderColors = [
+      'rgb(99, 102, 241)',
+      'rgb(168, 85, 247)',
+      'rgb(236, 72, 153)',
+      'rgb(14, 165, 233)',
+      'rgb(34, 197, 94)',
+      'rgb(251, 146, 60)',
     ];
 
     return {
-      labels: sortedEntries.map(([key]) => key),
-      datasets: [{
-        label: column,
-        data: sortedEntries.map(([, count]) => count),
-        backgroundColor: colors.slice(0, sortedEntries.length),
-        borderWidth: 1
-      }]
+      chartData: {
+        labels: sortedEntries.map(([key]) => key),
+        datasets: [{
+          data: sortedEntries.map(([, count]) => count),
+          backgroundColor: colors.slice(0, sortedEntries.length),
+          borderColor: borderColors.slice(0, sortedEntries.length),
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      },
+      stats: {
+        uniqueValues: Object.keys(valueCounts).length,
+        topValue: sortedEntries[0]?.[0] || 'N/A',
+        topPercent: totalCount > 0 ? ((sortedEntries[0]?.[1] || 0) / totalCount * 100).toFixed(1) : '0',
+        totalCount
+      }
     };
   };
 
+  // Enhanced chart options with premium styling
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+      duration: 750,
+      easing: 'easeOutQuart' as const,
+    },
     interaction: {
       mode: 'index' as const,
       intersect: false,
@@ -525,25 +689,43 @@ const DatasetInsights: React.FC = () => {
       legend: {
         display: true,
         position: 'top' as const,
+        align: 'end' as const,
         labels: {
-          color: 'rgba(255, 255, 255, 0.8)',
+          color: 'rgba(255, 255, 255, 0.85)',
           font: {
-            size: 12,
-            family: "'Inter', sans-serif"
+            size: 11,
+            family: "'Inter', sans-serif",
+            weight: '500'
           },
-          padding: 15,
-          usePointStyle: true
+          padding: 16,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 6,
+          boxHeight: 6,
         }
       },
       tooltip: {
         enabled: true,
-        backgroundColor: 'rgba(17, 24, 39, 0.95)',
-        titleColor: 'rgba(255, 255, 255, 1)',
-        bodyColor: 'rgba(255, 255, 255, 0.9)',
-        borderColor: 'rgba(59, 130, 246, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        titleColor: '#fff',
+        titleFont: {
+          size: 13,
+          weight: '600',
+          family: "'Inter', sans-serif"
+        },
+        bodyColor: 'rgba(255, 255, 255, 0.85)',
+        bodyFont: {
+          size: 12,
+          family: "'Inter', sans-serif"
+        },
+        borderColor: 'rgba(99, 102, 241, 0.4)',
         borderWidth: 1,
-        padding: 12,
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+        cornerRadius: 8,
         displayColors: true,
+        boxPadding: 6,
+        caretSize: 6,
+        caretPadding: 10,
         callbacks: {
           label: function(context: any) {
             let label = context.dataset.label || '';
@@ -561,27 +743,44 @@ const DatasetInsights: React.FC = () => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false
+          color: 'rgba(255, 255, 255, 0.04)',
+          drawBorder: false,
+          lineWidth: 1,
+        },
+        border: {
+          display: false,
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.55)',
           font: {
-            size: 11
-          }
+            size: 10,
+            family: "'Inter', sans-serif",
+            weight: '400'
+          },
+          padding: 8,
+          maxRotation: 45,
+          minRotation: 0,
         }
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false
+          color: 'rgba(255, 255, 255, 0.04)',
+          drawBorder: false,
+          lineWidth: 1,
+        },
+        border: {
+          display: false,
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.7)',
+          color: 'rgba(255, 255, 255, 0.55)',
           font: {
-            size: 11
-          }
-        }
+            size: 10,
+            family: "'Inter', sans-serif",
+            weight: '400'
+          },
+          padding: 8,
+        },
+        beginAtZero: true,
       }
     }
   };
@@ -605,44 +804,65 @@ const DatasetInsights: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0d1117] p-6 space-y-6">
-      {/* TimescaleDB-Style Header with Breadcrumb */}
+      {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app')}>Home</span>
           <span className="text-gray-600">/</span>
-          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors">Data</span>
+          <span className="text-gray-500 hover:text-blue-400 cursor-pointer transition-colors" onClick={() => navigate('/app/data')}>Data</span>
           <span className="text-gray-600">/</span>
-          <span className="text-white font-medium">Insights & Charts</span>
+          <span className="text-white font-medium">Insights</span>
         </div>
-        
-        <div className="flex items-center justify-between">
-          <div>
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white">Dataset Analytics</h1>
+              <h1 className="text-3xl font-bold text-white">Dataset Insights</h1>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-md">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Connected</span>
-              </div>
-              <div className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-md">
-                <span className="text-xs font-medium text-blue-400">{datasets.length} Buckets</span>
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                <span className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Live</span>
               </div>
             </div>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Last query: {new Date().toLocaleTimeString()}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span className="text-emerald-400">Optimized queries</span>
-              </div>
+            <p className="text-sm text-gray-400">
+              Using <span className="text-white font-semibold">{selectedDatasetLabel}</span>
+              {selectedDataset?.dateUploaded && (
+                <> • Updated {formatRelativeTime(selectedDataset.dateUploaded)}</>
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {pipelineRibbon.map((step) => (
+                <button
+                  key={step.label}
+                  onClick={() => navigate(step.route)}
+                  className={`text-xs px-3 py-1 rounded-full border transition ${
+                    step.label === 'Insights'
+                      ? 'border-blue-500 text-blue-300 bg-blue-500/10'
+                      : 'border-white/10 text-gray-300 hover:border-blue-400 hover:text-blue-200'
+                  }`}
+                  aria-label={`Go to ${step.label}`}
+                >
+                  {step.label}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
+              <label htmlFor="dataset-select" className="text-xs text-gray-400">Dataset</label>
+              <select
+                id="dataset-select"
+                value={selectedDatasetId || ''}
+                onChange={(e) => setSelectedDatasetId(e.target.value)}
+                className="bg-transparent text-sm text-white focus:outline-none"
+              >
+                {datasets.map((ds) => (
+                  <option key={ds.id} value={ds.id} className="bg-gray-900 text-white">
+                    {ds.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button 
               onClick={() => setShowQueryBuilder(true)}
               disabled={!selectedDataset}
@@ -651,13 +871,7 @@ const DatasetInsights: React.FC = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Query Builder
-            </button>
-            <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 rounded-md flex items-center gap-2 transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export
+              Query
             </button>
             <button
               onClick={() =>
@@ -667,13 +881,39 @@ const DatasetInsights: React.FC = () => {
               disabled={!selectedDataset}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Train + Deploy + Monitor
+              Train
             </button>
-            <button onClick={() => navigate('/app/data')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-all">
+            <button onClick={() => navigate('/app/data')} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-md transition-all">
               Data Explorer
             </button>
           </div>
         </div>
+
+        {datasetStats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4">
+              <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">Rows</p>
+              <p className="text-xl font-semibold text-white">{datasetStats.rows.toLocaleString()}</p>
+            </div>
+            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4">
+              <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">Columns</p>
+              <p className="text-xl font-semibold text-white">{datasetStats.columns}</p>
+            </div>
+            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4">
+              <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">Format / Size</p>
+              <p className="text-sm font-semibold text-white">{datasetStats.fileType} • {datasetStats.fileSize}</p>
+            </div>
+            <div className="bg-[#161b22] border border-gray-800 rounded-lg p-4">
+              <p className="text-xs uppercase text-gray-500 tracking-wide mb-1">Data Quality</p>
+              <p className="text-sm font-semibold text-white">
+                {datasetStats.qualityScore !== undefined ? `${datasetStats.qualityScore}/100` : 'N/A'}
+              </p>
+              {datasetStats.topNull && (
+                <p className="text-xs text-gray-400 mt-1">Most nulls: {datasetStats.topNull.col} ({datasetStats.topNull.nullPct.toFixed(1)}%)</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tab Navigation */}
@@ -732,28 +972,23 @@ const DatasetInsights: React.FC = () => {
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Prediction Models Section - TimescaleDB Style */}
+          {/* Dataset Profile (preview-driven) */}
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 min-w-0">
                   <div className="w-1 h-4 bg-cyan-500 rounded-full"></div>
-                  <h3 className="text-sm font-semibold text-white">Prediction Models</h3>
-                  <span className="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
-                    {predictionModels.length} models
+                  <h3 className="text-sm font-semibold text-white truncate">Dataset Profile</h3>
+                  <span className="text-[10px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded truncate max-w-[260px]">
+                    {selectedDatasetLabel}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <select
-                    value={selectedPredictionModel}
-                    onChange={(e) => setSelectedPredictionModel(e.target.value)}
-                    className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
-                  >
-                    {predictionModels.map(model => (
-                      <option key={model.id} value={model.id}>{model.name}</option>
-                    ))}
-                  </select>
-                  <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-white">{columnProfiles ? columnProfiles.length : 0}</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Profiled cols</div>
+                  </div>
+                  <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400" aria-label="Dataset profile actions">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                     </svg>
@@ -762,174 +997,170 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
             <div className="p-4">
-              {(() => {
-                const model = predictionModels.find(m => m.id === selectedPredictionModel);
-                if (!model) return null;
-
-                // Combine historical and forecast data for labels
-                const labels = Array.from({ length: 44 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() - 30 + i);
-                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                });
-
-                const chartData = {
-                  labels,
-                  datasets: [
-                    {
-                      label: 'Historical Data',
-                      data: [...model.historicalData, ...Array(14).fill(null)],
-                      borderColor: model.color,
-                      backgroundColor: `${model.color.replace('rgb', 'rgba').replace(')', ', 0.1)')}`,
-                      tension: 0.4,
-                      fill: true,
-                      pointRadius: 0,
-                      pointHoverRadius: 4,
-                      pointBackgroundColor: model.color,
-                      pointBorderColor: '#fff',
-                      pointBorderWidth: 2,
-                      borderWidth: 2,
-                    },
-                    {
-                      label: 'Forecast',
-                      data: [...Array(30).fill(null), ...model.forecastData],
-                      borderColor: model.color,
-                      backgroundColor: `${model.color.replace('rgb', 'rgba').replace(')', ', 0.05)')}`,
-                      tension: 0.4,
-                      fill: true,
-                      pointRadius: 0,
-                      pointHoverRadius: 4,
-                      pointBackgroundColor: model.color,
-                      pointBorderColor: '#fff',
-                      pointBorderWidth: 2,
-                      borderWidth: 2,
-                      borderDash: [5, 5], // Dashed line for forecast
-                    }
-                  ]
-                };
-
-                // Calculate prediction stats
-                const lastHistorical = model.historicalData[model.historicalData.length - 1];
-                const lastForecast = model.forecastData[model.forecastData.length - 1];
-                const change = ((lastForecast - lastHistorical) / lastHistorical * 100).toFixed(1);
-                const avgForecast = (model.forecastData.reduce((a, b) => a + b, 0) / model.forecastData.length).toFixed(model.unit === '%' ? 1 : 0);
-
-                return (
-                  <div className="space-y-4">
-                    {/* Prediction Stats */}
-                    <div className="grid grid-cols-3 gap-4 pb-4 border-b border-gray-800">
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Current</div>
-                        <div className="text-2xl font-bold text-white">
-                          {lastHistorical}{model.unit}
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">14-Day Avg</div>
-                        <div className="text-2xl font-bold" style={{ color: model.color }}>
-                          {avgForecast}{model.unit}
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Projected Change</div>
-                        <div className={`text-2xl font-bold ${parseFloat(change) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {parseFloat(change) >= 0 ? '+' : ''}{change}%
-                        </div>
+              {!selectedDataset?.preview_data || !columnProfiles ? (
+                <div className="bg-[#0d1117] border border-gray-800 rounded p-4 text-sm text-gray-400">
+                  No preview sample available for this dataset. Import a dataset with preview rows to see column completeness, distinct counts, and distributions.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 pb-4 border-b border-gray-800">
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Rows sampled</div>
+                      <div className="text-2xl font-bold text-white">{selectedDataset.preview_data.rows.length.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Avg completeness</div>
+                      <div className="text-2xl font-bold text-emerald-400">
+                        {Math.round(
+                          columnProfiles.reduce((sum, c) => sum + c.completenessPct, 0) / Math.max(1, columnProfiles.length)
+                        )}%
                       </div>
                     </div>
-
-                    {/* Chart */}
-                    <div className="h-80">
-                      {chartsLoaded && ChartComp ? (
-                        <ChartComp.Line 
-                          data={chartData}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                              mode: 'index' as const,
-                              intersect: false,
-                            },
-                            plugins: {
-                              legend: {
-                                display: true,
-                                position: 'top' as const,
-                                align: 'end' as const,
-                                labels: {
-                                  color: 'rgba(255, 255, 255, 0.7)',
-                                  font: { size: 11 },
-                                  padding: 12,
-                                  usePointStyle: true,
-                                  boxWidth: 8,
-                                  boxHeight: 8,
-                                }
-                              },
-                              tooltip: {
-                                backgroundColor: 'rgba(22, 27, 34, 0.95)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                borderColor: model.color,
-                                borderWidth: 1,
-                                padding: 12,
-                                displayColors: true,
-                                callbacks: {
-                                  label: function(context: any) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    if (value !== null) {
-                                      return `${label}: ${value}${model.unit}`;
-                                    }
-                                    return '';
-                                  }
-                                }
-                              }
-                            },
-                            scales: {
-                              y: {
-                                grid: {
-                                  color: 'rgba(255, 255, 255, 0.03)',
-                                  drawBorder: false
-                                },
-                                ticks: {
-                                  color: 'rgba(255, 255, 255, 0.5)',
-                                  font: { size: 10 },
-                                  callback: function(value: any) {
-                                    return value + model.unit;
-                                  }
-                                }
-                              },
-                              x: {
-                                grid: { display: false },
-                                ticks: {
-                                  color: 'rgba(255, 255, 255, 0.5)',
-                                  font: { size: 10 },
-                                  maxRotation: 45,
-                                  minRotation: 45
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full flex items-center justify-center p-4">
-                          <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Prediction Info */}
-                    <div className="flex items-start gap-2 text-xs text-gray-400 bg-gray-800/30 rounded p-3 border border-gray-800">
-                      <svg className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div>
-                        <div className="font-semibold text-gray-300 mb-1">Model Information</div>
-                        <div>Solid line shows historical {model.metric.toLowerCase()} data. Dashed line indicates 14-day forecast with 95% confidence interval.</div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Numeric / Categorical</div>
+                      <div className="text-2xl font-bold text-white">
+                        {numericColumns.length} / {categoricalColumns.length}
                       </div>
                     </div>
                   </div>
-                );
-              })()}
+
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs text-gray-400">Lowest completeness (sample)</div>
+                      </div>
+                      <div className="h-64">
+                        {chartsLoaded && ChartComp && completenessChartData ? (
+                          <ChartComp.Bar
+                            key={`completeness-bar-${selectedDatasetId}`}
+                            redraw={true}
+                            data={completenessChartData}
+                            options={{
+                              ...chartOptions,
+                              plugins: { ...chartOptions.plugins, legend: { display: false } },
+                              scales: {
+                                x: {
+                                  ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { size: 10 } },
+                                  grid: { display: false },
+                                },
+                                y: {
+                                  min: 0,
+                                  max: 100,
+                                  ticks: {
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    font: { size: 10 },
+                                    callback: (v: any) => `${v}%`,
+                                  },
+                                  grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                                },
+                              },
+                            }}
+                          />
+                        ) : (
+                          <div className="h-full flex items-center justify-center">
+                            <Loader className="w-6 h-6 animate-spin text-cyan-400" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs text-gray-400">Top categories</div>
+                        <select
+                          value={selectedCategoricalColumn}
+                          onChange={(e) => setSelectedCategoricalColumn(e.target.value)}
+                          disabled={categoricalColumns.length === 0}
+                          className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                        >
+                          {categoricalColumns.length === 0 ? (
+                            <option value="">No categorical columns</option>
+                          ) : (
+                            categoricalColumns.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                      <div className="h-64">
+                        {chartsLoaded && ChartComp && topCategoryChartData ? (
+                          <ChartComp.Doughnut
+                            key={`top-category-doughnut-${selectedDatasetId}-${selectedCategoricalColumn}`}
+                            redraw={true}
+                            data={topCategoryChartData}
+                            options={{
+                              ...chartOptions,
+                              plugins: {
+                                ...chartOptions.plugins,
+                                legend: {
+                                  display: true,
+                                  position: 'right' as const,
+                                  labels: { color: 'rgba(255,255,255,0.7)', font: { size: 10 }, boxWidth: 10 },
+                                },
+                              },
+                            }}
+                          />
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-xs text-gray-500 border border-gray-800 rounded bg-[#0d1117]">
+                            {categoricalColumns.length === 0 ? 'No categorical columns in preview sample.' : 'Loading chart…'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs text-gray-400">Numeric range (min / median / max)</div>
+                      <select
+                        value={selectedNumericColumn}
+                        onChange={(e) => setSelectedNumericColumn(e.target.value)}
+                        disabled={numericColumns.length === 0}
+                        className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                      >
+                        {numericColumns.length === 0 ? (
+                          <option value="">No numeric columns</option>
+                        ) : (
+                          numericColumns.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                    <div className="h-56">
+                      {chartsLoaded && ChartComp && numericBandChartData ? (
+                        <ChartComp.Bar
+                          key={`numeric-band-${selectedDatasetId}-${selectedNumericColumn}`}
+                          redraw={true}
+                          data={numericBandChartData}
+                          options={{
+                            ...chartOptions,
+                            plugins: { ...chartOptions.plugins, legend: { display: false } },
+                            scales: {
+                              x: {
+                                ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { size: 10 } },
+                                grid: { display: false },
+                              },
+                              y: {
+                                ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } },
+                                grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                              },
+                            },
+                          }}
+                        />
+                      ) : (
+                        <div className="h-full flex items-center justify-center text-xs text-gray-500 border border-gray-800 rounded bg-[#0d1117]">
+                          {numericColumns.length === 0 ? 'No numeric columns in preview sample.' : 'Loading chart…'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1061,31 +1292,24 @@ const DatasetInsights: React.FC = () => {
 
           {/* Charts Grid - TimescaleDB Cell Style */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {/* Uploads Over Time - TimescaleDB Cell */}
+            {/* Numeric Distribution */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-white">Dataset Upload Rate</h3>
+                    <h3 className="text-sm font-semibold text-white">Numeric Distribution</h3>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-white">{datasets.length}</div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Total</div>
-                    </div>
-                    <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                      </svg>
-                    </button>
-                  </div>
+                  <span className="text-xs text-gray-400 truncate max-w-[200px]">{firstNumericColumn || 'No numeric column detected'}</span>
                 </div>
               </div>
               <div className="p-4">
                 <div className="h-64 relative">
-                  {chartsLoaded && ChartComp ? (
-                    <ChartComp.Line data={uploadsOverTimeData} options={{
+                  {chartsLoaded && ChartComp && numericDistributionData ? (
+                    <ChartComp.Bar
+                      key={`preview-numeric-dist-${selectedDatasetId}`}
+                      redraw={true}
+                      data={previewDistributionData.numeric} options={{
                       ...chartOptions,
                       plugins: {
                         ...chartOptions.plugins,
@@ -1093,61 +1317,52 @@ const DatasetInsights: React.FC = () => {
                         tooltip: {
                           ...chartOptions.plugins.tooltip,
                           backgroundColor: 'rgba(22, 27, 34, 0.95)',
-                          borderColor: 'rgba(59, 130, 246, 0.5)',
                         }
                       },
-                      elements: {
-                        line: {
-                          tension: 0.4,
-                          borderWidth: 2,
-                          borderColor: 'rgba(59, 130, 246, 1)',
-                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                          fill: true
+                      scales: {
+                        y: {
+                          grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                          ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10 } }
                         },
-                        point: {
-                          radius: 0,
-                          hitRadius: 10,
-                          hoverRadius: 4,
-                          backgroundColor: 'rgba(59, 130, 246, 1)',
-                          borderColor: '#fff',
-                          borderWidth: 2
+                        x: {
+                          ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 9 }, maxRotation: 0, minRotation: 0 },
+                          grid: { display: false }
                         }
                       }
                     }} />
                   ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Loader className="w-6 h-6 animate-spin text-blue-400" />
+                    <div className="flex items-center justify-center h-full text-sm text-gray-500 border border-dashed border-gray-800 rounded">
+                      {firstNumericColumn ? 'Loading…' : 'No numeric columns in preview.'}
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* File Type Distribution - TimescaleDB Cell */}
+            {/* Categorical distribution */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-white">File Format Distribution</h3>
+                    <h3 className="text-sm font-semibold text-white">Top Categories</h3>
                   </div>
-                  <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                    </svg>
-                  </button>
+                  <span className="text-xs text-gray-400 truncate max-w-[200px]">{firstCategoricalColumn || 'No categorical column detected'}</span>
                 </div>
               </div>
               <div className="p-4">
                 <div className="h-64">
-                  {chartsLoaded && ChartComp ? (
-                    <ChartComp.Pie data={fileTypeDistributionData} options={{
+                  {chartsLoaded && ChartComp && categoricalDistributionData ? (
+                    <ChartComp.Pie
+                      key={`preview-cat-pie-${selectedDatasetId}`}
+                      redraw={true}
+                      data={previewDistributionData.categorical} options={{
                       ...chartOptions,
                       plugins: {
                         ...chartOptions.plugins,
                         legend: {
                           display: true,
-                          position: 'right',
+                          position: 'right' as const,
                           labels: {
                             color: 'rgba(255, 255, 255, 0.7)',
                             font: { size: 11, family: "'Inter', sans-serif" },
@@ -1165,27 +1380,23 @@ const DatasetInsights: React.FC = () => {
                       }
                     }} />
                   ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Loader className="w-6 h-6 animate-spin text-purple-400" />
+                    <div className="flex items-center justify-center h-full text-sm text-gray-500 border border-dashed border-gray-800 rounded">
+                      {firstCategoricalColumn ? 'Loading…' : 'No categorical columns in preview.'}
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Row Count Distribution - TimescaleDB Cell */}
+            {/* Column Completeness */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-white">Dataset Size Distribution</h3>
+                    <h3 className="text-sm font-semibold text-white">Column Completeness</h3>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-white">{totalRows.toLocaleString()}</div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Total Rows</div>
-                    </div>
                     <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
@@ -1196,34 +1407,32 @@ const DatasetInsights: React.FC = () => {
               </div>
               <div className="p-4">
                 <div className="h-64">
-                  {chartsLoaded && ChartComp ? (
-                    <ChartComp.Bar data={rowCountDistributionData} options={{
+                  {chartsLoaded && ChartComp && completenessChartData ? (
+                    <ChartComp.Bar
+                      key={`completeness-chart-2-${selectedDatasetId}`}
+                      redraw={true}
+                      data={completenessChartData} options={{
                       ...chartOptions,
                       plugins: {
                         ...chartOptions.plugins,
                         legend: { display: false },
                         tooltip: {
                           ...chartOptions.plugins.tooltip,
-                          backgroundColor: 'rgba(22, 27, 34, 0.95)',
+                          callbacks: {
+                            label: (ctx: any) => `${ctx.parsed.y.toFixed(1)}% complete`
+                          }
                         }
                       },
                       scales: {
                         y: {
-                          grid: {
-                            color: 'rgba(255, 255, 255, 0.03)',
-                            drawBorder: false
-                          },
-                          ticks: {
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            font: { size: 10 }
-                          }
+                          min: 0,
+                          max: 100,
+                          grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                          ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { size: 10 }, callback: (v: any) => `${v}%` }
                         },
                         x: {
                           grid: { display: false },
-                          ticks: {
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            font: { size: 10 }
-                          }
+                          ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { size: 10 } }
                         }
                       }
                     }} />
@@ -1236,18 +1445,18 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* Column Statistics - TimescaleDB Cell */}
+            {/* Schema Snapshot */}
             <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
               <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-white">Dataset Schemas</h3>
+                    <h3 className="text-sm font-semibold text-white">Schema Snapshot</h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-white">{datasets.length}</div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Datasets</div>
+                      <div className="text-2xl font-bold text-white">{selectedDataset?.columns || 0}</div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Columns</div>
                     </div>
                     <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1259,32 +1468,40 @@ const DatasetInsights: React.FC = () => {
               </div>
               <div className="p-4">
                 <div className="h-64 overflow-y-auto space-y-2">
-                  {datasets.slice(0, 5).map((dataset, idx) => (
-                    <div key={dataset.id} className="group flex items-center justify-between p-3 bg-[#0d1117] hover:bg-gray-800/50 rounded border border-gray-800 hover:border-gray-700 transition-all duration-200">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-orange-500/10 flex items-center justify-center border border-orange-500/30">
-                          <span className="text-[10px] font-bold text-orange-400">{idx + 1}</span>
+                  {selectedDataset?.preview_data?.columns?.length ? (
+                    selectedDataset.preview_data.columns.slice(0, 12).map((col, idx) => {
+                      const profile = columnProfiles?.find((c) => c.name === col);
+                      return (
+                        <div key={col} className="group flex items-center justify-between p-3 bg-[#0d1117] hover:bg-gray-800/50 rounded border border-gray-800 hover:border-gray-700 transition-all duration-200">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded bg-orange-500/10 flex items-center justify-center border border-orange-500/30">
+                              <span className="text-[10px] font-bold text-orange-400">{idx + 1}</span>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-white block group-hover:text-blue-400 transition-colors">{col}</span>
+                              <span className="text-[10px] text-gray-500 uppercase">{profile?.inferredType || 'unknown'}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-6 text-[11px]">
+                            <div className="text-right">
+                              <div className="text-white font-semibold">
+                                {profile ? `${profile.completenessPct.toFixed(0)}%` : '—'}
+                              </div>
+                              <div className="text-gray-500">complete</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-white font-semibold">
+                                {profile?.distinctCount ?? '—'}
+                              </div>
+                              <div className="text-gray-500">distinct</div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-sm font-medium text-white block group-hover:text-blue-400 transition-colors">{dataset.name}</span>
-                          <span className="text-[10px] text-gray-500 uppercase">{(dataset.fileType || 'unknown')}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6 text-[11px]">
-                        <div className="text-right">
-                          <div className="text-white font-semibold">{dataset.columns || 0}</div>
-                          <div className="text-gray-500">cols</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white font-semibold">{(dataset.rows || 0).toLocaleString()}</div>
-                          <div className="text-gray-500">rows</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {datasets.length > 5 && (
-                    <div className="text-center py-2 text-[11px] text-gray-500 border-t border-gray-800 mt-2">
-                      +{datasets.length - 5} more datasets
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-6 text-sm text-gray-500 border border-dashed border-gray-800 rounded">
+                      No schema preview available for this dataset.
                     </div>
                   )}
                 </div>
@@ -1306,9 +1523,26 @@ const DatasetInsights: React.FC = () => {
                     <div className="text-right">
                       <div className="text-2xl font-bold text-white">
                         {(() => {
-                          const volumeData = generateMockDataVolume();
-                          const avgVolume = volumeData.reduce((sum, d) => sum + d.volume, 0) / volumeData.length;
-                          return `${avgVolume.toFixed(0)}`;
+                          const last30Days: string[] = [];
+                          for (let i = 29; i >= 0; i--) {
+                            const d = new Date();
+                            d.setDate(d.getDate() - i);
+                            last30Days.push(formatDayLabel(d));
+                          }
+                          const mbByDay: Record<string, number> = {};
+                          last30Days.forEach((label) => (mbByDay[label] = 0));
+                          datasets.forEach((dataset) => {
+                            if (!dataset.dateUploaded) return;
+                            const parsed = new Date(dataset.dateUploaded);
+                            if (Number.isNaN(parsed.getTime())) return;
+                            const label = formatDayLabel(parsed);
+                            if (Object.prototype.hasOwnProperty.call(mbByDay, label)) {
+                              mbByDay[label] += parseFileSizeMB(dataset.fileSize);
+                            }
+                          });
+                          const values = last30Days.map((label) => mbByDay[label] || 0);
+                          const avg = values.reduce((s, v) => s + v, 0) / Math.max(1, values.length);
+                          return `${avg.toFixed(0)}`;
                         })()}
                       </div>
                       <div className="text-[10px] text-gray-500 uppercase tracking-wider">MB/day Avg</div>
@@ -1324,24 +1558,47 @@ const DatasetInsights: React.FC = () => {
               <div className="p-4">
                 <div className="h-64 relative">
                   {chartsLoaded && ChartComp ? (
-                    <ChartComp.Line 
-                      data={{
-                        labels: generateMockDataVolume().map(d => d.date),
-                        datasets: [{
-                          label: 'Data Volume (MB)',
-                          data: generateMockDataVolume().map(d => d.volume),
-                          borderColor: 'rgb(34, 211, 238)',
-                          backgroundColor: 'rgba(34, 211, 238, 0.1)',
-                          tension: 0.4,
-                          fill: true,
-                          pointRadius: 0,
-                          pointHoverRadius: 4,
-                          pointBackgroundColor: 'rgb(34, 211, 238)',
-                          pointBorderColor: '#fff',
-                          pointBorderWidth: 2,
-                          borderWidth: 2
-                        }]
-                      }}
+                    <ChartComp.Line
+                      key={`uploads-line-${selectedDatasetId}`}
+                      redraw={true}
+                      data={(() => {
+                        const last30Days: string[] = [];
+                        for (let i = 29; i >= 0; i--) {
+                          const d = new Date();
+                          d.setDate(d.getDate() - i);
+                          last30Days.push(formatDayLabel(d));
+                        }
+                        const mbByDay: Record<string, number> = {};
+                        last30Days.forEach((label) => (mbByDay[label] = 0));
+                        datasets.forEach((dataset) => {
+                          if (!dataset.dateUploaded) return;
+                          const parsed = new Date(dataset.dateUploaded);
+                          if (Number.isNaN(parsed.getTime())) return;
+                          const label = formatDayLabel(parsed);
+                          if (Object.prototype.hasOwnProperty.call(mbByDay, label)) {
+                            mbByDay[label] += parseFileSizeMB(dataset.fileSize);
+                          }
+                        });
+                        return {
+                          labels: last30Days,
+                          datasets: [
+                            {
+                              label: 'Ingested (MB)',
+                              data: last30Days.map((label) => Math.round(mbByDay[label] || 0)),
+                              borderColor: 'rgb(34, 211, 238)',
+                              backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                              tension: 0.4,
+                              fill: true,
+                              pointRadius: 0,
+                              pointHoverRadius: 4,
+                              pointBackgroundColor: 'rgb(34, 211, 238)',
+                              pointBorderColor: '#fff',
+                              pointBorderWidth: 2,
+                              borderWidth: 2,
+                            },
+                          ],
+                        };
+                      })()}
                       options={{
                         ...chartOptions,
                         plugins: {
@@ -1352,7 +1609,7 @@ const DatasetInsights: React.FC = () => {
                             backgroundColor: 'rgba(22, 27, 34, 0.95)',
                             callbacks: {
                               label: function(context: any) {
-                                return `Volume: ${context.parsed.y} MB`;
+                                return `Ingested: ${context.parsed.y} MB`;
                               }
                             }
                           }
@@ -1387,109 +1644,6 @@ const DatasetInsights: React.FC = () => {
               </div>
             </div>
 
-            {/* Data Quality Trend - TimescaleDB Cell */}
-            <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
-              <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
-                    <h3 className="text-sm font-semibold text-white">Data Quality Trend</h3>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-emerald-400">94%</div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Current Score</div>
-                    </div>
-                    <button className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-gray-400">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="h-64 relative">
-                  {chartsLoaded && ChartComp ? (
-                    <ChartComp.Line 
-                      data={{
-                        labels: (() => {
-                          const labels = [];
-                          for (let i = 29; i >= 0; i--) {
-                            const date = new Date();
-                            date.setDate(date.getDate() - i);
-                            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-                          }
-                          return labels;
-                        })(),
-                        datasets: [{
-                          label: 'Quality Score',
-                          data: (() => {
-                            const scores = [];
-                            let baseScore = 88;
-                            for (let i = 0; i < 30; i++) {
-                              baseScore += (Math.random() - 0.4) * 2;
-                              baseScore = Math.min(98, Math.max(85, baseScore));
-                              scores.push(Math.round(baseScore));
-                            }
-                            return scores;
-                          })(),
-                          borderColor: 'rgb(16, 185, 129)',
-                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                          tension: 0.4,
-                          fill: true,
-                          pointRadius: 0,
-                          pointHoverRadius: 4,
-                          pointBackgroundColor: 'rgb(16, 185, 129)',
-                          pointBorderColor: '#fff',
-                          pointBorderWidth: 2,
-                          borderWidth: 2
-                        }]
-                      }}
-                      options={{
-                        ...chartOptions,
-                        plugins: {
-                          ...chartOptions.plugins,
-                          legend: { display: false },
-                          tooltip: {
-                            ...chartOptions.plugins.tooltip,
-                            backgroundColor: 'rgba(22, 27, 34, 0.95)',
-                          }
-                        },
-                        scales: {
-                          y: {
-                            min: 80,
-                            max: 100,
-                            grid: {
-                              color: 'rgba(255, 255, 255, 0.03)',
-                              drawBorder: false
-                            },
-                            ticks: {
-                              color: 'rgba(255, 255, 255, 0.5)',
-                              font: { size: 10 },
-                              callback: function(value: any) {
-                                return value + '%';
-                              }
-                            }
-                          },
-                          x: {
-                            grid: { display: false },
-                            ticks: {
-                              color: 'rgba(255, 255, 255, 0.5)',
-                              font: { size: 10 }
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Loader className="w-6 h-6 animate-spin text-emerald-400" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Dataset List - TimescaleDB Table Style */}
@@ -1585,7 +1739,7 @@ const DatasetInsights: React.FC = () => {
       {/* Visualizations Tab */}
       {activeTab === 'visualizations' && (
         <div className="space-y-6">
-          {/* Dataset Selector - TimescaleDB Style */}
+          {/* Dataset Selector */}
           <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
               <div className="flex items-center gap-2">
@@ -1613,26 +1767,64 @@ const DatasetInsights: React.FC = () => {
 
           {/* Visualizations */}
           {visualizationData ? (
-            <div className="space-y-6" key={selectedDatasetId}>
-              {/* Numeric Columns */}
+            <div className="space-y-8" key={selectedDatasetId}>
+              {/* Numeric Column Distributions */}
               {visualizationData.numericColumns.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Numeric Data Visualizations</h3>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-center">
+                      <BarChart2 className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Numeric Distributions</h3>
+                      <p className="text-xs text-gray-500">Histogram analysis of numeric columns</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    {visualizationData.numericColumns.slice(0, 4).map((column: string) => {
-                      const data = generateBarChartData(column);
-                      return data ? (
-                        <div key={`${selectedDatasetId}-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
+                    {visualizationData.numericColumns.slice(0, 6).map((column: string) => {
+                      const result = generateHistogramData(column);
+                      if (!result) return null;
+                      const { chartData, stats } = result;
+                      return (
+                        <div key={`${selectedDatasetId}-hist-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-blue-500/30 transition-colors">
                           <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-                              <h4 className="text-sm font-semibold text-white">{column}</h4>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                                <h4 className="text-sm font-semibold text-white">{column}</h4>
+                              </div>
+                              <span className="text-xs text-gray-500">{stats.count} values</span>
                             </div>
                           </div>
                           <div className="p-4">
-                            <div className="h-64">
+                            {/* Stats row */}
+                            <div className="grid grid-cols-4 gap-2 mb-4">
+                              <div className="bg-gray-800/50 rounded px-2 py-1.5 text-center">
+                                <div className="text-[10px] text-gray-500 uppercase">Min</div>
+                                <div className="text-xs font-medium text-gray-300">{stats.min}</div>
+                              </div>
+                              <div className="bg-gray-800/50 rounded px-2 py-1.5 text-center">
+                                <div className="text-[10px] text-gray-500 uppercase">Max</div>
+                                <div className="text-xs font-medium text-gray-300">{stats.max}</div>
+                              </div>
+                              <div className="bg-gray-800/50 rounded px-2 py-1.5 text-center">
+                                <div className="text-[10px] text-gray-500 uppercase">Mean</div>
+                                <div className="text-xs font-medium text-blue-400">{stats.mean}</div>
+                              </div>
+                              <div className="bg-gray-800/50 rounded px-2 py-1.5 text-center">
+                                <div className="text-[10px] text-gray-500 uppercase">Median</div>
+                                <div className="text-xs font-medium text-purple-400">{stats.median}</div>
+                              </div>
+                            </div>
+                            <div className="h-48">
                               {chartsLoaded && ChartComp ? (
-                                <ChartComp.Bar data={data} options={chartOptions} />
+                                <ChartComp.Bar
+                                  key={`hist-${selectedDatasetId}-${column}`}
+                                  redraw={true}
+                                  data={chartData} options={{
+                                  ...chartOptions,
+                                  plugins: { ...chartOptions.plugins, legend: { display: false } }
+                                }} />
                               ) : (
                                 <div className="flex items-center justify-center h-full">
                                   <Loader className="w-6 h-6 animate-spin text-blue-400" />
@@ -1641,31 +1833,76 @@ const DatasetInsights: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      ) : null;
+                      );
                     })}
                   </div>
                 </div>
               )}
 
-              {/* Categorical Columns */}
+              {/* Categorical Column Distributions */}
               {visualizationData.categoricalColumns.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">Categorical Data Visualizations</h3>
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    {visualizationData.categoricalColumns.slice(0, 4).map((column: string) => {
-                      const data = generatePieChartData(column);
-                      return data ? (
-                        <div key={`${selectedDatasetId}-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-purple-500/10 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                      <PieChart className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Category Distributions</h3>
+                      <p className="text-xs text-gray-500">Value distribution for categorical columns</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                    {visualizationData.categoricalColumns.slice(0, 6).map((column: string) => {
+                      const result = generateDoughnutChartData(column);
+                      if (!result) return null;
+                      const { chartData, stats } = result;
+                      return (
+                        <div key={`${selectedDatasetId}-cat-${column}`} className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden hover:border-purple-500/30 transition-colors">
                           <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
-                              <h4 className="text-sm font-semibold text-white">{column}</h4>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                                <h4 className="text-sm font-semibold text-white">{column}</h4>
+                              </div>
+                              <span className="text-xs text-gray-500">{stats.uniqueValues} unique</span>
                             </div>
                           </div>
                           <div className="p-4">
-                            <div className="h-64">
-                              {chartsLoaded && ChartComp ? (
-                                <ChartComp.Pie data={data} options={chartOptions} />
+                            {/* Stats row */}
+                            <div className="flex items-center justify-between mb-3 px-1">
+                              <div>
+                                <div className="text-[10px] text-gray-500 uppercase">Top Value</div>
+                                <div className="text-xs font-medium text-white">{stats.topValue}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-[10px] text-gray-500 uppercase">Frequency</div>
+                                <div className="text-xs font-medium text-purple-400">{stats.topPercent}%</div>
+                              </div>
+                            </div>
+                            <div className="h-44">
+                              {chartsLoaded && ChartComp && ChartComp.Doughnut ? (
+                                <ChartComp.Doughnut
+                                  key={`cat-doughnut-${selectedDatasetId}-${column}`}
+                                  redraw={true}
+                                  data={chartData} options={{
+                                  ...chartOptions,
+                                  cutout: '55%',
+                                  plugins: { 
+                                    ...chartOptions.plugins, 
+                                    legend: { 
+                                      display: true,
+                                      position: 'right' as const,
+                                      labels: {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        font: { size: 10, family: "'Inter', sans-serif" },
+                                        padding: 8,
+                                        boxWidth: 8,
+                                        boxHeight: 8,
+                                        usePointStyle: true,
+                                      }
+                                    } 
+                                  }
+                                }} />
                               ) : (
                                 <div className="flex items-center justify-center h-full">
                                   <Loader className="w-6 h-6 animate-spin text-purple-400" />
@@ -1674,9 +1911,22 @@ const DatasetInsights: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      ) : null;
+                      );
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* Empty state for no columns */}
+              {visualizationData.numericColumns.length === 0 && visualizationData.categoricalColumns.length === 0 && (
+                <div className="bg-[#161b22] border border-gray-800 rounded-lg p-12 text-center">
+                  <div className="w-14 h-14 bg-gray-500/10 border border-gray-500/30 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <BarChart2 className="w-7 h-7 text-gray-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">No Visualizable Columns</h3>
+                  <p className="text-sm text-gray-400">
+                    This dataset doesn't have numeric or categorical columns suitable for visualization.
+                  </p>
                 </div>
               )}
             </div>

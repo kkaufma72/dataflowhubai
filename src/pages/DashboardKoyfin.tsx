@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAIChat } from '../components/ai/GlobalAIAssistant';
 import { useMLContext } from '../context/MLContext';
 import { useAuth } from '../components/auth/AuthProvider';
 import { supabase } from '../lib/supabase';
@@ -19,12 +20,31 @@ import {
   Circle,
   Sparkles,
   Loader,
+  Lightbulb,
   BookOpen,
-  Lightbulb
+  Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import KnowledgeInsightsBadge from '../components/common/KnowledgeInsightsBadge';
-import { useKnowledge } from '../context/KnowledgeContext';
+import { ContainerScroll } from '../components/ui/container-scroll-animation';
+import { SplineScene } from '../components/ui/splite';
+import { Spotlight } from '../components/ui/spotlight';
+
+const formatRelativeTime = (iso?: string | Date | number) => {
+  if (!iso) return '—';
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '—';
+  const diffMs = Date.now() - then;
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+  if (diffSec < 10) return 'just now';
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}d ago`;
+};
 
 // Lazy load onboarding
 const MagicMomentWelcome = lazy(() => import('../components/onboarding/MagicMomentWelcome'));
@@ -114,18 +134,71 @@ const loadCharts = async () => {
   return ChartComponents;
 };
 
+type SectionHeaderProps = {
+  title: string;
+  description?: string;
+  children?: React.ReactNode;
+  className?: string;
+};
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, description, children, className = '' }) => (
+  <div className={`flex items-center justify-between gap-3 ${className}`}>
+    <div>
+      <h3 className="text-lg font-bold gradient-text-blue">{title}</h3>
+      {description && <p className="text-xs text-gray-500">{description}</p>}
+    </div>
+    {children}
+  </div>
+);
+
 const DashboardKoyfin: React.FC = () => {
   const { datasets, models, isLoading } = useMLContext();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { openChat } = useAIChat();
   const [showMagicMoment, setShowMagicMoment] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const [upgradePromptTrigger, setUpgradePromptTrigger] = useState<'milestone_complete' | 'time_based'>('time_based');
+  const [upgradePromptTrigger] = useState<'milestone_complete' | 'time_based'>('time_based');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedPredictionModel, setSelectedPredictionModel] = useState<string>('marketing-campaigns');
   const [chartsLoaded, setChartsLoaded] = useState(false);
   const [ChartComp, setChartComp] = useState<any>(null);
+  const [chartsError, setChartsError] = useState<string | null>(null);
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string>('');
+  const [showChartDetails, setShowChartDetails] = useState(false);
+  const [showModelDetails, setShowModelDetails] = useState(false);
+  const [activeOneClickStep, setActiveOneClickStep] = useState(1);
+  const oneClickSteps = [
+    {
+      id: 1,
+      title: 'Prep & Profile',
+      description: 'Select dataset, profile quality, and auto-clean columns.',
+      cta: { label: 'Open Data', action: () => navigate('/app/data') },
+    },
+    {
+      id: 2,
+      title: 'Train & Tune',
+      description: 'Auto-generate features, pick a starter model, run quick tuning.',
+      cta: { label: 'Train', action: () => navigate('/app/train') },
+    },
+    {
+      id: 3,
+      title: 'Deploy & Monitor',
+      description: 'Ship the best run, set live monitors, wire alerts.',
+      cta: { label: 'Deploy', action: () => navigate('/app/deploy') },
+    },
+  ];
+
+  const selectedDataset = useMemo(() => {
+    if (!datasets || datasets.length === 0) return null;
+    const explicit = datasets.find((d) => d.id === selectedDatasetId);
+    return explicit || datasets[0] || null;
+  }, [datasets, selectedDatasetId]);
+
+  const selectedDatasetLabel = selectedDataset?.name?.trim() || 'Untitled dataset';
+  const lastDatasetRun = selectedDataset?.dateUploaded || (selectedDataset as any)?.createdAt;
+  const lastDatasetRunText = lastDatasetRun ? formatRelativeTime(lastDatasetRun) : '—';
 
   // Load charts on mount
   useEffect(() => {
@@ -133,12 +206,84 @@ const DashboardKoyfin: React.FC = () => {
       .then((comps) => {
         setChartComp(comps);
         setChartsLoaded(true);
+        setChartsError(null);
       })
       .catch((error) => {
         console.error('Failed to load charts:', error);
         setChartsLoaded(false);
+        setChartsError('Charts failed to load.');
       });
   }, []);
+
+  useEffect(() => {
+    // Ensure a stable default selected dataset.
+    if (datasets.length > 0 && !selectedDatasetId) {
+      setSelectedDatasetId(datasets[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDatasetId, datasets.length]);
+
+  const retryCharts = () => {
+    setChartsLoaded(false);
+    setChartsError(null);
+    loadCharts()
+      .then((comps) => {
+        setChartComp(comps);
+        setChartsLoaded(true);
+        setChartsError(null);
+      })
+      .catch(() => {
+        setChartsLoaded(false);
+        setChartsError('Charts failed to load.');
+      });
+  };
+
+  // Seeded dataset-aware time series for the Predictions chart.
+  const datasetAwarePredictionModel = useMemo(() => {
+    const baseModel = predictionModels.find((m) => m.id === selectedPredictionModel) || predictionModels[0];
+    if (!baseModel) return null;
+    if (!selectedDataset) return baseModel;
+
+    const seed = (selectedDataset.id || selectedDatasetLabel)
+      .split('')
+      .reduce((acc: number, ch: string) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    let s = seed || 1;
+    const rand = () => {
+      // LCG
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 0xffffffff;
+    };
+
+    const rows = Number(selectedDataset.rows || 0);
+    const cols = Number(selectedDataset.columns || 0);
+    const scale = Math.min(1.8, Math.max(0.85, (rows ? rows / 12000 : 1) * (cols ? cols / 30 : 1)));
+
+    const makeSeries = (len: number, base: number, trendPer: number, seasonPer: number, noiseAmp: number) => {
+      return Array.from({ length: len }, (_, i) => {
+        const trend = i * trendPer * scale;
+        const seasonal = Math.sin(i / Math.max(4, seasonPer)) * (noiseAmp * 1.2);
+        const noise = (rand() - 0.5) * noiseAmp;
+        const v = base + trend + seasonal + noise;
+        return typeof baseModel.historicalData[0] === 'number'
+          ? Math.round(v)
+          : parseFloat(v.toFixed(2));
+      });
+    };
+
+    const base = typeof baseModel.historicalData[0] === 'number'
+      ? (baseModel.historicalData[0] as number)
+      : (baseModel.historicalData[0] as number);
+
+    const tunedBase = typeof base === 'number' ? base + (rand() - 0.5) * 12 : base;
+    const hist = makeSeries(30, tunedBase as number, 0.9, 6, typeof tunedBase === 'number' ? 10 : 1);
+    const fore = makeSeries(14, (tunedBase as number) + 18, 1.1, 6, typeof tunedBase === 'number' ? 8 : 1);
+
+    return {
+      ...baseModel,
+      historicalData: hist,
+      forecastData: fore,
+    };
+  }, [selectedPredictionModel, selectedDataset, selectedDatasetLabel]);
 
   // Real-time clock
   useEffect(() => {
@@ -179,6 +324,14 @@ const DashboardKoyfin: React.FC = () => {
       setTimeout(() => setShowMagicMoment(true), 1000);
     }
   }, [datasets.length, isLoading, user, showOnboarding]);
+
+  // Progressive disclosure: keep advanced details collapsed while onboarding is active
+  useEffect(() => {
+    if (showOnboarding) {
+      setShowChartDetails(false);
+      setShowModelDetails(false);
+    }
+  }, [showOnboarding]);
 
   const handleMagicMomentClose = () => {
     setShowMagicMoment(false);
@@ -267,6 +420,12 @@ const DashboardKoyfin: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950">
+      <div className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-blue-600 text-white px-3 py-2 rounded">
+        <a href="#orbit-section">Skip to orbit</a>
+      </div>
+      <div className="sr-only focus:not-sr-only focus:absolute focus:top-12 focus:left-2 focus:z-50 bg-blue-600 text-white px-3 py-2 rounded">
+        <a href="#charts-section">Skip to charts</a>
+      </div>
       {/* Modern SaaS Header Bar */}
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
         <div className="px-6 py-4">
@@ -308,123 +467,336 @@ const DashboardKoyfin: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Dashboard Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-        {/* Top Row - Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Metric 1: Datasets */}
-          <div className="saas-stat-card">
-            <div className="flex items-center justify-between mb-4">
-              <span className="saas-stat-label">Datasets</span>
-              <div className="saas-icon-blue">
-                <Database className="w-6 h-6" />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="saas-stat-value">
-                  {metrics.totalDatasets}
-                </div>
-                <div className={`saas-stat-change-${metrics.isUp.datasets ? 'positive' : 'negative'} mt-2`}>
-                  {metrics.isUp.datasets ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  <span>{metrics.datasetChange}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-semibold text-gray-400">{metrics.totalRows.toLocaleString()}</div>
-                <div className="saas-caption">total rows</div>
-              </div>
-            </div>
+      {/* One-Click Intelligence Workspace */}
+      <section className="relative mb-10" id="orbit-section">
+        <div className="glass-card overflow-hidden border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.18),transparent_45%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(16,185,129,0.16),transparent_40%)]" />
           </div>
 
-          {/* Metric 2: Models */}
-          <div className="saas-stat-card">
-            <div className="flex items-center justify-between mb-4">
-              <span className="saas-stat-label">Models</span>
-              <div className="saas-icon-purple">
-                <Brain className="w-6 h-6" />
+          <div className="relative px-6 py-6 space-y-8">
+            <SectionHeader
+              title="One-Click Intelligence"
+              description="Three steps, one workspace. Prep → Train → Deploy with guided actions."
+              className="items-start"
+            >
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 via-cyan-400 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+            </SectionHeader>
+
+            {/* Stepper */}
+            <div className="flex flex-col gap-4">
+              {oneClickSteps.map((step) => {
+                const isActive = activeOneClickStep === step.id;
+                const isComplete = activeOneClickStep > step.id;
+                return (
+                  <div
+                    key={step.id}
+                    className={`rounded-2xl border ${isActive ? 'border-blue-500/40 bg-white/5' : 'border-white/10 bg-black/30'} p-4 md:p-5 transition`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`h-9 w-9 rounded-full flex items-center justify-center font-semibold ${
+                          isComplete
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                            : isActive
+                            ? 'bg-blue-500/20 text-blue-200 border border-blue-400/40'
+                            : 'bg-white/5 text-gray-300 border border-white/10'
+                        }`}
+                      >
+                        {isComplete ? <Check className="w-4 h-4" /> : step.id}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-white">{step.title}</p>
+                            <p className="text-xs text-gray-400">{step.description}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setActiveOneClickStep(step.id);
+                              step.cta.action();
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-purple-700 transition"
+                          >
+                            {step.cta.label}
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Inline helper for the active step */}
+                        {isActive && (
+                          <div className="mt-2 grid gap-3 md:grid-cols-3">
+                            {step.id === 1 && (
+                              <>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Pick a dataset</strong>
+                                  {datasets.length ? selectedDatasetLabel : 'Import your first dataset to begin.'}
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Profile & clean</strong>
+                                  Auto-detect anomalies and missing values.
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Trust</strong>
+                                  Last run {lastDatasetRunText}
+                                </div>
+                              </>
+                            )}
+                            {step.id === 2 && (
+                              <>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Starter model</strong>
+                                  Auto-pick baseline based on target type.
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Tuning</strong>
+                                  Quick search over 5–10 configs; advanced hidden.
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Health</strong>
+                                  {metrics.avgHealthScore.toFixed(0)} quality score
+                                </div>
+                              </>
+                            )}
+                            {step.id === 3 && (
+                              <>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Deploy</strong>
+                                  Push best run to an endpoint with one click.
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Monitor</strong>
+                                  Set drift & latency monitors with defaults.
+                                </div>
+                                <div className="p-3 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-300">
+                                  <strong className="text-white block mb-1">Alerts</strong>
+                                  Wire Slack/email alerts from templates.
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Advanced accordion */}
+            <details className="rounded-xl border border-white/10 bg-black/30 px-4 py-3">
+              <summary className="text-sm text-blue-300 cursor-pointer">Advanced (feature engineering, async ops, experiment details)</summary>
+              <div className="mt-3 grid gap-3 md:grid-cols-3 text-xs text-gray-300">
+                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                  <strong className="text-white block mb-1">Feature Engineering</strong>
+                  Manual transforms, target leakage guardrails, export feature views.
+                </div>
+                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                  <strong className="text-white block mb-1">Async Operations</strong>
+                  Long-running jobs, retries, lineage view.
+                </div>
+                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                  <strong className="text-white block mb-1">Experiment Tracking</strong>
+                  Compare runs, pin champion, download metrics.
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Robot Chatbot (Spline) */}
+      <section className="relative mb-10">
+        <div className="glass-card border border-white/10 bg-black/80 overflow-hidden">
+          <Spotlight className="-top-40 left-10" size={420} />
+          <div className="grid lg:grid-cols-2 gap-0 items-stretch relative z-10">
+            <div className="p-8 md:p-10 lg:p-12 flex flex-col justify-center space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-gray-300 w-fit">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Live Assistant
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold gradient-text-blue">Orbital Robot Copilot</h2>
+              <p className="text-gray-300 leading-relaxed max-w-xl">
+                Chat with an interactive 3D bot that mirrors your ML pipeline. Ask about datasets, training status, or next best actions while the orbit spins in sync.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <button
+                  onClick={() => openChat()}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-purple-700 transition"
+                >
+                  Start Chat
+                </button>
+                <button
+                  onClick={() => navigate('/app/data')}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white text-sm font-semibold border border-white/10 hover:bg-white/20 transition"
+                >
+                  Get Started
+                </button>
               </div>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="relative h-[460px] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+              <div className="absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.25),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(16,185,129,0.2),transparent_40%)]" />
+              <SplineScene
+                scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="hidden">
+      {/* Main Dashboard Grid with Scroll Animation */}
+      <ContainerScroll
+        titleComponent={
+          <div className="mb-8">
+            <h2 className="text-5xl md:text-7xl font-bold gradient-text-blue mb-4">
+              Your ML Command Center
+            </h2>
+            <p className="text-gray-400 text-lg md:text-xl">
+              Real-time insights at your fingertips
+            </p>
+          </div>
+        }
+      >
+        <div className="max-w-7xl mx-auto space-y-6 p-6">
+          {/* Top Row - Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Metric 1: Datasets */}
+            <div className="stat-card-orbital hover-glow-blue group">
+              <div className="orbital-ring absolute inset-[-5%] rounded-full border border-blue-500/30" />
+              <div className="orbital-ring absolute inset-[-10%] rounded-full border-2 border-blue-500/40" style={{ animationDuration: '25s' }} />
+              <div className="orbital-ring absolute inset-[-15%] rounded-full border border-blue-500/20" style={{ animationDuration: '30s' }} />
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Datasets</span>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <Database className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div className="flex items-end justify-between relative z-10">
+                <div>
+                  <div className="text-4xl font-bold gradient-text-blue mb-2">
+                    {metrics.totalDatasets}
+                  </div>
+                  <div className={`flex items-center gap-1 text-xs font-semibold ${metrics.isUp.datasets ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {metrics.isUp.datasets ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    <span>{metrics.datasetChange}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-white">{metrics.totalRows.toLocaleString()}</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wider">total rows</div>
+                </div>
+              </div>
+            </div>
+
+          {/* Metric 2: Models */}
+          <div className="stat-card-orbital hover-glow-purple group">
+            <div className="orbital-ring-slow absolute inset-[-5%] rounded-full border border-purple-500/30" />
+            <div className="orbital-ring-slow absolute inset-[-10%] rounded-full border-2 border-purple-500/40" style={{ animationDuration: '35s' }} />
+            <div className="orbital-ring-slow absolute inset-[-15%] rounded-full border border-purple-500/20" style={{ animationDuration: '40s' }} />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Models</span>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 pulse-slow">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="flex items-end justify-between relative z-10">
               <div>
-                <div className="saas-stat-value">
+                <div className="text-4xl font-bold gradient-text-purple mb-2">
                   {metrics.totalModels}
                 </div>
-                <div className={`saas-stat-change-${metrics.isUp.models ? 'positive' : 'negative'} mt-2`}>
-                  {metrics.isUp.models ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                <div className={`flex items-center gap-1 text-xs font-semibold ${metrics.isUp.models ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {metrics.isUp.models ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   <span>{metrics.modelChange}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-gray-400">{metrics.deployedModels}</div>
-                <div className="saas-caption">deployed</div>
+                <div className="text-xl font-bold text-white">{metrics.deployedModels}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">deployed</div>
               </div>
             </div>
           </div>
 
           {/* Metric 3: Health Score */}
-          <div className="saas-stat-card">
-            <div className="flex items-center justify-between mb-4">
-              <span className="saas-stat-label">Avg Health</span>
-              <div className="saas-icon-green">
-                <Activity className="w-6 h-6" />
+          <div className="stat-card-orbital hover-glow-blue group">
+            <div className="orbital-ring absolute inset-[-5%] rounded-full border border-emerald-500/30" style={{ animationDirection: 'reverse' }} />
+            <div className="orbital-ring absolute inset-[-10%] rounded-full border-2 border-emerald-500/40" style={{ animationDirection: 'reverse', animationDuration: '25s' }} />
+            <div className="orbital-ring absolute inset-[-15%] rounded-full border border-emerald-500/20" style={{ animationDirection: 'reverse', animationDuration: '30s' }} />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Avg Health</span>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <Activity className="w-6 h-6 text-white" />
               </div>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between relative z-10">
               <div>
-                <div className="saas-stat-value">
+                <div className="text-4xl font-bold gradient-text-teal mb-2">
                   {metrics.avgHealthScore.toFixed(0)}
                 </div>
-                <div className={`saas-stat-change-${metrics.isUp.health ? 'positive' : 'negative'} mt-2`}>
-                  {metrics.isUp.health ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                <div className={`flex items-center gap-1 text-xs font-semibold ${metrics.isUp.health ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {metrics.isUp.health ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   <span>{metrics.healthChange}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-gray-400">Quality</div>
-                <div className="saas-caption">score</div>
+                <div className="text-xl font-bold text-white">Quality</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">score</div>
               </div>
             </div>
           </div>
 
           {/* Metric 4: Activity */}
-          <div className="saas-stat-card">
-            <div className="flex items-center justify-between mb-4">
-              <span className="saas-stat-label">Activity</span>
-              <div className="saas-icon-orange">
-                <Zap className="w-6 h-6" />
+          <div className="stat-card-orbital hover-glow-purple group">
+            <div className="orbital-ring-slow absolute inset-[-5%] rounded-full border border-orange-500/30" style={{ animationDirection: 'reverse' }} />
+            <div className="orbital-ring-slow absolute inset-[-10%] rounded-full border-2 border-orange-500/40" style={{ animationDirection: 'reverse', animationDuration: '35s' }} />
+            <div className="orbital-ring-slow absolute inset-[-15%] rounded-full border border-orange-500/20" style={{ animationDirection: 'reverse', animationDuration: '40s' }} />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Activity</span>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 pulse-slow">
+                <Zap className="w-6 h-6 text-white" />
               </div>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between relative z-10">
               <div>
-                <div className="saas-stat-value">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 mb-2">
                   {metrics.trainedModels}
                 </div>
-                <div className="saas-stat-change-positive mt-2">
-                  <TrendingUp className="w-4 h-4" />
+                <div className="flex items-center gap-1 text-xs font-semibold text-emerald-400">
+                  <TrendingUp className="w-3 h-3" />
                   <span>Active</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-gray-400">Today</div>
-                <div className="saas-caption">models</div>
+                <div className="text-xl font-bold text-white">Today</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">models</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Prediction Models Section - Compact Version for Dashboard */}
-        <div className="bg-[#161b22] border border-gray-800 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-800 bg-[#0d1117]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-1 h-4 bg-cyan-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-white">Model Predictions</h3>
-              </div>
+        <div className="glass-card hover-lift" id="charts-section">
+          <div className="px-6 py-4 border-b border-white/10">
+            <SectionHeader
+              title="Predictions"
+              description="Monitor trends and forecasts"
+            >
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowChartDetails((prev) => !prev)}
+                  className="text-xs text-blue-400 hover:text-blue-300 underline"
+                  aria-label="Toggle chart details"
+                >
+                  {showChartDetails ? 'Hide details' : 'Show details'}
+                </button>
                 <select
                   value={selectedPredictionModel}
                   onChange={(e) => setSelectedPredictionModel(e.target.value)}
+                  aria-label="Select prediction chart"
                   className="bg-gray-800 border border-gray-700 text-gray-200 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
                 >
                   {predictionModels.map(model => (
@@ -438,12 +810,28 @@ const DashboardKoyfin: React.FC = () => {
                   View Full Report →
                 </button>
               </div>
-            </div>
+            </SectionHeader>
+            <p className="text-xs text-gray-500 mt-1">Using: {datasets.length === 0 ? '—' : selectedDatasetLabel}</p>
           </div>
           <div className="p-4">
             {(() => {
-              const model = predictionModels.find(m => m.id === selectedPredictionModel);
+              const model = datasetAwarePredictionModel;
               if (!model) return null;
+
+              if (datasets.length === 0) {
+                return (
+                  <div className="text-sm text-gray-300 bg-white/5 border border-white/10 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+                    <span>No datasets yet. Import one to activate the orbit.</span>
+                    <button
+                      onClick={() => navigate('/app/data')}
+                      className="text-xs px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition"
+                      aria-label="Import dataset to enable predictions"
+                    >
+                      Import dataset
+                    </button>
+                  </div>
+                );
+              }
 
               const labels = Array.from({ length: 44 }, (_, i) => {
                 const date = new Date();
@@ -502,10 +890,37 @@ const DashboardKoyfin: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="h-64">
-                    {chartsLoaded && ChartComp ? (
-                      <ChartComp.Line 
+                    {chartsError ? (
+                      <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 border border-white/10 rounded-lg bg-black/40 p-4">
+                        <p className="text-sm font-semibold">Charts couldn’t load. Showing summary.</p>
+                        <div className="grid grid-cols-3 gap-3 w-full text-center">
+                          <div>
+                            <p className="text-xs text-gray-500">Current</p>
+                            <p className="text-lg font-bold text-white">{lastHistorical}{model.unit}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Forecast</p>
+                            <p className="text-lg font-bold" style={{ color: model.color }}>{lastForecast}{model.unit}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Change</p>
+                            <p className={`text-lg font-bold ${parseFloat(change) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {parseFloat(change) >= 0 ? '+' : ''}{change}%
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={retryCharts}
+                          className="text-xs text-blue-400 hover:text-blue-300 underline"
+                          aria-label="Retry loading charts"
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    ) : chartsLoaded && ChartComp ? (
+                      <ChartComp.Line
                         data={chartData}
                         options={{
                           responsive: true,
@@ -513,7 +928,7 @@ const DashboardKoyfin: React.FC = () => {
                           interaction: { mode: 'index' as const, intersect: false },
                           plugins: {
                             legend: {
-                              display: true,
+                              display: showChartDetails,
                               position: 'top' as const,
                               align: 'end' as const,
                               labels: {
@@ -534,7 +949,7 @@ const DashboardKoyfin: React.FC = () => {
                               padding: 10,
                               displayColors: true,
                               callbacks: {
-                                label: function(context: any) {
+                                label: function (context: any) {
                                   const value = context.parsed.y;
                                   if (value !== null) {
                                     return `${context.dataset.label}: ${value}${model.unit}`;
@@ -550,7 +965,7 @@ const DashboardKoyfin: React.FC = () => {
                               ticks: {
                                 color: 'rgba(255, 255, 255, 0.5)',
                                 font: { size: 9 },
-                                callback: function(value: any) {
+                                callback: function (value: any) {
                                   return value + model.unit;
                                 }
                               }
@@ -560,16 +975,21 @@ const DashboardKoyfin: React.FC = () => {
                               ticks: {
                                 color: 'rgba(255, 255, 255, 0.5)',
                                 font: { size: 9 },
-                                maxRotation: 45,
-                                minRotation: 45
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 7,
                               }
                             }
                           }
                         }}
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Loader className="w-6 h-6 animate-spin text-cyan-400" />
+                      <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-2">
+                        <p className="text-sm">Loading charts…</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <Loader className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                          Loading chart
+                        </div>
                       </div>
                     )}
                   </div>
@@ -578,14 +998,20 @@ const DashboardKoyfin: React.FC = () => {
             })()}
           </div>
         </div>
+      </div>
+    </ContainerScroll>
 
+      {/* Below the scroll section - Regular layout */}
+      <div className="max-w-7xl mx-auto px-6 space-y-6">
         {/* Second Row - Charts and Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Recent Datasets - Terminal Style List */}
           <div className="lg:col-span-2 saas-card">
             <div className="saas-card-header">
-              <div className="flex items-center justify-between">
-                <h3 className="saas-h4">Recent Datasets</h3>
+              <SectionHeader
+                title="Recent Datasets"
+                description="Latest ingests and profiles"
+              >
                 <button
                   onClick={() => navigate('/app/data')}
                   className="saas-btn-ghost saas-btn-sm flex items-center gap-1"
@@ -593,18 +1019,18 @@ const DashboardKoyfin: React.FC = () => {
                   View all
                   <ArrowUpRight className="w-3 h-3" />
                 </button>
-              </div>
+              </SectionHeader>
             </div>
             <div className="saas-card-body">
               {datasets.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="saas-body-small">No datasets yet</p>
+                  <p className="saas-body-small text-gray-300">No datasets yet. Import one to activate the orbit.</p>
                   <button
                     onClick={() => navigate('/app/data')}
                     className="saas-btn-primary saas-btn-sm mt-4"
                   >
-                    Upload your first dataset →
+                    Import dataset →
                   </button>
                 </div>
               ) : (
@@ -642,10 +1068,82 @@ const DashboardKoyfin: React.FC = () => {
             </div>
           </div>
 
+          {/* Models List with progressive disclosure */}
+          <div className="saas-card">
+            <div className="saas-card-header">
+              <SectionHeader
+                title="Models"
+                description="Monitor trained and deployed models"
+              >
+                <button
+                  onClick={() => setShowModelDetails((prev) => !prev)}
+                  className="saas-caption text-blue-400 hover:text-blue-300 underline"
+                  aria-label="Toggle model list details"
+                >
+                  {showModelDetails ? 'Hide details' : 'Show details'}
+                </button>
+              </SectionHeader>
+              <p className="saas-caption text-gray-500 mt-1">Trained: {metrics.trainedModels} • Deployed: {metrics.deployedModels}</p>
+            </div>
+            <div className="saas-card-body">
+              {models.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                  <Brain className="w-10 h-10 mx-auto mb-3 opacity-70" />
+                  <p className="saas-body-small text-gray-300 mb-3">No trained models yet. Train one in ML Studio.</p>
+                  <button
+                    onClick={() => navigate('/app/train')}
+                    className="saas-btn-primary saas-btn-sm"
+                  >
+                    Train model →
+                  </button>
+                </div>
+              ) : showModelDetails ? (
+                <div className="space-y-2">
+                  {models.slice(0, 4).map((model) => {
+                    const status = model.status || 'pending';
+                    const deployed = status === 'deployed';
+                    return (
+                      <div
+                        key={model.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-gray-900/60 border border-gray-800 hover:border-gray-700 transition"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="saas-icon-purple w-10 h-10">
+                            <Brain className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="saas-body font-semibold text-white truncate max-w-[160px]">{model.name || 'Untitled model'}</p>
+                            <p className="saas-caption text-gray-500 truncate max-w-[160px]">{model.createdAt ? getTimeAgo(model.createdAt) : '—'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-semibold ${deployed ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30' : 'bg-blue-500/10 text-blue-200 border border-blue-500/30'}`}>
+                            {deployed ? 'Deployed' : status}
+                          </span>
+                          <button
+                            onClick={() => navigate(`/app/modelops?model=${model.id || ''}`)}
+                            className="text-[10px] text-blue-400 hover:text-blue-300 underline"
+                          >
+                            Open
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500 text-center py-6">Details hidden. Show details to view models.</p>
+              )}
+            </div>
+          </div>
+
           {/* Activity Feed - Terminal Style */}
           <div className="saas-card">
             <div className="saas-card-header">
-              <h3 className="saas-h4">Live Activity</h3>
+              <SectionHeader
+                title="Live Activity"
+                description="Recent dataset and model events"
+              />
             </div>
             <div className="saas-card-body space-y-3">
               {recentActivity.length === 0 ? (
@@ -809,8 +1307,14 @@ const DashboardKoyfin: React.FC = () => {
           <div className="saas-card-body">
             {datasets.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="saas-caption">Upload datasets to build your knowledge base</p>
+                <BookOpen className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                <p className="saas-caption text-gray-300 mb-3">No datasets yet. Import one to activate the orbit.</p>
+                <button
+                  onClick={() => navigate('/app/data')}
+                  className="saas-btn-primary saas-btn-sm"
+                >
+                  Import dataset →
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -924,6 +1428,8 @@ const DashboardKoyfin: React.FC = () => {
         </Suspense>
       )}
 
+      </div>
+
       {/* Strategic Upgrade Prompt */}
       {showUpgradePrompt && (
         <Suspense fallback={null}>
@@ -954,4 +1460,3 @@ const getTimeAgo = (timestamp: string) => {
 };
 
 export default DashboardKoyfin;
-
