@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, initializeSupabase, handleSupabaseError } from '../lib/supabase';
+import { supabase, initializeSupabase, handleSupabaseError, isSupabaseConfigured } from '../lib/supabase';
 import { Dataset, MLModel, Project } from '../types';
 import { storage } from '../lib/storage';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -208,11 +208,10 @@ export const MLProvider = ({ children }: MLProviderProps) => {
       const isAuthenticated = !!user;
       
       if (!isAuthenticated) {
-        // Not logged in - no data to load
-        setDatasets([]);
-        setModels([]);
-        setIsLoading(false);
-        setHasFetched(true);
+        // Not logged in - show local samples so the app remains usable
+        const localSamples = await localSamplesPromise;
+        applyInitialState(localSamples, []);
+        setError('Sign in to save data to your workspace. Showing local sample datasets.');
         return;
       }
 
@@ -247,6 +246,14 @@ export const MLProvider = ({ children }: MLProviderProps) => {
         }, 1200);
       };
 
+      // If Supabase isn't configured, immediately fall back to local samples
+      if (!isSupabaseConfigured) {
+        const localSamples = await localSamplesPromise;
+        applyInitialState(localSamples, []);
+        setError('Supabase not configured - showing local sample datasets');
+        return;
+      }
+
       // Initialize Supabase connection
       const isConnected = await initializeSupabase();
       if (!isConnected) {
@@ -257,7 +264,7 @@ export const MLProvider = ({ children }: MLProviderProps) => {
 
       // OPTIMIZATION: Fetch datasets and models using direct fetch (no project filtering)
       const { supabaseFetch } = await import('../lib/supabaseHelpers');
-      
+
       // OPTIMIZATION: Parallel fetch of datasets and models using direct fetch
       const [datasetsResponse, modelsResponse] = await Promise.all([
         supabaseFetch(
@@ -388,10 +395,17 @@ export const MLProvider = ({ children }: MLProviderProps) => {
     } catch (err) {
       clearFallbackTimer();
       console.error('Error loading initial data:', err);
-      const errorMessage = handleSupabaseError(err);
-      setError(errorMessage);
-      setIsLoading(false);
-      setHasFetched(true);
+      try {
+        const fallbackSamples = await localSamplesPromise;
+        applyInitialState(fallbackSamples, []);
+        setError('Could not reach Supabase. Showing local sample datasets instead.');
+      } catch (fallbackError) {
+        const errorMessage = handleSupabaseError(err);
+        console.error('Fallback sample load failed:', fallbackError);
+        setError(errorMessage);
+        setIsLoading(false);
+        setHasFetched(true);
+      }
     }
   }, [hasFetched, user]);
 
