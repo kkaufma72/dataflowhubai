@@ -17,8 +17,8 @@ This guide provides detailed instructions for setting up the DataFlowHub AI plat
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-organization/dataflowhub-ai.git
-cd dataflowhub-ai
+git clone https://github.com/kkaufma72/dataflowhubai.git
+cd dataflowhubai
 ```
 
 ### Step 2: Install Dependencies
@@ -178,7 +178,7 @@ docker-compose up
 
 If you encounter issues not covered here:
 
-1. Check the [GitHub Issues](https://github.com/your-organization/dataflowhub-ai/issues) for similar problems
+1. Check the [GitHub Issues](https://github.com/kkaufma72/dataflowhubai/issues) for similar problems
 2. Join our [Discord community](https://discord.gg/dataflowhub) for real-time help
 3. Contact support at support@dataflowhub.ai
 

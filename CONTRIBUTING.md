@@ -14,8 +14,8 @@ Thank you for your interest in contributing to DataFlowHub AI! This document pro
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-organization/dataflowhub-ai.git
-   cd dataflowhub-ai
+   git clone https://github.com/kkaufma72/dataflowhubai.git
+   cd dataflowhubai
    ```
 
 2. Install dependencies:

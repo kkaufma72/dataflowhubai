@@ -27,8 +27,8 @@ DataFlowHub AI is an enterprise AutoML platform that enables businesses to build
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-organization/dataflowhub-ai.git
-   cd dataflowhub-ai
+   git clone https://github.com/kkaufma72/dataflowhubai.git
+   cd dataflowhubai
    ```
 
 2. Install dependencies:
@@ -139,8 +139,8 @@ For detailed development setup instructions, see [DEVELOPMENT.md](./DEVELOPMENT.
 
 ## Documentation
 
-- [User Documentation](https://dataflowhub.ai/documentation)
-- [API Reference](https://dataflowhub.ai/api-reference)
+- [User Documentation](https://www.dataflowhub.ai/documentation)
+- [API Reference](https://www.dataflowhub.ai/api-reference)
 - [Developer Documentation](./DEVELOPMENT.md)
 
 ## License
